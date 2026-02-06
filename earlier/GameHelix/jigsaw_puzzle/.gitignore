@@ -1,3 +1,4 @@
 .env
 nul
 venv
+__pycache__
