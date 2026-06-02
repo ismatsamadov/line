@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Bus, MapPin, ArrowDownUp, LocateFixed, Search, X, Footprints } from "lucide-react";
+import { Bus, ArrowDownUp, LocateFixed, Search, X, Footprints, Map as MapIcon, ListOrdered, Hand } from "lucide-react";
 import type { StopDetail, RouteResult } from "@/lib/busroute/types";
 import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
@@ -15,10 +15,12 @@ const BusMap = dynamic(() => import("./BusMap"), {
 const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#ea580c"];
 
 function StopPicker({
-  label, placeholder, stops, selected, onSelect, dotClass,
+  label, placeholder, stops, selected, onSelect, dotClass, active = false, onActivate,
 }: {
   label: string; placeholder: string; stops: StopDetail[];
   selected: StopDetail | null; onSelect: (s: StopDetail | null) => void; dotClass: string;
+  /** True when this field is the current map-tap target — gets a highlight ring. */
+  active?: boolean; onActivate?: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
@@ -51,15 +53,26 @@ function StopPicker({
         {label}
       </div>
       {selected ? (
-        <div className="flex items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5">
+        <button
+          type="button"
+          onClick={onActivate}
+          className={`flex w-full items-center justify-between rounded-xl border bg-gray-50 px-3 py-3 text-left transition ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
+        >
           <span className="min-w-0">
             <span className="block truncate text-sm font-medium text-gray-900">{selected.name}</span>
             {selected.code ? <span className="text-xs text-gray-400">{selected.code}</span> : null}
           </span>
-          <button onClick={() => { onSelect(null); setQuery(""); }} aria-label="Seçimi sil" className="ml-2 text-gray-400 hover:text-gray-600">
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); onSelect(null); setQuery(""); }}
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onSelect(null); setQuery(""); } }}
+            aria-label="Seçimi sil"
+            className="ml-2 shrink-0 text-gray-400 hover:text-gray-600"
+          >
             <X className="h-4 w-4" />
-          </button>
-        </div>
+          </span>
+        </button>
       ) : (
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -68,9 +81,9 @@ function StopPicker({
             value={query}
             inputMode="search"
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
+            onFocus={() => { setOpen(true); onActivate?.(); }}
             placeholder={placeholder}
-            className="w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm shadow-sm focus:border-orange-400 focus:ring-orange-400"
+            className={`w-full rounded-xl border bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-orange-400 focus:ring-orange-400 ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
           />
           {open && filtered.length > 0 && (
             <div className="absolute z-[1000] mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
@@ -171,6 +184,8 @@ function JourneyView({ route }: { route: RouteResult }) {
   );
 }
 
+type PickTarget = "from" | "to";
+
 export default function Component() {
   const [stops, setStops] = useState<StopDetail[]>([]);
   const [fromStop, setFromStop] = useState<StopDetail | null>(null);
@@ -180,6 +195,10 @@ export default function Component() {
   const [error, setError] = useState<string | null>(null);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
+  // Which field a map tap fills next ("from" first). Drives the pick-mode banner.
+  const [pickTarget, setPickTarget] = useState<PickTarget>("from");
+  // Mobile: one of the two panes is shown at a time (lg shows both side-by-side).
+  const [mobileTab, setMobileTab] = useState<"panel" | "map">("panel");
 
   useEffect(() => {
     fetch("/api/avtobus/stops")
@@ -200,12 +219,22 @@ export default function Component() {
       const data = await res.json();
       if (!res.ok) { setError(data.error || "Marşrut tapılmadı"); return; }
       setRoute(data.route);
+      setMobileTab("panel"); // show the step-by-step result on mobile
     } catch {
       setError("Şəbəkə xətası. Yenidən cəhd edin.");
     } finally {
       setLoading(false);
     }
   }, [fromStop, toStop]);
+
+  // Set a stop from the search dropdown, then advance the active target so the
+  // next map tap / search naturally fills the OTHER field.
+  const selectFrom = useCallback((s: StopDetail | null) => {
+    setFromStop(s); setRoute(null); if (s) setPickTarget("to");
+  }, []);
+  const selectTo = useCallback((s: StopDetail | null) => {
+    setToStop(s); setRoute(null); if (s) setPickTarget("from");
+  }, []);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation) { setError("Brauzeriniz məkanı dəstəkləmir."); return; }
@@ -222,6 +251,7 @@ export default function Component() {
             if (d < min) { min = d; nearest = s; }
           }
           setFromStop(nearest);
+          setPickTarget("to");
         }
         setLocating(false);
       },
@@ -234,71 +264,144 @@ export default function Component() {
     setFromStop(toStop); setToStop(fromStop); setRoute(null);
   }, [fromStop, toStop]);
 
+  // A map tap (on a marker OR snapped from empty map) fills the ACTIVE field,
+  // then advances to the other one — so the user always knows what a tap does.
   const handleMapClick = useCallback((stop: StopDetail) => {
-    if (!fromStop) {
+    setRoute(null);
+    if (pickTarget === "from") {
       setFromStop(stop);
-    } else if (!toStop) {
-      setToStop(stop);
+      setPickTarget(toStop ? "from" : "to");
     } else {
-      setFromStop(stop);
-      setToStop(null);
-      setRoute(null);
+      setToStop(stop);
+      setPickTarget("from");
     }
+  }, [pickTarget, toStop]);
+
+  // Both stops chosen → find automatically (no extra tap). Route stays cleared
+  // until both are set again, so this can't loop.
+  useEffect(() => {
+    if (fromStop && toStop && !route && !loading) handleFind();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fromStop, toStop]);
 
+  const TabBtn = ({ id, icon, children }: { id: "panel" | "map"; icon: ReactNode; children: ReactNode }) => (
+    <button
+      onClick={() => setMobileTab(id)}
+      className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${mobileTab === id ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
+    >
+      {icon}{children}
+    </button>
+  );
+
   return (
-    <div className="grid gap-4 lg:grid-cols-[minmax(0,380px)_1fr]">
-      {/* Controls */}
-      <div className="space-y-3">
-        <button
-          onClick={handleLocate}
-          disabled={locating || stops.length === 0}
-          className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
-        >
-          <LocateFixed className="h-4 w-4" />
-          {locating ? "Məkan tapılır…" : "Yaxınımdakı dayanacaqdan başla"}
-        </button>
-
-        <StopPicker label="Haradan" placeholder="Başlanğıc dayanacağı axtar…" stops={stops} selected={fromStop} onSelect={setFromStop} dotClass="bg-green-600" />
-
-        <div className="flex justify-center">
-          <button onClick={handleSwap} title="Dayanacaqları dəyiş" className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition hover:bg-gray-50">
-            <ArrowDownUp className="h-4 w-4" />
-          </button>
-        </div>
-
-        <StopPicker label="Hara" placeholder="Təyinat dayanacağı axtar…" stops={stops} selected={toStop} onSelect={setToStop} dotClass="bg-red-600" />
-
-        <button
-          onClick={handleFind}
-          disabled={!fromStop || !toStop || loading}
-          className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
-        >
-          {loading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Marşrut axtarılır…</>
-                   : <><Bus className="h-4 w-4" /> Marşrutu tap</>}
-        </button>
-
-        {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
-        {route && <JourneyView route={route} />}
-        {!route && !error && (
-          <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
-            <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-            Xəritədən dayanacağa toxunaraq da seçə bilərsiniz. Vaxt təxminidir (cədvəl/real-vaxt deyil).
-          </p>
-        )}
+    <div>
+      {/* Mobile pane switcher (lg shows both panes, so it's hidden there) */}
+      <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 lg:hidden">
+        <TabBtn id="panel" icon={<ListOrdered className="h-4 w-4" />}>Axtarış</TabBtn>
+        <TabBtn id="map" icon={<MapIcon className="h-4 w-4" />}>Xəritə</TabBtn>
       </div>
 
-      {/* Map */}
-      <div className="h-[60vh] min-h-[360px] overflow-hidden rounded-2xl border border-gray-200 lg:h-[640px]">
-        <BusMap
-          stops={stops}
-          fromStop={fromStop}
-          toStop={toStop}
-          route={route}
-          userLocation={userLocation}
-          onStopClick={handleMapClick}
-          isVisible
-        />
+      <div className="lg:grid lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-4">
+        {/* Controls / results pane */}
+        <div className={`${mobileTab === "panel" ? "block" : "hidden"} space-y-3 lg:block`}>
+          <button
+            onClick={handleLocate}
+            disabled={locating || stops.length === 0}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+          >
+            <LocateFixed className="h-4 w-4" />
+            {locating ? "Məkan tapılır…" : "Yaxınımdakı dayanacaqdan başla"}
+          </button>
+
+          <StopPicker label="Haradan" placeholder="Başlanğıc dayanacağı axtar…" stops={stops} selected={fromStop} onSelect={selectFrom} dotClass="bg-green-600" active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
+
+          <div className="flex justify-center">
+            <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition hover:bg-gray-50">
+              <ArrowDownUp className="h-4 w-4" />
+            </button>
+          </div>
+
+          <StopPicker label="Hara" placeholder="Təyinat dayanacağı axtar…" stops={stops} selected={toStop} onSelect={selectTo} dotClass="bg-red-600" active={pickTarget === "to"} onActivate={() => setPickTarget("to")} />
+
+          <button
+            onClick={handleFind}
+            disabled={!fromStop || !toStop || loading}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
+          >
+            {loading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Marşrut axtarılır…</>
+                     : <><Bus className="h-4 w-4" /> Marşrutu tap</>}
+          </button>
+
+          {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {route && (
+            <>
+              <button
+                onClick={() => setMobileTab("map")}
+                className="flex w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 lg:hidden"
+              >
+                <MapIcon className="h-4 w-4" /> Nəticəni xəritədə gör
+              </button>
+              <JourneyView route={route} />
+            </>
+          )}
+          {!route && !error && (
+            <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
+              <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Dayanacağın adını bilmirsiniz? «Xəritə»yə keçin və istədiyiniz yerə toxunun — ən yaxın dayanacaq avtomatik seçilir.
+            </p>
+          )}
+        </div>
+
+        {/* Map pane */}
+        <div className={`${mobileTab === "map" ? "block" : "hidden"} lg:block`}>
+          {/* Pick-mode banner — tells the user exactly what a map tap will do */}
+          {!route ? (
+            <div className="mb-2 rounded-xl border border-orange-200 bg-orange-50 p-2.5">
+              <div className="mb-2 flex items-start gap-1.5 text-xs text-gray-600">
+                <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-500" />
+                <span>Xəritədə dayanacağa <strong>toxun</strong>, ya da boş yerə toxun — <strong>ən yaxın</strong> dayanacaq seçilir.</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  onClick={() => setPickTarget("from")}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "from" ? "border-green-500 bg-white text-green-700 ring-2 ring-green-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
+                >
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-600" />
+                  Başlanğıc{fromStop ? " ✓" : ""}
+                </button>
+                <button
+                  onClick={() => setPickTarget("to")}
+                  className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "to" ? "border-red-500 bg-white text-red-700 ring-2 ring-red-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
+                >
+                  <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
+                  Təyinat{toStop ? " ✓" : ""}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white p-2.5">
+              <span className="flex items-center gap-1.5 text-xs text-gray-600"><Bus className="h-3.5 w-3.5 text-orange-500" /> Marşrut xəritədə göstərilir.</span>
+              <button
+                onClick={() => { setRoute(null); setToStop(null); setPickTarget("to"); }}
+                className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
+              >
+                Təyinatı dəyiş
+              </button>
+            </div>
+          )}
+
+          <div className="h-[64vh] min-h-[380px] overflow-hidden rounded-2xl border border-gray-200 lg:h-[600px]">
+            <BusMap
+              stops={stops}
+              fromStop={fromStop}
+              toStop={toStop}
+              route={route}
+              userLocation={userLocation}
+              onStopClick={handleMapClick}
+              isVisible={mobileTab === "map"}
+            />
+          </div>
+        </div>
       </div>
     </div>
   );
