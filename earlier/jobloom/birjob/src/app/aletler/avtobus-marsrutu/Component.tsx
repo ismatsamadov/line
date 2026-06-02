@@ -90,8 +90,14 @@ function StopPicker({
               {filtered.map((s) => (
                 <button
                   key={s.id}
-                  onMouseDown={(e) => { e.preventDefault(); onSelect(s); setQuery(""); setOpen(false); }}
-                  onTouchEnd={(e) => { e.preventDefault(); onSelect(s); setQuery(""); setOpen(false); }}
+                  type="button"
+                  // Select on click (a real tap) — NOT touchend. touchend fires
+                  // even when the touch started here and then dragged to scroll
+                  // the list, which used to auto-select a stop mid-scroll. click
+                  // isn't dispatched after a scroll/drag, so this is scroll-safe.
+                  // Safe from the outside-click handler since the dropdown lives
+                  // inside this picker's ref (so it isn't pre-closed).
+                  onClick={() => { onSelect(s); setQuery(""); setOpen(false); }}
                   className="block w-full px-3 py-2 text-left hover:bg-orange-50"
                 >
                   <span className="block truncate text-sm text-gray-800">{s.name}</span>
