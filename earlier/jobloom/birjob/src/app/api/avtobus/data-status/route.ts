@@ -7,7 +7,9 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     const lastUpdated = await getDataLastUpdated();
-    return NextResponse.json({ lastUpdated });
+    return NextResponse.json({ lastUpdated }, {
+      headers: { 'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400' },
+    });
   } catch {
     return NextResponse.json({ lastUpdated: null });
   }

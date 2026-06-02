@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
     const routeId = await queryRoutesByBusAndDirection(busId, direction);
     if (!routeId) return NextResponse.json({ error: "Marşrut tapılmadı" }, { status: 404 });
     const coordinates = await queryRouteCoordinates(routeId);
-    return NextResponse.json({ routeId, coordinates });
+    return NextResponse.json({ routeId, coordinates }, {
+      headers: { 'Cache-Control': 'public, s-maxage=86400, stale-while-revalidate=604800' },
+    });
   } catch (error) {
     console.error("[avtobus] geometry failed:", error);
     return NextResponse.json({ error: "Marşrut həndəsəsi alınmadı" }, { status: 500 });
