@@ -47,8 +47,11 @@ export const getBusByNumber = unstable_cache(
   async (number: string): Promise<BusRoute | null> => {
     const n = number.trim();
     if (!n) return null;
+    // Case-insensitive: the DB stores letter-suffix routes upper-case ("88A",
+    // "150E", "E1") but people search/link them lower-case ("88a", "150e",
+    // "e1"). Without this, /avtobus/88a would 404 even though 88A exists.
     const b = await prisma.bus_buses.findFirst({
-      where: { number: n },
+      where: { number: { equals: n, mode: 'insensitive' } },
       select: {
         id: true, number: true, carrier: true, first_point: true, last_point: true,
         route_length: true, tariff_str: true, duration_minuts: true,
