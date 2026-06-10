@@ -49,7 +49,7 @@ export default async function Page() {
         <header className="mb-6">
           <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600"><Bus className="h-6 w-6" /></div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bakı Avtobus Marşrutu Planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. İşə, müsahibəyə və ya istənilən ünvana çatmaq üçün ən yaxşı ictimai nəqliyyat marşrutunu tapın.</p>
+          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün.</p>
         </header>
 
         <Component />
