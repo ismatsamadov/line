@@ -29,7 +29,7 @@ export interface BusStopRow {
 
 /** All distinct bus numbers (for the index + generateStaticParams). Numeric
  *  sort so "2" comes before "20", "125". */
-export const getAllBusNumbers = unstable_cache(
+const _getAllBusNumbersCached = unstable_cache(
   async (): Promise<string[]> => {
     const rows = await prisma.bus_buses.findMany({ select: { number: true } });
     const nums = [...new Set(rows.map(r => r.number.trim()).filter(Boolean))];
@@ -43,7 +43,19 @@ export const getAllBusNumbers = unstable_cache(
   { revalidate: 86400 },
 );
 
-export const getBusByNumber = unstable_cache(
+/** Graceful degradation: try/catch OUTSIDE the cache so a transient DB error
+ *  degrades the index to empty (not a 500) — and keeps generateStaticParams
+ *  building safely — without caching the failure. */
+export async function getAllBusNumbers(): Promise<string[]> {
+  try {
+    return await _getAllBusNumbersCached();
+  } catch (err) {
+    console.error('[getAllBusNumbers]', err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
+const _getBusByNumberCached = unstable_cache(
   async (number: string): Promise<BusRoute | null> => {
     const n = number.trim();
     if (!n) return null;
@@ -73,10 +85,22 @@ export const getBusByNumber = unstable_cache(
   { revalidate: 86400 },
 );
 
+/** Graceful degradation: try/catch OUTSIDE the cache, FALLBACK null so a
+ *  transient DB error degrades the route page to a 404 (caller notFound()s on
+ *  null) rather than a 500 — and the failure isn't cached. */
+export async function getBusByNumber(number: string): Promise<BusRoute | null> {
+  try {
+    return await _getBusByNumberCached(number);
+  } catch (err) {
+    console.error(`[getBusByNumber] ${number}:`, err instanceof Error ? err.message : err);
+    return null;
+  }
+}
+
 /** Ordered stops for a bus, grouped by direction. Returns the stop names for
  *  the primary direction (the one with the most stops — i.e. the full route),
  *  in travel order. */
-export const getBusStops = unstable_cache(
+const _getBusStopsCached = unstable_cache(
   async (busId: number): Promise<string[]> => {
     const rows = await prisma.bus_bus_stops.findMany({
       where: { bus_id: busId },
@@ -104,3 +128,14 @@ export const getBusStops = unstable_cache(
   ['bus-stops'],
   { revalidate: 86400 },
 );
+
+/** Graceful degradation: try/catch OUTSIDE the cache so a transient DB error
+ *  renders the route page with no stop list (not a 500) without caching it. */
+export async function getBusStops(busId: number): Promise<string[]> {
+  try {
+    return await _getBusStopsCached(busId);
+  } catch (err) {
+    console.error(`[getBusStops] ${busId}:`, err instanceof Error ? err.message : err);
+    return [];
+  }
+}
