@@ -1,4 +1,5 @@
 import { Metadata } from 'next';
+import { ldJson } from '@/lib/ld/serialize';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { Bus, ArrowLeft, MapPin, Clock, Route, Wallet, ExternalLink } from 'lucide-react';
@@ -65,7 +66,7 @@ export default async function BusRoutePage({ params }: Props) {
 
   return (
     <>
-      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }} />
+      <script nonce={nonce} type="application/ld+json" dangerouslySetInnerHTML={{ __html: ldJson(schema) }} />
       <div className="min-h-screen bg-gray-50">
         <div className="max-w-2xl mx-auto px-4 py-8 sm:py-10">
           <Link href="/avtobus" className="inline-flex items-center text-sm text-gray-600 hover:text-orange-600 transition-colors mb-4">
