@@ -262,7 +262,11 @@ export default function Component() {
         setLocating(false);
       },
       () => { setError("Məkan alınmadı. İcazəni yoxlayın."); setLocating(false); },
-      { enableHighAccuracy: true, timeout: 10000 }
+      // Standard accuracy is plenty for "nearest stop" and avoids the GPS-grade
+      // provider that makes Chrome/macOS retry (and spam kCLErrorLocationUnknown
+      // to the console) when it can't get a precise fix on a desktop. A cached
+      // fix up to 5 min old is fine and skips a fresh CoreLocation query.
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
   }, [stops]);
 
