@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Bus, ArrowDownUp, LocateFixed, Search, X, Footprints, Map as MapIcon, ListOrdered, Hand } from "lucide-react";
+import SupportCTA from "@/components/SupportCTA";
 import type { StopDetail, RouteResult } from "@/lib/busroute/types";
 import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
@@ -342,7 +343,12 @@ export default function Component() {
                      : <><Bus className="h-4 w-4" /> Marşrutu tap</>}
           </button>
 
-          {error && <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</div>}
+          {error && (
+            <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+              {error}
+              <SupportCTA variant="inline" className="mt-1 block" />
+            </div>
+          )}
           {route && (
             <>
               <button

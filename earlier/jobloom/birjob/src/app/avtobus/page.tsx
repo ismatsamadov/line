@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import { Bus, ArrowLeft, ExternalLink } from 'lucide-react';
 import { getAllBusNumbers } from '@/lib/bus';
+import SupportCTA from '@/components/SupportCTA';
 
 const SITE = 'https://www.birjob.com';
 const PAGE_URL = `${SITE}/avtobus`;
@@ -37,6 +38,10 @@ export default async function AvtobusIndexPage() {
           Bakının <strong>{numbers.length}</strong> avtobus marşrutu. Nömrəni seçin — marşrutu, dayanacaqları,
           gediş haqqını və təxmini vaxtı görün.
         </p>
+        {/* Empty list means getAllBusNumbers degraded to [] on DB error — the grid below renders blank. */}
+        {numbers.length === 0 && (
+          <SupportCTA variant="inline" className="mt-3 block text-sm text-gray-500" />
+        )}
 
         <div className="mt-5 mb-6 rounded-2xl border border-gray-100 bg-white p-4 text-sm text-gray-700 shadow-sm">
           İki dayanaca arasında ən yaxşı marşrutu (dəyişmələrlə, xəritədə) tapmaq üçün{' '}
