@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 import scraper  # noqa: E402
 from scraper import (  # noqa: E402
     parse_bus_detail, compute_walking_edges, _strip_prisma_params,
-    fnum, fint, haversine_km,
+    _split_upsert, fnum, fint, haversine_km,
 )
 
 # A minimal getBusById payload mirroring the real AYNA shape.
@@ -146,6 +146,16 @@ def test_scrape_skips_a_broken_route(monkeypatch):
     assert n_listed == 3
     assert sorted(b["id"] for b in buses) == [1, 2]   # 96 skipped, scrape survived
     assert len(stops) == 4
+
+
+def test_split_upsert_counts_inserted_vs_updated():
+    # RETURNING (xmax = 0) yields one 1-tuple per affected row: True=inserted,
+    # False=updated (ON CONFLICT). Mirrors what psycopg2 fetch=True returns.
+    rows = [(True,), (True,), (False,), (True,), (False,)]
+    assert _split_upsert(rows) == (3, 2)
+    assert _split_upsert([]) == (0, 0)
+    assert _split_upsert([(True,), (True,)]) == (2, 0)   # all fresh
+    assert _split_upsert([(False,), (False,)]) == (0, 2)  # all updates
 
 
 def test_numeric_helpers():

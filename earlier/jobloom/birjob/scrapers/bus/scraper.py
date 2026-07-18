@@ -120,6 +120,13 @@ def fint(v, default=0):
             return default
 
 
+def _split_upsert(returning_rows):
+    """Split an upsert's RETURNING (xmax = 0) rows into (inserted, updated).
+    xmax = 0 on a freshly-inserted row; non-zero when ON CONFLICT updated it."""
+    new = sum(1 for row in returning_rows if row[0])
+    return new, len(returning_rows) - new
+
+
 def haversine_km(lat1, lon1, lat2, lon2):
     r = 6371.0088
     p1, p2 = math.radians(lat1), math.radians(lat2)
@@ -317,14 +324,16 @@ def _write(buses, stops, bus_stops, routes, coords, walking):
     try:
         cur.execute(open(SCHEMA_SQL).read())
 
-        execute_values(cur, """
+        r_stops = execute_values(cur, """
             INSERT INTO bus.bus_stop_details (id, code, name, latitude, longitude, is_transport_hub) VALUES %s
             ON CONFLICT (id) DO UPDATE SET
               code=EXCLUDED.code, name=EXCLUDED.name, latitude=EXCLUDED.latitude,
-              longitude=EXCLUDED.longitude, is_transport_hub=EXCLUDED.is_transport_hub""",
-            [(s["id"], s["code"], s["name"], s["latitude"], s["longitude"], s["is_transport_hub"]) for s in stops])
+              longitude=EXCLUDED.longitude, is_transport_hub=EXCLUDED.is_transport_hub
+            RETURNING (xmax = 0)""",
+            [(s["id"], s["code"], s["name"], s["latitude"], s["longitude"], s["is_transport_hub"]) for s in stops],
+            fetch=True)
 
-        execute_values(cur, """
+        r_buses = execute_values(cur, """
             INSERT INTO bus.bus_buses
               (id, carrier, number, first_point, last_point, route_length, tariff,
                tariff_str, region_id, working_zone_type_id, duration_minuts) VALUES %s
@@ -333,17 +342,21 @@ def _write(buses, stops, bus_stops, routes, coords, walking):
               last_point=EXCLUDED.last_point, route_length=EXCLUDED.route_length, tariff=EXCLUDED.tariff,
               tariff_str=EXCLUDED.tariff_str, region_id=EXCLUDED.region_id,
               working_zone_type_id=EXCLUDED.working_zone_type_id, duration_minuts=EXCLUDED.duration_minuts,
-              created_at=now()""",
+              created_at=now()
+            RETURNING (xmax = 0)""",
             [(b["id"], b["carrier"], b["number"], b["first_point"], b["last_point"], b["route_length"],
               b["tariff"], b["tariff_str"], b["region_id"], b["working_zone_type_id"], b["duration_minuts"])
-             for b in buses])
+             for b in buses],
+            fetch=True)
 
-        execute_values(cur, """
+        r_routes = execute_values(cur, """
             INSERT INTO bus.bus_routes (id, code, destination, bus_id, direction_type_id) VALUES %s
             ON CONFLICT (id) DO UPDATE SET
               code=EXCLUDED.code, destination=EXCLUDED.destination,
-              bus_id=EXCLUDED.bus_id, direction_type_id=EXCLUDED.direction_type_id""",
-            [(r["id"], r["code"], r["destination"], r["bus_id"], r["direction_type_id"]) for r in routes])
+              bus_id=EXCLUDED.bus_id, direction_type_id=EXCLUDED.direction_type_id
+            RETURNING (xmax = 0)""",
+            [(r["id"], r["code"], r["destination"], r["bus_id"], r["direction_type_id"]) for r in routes],
+            fetch=True)
 
         # Derived tables (SERIAL pk, joined by bus_id/route_id/stop_id): full
         # rebuild inside this transaction, so readers never see a half-refreshed set.
@@ -368,7 +381,13 @@ def _write(buses, stops, bus_stops, routes, coords, walking):
         cur.execute("SELECT COUNT(*) FROM bus.bus_buses")
         nb = cur.fetchone()[0]
         conn.commit()
-        return nb
+        return {
+            "buses_in_db": nb,
+            "stops": _split_upsert(r_stops),
+            "buses": _split_upsert(r_buses),
+            "routes": _split_upsert(r_routes),
+            "rebuilt": {"route_stops": len(bus_stops), "coords": len(coords), "walking": len(walking)},
+        }
     except Exception:
         conn.rollback()
         raise
@@ -407,18 +426,26 @@ def main():
             print("  walking edge sample:", walking[0])
         return
 
-    nb = _write(buses, stops, bus_stops, routes, coords, walking)
-    print(f"Committed: {nb} routes in bus.bus_buses.")
+    st = _write(buses, stops, bus_stops, routes, coords, walking)
+    (rn, ru), (bn, bu), (dn, du) = st["routes"], st["buses"], st["stops"]
+    rb = st["rebuilt"]
+    print(f"Committed: {st['buses_in_db']} routes in bus.bus_buses.")
+    print(f"  buses:      {bn} new, {bu} updated")
+    print(f"  stops:      {dn} new, {du} updated")
+    print(f"  directions: {rn} new, {ru} updated")
+    print(f"  rebuilt (delete+reinsert): {rb['route_stops']} route-stops, "
+          f"{rb['coords']} coord pts, {rb['walking']} walking edges")
 
     try:
         from email_notifier import notify_success
         notify_success("AYNA", [
-            ("Routes", len(buses)),
-            ("Stops", len(stops)),
-            ("Route-stops", len(bus_stops)),
-            ("Coord points", len(coords)),
-            ("Walking edges", len(walking)),
-            ("Routes in DB", nb),
+            ("Routes (buses)", f"{len(buses)}  →  {bn} new, {bu} updated"),
+            ("Stops", f"{len(stops)}  →  {dn} new, {du} updated"),
+            ("Route directions", f"{len(routes)}  →  {rn} new, {ru} updated"),
+            ("Route-stops (rebuilt)", rb["route_stops"]),
+            ("Coord points (rebuilt)", rb["coords"]),
+            ("Walking edges (rebuilt)", rb["walking"]),
+            ("Routes in DB", st["buses_in_db"]),
             ("Duration", f"{time.time() - t0:.0f}s"),
         ])
     except Exception as e:
