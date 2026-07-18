@@ -7,6 +7,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
+import scraper  # noqa: E402
 from scraper import (  # noqa: E402
     parse_bus_detail, compute_walking_edges, _strip_prisma_params,
     fnum, fint, haversine_km,
@@ -114,6 +115,37 @@ def test_strip_prisma_params():
     assert "connection_limit" not in out
     assert "pool_timeout" not in out
     assert "sslmode=require" in out
+
+
+def _detail(bid):
+    return {"id": bid, "number": str(bid), "carrier": "BakuBus MMC",
+            "firstPoint": "A", "lastPoint": "B", "stops": [
+                {"id": 1, "stopName": "A", "stopId": 100 + bid, "directionTypeId": 1,
+                 "stop": {"id": 100 + bid, "name": "A", "latitude": "40.40", "longitude": "49.90"}},
+                {"id": 2, "stopName": "B", "stopId": 200 + bid, "directionTypeId": 1,
+                 "stop": {"id": 200 + bid, "name": "B", "latitude": "40.41", "longitude": "49.91"}},
+            ], "routes": []}
+
+
+def test_scrape_skips_a_broken_route(monkeypatch):
+    """A single route that persistently errors (AYNA 500s id 96) must NOT abort
+    the whole scrape — the regression this run caught."""
+    from urllib.error import HTTPError
+    listed = [{"id": 1, "number": "1"}, {"id": 96, "number": "96"}, {"id": 2, "number": "2"}]
+
+    def fake_fetch(path, tries=4):
+        if path == "/bus/getBusList":
+            return listed
+        if "id=96" in path:
+            raise HTTPError(path, 500, "Internal Server Error", {}, None)
+        return _detail(1 if "id=1" in path else 2)
+
+    monkeypatch.setattr(scraper, "fetch", fake_fetch)
+    monkeypatch.setattr(scraper.time, "sleep", lambda *_a, **_k: None)
+    buses, stops, bus_stops, routes, coords, walking, n_listed = scraper.scrape()
+    assert n_listed == 3
+    assert sorted(b["id"] for b in buses) == [1, 2]   # 96 skipped, scrape survived
+    assert len(stops) == 4
 
 
 def test_numeric_helpers():

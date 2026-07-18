@@ -266,15 +266,25 @@ def scrape():
 
     buses, bus_stops, routes, coords = [], [], [], []
     stops = {}   # stop id -> stop_detail dict (deduped across routes)
+    skipped = []
     for i, b in enumerate(bus_list, 1):
         bid = b.get("id")
         if bid is None:
             continue
-        d = fetch(f"/bus/getBusById?id={bid}")
+        # Best-effort per route: AYNA persistently 500s a few ids (e.g. 96). A
+        # single broken route must NOT abort the whole scrape — skip and carry on.
+        try:
+            d = fetch(f"/bus/getBusById?id={bid}")
+        except (HTTPError, URLError, TimeoutError, ValueError) as e:
+            skipped.append(bid)
+            print(f"  ! skipped bus id={bid} (#{b.get('number')}): {e}")
+            continue
         if not d:
+            skipped.append(bid)
             continue
         bus_row, stop_details, bstops, rts, crds = parse_bus_detail(d)
         if bus_row["id"] is None:
+            skipped.append(bid)
             continue
         buses.append(bus_row)
         bus_stops.extend(bstops)
@@ -286,10 +296,12 @@ def scrape():
         if i % 25 == 0 or i == total:
             print(f"  {i}/{total} routes  ({len(stops)} stops, {len(coords)} coord pts)")
 
+    if skipped:
+        print(f"  skipped {len(skipped)} unresolvable route(s): {skipped}")
     stop_list = list(stops.values())
     print("  computing walking edges ...")
     walking = compute_walking_edges(stop_list)
-    return buses, stop_list, bus_stops, routes, coords, walking
+    return buses, stop_list, bus_stops, routes, coords, walking, total
 
 
 def _write(buses, stops, bus_stops, routes, coords, walking):
@@ -370,11 +382,20 @@ def main():
         sys.exit("DATABASE_URL not set — aborting before scraping (use --dry-run to test without a DB).")
     t0 = time.time()
     print("Scraping AYNA Baku bus data ...")
-    buses, stops, bus_stops, routes, coords, walking = scrape()
-    print(f"\nTotal: {len(buses)} routes, {len(stops)} stops, {len(bus_stops)} route-stops, "
+    buses, stops, bus_stops, routes, coords, walking, n_listed = scrape()
+    print(f"\nTotal: {len(buses)}/{n_listed} routes, {len(stops)} stops, {len(bus_stops)} route-stops, "
           f"{len(routes)} directions, {len(coords)} coord pts, {len(walking)} walking edges")
     if not buses or not stops:
         sys.exit("No bus data scraped — aborting (nothing to write).")
+    # Safety floor: refuse to overwrite the LIVE bus.* tables with a gutted dataset
+    # on a bad AYNA-API day — the derived tables are delete-all + reinsert, so a
+    # partial scrape would strip routes off the live planner/pages. Full runs only
+    # (a --limit test is exempt). Keep the existing good data instead.
+    if not DRY and LIMIT == 0:
+        floor = max(100, int(0.8 * n_listed))
+        if len(buses) < floor:
+            sys.exit(f"Only {len(buses)}/{n_listed} routes resolved (< floor {floor}) — "
+                     "refusing to overwrite the live bus.* tables with a partial scrape.")
 
     if DRY:
         print("[dry-run] no DB write.")
