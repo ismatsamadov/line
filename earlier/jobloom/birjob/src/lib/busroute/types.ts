@@ -52,6 +52,46 @@ export interface RouteCoordinate {
   sequence_order: number;
 }
 
+/** Lightweight bus row for the line-viewer picker (number + endpoints + length). */
+export interface BusLite {
+  id: number;
+  number: string;
+  first_point: string;
+  last_point: string;
+  route_length: number;
+  duration_minuts: number;
+}
+
+/** A stop along a single bus line (travel order), with coordinates for the map. */
+export interface BusLineStop {
+  id: number;
+  code: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  is_transport_hub: boolean;
+}
+
+/** Full trajectory of one bus line in one direction — metadata + ordered stops +
+ *  optional road-shaped geometry. `coordinates` may be empty; the map then draws
+ *  a stop-to-stop line instead (graceful fallback). */
+export interface BusLineDetail {
+  busId: number;
+  number: string;
+  carrier: string;
+  first_point: string;
+  last_point: string;
+  route_length: number;
+  duration_minuts: number;
+  tariff_str: string;
+  /** The direction actually returned (may differ from the request if it had no stops). */
+  direction: number;
+  /** direction_type_id values this bus has (for the Gediş/Qayıdış toggle). */
+  availableDirections: number[];
+  stops: BusLineStop[];
+  coordinates: Array<{ latitude: number; longitude: number }>;
+}
+
 /** Precomputed ≤300 m walking transfer (loaded from bus_walking_edges). */
 export interface WalkingEdge {
   from_stop_id: number;

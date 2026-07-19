@@ -22,6 +22,7 @@ export const metadata: Metadata = {
 
 const FAQ = [
   { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz (adla axtarış, xəritədən toxunma və ya «yaxınımdakı dayanacaq»). Alət Bakı avtobus şəbəkəsi üzərində ən yaxşı marşrutu hesablayır: hansı avtobuslara minmək, harada dəyişmək, piyada keçidlər, ümumi məsafə və təxmini vaxt.' },
+  { q: 'Konkret bir avtobusun bütün marşrutunu necə görə bilərəm?', a: '«Xətti göstər» rejiminə keçin və avtobus nömrəsini seçin (məsələn 88). Həmin xəttin bütün marşrutu — başlanğıc dayanacağından son dayanacağa qədər — xəritədə göstərilir, keçdiyi bütün dayanacaqların ardıcıl siyahısı, ümumi uzunluğu və təxmini vaxtı ilə birlikdə. İki istiqamətli xətlərdə «Gediş» və «Qayıdış» arasında keçə bilərsiniz.' },
   { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — vaxt təxminidir. Bu, cədvəl və ya real-vaxt (canlı) tətbiqi deyil; marşrut topologiyası planlayıcısıdır. Hər seqmentin vaxtı marşrutun ümumi müddətinin dayanacaqlar arasında bərabər bölünməsi ilə hesablanır. Yəni «hansı avtobusa minim» sualına cavab verir, dəqiq gəliş saatına yox.' },
   { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'Məlumat Ayna (Azərbaycan nəqliyyat agentliyi) açıq nəqliyyat məlumatlarına əsaslanır və dövri olaraq yenilənir. Marşrutlar şəhərdə dəyişdikcə fərqlər ola bilər; dəqiq cədvəl üçün rəsmi mənbələri yoxlayın.' },
   { q: 'Niyə bəzən piyada keçid təklif olunur?', a: 'Bəzən ən yaxşı marşrut yaxın (≤300 m) başqa bir dayanacağa qədər qısa piyada keçid + fərqli avtobusu əhatə edir. Bu, lazımsız dəyişmələri azaldır və ümumi vaxtı qısalda bilər.' },
@@ -49,7 +50,7 @@ export default async function Page() {
         <header className="mb-6">
           <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600"><Bus className="h-6 w-6" /></div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bakı Avtobus Marşrutu Planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün.</p>
+          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün. Yaxud <strong>«Xətti göstər»</strong> rejiminə keçib bir avtobus nömrəsi seçin — həmin xəttin bütün marşrutunu və dayanacaqlarını xəritədə izləyin.</p>
         </header>
 
         <Component />
@@ -61,6 +62,16 @@ export default async function Page() {
             <li><strong>Hara:</strong> təyinat dayanacağını seçin.</li>
             <li><strong>Marşrutu tap:</strong> alət ən yaxşı marşrutu — avtobuslar, dəyişmələr, piyada keçidlər və təxmini vaxt — xəritədə və addım-addım göstərir.</li>
           </ol>
+
+          <h2 className="text-xl font-bold text-gray-900">Bir avtobus xəttinin marşrutunu gör</h2>
+          <p className="text-gray-700">
+            Hansı avtobusun hara getdiyini bilmək istəyirsiniz? <strong>«Xətti göstər»</strong> rejiminə keçin və avtobus
+            nömrəsini (məsələn 1, 65, 88, H1) və ya son dayanacağın adını yazın. Alət həmin xəttin <strong>bütün
+            marşrutunu</strong> — başlanğıc dayanacağından son dayanacağa qədər — xəritədə çəkir və keçdiyi bütün
+            dayanacaqları ardıcıllıqla sadalayır. Xəttin ümumi uzunluğunu (km) və bütün marşrutun təxmini müddətini
+            (dəqiqə) də göstərir. İki istiqamətli xətlər üçün <strong>«Gediş»</strong> və <strong>«Qayıdış»</strong>
+            istiqamətləri arasında keçid edə bilərsiniz.
+          </p>
 
           <h2 className="text-xl font-bold text-gray-900">Məhdudiyyətlər</h2>
           <p className="text-gray-700">

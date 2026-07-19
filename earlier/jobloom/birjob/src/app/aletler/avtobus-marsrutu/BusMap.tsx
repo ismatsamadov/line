@@ -6,13 +6,16 @@ import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
-import type { StopDetail, RouteResult } from "@/lib/busroute/types";
+import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
 import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
 const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#ea580c"];
+// Single line-viewer trajectory — blue, distinct from the route colours + the
+// orange stop clusters so "this whole bus line" reads at a glance.
+const LINE_COLOR = "#2563eb";
 // A click on empty map snaps to the nearest stop only within this radius (km),
 // so a tap far from any stop doesn't silently grab something across town.
 const SNAP_RADIUS_KM = 0.6;
@@ -22,6 +25,8 @@ export interface BusMapProps {
   fromStop: StopDetail | null;
   toStop: StopDetail | null;
   route: RouteResult | null;
+  /** Line-viewer mode: draw one bus line's full trajectory (takes precedence over browse). */
+  line: BusLineDetail | null;
   userLocation: { lat: number; lng: number } | null;
   /** Called with the chosen stop — from a marker tap OR a snap from empty map. */
   onStopClick: (stop: StopDetail) => void;
@@ -75,7 +80,7 @@ function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
  * splits them into individually tappable, name-labelled stops. Tapping empty map
  * snaps to the nearest stop, so users never need a pixel-perfect hit.
  */
-export default function BusMap({ stops, fromStop, toStop, route, userLocation, onStopClick, isVisible }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -180,6 +185,40 @@ export default function BusMap({ stops, fromStop, toStop, route, userLocation, o
           .bindTooltip(`Dəyişmə: ${last.name}`, { direction: "top", offset: [0, -10] })
           .addTo(overlay);
       }
+    } else if (line) {
+      // Line-viewer mode: draw one bus line's full trajectory + every stop on it.
+      // Middle stops as small dots (endpoints get green/red pins below).
+      line.stops.forEach((stop, i) => {
+        if (i === 0 || i === line.stops.length - 1) return;
+        L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
+          .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
+          .addTo(overlay);
+      });
+
+      // Trajectory polyline: prefer the road-shaped geometry; fall back to a
+      // stop-to-stop line when the geometry table has no rows for this route.
+      const geo = line.coordinates.length >= 2
+        ? line.coordinates.map((c) => [c.latitude, c.longitude] as [number, number])
+        : line.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
+      if (geo.length >= 2) {
+        L.polyline(geo, {
+          color: LINE_COLOR, weight: 6, opacity: 0.85, lineCap: "round", lineJoin: "round",
+        }).addTo(overlay);
+      }
+
+      // Endpoint pins — start of the line (green) and terminus (red).
+      const first = line.stops[0];
+      const last = line.stops[line.stops.length - 1];
+      if (first) {
+        L.marker([first.latitude, first.longitude], { icon: pinIcon("#16a34a", 24) })
+          .bindTooltip(first.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
+          .addTo(overlay);
+      }
+      if (last && last.id !== first?.id) {
+        L.marker([last.latitude, last.longitude], { icon: pinIcon("#dc2626", 24) })
+          .bindTooltip(last.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
+          .addTo(overlay);
+      }
     } else {
       // Browse mode: cluster every stop. Names show on hover/tap (permanent for
       // hubs once declustered) so stops are distinguishable without a click.
@@ -216,12 +255,17 @@ export default function BusMap({ stops, fromStop, toStop, route, userLocation, o
       const coords: [number, number][] = [];
       for (const seg of route.segments) for (const s of seg.stops) coords.push([s.latitude, s.longitude]);
       if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
+    } else if (line) {
+      const coords: [number, number][] = line.coordinates.length >= 2
+        ? line.coordinates.map((c) => [c.latitude, c.longitude])
+        : line.stops.map((s) => [s.latitude, s.longitude]);
+      if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
     } else if (fromStop && toStop) {
       map.fitBounds(L.latLngBounds([[fromStop.latitude, fromStop.longitude], [toStop.latitude, toStop.longitude]]), { padding: [60, 60] });
     } else if (fromStop) {
       map.setView([fromStop.latitude, fromStop.longitude], 15);
     }
-  }, [stops, fromStop, toStop, route, userLocation]);
+  }, [stops, fromStop, toStop, route, line, userLocation]);
 
   return <div ref={containerRef} className="h-full w-full" />;
 }
