@@ -126,6 +126,15 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     overlayRef.current = overlay;
     mapRef.current = map;
     return () => {
+      // stop() BEFORE remove() — BIRJOB-G. map.remove() tears the panes down but
+      // does NOT cancel an in-flight zoom animation, so a queued
+      // _onZoomTransitionEnd can still fire once afterwards and read
+      // _leaflet_pos off the pane that no longer exists ("Cannot read properties
+      // of undefined (reading '_leaflet_pos')"). Every frame in that report is
+      // inside leaflet-src.js, none of ours — the cleanup was already correct,
+      // it just needed the animation halted first. stop() aborts any running
+      // pan/zoom so the callback never runs.
+      map.stop();
       map.remove();
       mapRef.current = null;
       clusterRef.current = null;
