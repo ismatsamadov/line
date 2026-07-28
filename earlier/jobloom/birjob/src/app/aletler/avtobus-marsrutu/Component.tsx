@@ -345,6 +345,27 @@ function LineSummary({ line }: { line: BusLineDetail }) {
 
 type PickTarget = "from" | "to";
 type PlannerMode = "route" | "line";
+type MobileTab = "panel" | "map";
+
+/**
+ * Mobile pane switcher button. Module scope on purpose — declared inside
+ * Component() it would be a new function identity on every render, so React would
+ * unmount and re-mount both buttons on every keystroke, fetch and map tap instead
+ * of updating them in place.
+ */
+function TabBtn({ id, icon, active, onSelect, children }: {
+  id: MobileTab; icon: ReactNode; active: boolean;
+  onSelect: (id: MobileTab) => void; children: ReactNode;
+}) {
+  return (
+    <button
+      onClick={() => onSelect(id)}
+      className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${active ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
+    >
+      {icon}{children}
+    </button>
+  );
+}
 
 export default function Component() {
   const [stops, setStops] = useState<StopDetail[]>([]);
@@ -358,7 +379,7 @@ export default function Component() {
   // Which field a map tap fills next ("from" first). Drives the pick-mode banner.
   const [pickTarget, setPickTarget] = useState<PickTarget>("from");
   // Mobile: one of the two panes is shown at a time (lg shows both side-by-side).
-  const [mobileTab, setMobileTab] = useState<"panel" | "map">("panel");
+  const [mobileTab, setMobileTab] = useState<MobileTab>("panel");
   // Two modes: point-to-point route finder (default) OR view one bus line's full trajectory.
   const [mode, setMode] = useState<PlannerMode>("route");
 
@@ -508,15 +529,6 @@ export default function Component() {
     }
   }, [buses.length, busesLoading]);
 
-  const TabBtn = ({ id, icon, children }: { id: "panel" | "map"; icon: ReactNode; children: ReactNode }) => (
-    <button
-      onClick={() => setMobileTab(id)}
-      className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${mobileTab === id ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
-    >
-      {icon}{children}
-    </button>
-  );
-
   return (
     <div>
       {/* Mode switch — always visible: point-to-point route finder vs. view a whole line. */}
@@ -537,8 +549,8 @@ export default function Component() {
 
       {/* Mobile pane switcher (lg shows both panes, so it's hidden there) */}
       <div className="mb-3 grid grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1 lg:hidden">
-        <TabBtn id="panel" icon={<ListOrdered className="h-4 w-4" />}>{mode === "line" ? "Xətt" : "Axtarış"}</TabBtn>
-        <TabBtn id="map" icon={<MapIcon className="h-4 w-4" />}>Xəritə</TabBtn>
+        <TabBtn id="panel" icon={<ListOrdered className="h-4 w-4" />} active={mobileTab === "panel"} onSelect={setMobileTab}>{mode === "line" ? "Xətt" : "Axtarış"}</TabBtn>
+        <TabBtn id="map" icon={<MapIcon className="h-4 w-4" />} active={mobileTab === "map"} onSelect={setMobileTab}>Xəritə</TabBtn>
       </div>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-4">

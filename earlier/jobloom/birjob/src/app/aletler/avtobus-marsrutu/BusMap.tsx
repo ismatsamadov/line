@@ -9,6 +9,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
 import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
+import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
@@ -19,6 +20,10 @@ const LINE_COLOR = "#2563eb";
 // A click on empty map snaps to the nearest stop only within this radius (km),
 // so a tap far from any stop doesn't silently grab something across town.
 const SNAP_RADIUS_KM = 0.6;
+// Backstop for a redraw deferred behind an animation: Leaflet's own timers end a
+// zoom animation within 250ms and drain the cluster queue within ~300ms, so this
+// only ever fires if an event was missed — a late redraw beats a lost one.
+const ANIM_SETTLE_MS = 700;
 
 export interface BusMapProps {
   stops: StopDetail[];
@@ -70,6 +75,146 @@ function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   });
 }
 
+interface DrawArgs {
+  map: L.Map;
+  cluster: L.MarkerClusterGroup;
+  overlay: L.LayerGroup;
+  stops: StopDetail[];
+  fromStop: StopDetail | null;
+  toStop: StopDetail | null;
+  route: RouteResult | null;
+  line: BusLineDetail | null;
+  userLocation: { lat: number; lng: number } | null;
+  onStopClick: (stop: StopDetail) => void;
+}
+
+/**
+ * Rebuild every marker/polyline for the current props and fit the view.
+ *
+ * Only ever called through the redraw effect below, which serialises it against
+ * Leaflet's animations — never call it directly from an event handler.
+ */
+function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick }: DrawArgs): void {
+  cluster.clearLayers();
+  overlay.clearLayers();
+
+  const routeStopIds = new Set<number>();
+  if (route) for (const seg of route.segments) for (const s of seg.stops) routeStopIds.add(s.id);
+
+  if (route) {
+    // Route mode: no clustering — show only the on-route stops, plainly.
+    // Pull the full StopDetail from `stops` (route segment stops are a lighter
+    // shape) so a tap can re-select a real stop.
+    for (const stop of stops) {
+      if (!routeStopIds.has(stop.id) || fromStop?.id === stop.id || toStop?.id === stop.id) continue;
+      L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
+        .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
+        .on("click", () => onStopClick(stop))
+        .addTo(overlay);
+    }
+
+    // Route polylines (stop-to-stop), distinct colour per bus, dashed walking.
+    let busColorIdx = 0;
+    for (const seg of route.segments) {
+      const isWalking = seg.busId === WALKING_EDGE_BUS_ID;
+      const color = isWalking ? "#64748b" : SEGMENT_COLORS[busColorIdx % SEGMENT_COLORS.length];
+      if (!isWalking) busColorIdx++;
+      const coords = seg.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
+      L.polyline(coords, {
+        color, weight: isWalking ? 5 : 7, opacity: isWalking ? 0.7 : 0.9,
+        lineCap: "round", lineJoin: "round", dashArray: isWalking ? "8, 12" : undefined,
+      }).addTo(overlay);
+    }
+    // Transfer markers between bus segments.
+    const busSegs = route.segments.filter((s) => s.busId !== WALKING_EDGE_BUS_ID);
+    for (let i = 0; i < busSegs.length - 1; i++) {
+      const last = busSegs[i].stops[busSegs[i].stops.length - 1];
+      L.marker([last.latitude, last.longitude], { icon: pinIcon("#f59e0b", 20) })
+        .bindTooltip(`Dəyişmə: ${last.name}`, { direction: "top", offset: [0, -10] })
+        .addTo(overlay);
+    }
+  } else if (line) {
+    // Line-viewer mode: draw one bus line's full trajectory + every stop on it.
+    // Middle stops as small dots (endpoints get green/red pins below).
+    line.stops.forEach((stop, i) => {
+      if (i === 0 || i === line.stops.length - 1) return;
+      L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
+        .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
+        .addTo(overlay);
+    });
+
+    // Trajectory polyline: prefer the road-shaped geometry; fall back to a
+    // stop-to-stop line when the geometry table has no rows for this route.
+    const geo = line.coordinates.length >= 2
+      ? line.coordinates.map((c) => [c.latitude, c.longitude] as [number, number])
+      : line.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
+    if (geo.length >= 2) {
+      L.polyline(geo, {
+        color: LINE_COLOR, weight: 6, opacity: 0.85, lineCap: "round", lineJoin: "round",
+      }).addTo(overlay);
+    }
+
+    // Endpoint pins — start of the line (green) and terminus (red).
+    const first = line.stops[0];
+    const last = line.stops[line.stops.length - 1];
+    if (first) {
+      L.marker([first.latitude, first.longitude], { icon: pinIcon("#16a34a", 24) })
+        .bindTooltip(first.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
+        .addTo(overlay);
+    }
+    if (last && last.id !== first?.id) {
+      L.marker([last.latitude, last.longitude], { icon: pinIcon("#dc2626", 24) })
+        .bindTooltip(last.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
+        .addTo(overlay);
+    }
+  } else {
+    // Browse mode: cluster every stop. Names show on hover/tap (permanent for
+    // hubs once declustered) so stops are distinguishable without a click.
+    for (const stop of stops) {
+      if (fromStop?.id === stop.id || toStop?.id === stop.id) continue;
+      const marker = L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false });
+      marker.bindTooltip(stop.name, stop.is_transport_hub
+        ? { permanent: true, direction: "top", offset: [0, -8], className: "stop-label" }
+        : { direction: "top", offset: [0, -6] });
+      marker.on("click", () => onStopClick(stop));
+      cluster.addLayer(marker);
+    }
+  }
+
+  // Selected start / destination — big always-visible pins (never clustered).
+  if (fromStop) {
+    L.marker([fromStop.latitude, fromStop.longitude], { icon: pinIcon("#16a34a", 26) })
+      .bindTooltip(`Başlanğıc: ${fromStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
+      .addTo(overlay);
+  }
+  if (toStop) {
+    L.marker([toStop.latitude, toStop.longitude], { icon: pinIcon("#dc2626", 26) })
+      .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
+      .addTo(overlay);
+  }
+  if (userLocation) {
+    L.circleMarker([userLocation.lat, userLocation.lng], {
+      radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3,
+    }).bindTooltip("Sizin yeriniz", { direction: "top" }).addTo(overlay);
+  }
+
+  // Fit the view to the most relevant features.
+  if (route) {
+    const coords: [number, number][] = [];
+    for (const seg of route.segments) for (const s of seg.stops) coords.push([s.latitude, s.longitude]);
+    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
+  } else if (line) {
+    const coords: [number, number][] = line.coordinates.length >= 2
+      ? line.coordinates.map((c) => [c.latitude, c.longitude])
+      : line.stops.map((s) => [s.latitude, s.longitude]);
+    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
+  } else if (fromStop && toStop) {
+    map.fitBounds(L.latLngBounds([[fromStop.latitude, fromStop.longitude], [toStop.latitude, toStop.longitude]]), { padding: [60, 60] });
+  } else if (fromStop) {
+    map.setView([fromStop.latitude, fromStop.longitude], 15);
+  }
+}
+
 /**
  * Raw-Leaflet map (no react-leaflet) with marker clustering. react-leaflet v4's
  * MapContainer double-initialises under StrictMode/Fast Refresh; driving Leaflet
@@ -79,6 +224,11 @@ function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
  * a handful of count bubbles instead of an unreadable carpet of dots; zooming in
  * splits them into individually tappable, name-labelled stops. Tapping empty map
  * snaps to the nearest stop, so users never need a pixel-perfect hit.
+ *
+ * Leaflet — not React — owns every node inside the container div, which is why it
+ * is rendered with no JSX children: React must never reconcile the panes. The
+ * flip side of that contract is that a React re-render must not mutate those
+ * layers while Leaflet is mid-animation either; see the redraw effect.
  */
 export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,15 +276,12 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     overlayRef.current = overlay;
     mapRef.current = map;
     return () => {
-      // stop() BEFORE remove() — BIRJOB-G. map.remove() tears the panes down but
-      // does NOT cancel an in-flight zoom animation, so a queued
-      // _onZoomTransitionEnd can still fire once afterwards and read
-      // _leaflet_pos off the pane that no longer exists ("Cannot read properties
-      // of undefined (reading '_leaflet_pos')"). Every frame in that report is
-      // inside leaflet-src.js, none of ours — the cleanup was already correct,
-      // it just needed the animation halted first. stop() aborts any running
-      // pan/zoom so the callback never runs.
-      map.stop();
+      // BIRJOB-G: cancel the zoom animation BEFORE remove(), or the 250ms
+      // transition-end fallback Leaflet armed fires against a torn-down map and
+      // reads `_leaflet_pos` off the deleted map pane. map.stop() (tried first)
+      // cannot do this — remove() already calls _stop() internally and _stop()
+      // only cancels pan/flyTo. Full reasoning in cancelZoomAnimation().
+      cancelZoomAnimation(map);
       map.remove();
       mapRef.current = null;
       clusterRef.current = null;
@@ -150,130 +297,64 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     }
   }, [isVisible]);
 
-  // Redraw markers + route whenever inputs change.
+  // Redraw markers + route whenever inputs change — but NOT while Leaflet is
+  // animating. A tap on a stop marker or a cluster starts a zoom animation and
+  // (via onStopClick) a React state update in the same tick, so this effect can
+  // otherwise land inside the animation window: clearLayers() then rips DOM out
+  // from under elements Leaflet is still transforming, and the fitBounds() at the
+  // end is silently swallowed by _tryAnimatedZoom. Deferring to the animation's
+  // own end event keeps every mutation inside a quiescent map, and is why the
+  // effect now waits instead of mutating immediately.
   useEffect(() => {
     const map = mapRef.current;
     const cluster = clusterRef.current;
     const overlay = overlayRef.current;
     if (!map || !cluster || !overlay) return;
-    cluster.clearLayers();
-    overlay.clearLayers();
 
-    const routeStopIds = new Set<number>();
-    if (route) for (const seg of route.segments) for (const s of seg.stops) routeStopIds.add(s.id);
+    let drawn = false;
+    let backstop: ReturnType<typeof setTimeout> | undefined;
 
-    if (route) {
-      // Route mode: no clustering — show only the on-route stops, plainly.
-      // Pull the full StopDetail from `stops` (route segment stops are a lighter
-      // shape) so a tap can re-select a real stop.
-      for (const stop of stops) {
-        if (!routeStopIds.has(stop.id) || fromStop?.id === stop.id || toStop?.id === stop.id) continue;
-        L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
-          .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
-          .on("click", () => clickRef.current(stop))
-          .addTo(overlay);
-      }
+    // Arrow functions (not declarations) so TS keeps the null-narrowing above;
+    // they reference each other only at call time, after all three exist.
+    const detach = () => {
+      if (backstop !== undefined) clearTimeout(backstop);
+      backstop = undefined;
+      map.off("zoomend", onSettle);
+      cluster.off("animationend", onSettle);
+    };
 
-      // Route polylines (stop-to-stop), distinct colour per bus, dashed walking.
-      let busColorIdx = 0;
-      for (const seg of route.segments) {
-        const isWalking = seg.busId === WALKING_EDGE_BUS_ID;
-        const color = isWalking ? "#64748b" : SEGMENT_COLORS[busColorIdx % SEGMENT_COLORS.length];
-        if (!isWalking) busColorIdx++;
-        const coords = seg.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
-        L.polyline(coords, {
-          color, weight: isWalking ? 5 : 7, opacity: isWalking ? 0.7 : 0.9,
-          lineCap: "round", lineJoin: "round", dashArray: isWalking ? "8, 12" : undefined,
-        }).addTo(overlay);
-      }
-      // Transfer markers between bus segments.
-      const busSegs = route.segments.filter((s) => s.busId !== WALKING_EDGE_BUS_ID);
-      for (let i = 0; i < busSegs.length - 1; i++) {
-        const last = busSegs[i].stops[busSegs[i].stops.length - 1];
-        L.marker([last.latitude, last.longitude], { icon: pinIcon("#f59e0b", 20) })
-          .bindTooltip(`Dəyişmə: ${last.name}`, { direction: "top", offset: [0, -10] })
-          .addTo(overlay);
-      }
-    } else if (line) {
-      // Line-viewer mode: draw one bus line's full trajectory + every stop on it.
-      // Middle stops as small dots (endpoints get green/red pins below).
-      line.stops.forEach((stop, i) => {
-        if (i === 0 || i === line.stops.length - 1) return;
-        L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
-          .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
-          .addTo(overlay);
+    const draw = () => {
+      if (drawn) return;
+      drawn = true;
+      detach();
+      drawFeatures({
+        map, cluster, overlay,
+        stops, fromStop, toStop, route, line, userLocation,
+        onStopClick: (stop) => clickRef.current(stop),
       });
+    };
 
-      // Trajectory polyline: prefer the road-shaped geometry; fall back to a
-      // stop-to-stop line when the geometry table has no rows for this route.
-      const geo = line.coordinates.length >= 2
-        ? line.coordinates.map((c) => [c.latitude, c.longitude] as [number, number])
-        : line.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
-      if (geo.length >= 2) {
-        L.polyline(geo, {
-          color: LINE_COLOR, weight: 6, opacity: 0.85, lineCap: "round", lineJoin: "round",
-        }).addTo(overlay);
-      }
+    // Re-check on every animation end: a map zoomend typically *starts* the
+    // cluster split/merge animation, so the first settle event is often not the
+    // last one. Both flags clear on Leaflet's own timers, so this can't hang.
+    const onSettle = () => {
+      if (!isLeafletAnimating(map, cluster)) draw();
+    };
 
-      // Endpoint pins — start of the line (green) and terminus (red).
-      const first = line.stops[0];
-      const last = line.stops[line.stops.length - 1];
-      if (first) {
-        L.marker([first.latitude, first.longitude], { icon: pinIcon("#16a34a", 24) })
-          .bindTooltip(first.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
-          .addTo(overlay);
-      }
-      if (last && last.id !== first?.id) {
-        L.marker([last.latitude, last.longitude], { icon: pinIcon("#dc2626", 24) })
-          .bindTooltip(last.name, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
-          .addTo(overlay);
-      }
+    if (isLeafletAnimating(map, cluster)) {
+      map.on("zoomend", onSettle);
+      cluster.on("animationend", onSettle);
+      backstop = setTimeout(draw, ANIM_SETTLE_MS);
     } else {
-      // Browse mode: cluster every stop. Names show on hover/tap (permanent for
-      // hubs once declustered) so stops are distinguishable without a click.
-      for (const stop of stops) {
-        if (fromStop?.id === stop.id || toStop?.id === stop.id) continue;
-        const marker = L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false });
-        marker.bindTooltip(stop.name, stop.is_transport_hub
-          ? { permanent: true, direction: "top", offset: [0, -8], className: "stop-label" }
-          : { direction: "top", offset: [0, -6] });
-        marker.on("click", () => clickRef.current(stop));
-        cluster.addLayer(marker);
-      }
+      draw();
     }
 
-    // Selected start / destination — big always-visible pins (never clustered).
-    if (fromStop) {
-      L.marker([fromStop.latitude, fromStop.longitude], { icon: pinIcon("#16a34a", 26) })
-        .bindTooltip(`Başlanğıc: ${fromStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
-        .addTo(overlay);
-    }
-    if (toStop) {
-      L.marker([toStop.latitude, toStop.longitude], { icon: pinIcon("#dc2626", 26) })
-        .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
-        .addTo(overlay);
-    }
-    if (userLocation) {
-      L.circleMarker([userLocation.lat, userLocation.lng], {
-        radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3,
-      }).bindTooltip("Sizin yeriniz", { direction: "top" }).addTo(overlay);
-    }
-
-    // Fit the view to the most relevant features.
-    if (route) {
-      const coords: [number, number][] = [];
-      for (const seg of route.segments) for (const s of seg.stops) coords.push([s.latitude, s.longitude]);
-      if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
-    } else if (line) {
-      const coords: [number, number][] = line.coordinates.length >= 2
-        ? line.coordinates.map((c) => [c.latitude, c.longitude])
-        : line.stops.map((s) => [s.latitude, s.longitude]);
-      if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
-    } else if (fromStop && toStop) {
-      map.fitBounds(L.latLngBounds([[fromStop.latitude, fromStop.longitude], [toStop.latitude, toStop.longitude]]), { padding: [60, 60] });
-    } else if (fromStop) {
-      map.setView([fromStop.latitude, fromStop.longitude], 15);
-    }
+    // Unmount / superseded props: drop the pending redraw entirely (the next
+    // effect run redraws from the newer props anyway).
+    return () => {
+      drawn = true;
+      detach();
+    };
   }, [stops, fromStop, toStop, route, line, userLocation]);
 
   return <div ref={containerRef} className="h-full w-full" />;
