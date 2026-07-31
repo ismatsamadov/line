@@ -13,7 +13,7 @@ import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation"
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
-const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#ea580c"];
+const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#dd2b0f"];
 // Single line-viewer trajectory — blue, distinct from the route colours + the
 // orange stop clusters so "this whole bus line" reads at a glance.
 const LINE_COLOR = "#2563eb";

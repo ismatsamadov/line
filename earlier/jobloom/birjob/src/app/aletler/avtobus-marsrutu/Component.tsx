@@ -13,7 +13,7 @@ const BusMap = dynamic(() => import("./BusMap"), {
   loading: () => <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400">Xəritə yüklənir…</div>,
 });
 
-const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#ea580c"];
+const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#dd2b0f"];
 
 function StopPicker({
   label, placeholder, stops, selected, onSelect, dotClass, active = false, onActivate,
