@@ -1,10 +1,10 @@
 """Shared Resend email transport for the birjob scrapers.
 
-VENDORED FILE — byte-identical copies live in scrapers/candidates/, scrapers/events/,
+VENDORED FILE — byte-identical copies live in scrapers/candidates/,
 scrapers/bus/ and monitoring/. Each builds its OWN Docker image from its OWN directory
 (independent build contexts — see each Dockerfile / workflow), so none can import a
 single repo-root module; this one canonical transport is copied verbatim into each
-instead. If you change the transport, change it once and re-copy to all four — never
+instead. If you change the transport, change it once and re-copy to all three — never
 edit a single copy alone.
 
 NOTHING CHECKS THAT ANY MORE. The byte-identity test lived in scrapers/jobs/tests/ and
