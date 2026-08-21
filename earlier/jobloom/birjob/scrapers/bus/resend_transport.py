@@ -1,12 +1,15 @@
 """Shared Resend email transport for the birjob scrapers.
 
-VENDORED FILE — a byte-identical copy lives in scrapers/jobs/, scrapers/candidates/, and
-scrapers/events/. The three scrapers each build their OWN Docker image from their
-OWN directory (independent build contexts — see each Dockerfile / workflow), so
-they cannot import a single repo-root module; this one canonical transport is
-copied verbatim into each instead. scrapers/jobs/tests/test_resend_transport_vendored.py
-asserts the three copies stay identical, so if you change the transport, change
-it once and re-copy to all three — never edit a single copy alone.
+VENDORED FILE — byte-identical copies live in scrapers/candidates/, scrapers/events/,
+scrapers/bus/ and monitoring/. Each builds its OWN Docker image from its OWN directory
+(independent build contexts — see each Dockerfile / workflow), so none can import a
+single repo-root module; this one canonical transport is copied verbatim into each
+instead. If you change the transport, change it once and re-copy to all four — never
+edit a single copy alone.
+
+NOTHING CHECKS THAT ANY MORE. The byte-identity test lived in scrapers/jobs/tests/ and
+went with the jobs fleet when that moved to softon. Re-homing it is issue-tracked; until
+then the only guard is this paragraph.
 
 Scope: this owns ONLY the part that was duplicated three ways — the
 POST-to-Resend-with-backoff loop. Each scraper keeps its own report formatting,
