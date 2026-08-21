@@ -1,5 +1,0 @@
-# Test-only deps for the bus scraper. Kept OUT of requirements.txt (and the
-# Docker image) so the runtime bundle stays lean — CI installs both. Mirrors
-# scrapers/jobs/, candidates/, events/.
--r requirements.txt
-pytest>=8,<9
