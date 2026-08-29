@@ -38,14 +38,6 @@ export interface BusStop {
   direction_type_id: number;
 }
 
-export interface RouteRecord {
-  id: number;
-  code: string;
-  destination: string;
-  bus_id: number;
-  direction_type_id: number;
-}
-
 export interface RouteCoordinate {
   latitude: number;
   longitude: number;

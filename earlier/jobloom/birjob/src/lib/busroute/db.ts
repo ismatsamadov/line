@@ -93,30 +93,6 @@ export async function getDataLastUpdated(): Promise<string | null> {
   return agg._max.created_at ? agg._max.created_at.toISOString() : null;
 }
 
-/** Stop search for the picker (matches name or code, case-insensitive). */
-export async function searchStops(q: string, limit = 20) {
-  const term = q.trim();
-  if (!term) return [];
-  const rows = await prisma.bus_stop_details.findMany({
-    where: {
-      OR: [
-        { name: { contains: term, mode: "insensitive" } },
-        { code: { contains: term, mode: "insensitive" } },
-      ],
-    },
-    orderBy: { name: "asc" },
-    take: limit,
-    select: { id: true, code: true, name: true, latitude: true, longitude: true },
-  });
-  return rows.map((r) => ({
-    id: r.id,
-    code: r.code ?? "",
-    name: r.name,
-    latitude: r.latitude,
-    longitude: r.longitude,
-  }));
-}
-
 /** Lightweight list for nearest-stop (GPS) lookups. */
 export async function listStopsForGeo() {
   const rows = await prisma.bus_stop_details.findMany({
@@ -130,12 +106,6 @@ export async function listStopsForGeo() {
     longitude: r.longitude,
     is_transport_hub: r.is_transport_hub,
   }));
-}
-
-export async function getStopById(id: number) {
-  const r = await prisma.bus_stop_details.findUnique({ where: { id } });
-  if (!r) return null;
-  return { id: r.id, code: r.code ?? "", name: r.name, latitude: r.latitude, longitude: r.longitude };
 }
 
 /** Lightweight list of buses (number + endpoints + length) for the line-viewer

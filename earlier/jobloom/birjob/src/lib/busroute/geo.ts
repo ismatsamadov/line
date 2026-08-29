@@ -24,23 +24,5 @@ export function haversine(
   return EARTH_RADIUS_KM * c;
 }
 
-export function findNearbyStops(
-  lat: number,
-  lon: number,
-  stops: Array<{ id: number; latitude: number; longitude: number; name: string; code: string; is_transport_hub: boolean }>,
-  radiusKm: number = 1.0,
-  limit: number = 20
-): Array<{ id: number; latitude: number; longitude: number; name: string; code: string; is_transport_hub: boolean; distance: number }> {
-  const withDistance = stops
-    .map((stop) => ({
-      ...stop,
-      distance: haversine(lat, lon, stop.latitude, stop.longitude),
-    }))
-    .filter((stop) => stop.distance <= radiusKm);
-
-  withDistance.sort((a, b) => a.distance - b.distance);
-  return withDistance.slice(0, limit);
-}
-
 export const WALK_RADIUS_KM = 0.3; // 300 meters
 export const WALK_SPEED_KMH = 4.5; // average walking speed
