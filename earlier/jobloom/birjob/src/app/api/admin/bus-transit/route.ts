@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { requireAdmin } from '@/lib/auth';
+import { isEventLoggingEnabled } from '@/lib/eventLogging';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -135,9 +136,25 @@ export async function GET(request: NextRequest) {
   const windowDays = raw === 7 || raw === 90 ? raw : 30;
 
   try {
-    return NextResponse.json(await _fetch(windowDays));
+    // #599 — THIS PANEL IS HALF-ALIVE, so unlike behavior/geo-device/attribution
+    // it is NOT short-circuited: its cumulative counters are still being
+    // written and are worth showing. Only the WINDOWED series below comes from
+    // website.web_event_logs, which has had no writer since 2026-08-29.
+    //
+    // The split is the one this route's own header already draws. /api/track
+    // fires a logEvent() that is swallowed, but its after() block was never
+    // gated and keeps incrementing job_state.view_count/click_count,
+    // blog_post.view_count and ad_banner.click_count — so the lifetime numbers
+    // grew while the timestamped rows stopped. Half of every chart here updates
+    // and half is frozen, with nothing on screen saying which, which is the most
+    // misleading shape of the three (incidents §1.5).
+    //
+    // So: report the flag and let the panel caption the dead half. Deliberately
+    // NOT zeroing or hiding the live half — that would throw away real data to
+    // tidy up a label.
+    return NextResponse.json({ ...(await _fetch(windowDays)), eventLoggingEnabled: isEventLoggingEnabled() });
   } catch (error) {
     console.error('Admin bus-transit error:', error);
-    return NextResponse.json(EMPTY(windowDays));
+    return NextResponse.json({ ...EMPTY(windowDays), eventLoggingEnabled: isEventLoggingEnabled() });
   }
 }

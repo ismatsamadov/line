@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { RefreshCw, Bus } from 'lucide-react';
+import FrozenSeriesNote from './FrozenSeriesNote';
 import { adminFetch } from '@/lib/adminFetch';
 
 /**
@@ -15,6 +16,11 @@ interface DailyRow { day: string; views: number }
 interface DimRow { key: string; visitors: number }
 interface CarrierRow { carrier: string; lines: number }
 interface BusTransit {
+  /** #599: false when in-house event logging is off. The CUMULATIVE figures
+   *  on this panel are still written and stay accurate; only the windowed
+   *  series is frozen. Absent on an older cached response, so callers test
+   *  `=== false`. */
+  eventLoggingEnabled?: boolean;
   windowDays: number;
   dataset: { lines: number; stops: number; hubs: number; carriers: number; avgLength: number; avgDuration: number; coords: number; routesGeo: number; walkEdges: number };
   carriers: CarrierRow[];
@@ -59,6 +65,7 @@ export default function BusTransitPanel() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2"><Bus className="h-4 w-4 text-orange-400" /> Avtobus Alət</h2>
+          {d?.eventLoggingEnabled === false && <FrozenSeriesNote what="The planner-usage trend" />}
           <p className="text-xs text-gray-500 mt-0.5">Transit dataset composition + route-planner page usage.</p>
         </div>
         <div className="flex items-center gap-3">
