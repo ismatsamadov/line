@@ -65,7 +65,6 @@ export default function BusTransitPanel() {
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h2 className="text-lg font-bold text-gray-100 flex items-center gap-2"><Bus className="h-4 w-4 text-orange-400" /> Avtobus Alət</h2>
-          {d?.eventLoggingEnabled === false && <FrozenSeriesNote what="The planner-usage trend" />}
           <p className="text-xs text-gray-500 mt-0.5">Transit dataset composition + route-planner page usage.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -99,8 +98,25 @@ export default function BusTransitPanel() {
             </div>
           </section>
 
+          {/* #599 — the note said "The planner-usage trend" and sat in the header,
+              where it disclaimed the dataset composition above (bus.*, a periodic
+              Ayna import, entirely live) and did not reach the two tiles it should
+              have. Planner views and Visitors are the SAME query as the trend:
+              /api/admin/bus-transit counts them from website.web_event_logs
+              (event='page_view', path='/aletler/avtobus-marsrutu'), which has had no
+              writer since the 2026-08-29 event-logging retirement. "Lifetime views"
+              beside them is website.page_views, still upserted by /api/views, and
+              stays a live headline.
+              Emphasis is conditional for the same reason the note exists: a frozen 0
+              must not be painted like a measurement. Flip EVENT_LOGGING_ENABLED back
+              to true in src/lib/eventLogging.ts and both the number and its styling
+              are correct again with no other change. */}
+          {d.eventLoggingEnabled === false && (
+            <FrozenSeriesNote what={`The “Planner views (${windowDays}d)” and “Visitors” tiles below, and the views/day trend under them`} />
+          )}
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            <Tile label={`Planner views (${windowDays}d)`} value={n(d.views.window)} emphasis />
+            <Tile label={`Planner views (${windowDays}d)`} value={n(d.views.window)} emphasis={d.eventLoggingEnabled !== false} />
             <Tile label="Visitors" value={n(d.views.visitors)} />
             <Tile label="Lifetime views" value={n(d.views.lifetime)} sub="all-time" />
             <Tile label="Walking edges" value={n(d.dataset.walkEdges)} sub="≤300m transfers" />
@@ -110,8 +126,21 @@ export default function BusTransitPanel() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <DimList title="Carriers" rows={d.carriers.map(c => ({ key: c.carrier, visitors: c.lines }))} unit="lines" />
-            <DimList title="Planner — by country" rows={d.byCountry} unit="visitors" />
-            <DimList title="Planner — by device" rows={d.byDevice} unit="visitors" />
+            {/* The two planner breakdowns are dropped while logging is off rather
+                than captioned. Both are GROUP BY over the same dead
+                website.web_event_logs rows, so they rendered "No data." — which
+                reads as a measured result (incidents §1.5) when it is the absence
+                of a writer. A country or device split of zero rows has no honest
+                reading: there is no number to qualify, so there is nothing a note
+                could rescue. Carriers is bus.bus_buses and is live, so it stays.
+                `!== false`, not truthiness: the field is absent on an older cached
+                response and must not blank a live breakdown. */}
+            {d.eventLoggingEnabled !== false && (
+              <>
+                <DimList title="Planner — by country" rows={d.byCountry} unit="visitors" />
+                <DimList title="Planner — by device" rows={d.byDevice} unit="visitors" />
+              </>
+            )}
           </div>
 
           <p className="text-[11px] text-gray-600 italic">
