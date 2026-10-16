@@ -65,7 +65,7 @@ export async function queryWalkingEdges(): Promise<WalkingEdge[]> {
   }));
 }
 
-export async function queryRouteCoordinates(routeId: number): Promise<RouteCoordinate[]> {
+async function queryRouteCoordinates(routeId: number): Promise<RouteCoordinate[]> {
   const rows = await prisma.bus_route_coordinates.findMany({
     where: { route_id: routeId },
     orderBy: { sequence_order: "asc" },
@@ -77,7 +77,7 @@ export async function queryRouteCoordinates(routeId: number): Promise<RouteCoord
   }));
 }
 
-export async function queryRoutesByBusAndDirection(
+async function queryRoutesByBusAndDirection(
   busId: number,
   directionTypeId: number
 ): Promise<number | null> {
