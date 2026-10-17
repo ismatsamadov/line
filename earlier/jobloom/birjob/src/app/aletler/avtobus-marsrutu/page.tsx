@@ -47,7 +47,7 @@ export default async function Page() {
           <span className="text-gray-700">{tool.label}</span>
         </nav>
 
-        <header className="mb-6">
+        <header className="bj-tool-heading mb-6">
           <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600"><Bus className="h-6 w-6" /></div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bakı Avtobus Marşrutu Planlayıcısı</h1>
           <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün. Yaxud <strong>«Xətti göstər»</strong> rejiminə keçib bir avtobus nömrəsi seçin — həmin xəttin bütün marşrutunu və dayanacaqlarını xəritədə izləyin.</p>

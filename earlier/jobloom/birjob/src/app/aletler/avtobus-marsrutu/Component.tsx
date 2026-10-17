@@ -83,6 +83,7 @@ function StopPicker({
             inputMode="search"
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => { setOpen(true); onActivate?.(); }}
+            aria-label={placeholder}
             placeholder={placeholder}
             className={`w-full rounded-xl border bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-orange-400 focus:ring-orange-400 ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
           />
@@ -263,6 +264,7 @@ function BusPicker({
             inputMode="search"
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
+            aria-label="Avtobus nömrəsi və ya son dayanacaq"
             placeholder={loading ? "Avtobuslar yüklənir…" : "Nömrə və ya son dayanacaq axtar…"}
             disabled={loading}
             className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-blue-400 focus:ring-blue-400 disabled:opacity-60"
