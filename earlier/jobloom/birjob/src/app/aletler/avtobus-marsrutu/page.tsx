@@ -9,23 +9,25 @@ import { buildBreadcrumb } from '@/lib/ld/breadcrumb';
 import { buildWebApplication } from '@/lib/ld/webApplication';
 import { buildFaqPage } from '@/lib/ld/faqPage';
 import Component from './Component';
+import { WALK_RADIUS_KM } from '@/lib/busroute/geo';
 
 const tool = getToolBySlug('avtobus-marsrutu')!;
 const PAGE_URL = `https://www.birjob.com/aletler/${tool.slug}`;
+const WALK_METERS = Math.round(WALK_RADIUS_KM * 1000);
 
 export const metadata: Metadata = {
-  title: { absolute: 'Bakı Avtobus Marşrutu — Ən Yaxşı Marşrutu Tap (Pulsuz) | BirJob' },
+  title: { absolute: 'Bakı Avtobus Marşrutu — Daha Az Dəyişmə ilə (Pulsuz) | BirJob' },
   description: tool.description, keywords: tool.keywords,
   alternates: { canonical: PAGE_URL },
   openGraph: { images: ['/opengraph-image'], title: tool.label, description: tool.description, url: PAGE_URL, type: 'website' },
 };
 
 const FAQ = [
-  { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz (adla axtarış, xəritədən toxunma və ya «yaxınımdakı dayanacaq»). Alət Bakı avtobus şəbəkəsi üzərində ən yaxşı marşrutu hesablayır: hansı avtobuslara minmək, harada dəyişmək, piyada keçidlər, ümumi məsafə və təxmini vaxt.' },
+  { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz. Alət əvvəlcə ən az avtobusa minmə tələb edən marşrutu seçir. Eyni sayda avtobus olan variantlar arasında təxmini hərəkət vaxtı, sonra piyada məsafəsi müqayisə olunur. Bir avtobusla getmək mümkündürsə, daha sürətli olsa belə iki avtobuslu variant onu əvəz etmir.' },
   { q: 'Konkret bir avtobusun bütün marşrutunu necə görə bilərəm?', a: '«Xətti göstər» rejiminə keçin və avtobus nömrəsini seçin (məsələn 88). Həmin xəttin bütün marşrutu — başlanğıc dayanacağından son dayanacağa qədər — xəritədə göstərilir, keçdiyi bütün dayanacaqların ardıcıl siyahısı, ümumi uzunluğu və təxmini vaxtı ilə birlikdə. İki istiqamətli xətlərdə «Gediş» və «Qayıdış» arasında keçə bilərsiniz.' },
-  { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — vaxt təxminidir. Bu, cədvəl və ya real-vaxt (canlı) tətbiqi deyil; marşrut topologiyası planlayıcısıdır. Hər seqmentin vaxtı marşrutun ümumi müddətinin dayanacaqlar arasında bərabər bölünməsi ilə hesablanır. Yəni «hansı avtobusa minim» sualına cavab verir, dəqiq gəliş saatına yox.' },
-  { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'Məlumat Ayna (Azərbaycan nəqliyyat agentliyi) açıq nəqliyyat məlumatlarına əsaslanır və dövri olaraq yenilənir. Marşrutlar şəhərdə dəyişdikcə fərqlər ola bilər; dəqiq cədvəl üçün rəsmi mənbələri yoxlayın.' },
-  { q: 'Niyə bəzən piyada keçid təklif olunur?', a: 'Bəzən ən yaxşı marşrut yaxın (≤300 m) başqa bir dayanacağa qədər qısa piyada keçid + fərqli avtobusu əhatə edir. Bu, lazımsız dəyişmələri azaldır və ümumi vaxtı qısalda bilər.' },
+  { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — bu, yalnız təxmini hərəkət vaxtıdır. Avtobusun gözlənilməsi, cədvəl və tıxaclar nəzərə alınmır. Avtobus xəttinin ümumi müddəti dayanacaqlar arasındakı hissələrə bərabər bölünür; piyada vaxtı isə təxmini məsafədən hesablanır. Bu alət dəqiq gəliş saatı vermir.' },
+  { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'AYNA açıq nəqliyyat məlumatlarından götürülmüş istinad bazasıdır və avtomatik yenilənmir. Şəhərdə avtobus xətləri dəyişmiş ola bilər. Səfərdən əvvəl cari marşrutu rəsmi mənbələrdən yoxlayın.' },
+  { q: 'Niyə bəzən piyada keçid təklif olunur?', a: `Təyinat dayanacağı düz xətt üzrə ${WALK_METERS} metrədək məsafədədirsə, qısa piyada variantı göstərilir. Digər səfərlərdə başlanğıcda, sonda və avtobuslar arasında ən çox ${WALK_METERS} metrlik piyada keçid mümkündür. Ardıcıl piyada keçidlər birləşdirilmir. Məsafə düz xətt üzrə təxmindir; real piyada yolunu və keçid imkanını xəritədə yoxlayın.` },
 ];
 
 export default async function Page() {
@@ -60,7 +62,7 @@ export default async function Page() {
           <ol className="text-gray-700">
             <li><strong>Haradan:</strong> başlanğıc dayanacağını adla axtarın, xəritədən toxunun, və ya «yaxınımdakı dayanacaqdan başla» düyməsi ilə avtomatik seçin.</li>
             <li><strong>Hara:</strong> təyinat dayanacağını seçin.</li>
-            <li><strong>Marşrutu tap:</strong> alət ən yaxşı marşrutu — avtobuslar, dəyişmələr, piyada keçidlər və təxmini vaxt — xəritədə və addım-addım göstərir.</li>
+            <li><strong>Marşrutu tap:</strong> alət ən az avtobusa minmə tələb edən marşrutu, keçidləri və təxmini hərəkət vaxtını addım-addım göstərir. {WALK_METERS} metrədək qısa səfərlər üçün piyada variantı göstərilə bilər.</li>
           </ol>
 
           <h2 className="text-xl font-bold text-gray-900">Bir avtobus xəttinin marşrutunu gör</h2>
@@ -76,7 +78,8 @@ export default async function Page() {
           <h2 className="text-xl font-bold text-gray-900">Məhdudiyyətlər</h2>
           <p className="text-gray-700">
             Bu alət marşrut <strong>topologiyasını</strong> (hansı avtobuslar, hansı ardıcıllıq) planlayır — <strong>cədvəl və ya real-vaxt</strong> gəliş saatlarını yox.
-            Vaxtlar təxminidir. Məlumat Ayna açıq nəqliyyat məlumatlarına əsaslanır və dövri yenilənir; şəhərdə marşrut dəyişiklikləri ola bilər.
+            Vaxt yalnız təxmini hərəkət müddətidir; gözləmə, cədvəl və tıxac daxil deyil. Məsafələr düz xətt üzrə hesablanır.
+            AYNA məlumatlarından götürülmüş istinad bazası avtomatik yenilənmir; cari marşrutu və piyada keçid imkanını səfərdən əvvəl yoxlayın.
             İşə getmək üçün maaş və yol xərclərini hesablamaq istəsəniz, <Link href="/aletler/maas-kalkulyatoru" className="text-orange-600 hover:underline">maaş kalkulyatorumuza</Link> baxın.
           </p>
 

@@ -84,7 +84,7 @@ export interface BusLineDetail {
   coordinates: Array<{ latitude: number; longitude: number }>;
 }
 
-/** Precomputed ≤300 m walking transfer (loaded from bus_walking_edges). */
+/** A straight-line walking connection of at most 300 m. */
 export interface WalkingEdge {
   from_stop_id: number;
   to_stop_id: number;
@@ -92,7 +92,7 @@ export interface WalkingEdge {
   time_min: number;
 }
 
-export interface GraphEdge {
+interface EdgeInfo {
   toStopId: number;
   busId: number;
   busNumber: string;
@@ -102,9 +102,16 @@ export interface GraphEdge {
   toStopName: string;
 }
 
+export type GraphEdge = EdgeInfo & (
+  | { kind: "bus"; rideId: string; direction: number; fromSequence: number; toSequence: number; headsign: string }
+  | { kind: "walk" }
+);
+
 export interface RouteSegment {
   busId: number;
   busNumber: string;
+  direction: number | null;
+  headsign: string | null;
   stops: Array<{
     id: number;
     name: string;
@@ -122,8 +129,6 @@ export interface RouteResult {
   totalTransfers: number;
   totalStops: number;
 }
-
-export type OptimizationMode = "shortest" | "fastest" | "balanced";
 
 // Special bus ID indicating a walking transfer (not a bus ride)
 export const WALKING_EDGE_BUS_ID = -1;

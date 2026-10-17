@@ -1,13 +1,11 @@
 /**
  * Postgres/Prisma data-access layer for the bus route planner.
  *
- * Replaces the source project's better-sqlite3 layer. Tables live in the `bus`
- * schema (see prisma/schema.prisma + prisma/migrations/add_bus_route_tables.sql),
- * loaded once into BirJob's Postgres by scripts/bus/import.ts. Functions keep
- * the original `async` query-* signatures so the ported engine is unchanged.
+ * Tables in the `bus` schema are a static reference snapshot. The crawler and
+ * import script were retired; these functions only read the retained data.
  */
 import { prisma } from "@/lib/prisma";
-import type { StopDetail, Bus, BusStop, RouteCoordinate, WalkingEdge, BusLite, BusLineDetail, BusLineStop } from "./types";
+import type { StopDetail, Bus, BusStop, RouteCoordinate, BusLite, BusLineDetail, BusLineStop } from "./types";
 
 export async function queryStopDetails(): Promise<StopDetail[]> {
   const rows = await prisma.bus_stop_details.findMany({ orderBy: { id: "asc" } });
@@ -52,16 +50,6 @@ export async function queryBusStops(): Promise<BusStop[]> {
     total_distance: r.total_distance,
     intermediate_distance: r.intermediate_distance,
     direction_type_id: r.direction_type_id,
-  }));
-}
-
-export async function queryWalkingEdges(): Promise<WalkingEdge[]> {
-  const rows = await prisma.bus_walking_edges.findMany();
-  return rows.map((r) => ({
-    from_stop_id: r.from_stop_id,
-    to_stop_id: r.to_stop_id,
-    distance_km: r.distance_km,
-    time_min: r.time_min,
   }));
 }
 
@@ -165,7 +153,7 @@ export async function queryBusLine(
   const stopRows = await prisma.bus_bus_stops.findMany({
     where: { bus_id: busId, direction_type_id: direction },
     select: { stop_id: true, total_distance: true },
-    orderBy: { total_distance: "asc" },
+    orderBy: [{ total_distance: "asc" }, { bus_stop_id: "asc" }, { id: "asc" }],
   });
   const stopIds = [...new Set(stopRows.map((r) => r.stop_id))];
   const details = await prisma.bus_stop_details.findMany({

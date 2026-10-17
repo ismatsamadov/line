@@ -1,0 +1,86 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { bus, busStop, stop } from './fixtures';
+
+const db = vi.hoisted(() => ({ queryStopDetails: vi.fn(), queryBuses: vi.fn(), queryBusStops: vi.fn(), queryWalkingEdges: vi.fn() }));
+vi.mock('../db', () => db);
+
+beforeEach(() => {
+  vi.resetModules();
+  vi.clearAllMocks();
+  db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(3)]);
+  db.queryBuses.mockResolvedValue([bus(10)]);
+  db.queryBusStops.mockResolvedValue([busStop(10, 1, 0), busStop(10, 2, 1), busStop(10, 3, 2)]);
+});
+afterEach(() => vi.restoreAllMocks());
+
+describe('transit graph', () => {
+  it('uses cumulative distance for travel order and keeps direction/position identity', async () => {
+    db.queryBusStops.mockResolvedValue([
+      { ...busStop(10, 1, 30), total_distance: 0 }, { ...busStop(10, 2, 10), total_distance: 1 },
+      { ...busStop(10, 3, 20), total_distance: 2 }, busStop(10, 3, 0, 2), busStop(10, 2, 1, 2),
+    ]);
+    const { getGraph } = await import('../graph');
+    const g = await getGraph();
+    expect(g.getEdges(1)).toContainEqual(expect.objectContaining({ toStopId: 2, kind: 'bus', rideId: '10:1', direction: 1, fromSequence: 0, toSequence: 1, headsign: 'Stop 3' }));
+    expect(g.getEdges(2)).toContainEqual(expect.objectContaining({ toStopId: 3, fromSequence: 1, toSequence: 2 }));
+    expect(g.getEdges(3)).toContainEqual(expect.objectContaining({ toStopId: 2, direction: 2, rideId: '10:2' }));
+  });
+
+  it('keeps repeated stops instead of turning a loop into a shortcut', async () => {
+    db.queryBusStops.mockResolvedValue([busStop(10, 1, 0), busStop(10, 2, 1), busStop(10, 1, 2), busStop(10, 3, 3)]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getEdges(1).flatMap(e => e.kind === 'bus' ? [e.fromSequence] : [])).toEqual([0, 2]);
+  });
+
+  it('does not bridge a leg with a missing stop', async () => {
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(3)]);
+    db.queryBuses.mockResolvedValue([{ ...bus(10), duration_minuts: -1 }]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getEdges(1)).toEqual([]);
+    expect(g.getEdges(3)).toEqual([]);
+  });
+
+  it('keeps invalid coordinates out and uses positive fallback movement times', async () => {
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(3, NaN)]);
+    db.queryBuses.mockResolvedValue([{ ...bus(10), duration_minuts: -1 }]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getStopInfo(3)).toBeUndefined();
+    expect(g.getEdges(1)[0].time).toBeGreaterThan(0);
+    expect(Number.isFinite(g.getEdges(1)[0].time)).toBe(true);
+    expect(g.getEdges(2)).toEqual([]);
+  });
+
+  it('rebuilds walking connectivity without reading the legacy precomputed table', async () => {
+    db.queryStopDetails.mockResolvedValue([stop(1, 40), stop(2, 40.001)]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getEdges(1)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: 2 }));
+    expect(g.getEdges(2)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: 1 }));
+    expect(db.queryWalkingEdges).not.toHaveBeenCalled();
+  });
+
+  it('shares an in-flight build and never resolves a partial graph', async () => {
+    let release!: (stops: ReturnType<typeof stop>[]) => void;
+    db.queryStopDetails.mockImplementationOnce(() => new Promise(resolve => { release = resolve; }));
+    const { getGraph } = await import('../graph');
+    const first = getGraph(), second = getGraph();
+    let resolved = false;
+    void second.then(() => { resolved = true; });
+    await Promise.resolve();
+    expect(resolved).toBe(false);
+    expect(db.queryStopDetails).toHaveBeenCalledTimes(1);
+    release([stop(1), stop(2), stop(3)]);
+    const [a, b] = await Promise.all([first, second]);
+    expect(a).toBe(b);
+    expect(a.isBuilt()).toBe(true);
+  });
+
+  it('retries with a fresh graph after a database failure', async () => {
+    db.queryStopDetails.mockRejectedValueOnce(new Error('temporary outage'));
+    const { getGraph } = await import('../graph');
+    await expect(getGraph()).rejects.toThrow('temporary outage');
+    const g = await getGraph();
+    expect(g.isBuilt()).toBe(true);
+    expect(g.getEdges(1)).toHaveLength(1);
+    expect(db.queryStopDetails).toHaveBeenCalledTimes(2);
+  });
+});

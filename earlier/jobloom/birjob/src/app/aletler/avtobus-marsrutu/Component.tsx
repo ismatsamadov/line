@@ -2,18 +2,16 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Bus, ArrowDownUp, LocateFixed, Search, X, Footprints, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin } from "lucide-react";
+import { Bus, ArrowDownUp, LocateFixed, Search, X, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin } from "lucide-react";
 import SupportCTA from "@/components/SupportCTA";
 import type { StopDetail, RouteResult, BusLite, BusLineDetail } from "@/lib/busroute/types";
-import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
+import JourneyView from "./JourneyView";
 import { haversine } from "@/lib/busroute/geo";
 
 const BusMap = dynamic(() => import("./BusMap"), {
   ssr: false,
   loading: () => <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400">Xəritə yüklənir…</div>,
 });
-
-const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#dd2b0f"];
 
 function StopPicker({
   label, placeholder, stops, selected, onSelect, dotClass, active = false, onActivate,
@@ -115,79 +113,6 @@ function StopPicker({
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-function JourneyView({ route }: { route: RouteResult }) {
-  const first = route.segments[0]?.stops[0];
-  const lastSeg = route.segments[route.segments.length - 1];
-  const last = lastSeg?.stops[lastSeg.stops.length - 1];
-  const busCount = route.segments.filter((s) => s.busId !== WALKING_EDGE_BUS_ID).length;
-  let busColorIdx = 0;
-
-  return (
-    <div className="rounded-2xl border border-gray-200 bg-white p-4">
-      <div className="mb-4 grid grid-cols-3 gap-2 text-center">
-        <div className="rounded-xl bg-gray-50 py-2">
-          <div className="text-lg font-extrabold text-gray-900">{route.totalDistance.toFixed(1)}</div>
-          <div className="text-xs text-gray-400">km</div>
-        </div>
-        <div className="rounded-xl bg-gray-50 py-2">
-          <div className="text-lg font-extrabold text-gray-900">{Math.round(route.totalTime)}</div>
-          <div className="text-xs text-gray-400">dəq (təxmini)</div>
-        </div>
-        <div className="rounded-xl bg-gray-50 py-2">
-          <div className="text-lg font-extrabold text-gray-900">{busCount === 1 ? "Birbaşa" : `${busCount} avtobus`}</div>
-          <div className="text-xs text-gray-400">{route.totalTransfers === 0 ? "dəyişmə yox" : `${route.totalTransfers} dəyişmə`}</div>
-        </div>
-      </div>
-
-      <ol className="space-y-2">
-        <li className="flex items-center gap-2 text-sm">
-          <span className="inline-block h-3 w-3 shrink-0 rounded-full bg-green-600" />
-          <span className="font-medium text-gray-900">{first?.name}</span>
-          <span className="text-xs text-gray-400">— Başlanğıc</span>
-        </li>
-
-        {route.segments.map((seg, idx) => {
-          const isWalking = seg.busId === WALKING_EDGE_BUS_ID;
-          const color = isWalking ? "#64748b" : SEGMENT_COLORS[busColorIdx % SEGMENT_COLORS.length];
-          if (!isWalking) busColorIdx++;
-          const meters = Math.round(seg.distance * 1000);
-          const nextIsBus = idx < route.segments.length - 1 && route.segments[idx + 1].busId !== WALKING_EDGE_BUS_ID;
-          return (
-            <li key={idx}>
-              <div className="ml-1.5 flex items-start gap-3 border-l-2 py-1 pl-4" style={{ borderColor: color }}>
-                {isWalking ? (
-                  <span className="flex items-center gap-2 text-sm text-gray-600">
-                    <Footprints className="h-4 w-4" />
-                    Piyada {Math.round(seg.time)} dəq ({meters} m)
-                  </span>
-                ) : (
-                  <span className="text-sm">
-                    <span className="font-bold" style={{ color }}>Avtobus {seg.busNumber}</span>
-                    <span className="ml-1 text-gray-500">· {seg.stops.length} dayanacaq · {seg.distance.toFixed(1)} km · {Math.round(seg.time)} dəq</span>
-                  </span>
-                )}
-              </div>
-              {!isWalking && nextIsBus && (
-                <div className="flex items-center gap-2 py-1 text-sm">
-                  <span className="inline-block h-3 w-3 shrink-0 rounded-full bg-amber-500" />
-                  <span className="text-gray-700">{seg.stops[seg.stops.length - 1]?.name}</span>
-                  <span className="text-xs text-amber-600">— {route.segments[idx + 1]?.busNumber} avtobusuna dəyiş</span>
-                </div>
-              )}
-            </li>
-          );
-        })}
-
-        <li className="flex items-center gap-2 text-sm">
-          <span className="inline-block h-3 w-3 shrink-0 rounded-full bg-red-600" />
-          <span className="font-medium text-gray-900">{last?.name}</span>
-          <span className="text-xs text-gray-400">— Təyinat</span>
-        </li>
-      </ol>
     </div>
   );
 }
@@ -376,6 +301,7 @@ export default function Component() {
   const [route, setRoute] = useState<RouteResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const routeReqRef = useRef(0);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   // Which field a map tap fills next ("from" first). Drives the pick-mode banner.
@@ -396,6 +322,11 @@ export default function Component() {
   // latest (so clearing/switching the bus mid-load can't resurrect a stale line).
   const lineReqRef = useRef(0);
 
+  const clearRoute = useCallback(() => {
+    routeReqRef.current++;
+    setRoute(null); setLoading(false); setError(null);
+  }, []);
+
   useEffect(() => {
     fetch("/api/avtobus/stops")
       .then((r) => r.json())
@@ -405,6 +336,7 @@ export default function Component() {
 
   const handleFind = useCallback(async () => {
     if (!fromStop || !toStop) return;
+    const requestId = ++routeReqRef.current;
     setLoading(true); setError(null); setRoute(null);
     try {
       const res = await fetch("/api/avtobus/find", {
@@ -413,24 +345,25 @@ export default function Component() {
         body: JSON.stringify({ fromStopId: fromStop.id, toStopId: toStop.id }),
       });
       const data = await res.json();
+      if (requestId !== routeReqRef.current) return;
       if (!res.ok) { setError(data.error || "Marşrut tapılmadı"); return; }
       setRoute(data.route);
       setMobileTab("panel"); // show the step-by-step result on mobile
     } catch {
-      setError("Şəbəkə xətası. Yenidən cəhd edin.");
+      if (requestId === routeReqRef.current) setError("Şəbəkə xətası. Yenidən cəhd edin.");
     } finally {
-      setLoading(false);
+      if (requestId === routeReqRef.current) setLoading(false);
     }
   }, [fromStop, toStop]);
 
   // Set a stop from the search dropdown, then advance the active target so the
   // next map tap / search naturally fills the OTHER field.
   const selectFrom = useCallback((s: StopDetail | null) => {
-    setFromStop(s); setRoute(null); if (s) setPickTarget("to");
-  }, []);
+    clearRoute(); setFromStop(s); if (s) setPickTarget("to");
+  }, [clearRoute]);
   const selectTo = useCallback((s: StopDetail | null) => {
-    setToStop(s); setRoute(null); if (s) setPickTarget("from");
-  }, []);
+    clearRoute(); setToStop(s); if (s) setPickTarget("from");
+  }, [clearRoute]);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation) { setError("Brauzeriniz məkanı dəstəkləmir."); return; }
@@ -446,8 +379,7 @@ export default function Component() {
             const d = haversine(lat, lng, s.latitude, s.longitude);
             if (d < min) { min = d; nearest = s; }
           }
-          setFromStop(nearest);
-          setPickTarget("to");
+          selectFrom(nearest);
         }
         setLocating(false);
       },
@@ -458,16 +390,16 @@ export default function Component() {
       // fix up to 5 min old is fine and skips a fresh CoreLocation query.
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
     );
-  }, [stops]);
+  }, [stops, selectFrom]);
 
   const handleSwap = useCallback(() => {
-    setFromStop(toStop); setToStop(fromStop); setRoute(null);
-  }, [fromStop, toStop]);
+    clearRoute(); setFromStop(toStop); setToStop(fromStop);
+  }, [fromStop, toStop, clearRoute]);
 
   // A map tap (on a marker OR snapped from empty map) fills the ACTIVE field,
   // then advances to the other one — so the user always knows what a tap does.
   const handleMapClick = useCallback((stop: StopDetail) => {
-    setRoute(null);
+    clearRoute();
     if (pickTarget === "from") {
       setFromStop(stop);
       setPickTarget(toStop ? "from" : "to");
@@ -475,14 +407,13 @@ export default function Component() {
       setToStop(stop);
       setPickTarget("from");
     }
-  }, [pickTarget, toStop]);
+  }, [pickTarget, toStop, clearRoute]);
 
-  // Both stops chosen → find automatically (no extra tap). Route stays cleared
-  // until both are set again, so this can't loop.
+  // Start once per selection/mode change. Result/loading changes are not
+  // dependencies, so failures cannot trigger automatic retry loops.
   useEffect(() => {
-    if (fromStop && toStop && !route && !loading) handleFind();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromStop, toStop]);
+    if (fromStop && toStop && mode === "route") void handleFind();
+  }, [fromStop, toStop, mode, handleFind]);
 
   // ── Line-viewer handlers ──────────────────────────────────────────────────
   const fetchLine = useCallback(async (busId: number, direction: number) => {
@@ -520,6 +451,8 @@ export default function Component() {
 
   // Switch mode; lazy-load the bus list the first time line mode is opened.
   const enterMode = useCallback((m: PlannerMode) => {
+    if (m === mode) return;
+    clearRoute();
     setMode(m);
     if (m === "line" && buses.length === 0 && !busesLoading) {
       setBusesLoading(true);
@@ -529,7 +462,7 @@ export default function Component() {
         .catch(() => setLineError("Avtobuslar yüklənmədi. Yenidən cəhd edin."))
         .finally(() => setBusesLoading(false));
     }
-  }, [buses.length, busesLoading]);
+  }, [mode, buses.length, busesLoading, clearRoute]);
 
   return (
     <div>
@@ -706,7 +639,7 @@ export default function Component() {
             <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white p-2.5">
               <span className="flex items-center gap-1.5 text-xs text-gray-600"><Bus className="h-3.5 w-3.5 text-orange-500" /> Marşrut xəritədə göstərilir.</span>
               <button
-                onClick={() => { setRoute(null); setToStop(null); setPickTarget("to"); }}
+                onClick={() => { clearRoute(); setToStop(null); setPickTarget("to"); }}
                 className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
               >
                 Təyinatı dəyiş

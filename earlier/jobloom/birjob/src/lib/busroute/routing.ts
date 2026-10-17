@@ -1,350 +1,145 @@
 /**
- * Route finding — modified Dijkstra over (stopId, busId) states (so transfer
- * penalties apply correctly) wrapped in Yen's K-shortest-paths.
- * Ported verbatim from best_route_finding.
+ * Minimum-boardings routing (#664). Labels compare lexicographically:
+ * boardings, estimated movement time, walking distance, total distance.
+ * A finite transfer penalty cannot guarantee that one bus beats two.
+ *
+ * A ride continues only along consecutive positions of the same direction.
+ * One walking edge (at most 300 m) is allowed between rides or at either end;
+ * walking edges cannot chain into an unbounded shortcut. A directly walkable
+ * destination is returned as a separate short walking journey.
  */
-import { TransitGraph } from "./graph";
-import { GraphEdge, RouteResult, RouteSegment, OptimizationMode, WALKING_EDGE_BUS_ID } from "./types";
+import type { TransitGraph } from "./graph";
+import type { GraphEdge, RouteResult, RouteSegment } from "./types";
+import { WALKING_EDGE_BUS_ID } from "./types";
+import { WALK_RADIUS_KM } from "./geo";
 
-const TRANSFER_PENALTY_DISTANCE = 0.5; // km equivalent
-const TRANSFER_PENALTY_TIME = 5; // minutes
+type RoutingGraph = Pick<TransitGraph, "getEdges" | "getStopInfo">;
+type Cost = readonly [boardings: number, minutes: number, walkingKm: number, distanceKm: number];
+interface Label {
+  key: string;
+  stopId: number;
+  cost: Cost;
+  previous: Label | null;
+  edge: GraphEdge | null;
+  boarded: boolean;
+}
 
-// Min-heap priority queue
-class PriorityQueue<T> {
-  private heap: Array<{ item: T; priority: number }> = [];
+function compare(a: Cost, b: Cost): number {
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return a[i] - b[i];
+  return 0;
+}
 
-  push(item: T, priority: number) {
-    this.heap.push({ item, priority });
-    this.bubbleUp(this.heap.length - 1);
-  }
+class PriorityQueue {
+  private heap: Label[] = [];
 
-  pop(): T | undefined {
-    if (this.heap.length === 0) return undefined;
-    const top = this.heap[0];
-    const last = this.heap.pop()!;
-    if (this.heap.length > 0) {
-      this.heap[0] = last;
-      this.sinkDown(0);
-    }
-    return top.item;
-  }
-
-  get size(): number {
-    return this.heap.length;
-  }
-
-  private bubbleUp(i: number) {
+  push(item: Label) {
+    this.heap.push(item);
+    let i = this.heap.length - 1;
     while (i > 0) {
       const parent = Math.floor((i - 1) / 2);
-      if (this.heap[parent].priority <= this.heap[i].priority) break;
-      [this.heap[parent], this.heap[i]] = [this.heap[i], this.heap[parent]];
+      if (compare(this.heap[parent].cost, item.cost) <= 0) break;
+      this.heap[i] = this.heap[parent];
       i = parent;
     }
+    this.heap[i] = item;
   }
 
-  private sinkDown(i: number) {
-    const n = this.heap.length;
-    while (true) {
-      let smallest = i;
-      const left = 2 * i + 1;
-      const right = 2 * i + 2;
-      if (left < n && this.heap[left].priority < this.heap[smallest].priority) {
-        smallest = left;
-      }
-      if (right < n && this.heap[right].priority < this.heap[smallest].priority) {
-        smallest = right;
-      }
-      if (smallest === i) break;
-      [this.heap[smallest], this.heap[i]] = [this.heap[i], this.heap[smallest]];
-      i = smallest;
+  pop(): Label | undefined {
+    const top = this.heap[0], last = this.heap.pop();
+    if (!last || this.heap.length === 0) return top;
+    let i = 0;
+    while (2 * i + 1 < this.heap.length) {
+      let child = 2 * i + 1;
+      if (child + 1 < this.heap.length && compare(this.heap[child + 1].cost, this.heap[child].cost) < 0) child++;
+      if (compare(last.cost, this.heap[child].cost) <= 0) break;
+      this.heap[i] = this.heap[child];
+      i = child;
     }
+    this.heap[i] = last;
+    return top;
   }
 }
 
-interface DijkstraState {
-  stopId: number;
-  busId: number | null;
-}
-
-interface PrevEntry {
-  prevState: string;
-  edge: GraphEdge;
-}
-
-function stateKey(state: DijkstraState): string {
-  return `${state.stopId}:${state.busId ?? "null"}`;
-}
-
-function parseStateKey(key: string): DijkstraState {
-  const parts = key.split(":");
-  return {
-    stopId: parseInt(parts[0]),
-    busId: parts[1] === "null" ? null : parseInt(parts[1]),
-  };
-}
-
-function edgeCost(edge: GraphEdge, isTransfer: boolean, mode: OptimizationMode): number {
-  const transferPenalty = isTransfer
-    ? (mode === "shortest" ? TRANSFER_PENALTY_DISTANCE : TRANSFER_PENALTY_TIME)
-    : 0;
-
-  switch (mode) {
-    case "shortest":
-      return edge.distance + transferPenalty;
-    case "fastest":
-      return edge.time + transferPenalty;
-    case "balanced":
-      return 0.3 * edge.distance + 0.5 * edge.time + 0.2 * (isTransfer ? 10 : 0);
-  }
-}
-
-function reconstructRoute(
-  graph: TransitGraph,
-  pathKeys: string[],
-  prevMap: Map<string, PrevEntry>
-): RouteResult {
+function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
+  const path: Label[] = [];
+  for (let label = destination; label.previous; label = label.previous) path.push(label);
+  path.reverse();
   const segments: RouteSegment[] = [];
-  let currentSegment: RouteSegment | null = null;
-
-  // Walk the path and collect edges
-  for (let i = 1; i < pathKeys.length; i++) {
-    const fromState = parseStateKey(pathKeys[i - 1]);
-    const entry = prevMap.get(pathKeys[i]);
-    if (!entry) continue;
-
-    const edge = entry.edge;
-    const fromStop = graph.getStopInfo(fromState.stopId);
-    const toStop = graph.getStopInfo(edge.toStopId);
-
-    if (!fromStop || !toStop) continue;
-
-    if (!currentSegment || currentSegment.busId !== edge.busId) {
-      // Start new segment
-      if (currentSegment) {
-        segments.push(currentSegment);
-      }
-      currentSegment = {
-        busId: edge.busId,
-        busNumber: edge.busNumber,
-        stops: [
-          {
-            id: fromStop.id,
-            name: edge.fromStopName || fromStop.name,
-            latitude: fromStop.latitude,
-            longitude: fromStop.longitude,
-          },
-        ],
-        distance: 0,
-        time: 0,
+  for (const label of path) {
+    const edge = label.edge!;
+    const from = graph.getStopInfo(label.previous!.stopId)!;
+    const to = graph.getStopInfo(label.stopId)!;
+    let segment = segments[segments.length - 1];
+    if (!segment || label.boarded || edge.kind === "walk") {
+      segment = {
+        busId: edge.busId, busNumber: edge.busNumber,
+        direction: edge.kind === "bus" ? edge.direction : null,
+        headsign: edge.kind === "bus" ? edge.headsign : null,
+        stops: [{ id: from.id, name: edge.fromStopName || from.name, latitude: from.latitude, longitude: from.longitude }],
+        distance: 0, time: 0,
       };
+      segments.push(segment);
     }
-
-    currentSegment.stops.push({
-      id: toStop.id,
-      name: edge.toStopName || toStop.name,
-      latitude: toStop.latitude,
-      longitude: toStop.longitude,
-    });
-    currentSegment.distance += edge.distance;
-    currentSegment.time += edge.time;
+    segment.stops.push({ id: to.id, name: edge.toStopName || to.name, latitude: to.latitude, longitude: to.longitude });
+    segment.distance += edge.distance;
+    segment.time += edge.time;
   }
-
-  if (currentSegment) {
-    segments.push(currentSegment);
+  let totalStops = 0, lastStopId: number | null = null;
+  for (const segment of segments) if (segment.busId !== WALKING_EDGE_BUS_ID) {
+    for (const stop of segment.stops) {
+      if (stop.id !== lastStopId) totalStops++;
+      lastStopId = stop.id;
+    }
   }
-
-  const totalDistance = segments.reduce((sum, s) => sum + s.distance, 0);
-  const totalTime = segments.reduce((sum, s) => sum + s.time, 0);
-  const busSegments = segments.filter((s) => s.busId !== WALKING_EDGE_BUS_ID);
-  const totalStops = busSegments.reduce((sum, s) => sum + s.stops.length, 0) -
-    Math.max(0, busSegments.length - 1);
-  // Transfers = number of bus changes (walking segments connect bus segments)
-  const totalTransfers = Math.max(0, busSegments.length - 1);
-
   return {
     segments,
-    totalDistance: Math.round(totalDistance * 100) / 100,
-    totalTime: Math.round(totalTime * 10) / 10,
-    totalTransfers,
+    totalDistance: Math.round(destination.cost[3] * 100) / 100,
+    totalTime: Math.round(destination.cost[1] * 10) / 10,
+    totalTransfers: Math.max(0, destination.cost[0] - 1),
     totalStops,
   };
 }
 
-function dijkstraFull(
-  graph: TransitGraph,
-  source: number,
-  target: number,
-  mode: OptimizationMode,
-  excludedEdges?: Set<string>,
-  excludedNodes?: Set<number>
-): { result: RouteResult; cost: number; pathStopIds: number[] } | null {
-  const dist = new Map<string, number>();
-  const prev = new Map<string, PrevEntry>();
-  const pq = new PriorityQueue<string>();
+export function findRoute(graph: RoutingGraph, source: number, target: number): RouteResult | null {
+  if (source === target || !graph.getStopInfo(source) || !graph.getStopInfo(target)) return null;
+  const start: Label = { key: `${source}:start`, stopId: source, cost: [0, 0, 0, 0], previous: null, edge: null, boarded: false };
+  const best = new Map<string, Label>([[start.key, start]]);
+  const queue = new PriorityQueue();
+  queue.push(start);
 
-  const startKey = stateKey({ stopId: source, busId: null });
-  dist.set(startKey, 0);
-  pq.push(startKey, 0);
+  // This short walking option never comes from a chain of transfer edges.
+  const walk = graph.getEdges(source).find(e => e.kind === "walk" && e.toStopId === target && e.distance <= WALK_RADIUS_KM);
+  if (walk) return reconstruct(graph, {
+    key: `${target}:walk`, stopId: target, previous: start, edge: walk, boarded: false,
+    cost: [0, walk.time, walk.distance, walk.distance],
+  });
 
-  let targetKey: string | null = null;
+  let current: Label | undefined;
+  while ((current = queue.pop())) {
+    // Queue entries hold immutable labels; an improved label makes the old
+    // entry stale, even if it was enqueued before the improvement.
+    if (best.get(current.key) !== current) continue;
+    if (current.stopId === target && current.cost[0] > 0) return reconstruct(graph, current);
 
-  while (pq.size > 0) {
-    const currentKey = pq.pop()!;
-    const currentState = parseStateKey(currentKey);
-    const currentDist = dist.get(currentKey)!;
-
-    if (currentState.stopId === target) {
-      targetKey = currentKey;
-      break;
-    }
-
-    if (excludedNodes && excludedNodes.has(currentState.stopId) && currentState.stopId !== source) {
-      continue;
-    }
-
-    const edges = graph.getEdges(currentState.stopId);
-    for (const edge of edges) {
-      if (excludedNodes && excludedNodes.has(edge.toStopId) && edge.toStopId !== target) {
-        continue;
-      }
-
-      if (excludedEdges) {
-        const edgeKey = `${currentState.stopId}->${edge.toStopId}:${edge.busId}`;
-        if (excludedEdges.has(edgeKey)) continue;
-      }
-
-      const isTransfer =
-        currentState.busId !== null && currentState.busId !== edge.busId;
-      const cost = edgeCost(edge, isTransfer, mode);
-      const nextState: DijkstraState = {
-        stopId: edge.toStopId,
-        busId: edge.busId,
-      };
-      const nextKey = stateKey(nextState);
-      const newDist = currentDist + cost;
-
-      if (!dist.has(nextKey) || newDist < dist.get(nextKey)!) {
-        dist.set(nextKey, newDist);
-        prev.set(nextKey, { prevState: currentKey, edge });
-        pq.push(nextKey, newDist);
-      }
+    for (const edge of graph.getEdges(current.stopId)) {
+      const walking = edge.kind === "walk";
+      if (walking && (current.edge?.kind === "walk" || edge.distance > WALK_RADIUS_KM)) continue;
+      const continuesRide = edge.kind === "bus" && current.edge?.kind === "bus"
+        && current.edge.rideId === edge.rideId && current.edge.toSequence === edge.fromSequence;
+      const boarded = !walking && !continuesRide;
+      const cost: Cost = [
+        current.cost[0] + Number(boarded), current.cost[1] + edge.time,
+        current.cost[2] + (walking ? edge.distance : 0), current.cost[3] + edge.distance,
+      ];
+      const key = edge.kind === "bus"
+        ? `${edge.toStopId}:bus:${edge.rideId}:${edge.toSequence}`
+        : `${edge.toStopId}:walk:${cost[0] > 0 ? "boarded" : "start"}`;
+      const previous = best.get(key);
+      if (previous && compare(previous.cost, cost) <= 0) continue;
+      const next: Label = { key, stopId: edge.toStopId, cost, previous: current, edge, boarded };
+      best.set(key, next);
+      queue.push(next);
     }
   }
-
-  if (!targetKey) return null;
-
-  // Reconstruct path keys
-  const pathKeys: string[] = [targetKey];
-  let key = targetKey;
-  while (prev.has(key)) {
-    key = prev.get(key)!.prevState;
-    pathKeys.unshift(key);
-  }
-
-  const result = reconstructRoute(graph, pathKeys, prev);
-  const pathStopIds = pathKeys.map((k) => parseStateKey(k).stopId);
-  // Deduplicate consecutive same stop ids
-  const uniqueStopIds: number[] = [];
-  for (const id of pathStopIds) {
-    if (uniqueStopIds.length === 0 || uniqueStopIds[uniqueStopIds.length - 1] !== id) {
-      uniqueStopIds.push(id);
-    }
-  }
-
-  return {
-    result,
-    cost: dist.get(targetKey)!,
-    pathStopIds: uniqueStopIds,
-  };
-}
-
-export function findRoutes(
-  graph: TransitGraph,
-  source: number,
-  target: number,
-  mode: OptimizationMode,
-  k: number = 3
-): RouteResult[] {
-  const results: RouteResult[] = [];
-  const candidatePaths: Array<{ result: RouteResult; cost: number; pathStopIds: number[] }> = [];
-
-  // Step 1: Find shortest path
-  const first = dijkstraFull(graph, source, target, mode);
-  if (!first) return [];
-
-  results.push(first.result);
-  const confirmedPaths = [first];
-
-  // Step 2: Yen's K-shortest paths
-  for (let kIdx = 1; kIdx < k; kIdx++) {
-    const prevPath = confirmedPaths[kIdx - 1];
-    const prevStopIds = prevPath.pathStopIds;
-
-    for (let i = 0; i < prevStopIds.length - 1; i++) {
-      const spurNode = prevStopIds[i];
-      const rootPath = prevStopIds.slice(0, i + 1);
-
-      // Exclude edges from root path that overlap with confirmed paths
-      const excludedEdges = new Set<string>();
-      for (const confirmed of confirmedPaths) {
-        const cStops = confirmed.pathStopIds;
-        if (cStops.length > i + 1) {
-          const rootMatch = rootPath.every((id, idx) => cStops[idx] === id);
-          if (rootMatch) {
-            const fromId = cStops[i];
-            const toId = cStops[i + 1];
-            const edges = graph.getEdges(fromId);
-            for (const edge of edges) {
-              if (edge.toStopId === toId) {
-                excludedEdges.add(`${fromId}->${toId}:${edge.busId}`);
-              }
-            }
-          }
-        }
-      }
-
-      // Exclude root path nodes (except spur node)
-      const excludedNodes = new Set<number>();
-      for (let j = 0; j < i; j++) {
-        excludedNodes.add(rootPath[j]);
-      }
-
-      const spurResult = dijkstraFull(
-        graph,
-        spurNode,
-        target,
-        mode,
-        excludedEdges,
-        excludedNodes
-      );
-
-      if (spurResult) {
-        // Check this isn't a duplicate
-        const isDuplicate = [...results, ...candidatePaths.map((c) => c.result)].some(
-          (existing) => {
-            if (existing.segments.length !== spurResult.result.segments.length) return false;
-            return existing.segments.every(
-              (seg, idx) =>
-                seg.busId === spurResult.result.segments[idx]?.busId &&
-                seg.stops.length === spurResult.result.segments[idx]?.stops.length
-            );
-          }
-        );
-
-        if (!isDuplicate) {
-          candidatePaths.push(spurResult);
-        }
-      }
-    }
-
-    if (candidatePaths.length === 0) break;
-
-    // Pick the best candidate
-    candidatePaths.sort((a, b) => a.cost - b.cost);
-    const best = candidatePaths.shift()!;
-    results.push(best.result);
-    confirmedPaths.push(best);
-  }
-
-  return results;
+  return null;
 }

@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGraph } from "@/lib/busroute/graph";
-import { findRoutes } from "@/lib/busroute/routing";
+import { z } from "zod";
+import { parseJsonBody } from "@/lib/apiValidate";
+import { findRoute } from "@/lib/busroute/routing";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const Body = z.object({ fromStopId: z.number().int().positive().max(2_147_483_647), toStopId: z.number().int().positive().max(2_147_483_647) });
+
 export async function POST(request: NextRequest) {
   try {
-    const { fromStopId, toStopId } = await request.json();
-
-    if (!fromStopId || !toStopId) {
-      return NextResponse.json({ error: "Başlanğıc və təyinat dayanacağı seçilməlidir" }, { status: 400 });
+    const parsed = await parseJsonBody(request, Body);
+    if ('response' in parsed) {
+      return NextResponse.json({ error: "Başlanğıc və təyinat dayanacaqlarını düzgün seçin" }, { status: 400 });
     }
+    const { fromStopId, toStopId } = parsed.data;
     if (fromStopId === toStopId) {
       return NextResponse.json({ error: "Başlanğıc və təyinat fərqli olmalıdır" }, { status: 400 });
     }
@@ -23,16 +27,15 @@ export async function POST(request: NextRequest) {
     if (!fromStop) return NextResponse.json({ error: "Başlanğıc dayanacağı tapılmadı" }, { status: 404 });
     if (!toStop) return NextResponse.json({ error: "Təyinat dayanacağı tapılmadı" }, { status: 404 });
 
-    // Single best route. k=1 short-circuits Yen's loop — one Dijkstra runs.
-    const routes = findRoutes(graph, fromStopId, toStopId, "balanced", 1);
-    if (routes.length === 0) {
+    const route = findRoute(graph, fromStopId, toStopId);
+    if (!route) {
       return NextResponse.json({ error: "Bu dayanacaqlar arasında marşrut tapılmadı" }, { status: 404 });
     }
 
     return NextResponse.json({
       from: { id: fromStop.id, name: fromStop.name },
       to: { id: toStop.id, name: toStop.name },
-      route: routes[0],
+      route,
     });
   } catch (error) {
     console.error("[avtobus] find failed:", error);
