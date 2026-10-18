@@ -42,7 +42,7 @@ export default async function Page() {
       ])} />
       <JsonLd nonce={nonce} data={buildFaqPage(FAQ)} />
 
-      <main className="mx-auto max-w-6xl px-4 py-8">
+      <section className="bj-tool-page bj-tool-page-wide mx-auto px-4 py-8">
         <nav className="mb-6 flex items-center gap-1 text-sm text-gray-500" aria-label="Breadcrumb">
           <Link href="/" className="hover:text-orange-600">BirJob</Link><ChevronRight className="h-4 w-4" />
           <Link href="/aletler" className="hover:text-orange-600">Alətlər</Link><ChevronRight className="h-4 w-4" />
@@ -93,7 +93,7 @@ export default async function Page() {
         </section>
 
         <div className="mt-10"><RelatedTools currentSlug={tool.slug} /></div>
-      </main>
+      </section>
     </>
   );
 }

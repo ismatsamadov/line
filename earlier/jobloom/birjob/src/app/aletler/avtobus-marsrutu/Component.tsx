@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode, type KeyboardEvent, type RefObject } from "react";
 import dynamic from "next/dynamic";
 import { Bus, ArrowDownUp, LocateFixed, Search, X, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin } from "lucide-react";
 import SupportCTA from "@/components/SupportCTA";
@@ -12,6 +12,27 @@ const BusMap = dynamic(() => import("./BusMap"), {
   ssr: false,
   loading: () => <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400">Xəritə yüklənir…</div>,
 });
+
+function pickerKeys(event: KeyboardEvent<HTMLDivElement>, ref: RefObject<HTMLDivElement>, close: () => void) {
+  const input = ref.current?.querySelector('input');
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    input?.focus();
+    // Focusing the input opens suggestions; close after that focus handler.
+    close();
+    return;
+  }
+  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+  const options = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[data-picker-option]') ?? []);
+  if (!options.length) return;
+  event.preventDefault();
+  const index = options.indexOf(document.activeElement as HTMLButtonElement);
+  const next = index + (event.key === 'ArrowDown' ? 1 : -1);
+  if (next < 0 && index >= 0) { input?.focus(); return; }
+  const target = options[index < 0 && event.key === 'ArrowUp' ? options.length - 1 : Math.min(Math.max(next, 0), options.length - 1)];
+  target.focus();
+  target.scrollIntoView({ block: 'nearest' });
+}
 
 function StopPicker({
   label, placeholder, stops, selected, onSelect, dotClass, active = false, onActivate,
@@ -46,32 +67,28 @@ function StopPicker({
   }, []);
 
   return (
-    <div ref={ref}>
+    <div ref={ref} onKeyDown={event => pickerKeys(event, ref, () => setOpen(false))}>
       <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-700">
         <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotClass}`} />
         {label}
       </div>
       {selected ? (
-        <button
-          type="button"
-          onClick={onActivate}
+        <div
           className={`flex w-full items-center justify-between rounded-xl border bg-gray-50 px-3 py-3 text-left transition ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
         >
-          <span className="min-w-0">
+          <button type="button" onClick={onActivate} className="min-w-0 flex-1 text-left" aria-label={`${label}: ${selected.name}`}>
             <span className="block truncate text-sm font-medium text-gray-900">{selected.name}</span>
             {selected.code ? <span className="text-xs text-gray-400">{selected.code}</span> : null}
-          </span>
-          <span
-            role="button"
-            tabIndex={0}
-            onClick={(e) => { e.stopPropagation(); onSelect(null); setQuery(""); }}
-            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onSelect(null); setQuery(""); } }}
-            aria-label="Seçimi sil"
-            className="ml-2 shrink-0 text-gray-400 hover:text-gray-600"
+          </button>
+          <button
+            type="button"
+            onClick={() => { onSelect(null); setQuery(""); requestAnimationFrame(() => ref.current?.querySelector('input')?.focus()); }}
+            aria-label={`${label} seçimini sil`}
+            className="ml-2 shrink-0 min-w-[44px] min-h-[44px] grid place-items-center text-gray-400 hover:text-gray-600"
           >
             <X className="h-4 w-4" />
-          </span>
-        </button>
+          </button>
+        </div>
       ) : (
         <div className="relative">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -79,6 +96,7 @@ function StopPicker({
             type="text"
             value={query}
             inputMode="search"
+            autoComplete="off"
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => { setOpen(true); onActivate?.(); }}
             aria-label={placeholder}
@@ -86,10 +104,11 @@ function StopPicker({
             className={`w-full rounded-xl border bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-orange-400 focus:ring-orange-400 ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
           />
           {open && filtered.length > 0 && (
-            <div className="absolute z-[1000] mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="bj-picker-suggestions absolute z-[1000] mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg" role="group" aria-label="Uyğun dayanacaqlar">
               {filtered.map((s) => (
                 <button
                   key={s.id}
+                  data-picker-option
                   type="button"
                   // Select on click (a real tap) — NOT touchend. touchend fires
                   // even when the touch started here and then dragged to scroll
@@ -98,7 +117,7 @@ function StopPicker({
                   // Safe from the outside-click handler since the dropdown lives
                   // inside this picker's ref (so it isn't pre-closed).
                   onClick={() => { onSelect(s); setQuery(""); setOpen(false); }}
-                  className="block w-full px-3 py-2 text-left hover:bg-orange-50"
+                  className="block w-full px-3 py-2 min-h-[44px] text-left hover:bg-orange-50 focus:bg-orange-50"
                 >
                   <span className="block truncate text-sm text-gray-800">{s.name}</span>
                   {s.code ? <span className="text-xs text-gray-400">{s.code}</span> : null}
@@ -163,7 +182,7 @@ function BusPicker({
   }, []);
 
   return (
-    <div ref={ref}>
+    <div ref={ref} onKeyDown={event => pickerKeys(event, ref, () => setOpen(false))}>
       <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-700">
         <Bus className="h-4 w-4 text-blue-600" />
         Avtobus nömrəsi
@@ -187,6 +206,7 @@ function BusPicker({
             type="text"
             value={query}
             inputMode="search"
+            autoComplete="off"
             onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
             onFocus={() => setOpen(true)}
             aria-label="Avtobus nömrəsi və ya son dayanacaq"
@@ -195,13 +215,14 @@ function BusPicker({
             className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-blue-400 focus:ring-blue-400 disabled:opacity-60"
           />
           {open && filtered.length > 0 && (
-            <div className="absolute z-[1000] mt-1 max-h-72 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg">
+            <div className="bj-picker-suggestions absolute z-[1000] mt-1 max-h-72 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg" role="group" aria-label="Uyğun avtobuslar">
               {filtered.map((b) => (
                 <button
                   key={b.id}
+                  data-picker-option
                   type="button"
                   onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-blue-50"
+                  className="flex w-full items-center gap-2 px-3 py-2 min-h-[44px] text-left hover:bg-blue-50 focus:bg-blue-50"
                 >
                   <span className="w-12 shrink-0 rounded-md bg-blue-100 px-1.5 py-0.5 text-center text-xs font-bold text-blue-700">{b.number}</span>
                   <span className="truncate text-sm text-gray-700">{b.first_point} ↔ {b.last_point}</span>
