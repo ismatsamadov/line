@@ -1,6 +1,8 @@
 # Baku Public Transit Network Optimization
 ## Strategic Analysis & Implementation Roadmap
 
+> **Superseded.** This report was a first pass over the AYNA data (February 2026). I redid the work with defined, reproducible measures, a travel model checked against observed ridership and a fleet-neutral redesign, in [ismatsamadov/route_efficiency](https://github.com/ismatsamadov/route_efficiency) (archived on Zenodo, DOI [10.5281/zenodo.23602093](https://doi.org/10.5281/zenodo.23602093)). The figures below do not match that work and should not be cited.
+
 - **Prepared for:** Baku Transport Authority & Urban Mobility Planners
 - **Analysis Date:** February 2026
 - **Document Status:** Strategic Recommendations for Decision
