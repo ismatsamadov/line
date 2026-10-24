@@ -9,9 +9,10 @@
  * destination is returned as a separate short walking journey.
  */
 import type { TransitGraph } from "./graph";
-import type { GraphEdge, RouteResult, RouteSegment } from "./types";
+import type { GraphEdge, LatLng, RouteResult, RouteSegment } from "./types";
 import { WALKING_EDGE_BUS_ID } from "./types";
 import { WALK_RADIUS_KM } from "./geo";
+import { joinLegs } from "./shape";
 
 type RoutingGraph = Pick<TransitGraph, "getEdges" | "getStopInfo">;
 type Cost = readonly [boardings: number, minutes: number, walkingKm: number, distanceKm: number];
@@ -65,6 +66,7 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
   for (let label = destination; label.previous; label = label.previous) path.push(label);
   path.reverse();
   const segments: RouteSegment[] = [];
+  const legs: Array<Array<LatLng[] | undefined>> = [];
   for (const label of path) {
     const edge = label.edge!;
     const from = graph.getStopInfo(label.previous!.stopId)!;
@@ -79,11 +81,19 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
         distance: 0, time: 0,
       };
       segments.push(segment);
+      legs.push([]);
     }
     segment.stops.push({ id: to.id, name: edge.toStopName || to.name, latitude: to.latitude, longitude: to.longitude });
     segment.distance += edge.distance;
     segment.time += edge.time;
+    legs[legs.length - 1].push(edge.kind === "bus" ? edge.path : undefined);
   }
+  // A ride is drawn along the road where its legs have one (shape.ts); a walk stays straight.
+  segments.forEach((segment, i) => {
+    if (segment.busId === WALKING_EDGE_BUS_ID) return;
+    const road = joinLegs(segment.stops.map((s): LatLng => [s.latitude, s.longitude]), legs[i]);
+    if (road) segment.path = road;
+  });
   let totalStops = 0, lastStopId: number | null = null;
   for (const segment of segments) if (segment.busId !== WALKING_EDGE_BUS_ID) {
     for (const stop of segment.stops) {

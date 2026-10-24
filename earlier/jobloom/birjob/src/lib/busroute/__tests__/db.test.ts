@@ -4,7 +4,7 @@ const prisma = vi.hoisted(() => ({
   bus_buses: { findUnique: vi.fn() },
   bus_bus_stops: { findMany: vi.fn() },
   bus_stop_details: { findMany: vi.fn() },
-  bus_routes: { findFirst: vi.fn() },
+  bus_routes: { findMany: vi.fn() },
   bus_route_coordinates: { findMany: vi.fn() },
 }));
 vi.mock('@/lib/prisma', () => ({ prisma }));
@@ -19,7 +19,8 @@ beforeEach(() => {
     id: 160, number: '120A ', carrier: '', first_point: 'A ', last_point: 'B ',
     route_length: 23.4, duration_minuts: 39, tariff_str: '',
   });
-  prisma.bus_routes.findFirst.mockResolvedValue(null);
+  prisma.bus_routes.findMany.mockResolvedValue([]);
+  prisma.bus_route_coordinates.findMany.mockResolvedValue([]);
 });
 
 describe('queryBusLine', () => {
@@ -33,6 +34,43 @@ describe('queryBusLine', () => {
     const line = await queryBusLine(160, 1);
     expect(line?.stops.map((s) => s.id)).toEqual(copy);
     expect(line?.availableDirections).toEqual([1, 2]);
+  });
+
+  it('draws the line along the road matched to its stops, never a recorded line as stored (#685)', async () => {
+    // Three stops 50 m north of a street on 40.40. Direction 1's recorded line has
+    // latitude and longitude swapped, as 521's second direction does; direction 2's
+    // runs the same street the other way.
+    const stops = [{ id: 1, lng: 49.801 }, { id: 2, lng: 49.821 }, { id: 3, lng: 49.841 }];
+    prisma.bus_bus_stops.findMany
+      .mockResolvedValueOnce([{ direction_type_id: 1 }, { direction_type_id: 2 }])
+      .mockResolvedValueOnce(stops.map(({ id }, i) => ({ stop_id: id, total_distance: i })));
+    prisma.bus_stop_details.findMany.mockResolvedValue(stops.map(({ id, lng }) => ({ ...detail(id), latitude: 40.40045, longitude: lng })));
+    prisma.bus_routes.findMany.mockResolvedValue([{ id: 7, direction_type_id: 1 }, { id: 8, direction_type_id: 2 }]);
+    const street = Array.from({ length: 31 }, (_, i) => 49.80 + i * 0.002);
+    prisma.bus_route_coordinates.findMany.mockResolvedValue([
+      ...street.map((lng) => ({ route_id: 7, latitude: lng, longitude: 40.40 })),
+      ...[...street].reverse().map((lng) => ({ route_id: 8, latitude: 40.40, longitude: lng })),
+    ]);
+
+    const line = await queryBusLine(7, 1);
+    const coordinates = line!.coordinates;
+    expect(coordinates[0].latitude).toBeCloseTo(40.40, 6);
+    expect(coordinates[0].longitude).toBeCloseTo(49.801, 4);
+    expect(coordinates[coordinates.length - 1].longitude).toBeCloseTo(49.841, 4);
+    expect(coordinates.every((c) => c.latitude > 40 && c.latitude < 41)).toBe(true);
+  });
+
+  it('has no coordinates when no recorded line fits, so the map joins the stops', async () => {
+    prisma.bus_bus_stops.findMany
+      .mockResolvedValueOnce([{ direction_type_id: 1 }])
+      .mockResolvedValueOnce([{ stop_id: 1, total_distance: 0 }, { stop_id: 2, total_distance: 1 }]);
+    prisma.bus_stop_details.findMany.mockResolvedValue([{ ...detail(1), longitude: 49.80 }, { ...detail(2), longitude: 49.81 }]);
+    prisma.bus_routes.findMany.mockResolvedValue([{ id: 7, direction_type_id: 1 }]);
+    prisma.bus_route_coordinates.findMany.mockResolvedValue([
+      { route_id: 7, latitude: 49.80, longitude: 40.4 }, { route_id: 7, latitude: 49.81, longitude: 40.4 },
+    ]);
+
+    expect((await queryBusLine(7, 1))?.coordinates).toEqual([]);
   });
 
   it('keeps a loop that returns to its first stop', async () => {

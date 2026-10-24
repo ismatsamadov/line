@@ -6,6 +6,15 @@ import { graph, ride, walk } from './fixtures';
 const busIds = (route: ReturnType<typeof findRoute>) => route?.segments.filter(s => s.busId !== -1).map(s => s.busId);
 
 describe('minimum-boardings routing (#664)', () => {
+  it("draws a ride along its legs' road, straight to the next stop where a leg has none (#685)", () => {
+    const road: [number, number][] = [[40.01, 49], [40.015, 49.001], [40.02, 49]];
+    const g = graph({ 1: [{ ...ride(2, 10, 1, 1, 0), path: road } as GraphEdge], 2: [ride(3, 10, 1, 1, 1)] });
+    const [segment] = findRoute(g, 1, 3)!.segments;
+    expect(segment.path).toEqual([...road, [40.03, 49]]);
+    // Without any road the ride keeps no path, and the map joins its stops as before.
+    expect(findRoute(graph({ 1: [ride(2, 10, 1, 1, 0)], 2: [ride(3, 10, 1, 1, 1)] }), 1, 3)!.segments[0].path).toBeUndefined();
+  });
+
   it('always chooses one bus over a much faster two-bus journey', () => {
     const g = graph({ 1: [ride(3, 10, 1_000_000, 1_000), ride(2, 20)], 2: [ride(3, 30)] });
     const route = findRoute(g, 1, 3)!;

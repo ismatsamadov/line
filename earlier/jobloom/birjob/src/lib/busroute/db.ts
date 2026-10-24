@@ -5,8 +5,9 @@
  * import script were retired; these functions only read the retained data.
  */
 import { prisma } from "@/lib/prisma";
-import type { StopDetail, Bus, BusStop, RouteCoordinate, BusLite, BusLineDetail, BusLineStop } from "./types";
+import type { StopDetail, Bus, BusStop, BusLite, BusLineDetail, BusLineStop, LatLng } from "./types";
 import { collapseRepeatedSequence } from "./sequence";
+import { joinLegs, legPaths } from "./shape";
 
 export async function queryStopDetails(): Promise<StopDetail[]> {
   const rows = await prisma.bus_stop_details.findMany({ orderBy: { id: "asc" } });
@@ -54,27 +55,53 @@ export async function queryBusStops(): Promise<BusStop[]> {
   }));
 }
 
-async function queryRouteCoordinates(routeId: number): Promise<RouteCoordinate[]> {
-  const rows = await prisma.bus_route_coordinates.findMany({
-    where: { route_id: routeId },
-    orderBy: { sequence_order: "asc" },
-  });
-  return rows.map((r) => ({
-    latitude: r.latitude,
-    longitude: r.longitude,
-    sequence_order: r.sequence_order,
-  }));
+/** Recorded route lines by route id, points in sequence order. */
+function linesByRoute(points: Array<{ route_id: number; latitude: number; longitude: number }>): Map<number, LatLng[]> {
+  const lines = new Map<number, LatLng[]>();
+  for (const p of points) {
+    const line = lines.get(p.route_id);
+    if (line) line.push([p.latitude, p.longitude]);
+    else lines.set(p.route_id, [[p.latitude, p.longitude]]);
+  }
+  return lines;
 }
 
-async function queryRoutesByBusAndDirection(
-  busId: number,
-  directionTypeId: number
-): Promise<number | null> {
-  const row = await prisma.bus_routes.findFirst({
-    where: { bus_id: busId, direction_type_id: directionTypeId },
-    select: { id: true },
+/** Every recorded route line, keyed `${bus_id}:${direction_type_id}` like the graph's
+ *  rides. About 109,000 points for 398 lines; the graph reads them once per process. */
+export async function queryRouteShapes(): Promise<Map<string, LatLng[]>> {
+  const [routes, points] = await Promise.all([
+    prisma.bus_routes.findMany({ select: { id: true, bus_id: true, direction_type_id: true } }),
+    prisma.bus_route_coordinates.findMany({
+      select: { route_id: true, latitude: true, longitude: true },
+      orderBy: [{ route_id: "asc" }, { sequence_order: "asc" }],
+    }),
+  ]);
+  const lines = linesByRoute(points);
+  const shapes = new Map<string, LatLng[]>();
+  for (const r of routes) {
+    const line = lines.get(r.id);
+    if (line) shapes.set(`${r.bus_id}:${r.direction_type_id}`, line);
+  }
+  return shapes;
+}
+
+/** One bus's recorded lines by direction. */
+async function queryBusLines(busId: number): Promise<Map<number, LatLng[]>> {
+  const routes = await prisma.bus_routes.findMany({
+    where: { bus_id: busId },
+    select: { id: true, direction_type_id: true },
   });
-  return row ? row.id : null;
+  const lines = linesByRoute(await prisma.bus_route_coordinates.findMany({
+    where: { route_id: { in: routes.map((r) => r.id) } },
+    select: { route_id: true, latitude: true, longitude: true },
+    orderBy: [{ route_id: "asc" }, { sequence_order: "asc" }],
+  }));
+  const byDirection = new Map<number, LatLng[]>();
+  for (const r of routes) {
+    const line = lines.get(r.id);
+    if (line) byDirection.set(r.direction_type_id, line);
+  }
+  return byDirection;
 }
 
 export async function getDataLastUpdated(): Promise<string | null> {
@@ -124,11 +151,11 @@ export async function listBusesLite(): Promise<BusLite[]> {
 /**
  * Full trajectory of one bus line in one direction: metadata, the ordered stops
  * (travel order = cumulative distance asc, mirroring lib/bus.ts getBusStops),
- * the directions this bus has (for the Gediş/Qayıdış toggle), and the
- * road-shaped route geometry when present. Stops come from bus_bus_stops (always
- * populated) joined to bus_stop_details for coordinates; the geometry from
- * bus_route_coordinates is optional — the caller falls back to a stop-to-stop
- * line when it's empty.
+ * the directions this bus has (for the Gediş/Qayıdış toggle), and the road it
+ * follows. Stops come from bus_bus_stops (always populated) joined to
+ * bus_stop_details for coordinates; the road is bus_route_coordinates matched to
+ * those stops (shape.ts), and empty when nothing fits, so the caller falls back to
+ * a stop-to-stop line.
  */
 export async function queryBusLine(
   busId: number,
@@ -176,13 +203,16 @@ export async function queryBusLine(
     });
   }
 
-  // Road-shaped geometry for this direction (optional — may be empty).
-  let coordinates: Array<{ latitude: number; longitude: number }> = [];
-  const routeId = await queryRoutesByBusAndDirection(busId, direction);
-  if (routeId) {
-    const coords = await queryRouteCoordinates(routeId);
-    coordinates = coords.map((c) => ({ latitude: c.latitude, longitude: c.longitude }));
-  }
+  // The road the line follows, matched to its stops the way the planner's rides
+  // are (#685): a recorded line can be broken, misfiled or backwards (521's second
+  // direction is stored as longitude, latitude), so it is never drawn as stored.
+  // Empty when no leg has a road; the map then joins the stops.
+  const lines = await queryBusLines(busId);
+  const own = lines.get(direction);
+  const others = [...lines].filter(([d]) => d !== direction).map(([, line]) => line);
+  const points = stops.map((s): LatLng => [s.latitude, s.longitude]);
+  const path = joinLegs(points, legPaths(points, own ? [own, ...others] : others)) ?? [];
+  const coordinates = path.map(([latitude, longitude]) => ({ latitude, longitude }));
 
   return {
     busId: bus.id,

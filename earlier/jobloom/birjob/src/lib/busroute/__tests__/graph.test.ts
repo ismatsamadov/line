@@ -1,7 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bus, busStop, stop } from './fixtures';
 
-const db = vi.hoisted(() => ({ queryStopDetails: vi.fn(), queryBuses: vi.fn(), queryBusStops: vi.fn(), queryWalkingEdges: vi.fn() }));
+const db = vi.hoisted(() => ({
+  queryStopDetails: vi.fn(), queryBuses: vi.fn(), queryBusStops: vi.fn(), queryWalkingEdges: vi.fn(), queryRouteShapes: vi.fn(),
+}));
 vi.mock('../db', () => db);
 
 beforeEach(() => {
@@ -10,6 +12,7 @@ beforeEach(() => {
   db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(3)]);
   db.queryBuses.mockResolvedValue([bus(10)]);
   db.queryBusStops.mockResolvedValue([busStop(10, 1, 0), busStop(10, 2, 1), busStop(10, 3, 2)]);
+  db.queryRouteShapes.mockResolvedValue(new Map());
 });
 afterEach(() => vi.restoreAllMocks());
 
@@ -41,6 +44,25 @@ describe('transit graph', () => {
     // The line's 30 minutes spread over one copy's two legs, not five.
     expect(rides(1)).toEqual([expect.objectContaining({ toStopId: 2, fromSequence: 0, toSequence: 1, headsign: 'Stop 3', time: 15 })]);
     expect(rides(2)).toEqual([expect.objectContaining({ toStopId: 3, fromSequence: 1, toSequence: 2, time: 15 })]);
+  });
+
+  it('gives each leg its stretch of the recorded line (#685)', async () => {
+    // Stops 1-3 sit on 40.01, 40.02, 40.03 N along 49 E; the line bends east between 1 and 2.
+    db.queryRouteShapes.mockResolvedValue(new Map([['10:1', [[40.01, 49], [40.015, 49.001], [40.02, 49], [40.03, 49]]]]));
+    const g = await (await import('../graph')).getGraph();
+    const leg = (id: number) => g.getEdges(id).find(e => e.kind === 'bus');
+    expect(leg(1)).toMatchObject({ toStopId: 2, path: [[40.01, 49], [40.015, 49.001], [40.02, 49]] });
+    expect(leg(2)).toMatchObject({ toStopId: 3, path: [[40.02, 49], [40.03, 49]] });
+  });
+
+  it('still routes, straight between stops, when the recorded lines fail to load', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    db.queryRouteShapes.mockRejectedValue(new Error('lines unavailable'));
+    const g = await (await import('../graph')).getGraph();
+    expect(g.isBuilt()).toBe(true);
+    expect(g.getEdges(1)).toContainEqual(expect.objectContaining({ kind: 'bus', toStopId: 2 }));
+    expect(g.getEdges(1).some(e => e.kind === 'bus' && e.path)).toBe(false);
+    expect(quiet).toHaveBeenCalled();
   });
 
   it('does not bridge a leg with a missing stop', async () => {

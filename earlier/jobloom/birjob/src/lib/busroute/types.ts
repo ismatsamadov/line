@@ -102,8 +102,15 @@ interface EdgeInfo {
   toStopName: string;
 }
 
+/** A point as [latitude, longitude]. */
+export type LatLng = [number, number];
+
 export type GraphEdge = EdgeInfo & (
-  | { kind: "bus"; rideId: string; direction: number; fromSequence: number; toSequence: number; headsign: string }
+  | {
+      kind: "bus"; rideId: string; direction: number; fromSequence: number; toSequence: number; headsign: string;
+      /** The road to the next stop, from AYNA's recorded line where it fits the stops (shape.ts). */
+      path?: LatLng[];
+    }
   | { kind: "walk" }
 );
 
@@ -120,6 +127,9 @@ export interface RouteSegment {
   }>;
   distance: number;
   time: number;
+  /** The ride along the road, straight between stops where a leg has none. Absent
+   *  for a walk, and for a ride none of whose legs has a road. */
+  path?: LatLng[];
 }
 
 export interface RouteResult {

@@ -18,8 +18,11 @@ export interface FitMap {
 /** Fit the view to the most relevant features. */
 export function fitFeatures(map: FitMap, { route, line, fromStop, toStop }: FitTargets): void {
   if (route) {
+    // The road a ride follows can bend beyond its stops, so the fit takes it in.
     const coords: [number, number][] = [];
-    for (const seg of route.segments) for (const s of seg.stops) coords.push([s.latitude, s.longitude]);
+    for (const seg of route.segments) {
+      for (const point of seg.path ?? seg.stops.map((s): [number, number] => [s.latitude, s.longitude])) coords.push(point);
+    }
     if (coords.length) map.fitBounds(coords, { padding: [50, 50] });
   } else if (line) {
     const coords: [number, number][] = line.coordinates.length >= 2

@@ -114,13 +114,14 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
         .addTo(overlay);
     }
 
-    // Route polylines (stop-to-stop), distinct colour per bus, dashed walking.
+    // Route polylines, distinct colour per bus, dashed walking. A ride follows the
+    // road where the planner matched one (seg.path); otherwise stop to stop.
     let busColorIdx = 0;
     for (const seg of route.segments) {
       const isWalking = seg.busId === WALKING_EDGE_BUS_ID;
       const color = isWalking ? "#64748b" : SEGMENT_COLORS[busColorIdx % SEGMENT_COLORS.length];
       if (!isWalking) busColorIdx++;
-      const coords = seg.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
+      const coords = seg.path ?? seg.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
       L.polyline(coords, {
         color, weight: isWalking ? 5 : 7, opacity: isWalking ? 0.7 : 0.9,
         lineCap: "round", lineJoin: "round", dashArray: isWalking ? "8, 12" : undefined,

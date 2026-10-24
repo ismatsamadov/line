@@ -99,6 +99,49 @@ graph to concurrent callers. A failure clears that promise so the next request
 can retry with a fresh graph. The API catches failures and returns a localized
 error rather than letting a database exception escape.
 
+## Road shapes
+
+`shape.ts` draws a ride along AYNA's recorded route line (`bus_route_coordinates`)
+instead of straight lines between its stops (#685). The lines cannot be drawn as
+stored: three directions are pieces joined by straight jumps of 9 to 20 km (557, 550
+and 555, direction 1), two lie outside Baku (531 direction 1 has latitude equal to
+longitude, 521 direction 2 has the two swapped), some are filed under the other
+direction or stored backwards, and four directions have none.
+
+So the graph reads every line once per process (`queryRouteShapes`, about 109,000
+points) and places each ride's stops on a line in travel order: a dynamic program
+that never moves backwards along the line and minimises each stop's squared
+distance from it, a stop more than 300 m away staying unmatched. The ride's own line
+and the bus's other direction are each tried as stored and reversed. The fit with
+the most legs on the road wins. On a tie the ride keeps its own line unless another
+fits clearly closer, its stops' median offset under 70% of the own line's: the rule
+the open-data study of the network used to refile misfiled lines. Two lines of one
+bus can both reach every stop and take other streets (553's are 18.6 and 27.9 km),
+so a slightly closer fit is not enough. A small cost per kilometre between the first
+and last stop places a terminus past a loop with no stops on it rather than before
+it. A leg gets the road only when both its stops are matched, it is not two stops
+apart meeting at one point of the line, and no straight stretch on the way is longer
+than 5 km; every other leg stays straight, and so does a walk.
+
+Bus edges carry their leg's road, and a journey's ride joins them
+(`RouteSegment.path`). The line viewer matches its stops to the bus's lines the same
+way, so it no longer draws a broken line as stored; its coordinates are empty when
+nothing fits, and the map then joins the stops. Distances and times do not change:
+they still come from straight lines between stops, as the page says. If the lines
+fail to load, the graph builds without them and every ride is drawn straight until
+the process restarts: the graph is built once, and only a console error says so.
+
+Measured on a copy of the production tables on 2026-10-24: 11,230 of 11,355 legs get
+the road, and the graph builds in about 1.1 s with the lines. Of 300 random trips,
+723 of 731 rides were drawn along the road, each starting and ending within 300 m of
+its stops and none with a jump; line 521's second direction now stays inside Baku.
+Forty legs over 1 km are more than four times the straight line between their stops.
+They follow the recorded line around loops, which the open-data study of the network
+lists as detours on many of those routes: 112 direction 2 has 4.5 km of road between
+stops 40 m apart. 553 direction 1's line, the one the study files under it, runs a
+9 km loop with no stops between its first two stops; the recorded line shows it, and
+nothing here can confirm the bus drives it.
+
 ## API and UI
 
 `POST /api/avtobus/find` accepts positive PostgreSQL integer IDs. Invalid JSON,

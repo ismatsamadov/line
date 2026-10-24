@@ -33,6 +33,15 @@ describe('fitFeatures', () => {
     expect(map.setView).not.toHaveBeenCalled();
   });
 
+  it('takes in the road a ride follows, which can bend beyond its stops (#685)', () => {
+    const map = fakeMap();
+    const route = {
+      segments: [{ stops: [stop(1, 40.40, 49.80), stop(2, 40.41, 49.80)], path: [[40.40, 49.80], [40.405, 49.83], [40.41, 49.80]] }],
+    } as unknown as RouteResult;
+    fitFeatures(map, { ...none, route });
+    expect(map.fitBounds).toHaveBeenCalledWith([[40.40, 49.80], [40.405, 49.83], [40.41, 49.80]], { padding: [50, 50] });
+  });
+
   it('fits a line to its road shape, or to its stops when it has none', () => {
     const shaped = fakeMap();
     const coordinates = [{ latitude: 40.4, longitude: 49.8 }, { latitude: 40.5, longitude: 49.9 }];
