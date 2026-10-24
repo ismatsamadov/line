@@ -1,0 +1,150 @@
+Baku runs about 200 bus routes, and the city is rebuilding the network. Yet neither the Azerbaijan Land Transport Agency (AYNA) nor its international consultant has published an evaluation of how well the network serves riders, and the data such an evaluation would rest on (timetables, real-time bus positions and where riders travel) is not public either.
+
+An [open study](https://doi.org/10.5281/zenodo.23604370) released in October 2026 with all of its code and data measures the network from public data alone, and tests whether a better network is possible with the buses Baku runs today. This post explains its findings in plain terms. Network figures describe AYNA's map as published on 23 October 2026, ridership figures are from September 2026, and every figure from the study can be regenerated from its published code and data.
+
+## The short answer
+
+Of the 201 routes with stops on AYNA's map, only 29 run within 1.4 times the straight line between their end stops. Routes overlap heavily: on 21 stretches of street totalling 71 km, at least eight routes share the same road. The routes contain 271 detours, and 217 of them serve nobody who lacks another route. In the area the network serves (Baku, Sumqayıt and Absheron), 66% of the 3.04 million residents live within 400 m of a stop, and the model puts the average door-to-door trip, among trips possible within two hours, at 51.8 minutes.
+
+A search that rebuilds the network without changing the number of buses proposes 27 changes: those trips shorten on average from 51.8 to 50.9 minutes, or the model's current travel times can be delivered with about 12% fewer bus-hours and 12% less fuel. The gain is small but not luck, because it stays positive on other samples of trips and under other assumptions. None of this is a plan or a forecast: it is a measured picture of today's network plus estimates from a model.
+
+## What the study asks, and why open data only
+
+Reform of Baku's bus network is already under way. At a briefing on 18 December 2023, the Ministry of Digital Development and Transport said that under a mobility program AYNA runs with an international consulting firm, a "digital twin" of Baku had been created, and that the optimization of regular routes is based on it. The same briefing put daily bus trips at 1.6 million ([Ministry, 2023](https://mincom.gov.az/en/media-en/news/presentation-of-mobility-transformation-program-in-azerbaijan-took-place)).
+
+On 22 September 2025, AYNA's chairman Anar Rzayev said an assessment by an international consulting firm engaged by the Ministry had found weak integration between Baku and Absheron routes, overlapping routes, and limited access to the bus network for 17% of the city's population. Demand for buses under the new network is expected to be 2,800, he said, and a "gross contract" system will be introduced to finance it ([APA](https://en.apa.az/infrastructure/azerbaijan-to-implement-gross-contract-system-to-ensure-sustainable-public-transport-financing-478431)).
+
+According to the Ministry's update of 28 January 2026, implementation of the new network has begun and eight routes are in service. Around 2,300 buses run daily (1,720 in 2022), and about 114 km of bus lanes cover nearly 40 streets and avenues ([Ministry, 2026](https://mincom.gov.az/en/media-en/news/roundtable-on-the-2025-state-program-for-the-improvement-of-transport-infrastructure-in-baku-and-surrounding-areas)). In November 2024, Minister Rashad Nabiyev said bus lanes and optimized routes help raise bus speeds in Baku from 18 to 22 km/h ([Report.az](https://report.az/en/cop29/minister-azerbaijan-plans-to-fully-electrify-its-bus-fleet-by-2030)).
+
+None of the consultant's data is public. What is public is AYNA's map, a few figures in press releases, daily ridership on BakuBus routes and entries at metro stations. So the study asks a narrower question: how much can be learned about a bus network, and how far can a redesign be tested, from public data alone? The answer matters beyond Baku, because many cities publish a map and little else.
+
+The study uses five public sources:
+
+- AYNA's map API: routes, stops, their order and route shapes;
+- the Kontur population grid: the people living in hexagons of about 0.74 km² each;
+- destinations from OpenStreetMap: schools, hospitals, shops, offices and the like;
+- Baku Metro's data on [opendata.az](https://opendata.az/dataset/32766a9d-479c-41ff-a660-7b739b4ff034): daily boardings on BakuBus routes (a trip with one change counts as two boardings) and daily entries at metro stations.
+
+## The map data had to be fixed first
+
+AYNA's map data could not be used as published: its defects would distort every measure, and none of them is documented. The route length field holds the round-trip length, and the duration field is that length divided by 0.6 on every route, so it is not a measured time. On 13 routes the shapes are filed under the wrong direction, three directions have their shape stored backwards, one has latitude and longitude swapped, and seven routes have no stops at all.
+
+Rather than fixing these defects by hand, the study's code finds them in the data itself: it places each stop on its route shape and checks whether the shape fits the order of the stops. That way the fixes repeat automatically whenever the map is downloaded again. After 23 repairs, 394 of the 402 route directions are drawn with real shapes, and half of all stops sit within 7.2 m of their line.
+
+## How direct are the routes?
+
+The study compares each route's length with the straight line between its end stops. Of the 201 routes, 29 count as direct (up to 1.4 times the straight line), 98 are 1.4 to 2 times as long, 55 are 2 to 3 times, and 19 are loops. Half the routes are more than 1.77 times the straight line.
+
+For comparison, a Soviet planning norm of 1981, since repealed, limited routes to 1.2 to 1.3 times the straight line. Only 20 of the 182 routes that are not loops meet the 1.3 limit.
+
+The street network does not explain all of it. Half the routes are at least 21% longer than the shortest path between their end stops on streets buses already use. For riders, on half the routes the ride between two stops at least 1 km apart is on average more than 1.45 times the straight line.
+
+Winding routes are not the lightly used ones, either. Six of BakuBus's 20 busiest routes are very indirect or loops, including the busiest of all: route 14, with 31,303 boardings on an average weekday in September 2026.
+
+## Up to 26 routes on one street
+
+All route directions add up to 7,398 km, but they run over just 3,824 km of distinct street segments. On average each segment carries 1.93 routes, and some carry 26. On 21 stretches totalling 71 km, at least eight routes share every segment; the study calls these trunk corridors.
+
+The longest corridor runs 12 km from the ASAN Xidmət centre No. 5 on X. R. Ulutürk street, past the Olympic Stadium and along the Zabrat highway, to the State Customs Committee Academy, and 27 routes use it. The stretch used by the most routes is the 3.5 km between the Xətai district court and Neftçilər metro station: 29 routes, with up to 25 on a single segment.
+
+Duplication is clearest where routes have nearly the same stops. For 25 routes, at least 85% of the stops are also served by one other route, forming 72 pairs: route 190 has all of its stops on route 160, and 173A and 173B share 94% of theirs.
+
+In 59 of those 72 pairs the two routes belong to different carriers. Merging them is a contract question as much as a technical one; as the study notes, the planned gross contracts could make it easier.
+
+## 271 detours, 939 extra kilometers
+
+The study defines a detour as a stretch where the bus travels at least 2.5 times the straight line between two of its stops, and at least 1.5 km further. Baku has 271 such detours on 139 routes. Taking one trip in each direction on every route, the detours add 939 km between them.
+
+Most of the detours are unnecessary. For 217 of them (on 118 routes, 719 km in all), everyone living near the stops inside the detour also has another route within 400 m. The longest of all 271 is on route 177: between Maştağa park and post office No. 59, the bus covers 21.2 km where the straight line is 7.8 km, adding 13.4 km and about 27.5 minutes to every trip. Only 53 people near its stops have no other route.
+
+Not every detour should go, though. Route 112's detour between Şüvəlan road and the Dendrology Institute adds more than 25 minutes to each trip, but the 1,661 people near it have no other route. For them it is the only bus, and how they would be served needs settling before anyone straightens it.
+
+## Stops: not too close overall, but uneven
+
+The median gap between consecutive stops is 420 m, so half the gaps are shorter. That is above the 401 to 403 m averages measured in the United States and in 38 cities elsewhere, and above the 240 to 400 m that agencies such as TriMet and TransLink aim for on local routes. Even so, 23.9% of gaps are under 300 m and 5.4% under 200 m.
+
+Assuming about 20 seconds and 0.05 liters of fuel are lost at every stop, stopping takes about 19% of the buses' running time and 20% of their fuel. Removing stops closer than 250 m to a neighbor (keeping terminals and hubs, and never leaving a gap over 700 m) removes 351 stops.
+
+That change alone lowers the share of people within 400 m of a stop by only 0.15 percentage points. At today's headways it needs 28 fewer buses and 1.7% less fuel, and the average trip among those possible within two hours shortens from 51.8 to 51.6 minutes.
+
+## Who the network reaches
+
+The study area is home to 3.04 million people. Of them, 55.5% live within 300 m of a stop, 66% within 400 m, 73.4% within 500 m and 91.5% within 1 km. The US Transit Capacity and Quality of Service Manual takes 400 m as a bus stop's coverage area.
+
+Some 12.8% live more than 800 m from any stop. That is close to the 17% with limited access that the consultant reported, by a definition that has not been published, so the two approaches point the same way.
+
+The door-to-door model counts walking, waiting, riding and changing buses together. In the model, trips possible within two hours take 51.8 minutes on average. Of all trips, 16.2% can be made within 30 minutes, 29.4% within 45, 42.2% within an hour and 66.3% within two hours, while 34.6% have no stop within 500 m at one end or both.
+
+Of the possible trips, 28.9% need no change, 43.2% one, 15% two and 1.5% three or more, while 11.4% are walked entirely. One caveat matters: the metro is in the model only as a destination, not as a way to travel, so trips that would be faster by metro look slow or impossible here. The 51.8 minutes is an estimate for comparing versions of the network, not a measured travel time.
+
+## How far can the model be trusted?
+
+With no public data on where riders go, the study spreads trips with a gravity model: people travel more to nearby and attractive places such as schools, hospitals, offices, shopping centers and metro stations. To see how well that works, the study compares its ranking of routes with real boardings on 56 BakuBus routes. The Spearman correlation is 0.58: the model ranks routes moderately well, and no better.
+
+Adding headways estimated from the real counts lifts the figure to 0.77, but that feeds the model the data it is checked against, so the study quotes 0.58 as the fair figure. The model overrates express and long suburban routes (E1 at 6.4 times its real share) and gives suburban routes such as 139, 141E, 189 and 163 less than 15% of theirs.
+
+On an average weekday in September 2026, BakuBus recorded 768,253 boardings on 64 routes, 56 of which are on the map. The other 145 routes on the map have no counts. Headways are estimated for 200 of the 201 routes (55 from boardings, 145 by service type), yet the 2,015 buses they imply are close to the roughly 2,300 in daily service: the headways look realistic overall, though individual routes can be far off.
+
+## A new network with the same buses: 27 changes
+
+The second part of the study tries the changes other cities used when redesigning their networks: merging near-duplicate routes, dropping lightly used ones, straightening detours, removing some closely spaced stops, and moving buses to where they save riders the most waiting. Its rules are cautious. The number of buses stays fixed, a change is kept only if it shortens the average door-to-door trip, no single change may leave more than 500 people without a stop within 500 m, and no route with at least 1,000 counted weekday boardings is dropped.
+
+The search kept 27 changes: 5 merges (routes 114B, 100, 173A, 210 and 169 fold into other routes), 3 drops (164, 39 and 150E), 14 straightened detours on 12 routes, one change that removes 338 stops in a single step, and four rounds of moving buses between routes. The number of routes falls from 201 to 193.
+
+On an independent sample of trips, not the one the search was tuned on, trips possible within two hours shorten on average from 51.8 to 50.9 minutes, and the share possible within 45 minutes rises from 29.4% to 30.3%. The same buses run 3.2% more trips on shorter routes, so headways shrink.
+
+The gain can also be taken another way: the model's current travel times can be delivered with about 88% of the buses. That means 25,007 bus-hours a day instead of 28,327, 200,140 liters of fuel instead of 226,592 (estimated, in diesel-equivalent liters) and 534 tonnes of CO₂ instead of 605, a saving of about 12%.
+
+It has a price. About 5,000 fewer people live within 400 m of a stop, and 976 people are left without a stop within 500 m. The share of trips needing two or more changes rises from 16.5% to 17.4%.
+
+## A minute is small, but it is not luck
+
+A minute sounds small, so the study tested separately how much the gain depends on chance and on its assumptions. Here the gain is measured with an average that counts a trip impossible within two hours as 120 minutes; on the independent sample it is 0.76 minutes. On ten different samples of trips the gain is 0.68 to 0.81 minutes (0.77 on average), and it is positive in every one.
+
+Rerunning the search under fourteen other assumptions (for example, a penalty of 2 or 8 minutes per change instead of 5, shorter or longer trips, different headways, or a 400 m walk to a stop instead of 500) keeps the gain between 0.46 and 0.88 minutes. Every time, 87 to 93% of the buses suffice for the model's current travel times.
+
+The smallest gain comes without the moves of buses between routes. Those moves are the least certain part of the result, because they rest on estimated ridership for the 145 routes without counts. Without them, the remaining 23 changes (merges, drops, straightened detours and the stop removal) keep three fifths of the gain.
+
+The study singles out one result as the most useful: the strict rule. When nobody may be left without a stop within 500 m, the search keeps 24 changes and gains 0.77 minutes, as much as the default run. In other words, stranding those 976 people buys nothing, which is why the study recommends the strict rule as the safer choice.
+
+None of this contradicts AYNA's plan: the new network adds buses for growth, while this search only removes waste from the existing one. In the study's review of other cities, how much a redesign gained went with whether service was added.
+
+## What the results do not say
+
+The study is neither a forecast nor a ready plan. Its results rest on estimated headways and a demand model that ranks routes only moderately well; the model ignores bus capacity and crowding, peak hours and differences in speed between streets, and it has no travel by metro. The population grid dates from November 2023. The search only changes existing routes and invents none, so it finds improvements, not the best possible network.
+
+The map also lags the street. On 23 October 2026 AYNA's map API returned exactly the data it held on 6 May 2026, while BakuBus's counts already list eight routes the map does not carry: M2 to M6, 500, 149E and 195E. M2 to M6 are probably among the six express routes, M1 to M6, that AYNA launched on 14 August 2026, a day before metro service between the 28 May and Nizami stations was temporarily suspended ([APA](https://en.apa.az/infrastructure/six-new-express-bus-routes-launched-in-baku-ahead-of-suspension-of-metro-services-video-520319)). The results therefore describe the old network the reform is replacing.
+
+Some changes rest on thin evidence, and the study itself calls them candidates to check. Route 519 is a 2.1 km line with three stops and no counts, but the model credits it with 14,700 boardings a day, so the search raises it from every 15 minutes to every 3. The study's advice is simple: count its riders before adding a single bus.
+
+The routes the search drops, 164 and 39, have no counts either, and 150E recorded only 16.5 boardings on an average weekday in September. Every stretch the study proposes to straighten also needs checking on the ground: turns, one-way streets and the stops the bus would no longer serve, some of them near schools and clinics.
+
+## What it means for riders and job seekers
+
+BirJob's free [bus route planner](https://www.birjob.com/aletler/avtobus-marsrutu) (in Azerbaijani) is built on the same AYNA map data. It picks the way between two stops that needs the fewest changes of bus: if one bus will do, it will not suggest two, though it does not promise the fastest journey. It also lists the stops of any line in order. It is not a timetable, since none is published, and its data is not updated automatically: the M express routes are not in it, and routes changed since May 2026 are worth checking before a trip.
+
+The new network is expected to need about 2,800 buses, against the roughly 2,300 in daily service in January 2026, which could raise demand for drivers. Driving a bus takes a category D license, and open positions are on BirJob's [driver vacancies page](https://www.birjob.com/vakansiyalar/surucu).
+
+The study is also a working example of data analysis: public data, Python's standard library only, and assumptions that each cite a source. Every result regenerates from three commands, and the AYNA map snapshot is [published on Kaggle](https://doi.org/10.34740/KAGGLE/DSV/21173689) with its tables, so anyone learning data analysis can practice on real Baku data. If that is you, our [data analyst roadmap](https://www.birjob.com/blog/data-analyst-roadmap-2026) lays out the skills, and [what a data analyst actually does](https://www.birjob.com/blog/what-does-data-analyst-do) describes the day-to-day work.
+
+## Frequently asked questions
+
+### How many bus routes does Baku have?
+
+As published on 23 October 2026, AYNA's public map has 201 routes with stops, in 402 route directions, serving 3,456 stops. According to the Ministry of Digital Development and Transport, around 2,300 buses ran daily as of January 2026. The map does not yet show recent changes such as the M express routes launched in August.
+
+### How long does a bus trip in Baku take on average?
+
+In a model built from open data, trips possible within two hours take 51.8 minutes door to door on average, and 29.4% of trips can be made within 45 minutes. That is an estimate that includes walking, waiting and changes, not a measured time, and the model leaves out travel by metro.
+
+### When will Baku's new bus network launch?
+
+According to the Ministry's update of 28 January 2026, implementation of the new network has begun and eight routes are in service. AYNA expects the new network to need about 2,800 buses. The sources cited here give no date for completing the switch.
+
+### How do I find which bus to take between two stops in Baku?
+
+Choose your start and destination stops in BirJob's [bus route planner](https://www.birjob.com/aletler/avtobus-marsrutu): it shows the way with the fewest changes of bus, the walking legs and an approximate travel time. It is not a timetable and its data is not updated automatically, so check the current route before you travel.
+
+### Where are the study's code and data?
+
+All of the code, input data and results are open: release 1.1.0 is [archived on Zenodo with a DOI](https://doi.org/10.5281/zenodo.23604370) and the code is MIT-licensed. The paper has been submitted to the journal Public Transport and has not yet been peer reviewed, and every result regenerates from three commands.
