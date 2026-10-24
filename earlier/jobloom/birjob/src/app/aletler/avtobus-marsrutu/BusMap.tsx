@@ -10,6 +10,7 @@ import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/type
 import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
+import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
@@ -198,21 +199,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
     }).bindTooltip("Sizin yeriniz", { direction: "top" }).addTo(overlay);
   }
 
-  // Fit the view to the most relevant features.
-  if (route) {
-    const coords: [number, number][] = [];
-    for (const seg of route.segments) for (const s of seg.stops) coords.push([s.latitude, s.longitude]);
-    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
-  } else if (line) {
-    const coords: [number, number][] = line.coordinates.length >= 2
-      ? line.coordinates.map((c) => [c.latitude, c.longitude])
-      : line.stops.map((s) => [s.latitude, s.longitude]);
-    if (coords.length) map.fitBounds(L.latLngBounds(coords), { padding: [50, 50] });
-  } else if (fromStop && toStop) {
-    map.fitBounds(L.latLngBounds([[fromStop.latitude, fromStop.longitude], [toStop.latitude, toStop.longitude]]), { padding: [60, 60] });
-  } else if (fromStop) {
-    map.setView([fromStop.latitude, fromStop.longitude], 15);
-  }
+  fitFeatures(map, { route, line, fromStop, toStop });
 }
 
 /**
@@ -240,6 +227,8 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
   clickRef.current = onStopClick;
   const stopsRef = useRef(stops);
   stopsRef.current = stops;
+  const fitRef = useRef<FitTargets>({ route, line, fromStop, toStop });
+  fitRef.current = { route, line, fromStop, toStop };
 
   // Init once (guarded + cleaned up so StrictMode's double-mount is safe).
   useEffect(() => {
@@ -270,6 +259,12 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
         if (dist < min) { min = dist; best = s; }
       }
       if (best && min <= SNAP_RADIUS_KM) clickRef.current(best);
+    });
+
+    // A fit made while the map sat 0×0 in the phone's hidden tab is redone once the
+    // map has a size (#685; sizedFromZero has the why).
+    map.on("resize", (e: L.ResizeEvent) => {
+      if (sizedFromZero(e)) fitFeatures(map, fitRef.current);
     });
 
     clusterRef.current = cluster;

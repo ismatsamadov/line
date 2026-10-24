@@ -68,10 +68,29 @@ describe('GET /api/avtobus/line', () => {
     expect(dbMock.queryBusLine).toHaveBeenCalledWith(1, 2);
   });
 
-  it('falls back to direction 1 when the direction is non-numeric', async () => {
-    dbMock.queryBusLine.mockResolvedValue(SAMPLE_LINE);
-    await lineGET(lineReq('?busId=1&direction=xyz'));
-    expect(dbMock.queryBusLine).toHaveBeenCalledWith(1, 1);
+  it('400 when the direction is not 1 or 2 (no DB call)', async () => {
+    // The data has directions 1 and 2 only; anything else used to be read as 1.
+    for (const direction of ['xyz', '3', '0', '1junk', '']) {
+      const res = (await lineGET(lineReq(`?busId=1&direction=${direction}`))) as unknown as Res;
+      expect(res.status, direction).toBe(400);
+    }
+    expect(dbMock.queryBusLine).not.toHaveBeenCalled();
+  });
+
+  it('400 for a busId parseInt would have read as a number (no DB call)', async () => {
+    // #685: parseInt took "1junk" and "1.5" as 1, and passed ids past int4 to Prisma.
+    for (const busId of ['1junk', '1.5', '-1', '0', '01', '1e3', '%201', '2147483648', '99999999999']) {
+      const res = (await lineGET(lineReq(`?busId=${busId}`))) as unknown as Res;
+      expect(res.status, busId).toBe(400);
+    }
+    expect(dbMock.queryBusLine).not.toHaveBeenCalled();
+  });
+
+  it('accepts the largest PostgreSQL integer as a busId', async () => {
+    dbMock.queryBusLine.mockResolvedValue(null);
+    const res = (await lineGET(lineReq('?busId=2147483647&direction=2'))) as unknown as Res;
+    expect(res.status).toBe(404);
+    expect(dbMock.queryBusLine).toHaveBeenCalledWith(2147483647, 2);
   });
 
   it('500 (not a throw) when the query fails — graceful degradation', async () => {

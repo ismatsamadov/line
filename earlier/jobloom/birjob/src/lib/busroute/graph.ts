@@ -8,6 +8,7 @@ import { GraphEdge, StopDetail, Bus, BusStop, WALKING_EDGE_BUS_ID, WALKING_EDGE_
 import { haversine } from "./geo";
 import { queryStopDetails, queryBuses, queryBusStops } from "./db";
 import { computeWalkingEdges } from "./walking";
+import { collapseRepeatedSequence } from "./sequence";
 
 export class TransitGraph {
   private adjacency: Map<number, GraphEdge[]> = new Map();
@@ -71,17 +72,19 @@ export class TransitGraph {
       // Row IDs are not travel order. Use the same cumulative-distance order
       // as the line viewer, with stable tie-breaks for co-located stop entries.
       stops.sort((a, b) => a.total_distance - b.total_distance || a.bus_stop_id - b.bus_stop_id || a.id - b.id);
+      // A list stored twice over must not ride from its terminus back to its start.
+      const ordered = collapseRepeatedSequence(stops, (s) => s.stop_id);
 
       // Per-segment time = route duration spread evenly across hops. The
       // upstream API has no per-leg timings — deterministic, good enough for
       // ranking, NOT a live ETA.
-      const segmentCount = Math.max(stops.length - 1, 1);
+      const segmentCount = Math.max(ordered.length - 1, 1);
       const duration = Number.isFinite(bus.duration_minuts) && bus.duration_minuts > 0 ? bus.duration_minuts : 30;
       const segmentTime = duration / segmentCount;
 
-      for (let i = 0; i < stops.length - 1; i++) {
-        const fromStop = stops[i];
-        const toStop = stops[i + 1];
+      for (let i = 0; i < ordered.length - 1; i++) {
+        const fromStop = ordered[i];
+        const toStop = ordered[i + 1];
         const fromCoords = this.stopInfo.get(fromStop.stop_id);
         const toCoords = this.stopInfo.get(toStop.stop_id);
         if (!fromCoords || !toCoords) continue;
@@ -97,7 +100,7 @@ export class TransitGraph {
           direction: fromStop.direction_type_id,
           fromSequence: i,
           toSequence: i + 1,
-          headsign: stops[stops.length - 1].stop_name,
+          headsign: ordered[ordered.length - 1].stop_name,
           toStopId: toStop.stop_id,
           busId: bus.id,
           busNumber: bus.number,

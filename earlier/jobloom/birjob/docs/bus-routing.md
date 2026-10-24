@@ -57,6 +57,27 @@ direction, travel order is cumulative `total_distance`, then `bus_stop_id` and
 in the graph with distinct positions so a ride cannot jump across a loop. A
 missing stop breaks its adjacent legs; it is not skipped to invent a shortcut.
 
+The snapshot stores 120A's stops twice in each direction (bus_id 160: 30 rows for
+15 stops and 28 for 14, every row at `total_distance` 23.4), so travel order puts
+one copy after the other. `collapseRepeatedSequence` (`sequence.ts`) keeps one copy
+of a list that is an exact repeat of itself, in the graph and in the line viewer
+(#685). Without it the planner rode from the terminus straight back to the first
+stop as one leg and spread the line's duration over twice the legs. It changes no
+other shape: a loop, a route that ends where it starts and a stop listed twice in a
+row stay as they are.
+
+Two stops of route 517, 3838 and 3839, were stored at latitude 4.05, the right
+digits with the decimal point one place out, which put every journey through them
+in the Indian Ocean. `prisma/migrations/2026-10-24_bus_route_517_stop_latitudes.sql`
+moves them to 40.49233 and 40.49409; its header has the evidence. This finds any
+other stop outside the area (0 since that file was applied on 2026-10-24). Nothing
+runs it automatically:
+
+```sql
+SELECT id, name, latitude, longitude FROM bus.bus_stop_details
+ WHERE latitude NOT BETWEEN 39.5 AND 41.5 OR longitude NOT BETWEEN 48.5 AND 51;
+```
+
 The graph uses haversine distance between stops. A bus line's stored duration is
 spread evenly over its legs; missing/nonpositive duration falls back to 30
 minutes for the whole line. Neither figure is road geometry or a live estimate.
@@ -93,6 +114,16 @@ switching mode invalidates an older response. A delayed itinerary cannot overwri
 the current selection. Results show boarding/alighting stops, walking endpoints,
 terminal direction and movement-time limitations. Walking-only journeys are
 labeled “Piyada,” rather than “0 avtobus.”
+
+`GET /api/avtobus/line` takes `busId` as a positive PostgreSQL integer written in
+digits, and `direction` as 1 or 2 (no direction means 1); anything else is a 400
+before any query. `parseInt` used to read “1junk” and “1.5” as 1 and pass ids past
+int4 to Prisma, which threw. The stop and bus lists show an error when their
+request fails; a 500 body is JSON too, and used to read as an empty list. On a phone
+the map mounts in the hidden tab, where Leaflet measures it as 0×0, so a fit made
+then landed at maximum zoom on the journey's middle; whenever the map goes from
+0×0 to a real size it fits again, and an ordinary window resize keeps the view
+(#685).
 
 ## Verification for #664
 

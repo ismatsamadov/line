@@ -6,6 +6,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import type { StopDetail, Bus, BusStop, RouteCoordinate, BusLite, BusLineDetail, BusLineStop } from "./types";
+import { collapseRepeatedSequence } from "./sequence";
 
 export async function queryStopDetails(): Promise<StopDetail[]> {
   const rows = await prisma.bus_stop_details.findMany({ orderBy: { id: "asc" } });
@@ -149,12 +150,13 @@ export async function queryBusLine(
     ? directionTypeId
     : availableDirections[0] ?? directionTypeId;
 
-  // Ordered stops for this direction (travel order = cumulative distance asc).
-  const stopRows = await prisma.bus_bus_stops.findMany({
+  // Ordered stops for this direction (travel order = cumulative distance asc),
+  // one copy of a list the snapshot stores twice over, as the planner's graph uses.
+  const stopRows = collapseRepeatedSequence(await prisma.bus_bus_stops.findMany({
     where: { bus_id: busId, direction_type_id: direction },
     select: { stop_id: true, total_distance: true },
     orderBy: [{ total_distance: "asc" }, { bus_stop_id: "asc" }, { id: "asc" }],
-  });
+  }), (r) => r.stop_id);
   const stopIds = [...new Set(stopRows.map((r) => r.stop_id))];
   const details = await prisma.bus_stop_details.findMany({
     where: { id: { in: stopIds } },

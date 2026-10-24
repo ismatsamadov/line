@@ -349,8 +349,10 @@ export default function Component() {
   }, []);
 
   useEffect(() => {
+    // The 500 body is JSON too: without the status check a failed load read as an
+    // empty stop list, with no message (#685).
     fetch("/api/avtobus/stops")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(`stops ${r.status}`); return r.json(); })
       .then((d) => setStops(d.stops || []))
       .catch(() => setError("Dayanacaqlar yüklənmədi. Yenidən cəhd edin."));
   }, []);
@@ -478,7 +480,7 @@ export default function Component() {
     if (m === "line" && buses.length === 0 && !busesLoading) {
       setBusesLoading(true);
       fetch("/api/avtobus/buses")
-        .then((r) => r.json())
+        .then((r) => { if (!r.ok) throw new Error(`buses ${r.status}`); return r.json(); })
         .then((d) => setBuses(d.buses || []))
         .catch(() => setLineError("Avtobuslar yüklənmədi. Yenidən cəhd edin."))
         .finally(() => setBusesLoading(false));

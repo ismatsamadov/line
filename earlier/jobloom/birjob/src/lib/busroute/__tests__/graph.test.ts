@@ -32,6 +32,17 @@ describe('transit graph', () => {
     expect(g.getEdges(1).flatMap(e => e.kind === 'bus' ? [e.fromSequence] : [])).toEqual([0, 2]);
   });
 
+  it('rides one copy of a stop list stored twice over, never terminus to start (#685)', async () => {
+    // 120A's shape: every row at one total_distance, so travel order is copy after copy.
+    db.queryBusStops.mockResolvedValue([1, 2, 3, 1, 2, 3].map((s, i) => ({ ...busStop(10, s, i), total_distance: 23.4 })));
+    const g = await (await import('../graph')).getGraph();
+    const rides = (id: number) => g.getEdges(id).filter(e => e.kind === 'bus');
+    expect(rides(3)).toEqual([]);
+    // The line's 30 minutes spread over one copy's two legs, not five.
+    expect(rides(1)).toEqual([expect.objectContaining({ toStopId: 2, fromSequence: 0, toSequence: 1, headsign: 'Stop 3', time: 15 })]);
+    expect(rides(2)).toEqual([expect.objectContaining({ toStopId: 3, fromSequence: 1, toSequence: 2, time: 15 })]);
+  });
+
   it('does not bridge a leg with a missing stop', async () => {
     db.queryStopDetails.mockResolvedValue([stop(1), stop(3)]);
     db.queryBuses.mockResolvedValue([{ ...bus(10), duration_minuts: -1 }]);
