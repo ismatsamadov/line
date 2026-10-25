@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { findRoute } from '../routing';
 import type { GraphEdge } from '../types';
-import { graph, ride, walk } from './fixtures';
+import { graph, RED, ride, train, walk } from './fixtures';
 
 const busIds = (route: ReturnType<typeof findRoute>) => route?.segments.filter(s => s.busId !== -1).map(s => s.busId);
 
@@ -105,14 +105,21 @@ describe('minimum-boardings routing (#664)', () => {
     expect(route.segments.at(-1)!.stops.at(-1)!.id).toBe(4);
   });
 
-  it('agrees with independent boarding rounds across generated networks', () => {
-    let seed = 664;
+  it('agrees with independent boarding rounds across generated networks', () => agreesWithRounds(664, () => ride));
+
+  it('agrees with them when some of the lines are metro lines (#689)', () => agreesWithRounds(689, (i) => (i % 2 ? train : ride)));
+});
+
+/** Round n boards one more line from any stop reachable in round n-1, then rides forward
+ *  through that line: no Dijkstra, no costs. Line i's legs are made by make(i). */
+function agreesWithRounds(start: number, make: (i: number) => typeof ride | typeof train) {
+    let seed = start;
     const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
     for (let network = 0; network < 30; network++) {
       const lines = Array.from({ length: 5 }, () => Array.from({ length: 3 + random(3) }, () => 1 + random(6)));
       const edges: Record<number, GraphEdge[]> = {};
       lines.forEach((line, i) => line.slice(0, -1).forEach((from, seq) => {
-        (edges[from] ??= []).push(ride(line[seq + 1], i + 1, 1 + random(30), 1, seq));
+        (edges[from] ??= []).push(make(i)(line[seq + 1], i + 1, 1 + random(30), 1, seq));
       }));
       const g = graph(edges, [1, 2, 3, 4, 5, 6]);
       for (let from = 1; from <= 6; from++) for (let to = 1; to <= 6; to++) {
@@ -137,5 +144,55 @@ describe('minimum-boardings routing (#664)', () => {
         }
       }
     }
+}
+
+describe('the metro in minimum-boardings routing (#689)', () => {
+  const modes = (route: ReturnType<typeof findRoute>) => route?.segments.map(s => s.mode);
+
+  it('rides a train through its stations as one boarding, and counts a change of train as another', () => {
+    // Walk to station 10, ride metro:1 to 12, change there to metro:2 (as at Əhmədli), walk off.
+    const g = graph({ 1: [walk(10)], 10: [train(11, 1)], 11: [train(12, 1, 1, 1, 1)], 12: [train(13, 2)], 13: [walk(2)] });
+    const route = findRoute(g, 1, 2)!;
+    expect(modes(route)).toEqual(['walk', 'metro', 'metro', 'walk']);
+    expect(route.totalTransfers).toBe(1);
+    expect(route.segments[1].stops.map(s => s.id)).toEqual([10, 11, 12]);
+    expect(route.segments[1]).toMatchObject({ busId: -2, busNumber: 'Qırmızı xətt', line: RED, headsign: 'Terminus metro:1', direction: null });
+    // Stations count like stops, the change at 12 once.
+    expect(route.totalStops).toBe(4);
+  });
+
+  it('still takes one bus over a much faster bus and train (#664)', () => {
+    const g = graph({ 1: [ride(2, 10, 60), ride(3, 20, 5)], 3: [walk(30)], 30: [train(31, 1, 3)], 31: [walk(2)] });
+    expect(modes(findRoute(g, 1, 2))).toEqual(['bus']);
+  });
+
+  it('takes the train over a bus with as many boardings when the train is faster', () => {
+    const g = graph({ 1: [ride(2, 10, 30), walk(30)], 30: [train(31, 1, 8)], 31: [walk(2)] });
+    const route = findRoute(g, 1, 2)!;
+    expect(modes(route)).toEqual(['walk', 'metro', 'walk']);
+    expect(route.totalTransfers).toBe(0);
+    expect(modes(findRoute(graph({ 1: [ride(2, 10, 5), walk(30)], 30: [train(31, 1, 8)], 31: [walk(2)] }), 1, 2))).toEqual(['bus']);
+  });
+
+  it('changes line by one walk between two stations, never by a second walk in a row', () => {
+    // 30 and 40 are one interchange, as 28 May and Cəfər Cabbarlı are.
+    const route = findRoute(graph({ 1: [walk(20)], 20: [train(30, 1)], 30: [walk(40, 0.04)], 40: [train(41, 2)], 41: [walk(2)] }), 1, 2)!;
+    expect(modes(route)).toEqual(['walk', 'metro', 'walk', 'metro', 'walk']);
+    expect(route.totalTransfers).toBe(1);
+    // A walk to one station cannot go on to the next on foot.
+    expect(findRoute(graph({ 1: [walk(30)], 30: [walk(40, 0.04)], 40: [train(41, 2)], 41: [walk(2)] }), 1, 2)).toBeNull();
+  });
+
+  it('shows the express bus as a bus, with the metro line it stands in for', () => {
+    const express = { ...train(31, 3, 3), vehicle: 'bus', busNumber: 'M1/M2' } as GraphEdge;
+    const route = findRoute(graph({ 1: [walk(30)], 30: [express], 31: [walk(2)] }), 1, 2)!;
+    expect(route.segments[1]).toMatchObject({ mode: 'bus', busId: -2, busNumber: 'M1/M2', line: RED });
+  });
+
+  it('draws a walk to a station by its exit, and every other walk straight', () => {
+    const byExit: [number, number][] = [[40.01, 49], [40.0105, 49.0004], [40.3, 49]];
+    const route = findRoute(graph({ 1: [{ ...walk(30), path: byExit } as GraphEdge], 30: [train(31, 1)], 31: [walk(2)] }), 1, 2)!;
+    expect(route.segments[0].path).toEqual(byExit);
+    expect(route.segments[2].path).toBeUndefined();
   });
 });

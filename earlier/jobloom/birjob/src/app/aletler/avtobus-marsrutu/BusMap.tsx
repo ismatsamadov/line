@@ -7,14 +7,14 @@ import "leaflet.markercluster";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
-import { WALKING_EDGE_BUS_ID } from "@/lib/busroute/types";
+import { isMetroStation } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
+import { segmentColors } from "./segmentColors";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
-const SEGMENT_COLORS = ["#e11d48", "#7c3aed", "#059669", "#dd2b0f"];
 // Single line-viewer trajectory — blue, distinct from the route colours + the
 // orange stop clusters so "this whole bus line" reads at a glance.
 const LINE_COLOR = "#2563eb";
@@ -62,6 +62,18 @@ function stopIcon(isHub: boolean): L.DivIcon {
     iconSize: [box, box],
     iconAnchor: [box / 2, box / 2],
     html: `<div style="display:flex;align-items:center;justify-content:center;width:${box}px;height:${box}px"><div style="width:${d}px;height:${d}px;border-radius:9999px;background:${bg};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div></div>`,
+  });
+}
+
+/** A metro station on a found route: an "M" in its line's colour, in the same hit box. */
+function stationIcon(color: string): L.DivIcon {
+  const box = 30;
+  const d = 18;
+  return L.divIcon({
+    className: "",
+    iconSize: [box, box],
+    iconAnchor: [box / 2, box / 2],
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:${box}px;height:${box}px"><div style="width:${d}px;height:${d}px;border-radius:9999px;background:${color};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4);color:#fff;font:700 10px/14px sans-serif;text-align:center">M</div></div>`,
   });
 }
 
@@ -114,23 +126,38 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
         .addTo(overlay);
     }
 
-    // Route polylines, distinct colour per bus, dashed walking. A ride follows the
-    // road where the planner matched one (seg.path); otherwise stop to stop.
-    let busColorIdx = 0;
-    for (const seg of route.segments) {
-      const isWalking = seg.busId === WALKING_EDGE_BUS_ID;
-      const color = isWalking ? "#64748b" : SEGMENT_COLORS[busColorIdx % SEGMENT_COLORS.length];
-      if (!isWalking) busColorIdx++;
+    // Route polylines in the step list's colours (segmentColors), dashed walking. A
+    // ride follows the road or the track where the planner matched one (seg.path);
+    // otherwise stop to stop. A metro train gets a dark casing, so it reads apart from
+    // a bus in a similar colour (#689).
+    const colors = segmentColors(route);
+    route.segments.forEach((seg, i) => {
+      const isWalking = seg.mode === "walk";
       const coords = seg.path ?? seg.stops.map((s) => [s.latitude, s.longitude] as [number, number]);
+      if (seg.mode === "metro") {
+        L.polyline(coords, { color: "#111827", weight: 11, opacity: 0.6, lineCap: "round", lineJoin: "round" }).addTo(overlay);
+      }
       L.polyline(coords, {
-        color, weight: isWalking ? 5 : 7, opacity: isWalking ? 0.7 : 0.9,
+        color: colors[i], weight: isWalking ? 5 : 7, opacity: isWalking ? 0.7 : 0.9,
         lineCap: "round", lineJoin: "round", dashArray: isWalking ? "8, 12" : undefined,
       }).addTo(overlay);
+    });
+    // Metro stations, which are not among the bus stops above, in the colour of a
+    // train that calls there; one the express bus alone reaches stays dark.
+    const stationColor = new Map<number, string>();
+    for (const seg of route.segments) if (seg.mode === "metro" && seg.line) for (const s of seg.stops) stationColor.set(s.id, seg.line.color);
+    const drawn = new Set<number>();
+    for (const seg of route.segments) for (const s of seg.stops) {
+      if (!isMetroStation(s.id) || drawn.has(s.id)) continue;
+      drawn.add(s.id);
+      L.marker([s.latitude, s.longitude], { icon: stationIcon(stationColor.get(s.id) ?? "#111827"), keyboard: false })
+        .bindTooltip(`${s.name} metrosu`, { direction: "top", offset: [0, -6] })
+        .addTo(overlay);
     }
-    // Transfer markers between bus segments.
-    const busSegs = route.segments.filter((s) => s.busId !== WALKING_EDGE_BUS_ID);
-    for (let i = 0; i < busSegs.length - 1; i++) {
-      const last = busSegs[i].stops[busSegs[i].stops.length - 1];
+    // Transfer markers between rides.
+    const rides = route.segments.filter((s) => s.mode !== "walk");
+    for (let i = 0; i < rides.length - 1; i++) {
+      const last = rides[i].stops[rides[i].stops.length - 1];
       L.marker([last.latitude, last.longitude], { icon: pinIcon("#f59e0b", 20) })
         .bindTooltip(`Dəyişmə: ${last.name}`, { direction: "top", offset: [0, -10] })
         .addTo(overlay);

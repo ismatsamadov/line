@@ -1,8 +1,9 @@
 # Bus routing
 
-The planner answers “which buses should I take between these stops?” from the
-retained AYNA reference snapshot. It has no schedule, vehicle positions, traffic
-or waiting-time feed. The snapshot does not refresh automatically.
+The planner answers “which buses and metro trains should I take between these
+stops?” from the retained AYNA reference snapshot and a snapshot of the metro
+(`src/lib/busroute/metro.json`, #689). It has no schedule, vehicle positions,
+traffic or waiting-time feed. Neither snapshot refreshes automatically.
 
 ```mermaid
 flowchart LR
@@ -10,8 +11,9 @@ flowchart LR
   B --> C[Validate integer stop IDs]
   C --> D[Shared graph initialization]
   D --> E[PostgreSQL bus reference tables]
+  D --> M[metro.json]
   D --> F[Minimum-boardings search]
-  F --> G[Bus and walking instructions]
+  F --> G[Bus, metro and walking instructions]
 ```
 
 ## Ranking
@@ -28,6 +30,12 @@ This implements #664's requested preference: an available one-bus itinerary wins
 over every two-bus itinerary, even when the latter has a shorter estimated time.
 It does not promise the fastest journey. Increasing a finite transfer penalty
 would not enforce this preference for arbitrary journey lengths.
+
+A metro ride is a ride like a bus ride (#689): boarding a train, changing trains
+and boarding the metro's express bus each count as one boarding. One bus still
+beats a bus and a train, however much faster the second is; among journeys with as
+many boardings, the faster wins, and that is where the metro comes in. See
+[Metro](#metro-689) for what the rule costs.
 
 `src/lib/busroute/routing.ts` runs one Dijkstra search with a priority queue of
 immutable labels. A label records the arrival stop and the last edge. Continuing
@@ -82,9 +90,9 @@ The graph uses haversine distance between stops. A bus line's stored duration is
 spread evenly over its legs; missing/nonpositive duration falls back to 30
 minutes for the whole line. Neither figure is road geometry or a live estimate.
 `totalTime` contains movement only, with no invented wait or transfer penalty.
-`totalStops` counts bus-stop visits, merging an adjacent shared transfer stop
-once while preserving repeated visits around loops and distinct walking-transfer
-endpoints.
+`totalStops` counts stop and metro-station visits, merging an adjacent shared
+transfer stop once while preserving repeated visits around loops and distinct
+walking-transfer endpoints.
 
 `walking.ts` builds bidirectional connections of at most `WALK_RADIUS_KM` from
 the same coordinates. A spatial grid covers nearby Baku stops without an all-pairs
@@ -142,6 +150,93 @@ stops 40 m apart. 553 direction 1's line, the one the study files under it, runs
 9 km loop with no stops between its first two stops; the recorded line shows it, and
 nothing here can confirm the bus drives it.
 
+## Metro (#689)
+
+The metro joins the graph from `src/lib/busroute/metro.json`, which
+`scripts/bus/build_metro_json.py` writes from the metro tables of the open-data
+study of the bus network (github.com/ismatsamadov/route_efficiency, `data/metro/`,
+built there by its `data/build_metro.py`). The study read the operator's own API
+on 25 October 2026: its journey planner timed every train service both ways. It
+took the stations and the track from OpenStreetMap (data of 24 October) and the
+operator's 98 exits from opendata.az. `metro.json` records the commit it came
+from and carries 27 stations with their exits, and 14 rides with 48 legs, each
+leg with its running time, its track distance and its stretch of track. The
+OpenStreetMap part is under the ODbL, credited on the map and on the page; the
+operator's part is a snapshot like AYNA's.
+
+**What a ride is.** The operator's planner starts a new leg where a passenger
+changes, and the script keeps a change only where the planner makes it both ways:
+a train that runs through a station one way runs back through it. On the
+25 October snapshot that gives:
+
+- red line: İçərişəhər – Əhmədli, and a shuttle on to Həzi Aslanov while that
+  station's turnback siding is repaired (the operator said on 23 October that the
+  shuttle ends "in the coming days"); Nəriman Nərimanov – Bakmil;
+- green line: Dərnəgül – Nizami, then the express bus to 28 May, since no trains
+  have run between Nizami and 28 May since 15 August 2026 (works; the buses run
+  06:00–00:00); Cəfər Cabbarlı – Şah İsmayıl Xətai;
+- purple line: Xocəsən – 8 Noyabr. The planner waits at Avtovağzal on the way to
+  Xocəsən only, so that is not a change and the ride runs through.
+
+A ride's times are running times. The planner's waits are left out, as every wait
+is. Three of the operator's figures are kept as given though they look wrong. Two
+are the first leg out of a terminus: 6.5 minutes from Şah İsmayıl Xətai to Cəfər
+Cabbarlı against 3.0 the other way over the same 2.2 km, and 5.0 minutes from Həzi
+Aslanov to Əhmədli against 2.5 the other way over the same 1.4 km, both perhaps
+counting time standing at the terminus. The third is the express bus's numbers, M1
+and M2 in its structured answer but "M2 or M3" in its own instruction text; the bus
+is shown as M1/M2.
+
+**In the graph** (`metro.ts`, added by `TransitGraph.addMetro`). Stations are nodes
+numbered from `METRO_STATION_ID_BASE` (1,000,000) in their order in `metro.json`;
+AYNA's stop ids end at 3,841, and the graph leaves the metro out rather than let a
+stop id into that range. The stop picker does not offer stations, so journeys still
+start and end at bus stops. A ride's legs are `metro` edges with the ride's
+identity and consecutive positions, which the search continues exactly like a bus
+direction. A stop within 300 m of a station's nearest exit gets a walk to and from
+the station, measured to that exit and drawn by it (stop, exit, station); the
+minutes inside the station, escalators and passages, are not counted. The two
+pairs of stations within 300 m of each other are the interchanges, 28 May and Cəfər
+Cabbarlı (35 m) and Memar Əcəmi and Memar Əcəmi-2 (129 m), and are joined by
+walks. A walk still cannot follow a walk, so a walk to one station cannot go on to
+the next on foot. Bakmil's only exit has no bus stop within 300 m (the nearest is
+0.7 km away), so no journey uses Bakmil. If the metro cannot be built the graph is
+built without it and the console says so, as with the road shapes.
+
+**Shown.** A segment has a `mode` (`bus`, `metro` or `walk`); a metro train or the
+metro's express bus also has its `line` (the operator's name and colour), bus id
+-2 (`METRO_RIDE_BUS_ID`) and, as `busNumber`, the line's name or the bus numbers.
+Its `headsign` is the ride's terminus and its `direction` is null. The step list
+names a train "Metro · Qırmızı xətt" with its stations and terminus, a station at
+either end of a walk as "<name> metrosu", and the express bus as "Ekspres avtobus
+M1/M2" with a note that no trains run there. The map draws a train in its line's
+colour on a dark casing and each station as an "M" in that colour. Buses keep their
+colours (`segmentColors.ts`, shared by the list and the map).
+
+**Measured** on 2026-10-25 against the AYNA snapshot in route_efficiency's
+`data/ayna.db` (the same 3,456 stops and 208 buses as production), with a local
+harness that is not committed. The graph builds in 0.75 s with the metro, and 26
+of the 27 stations reach a stop. Of 1,500 random trips, 204 use the metro: 9 need
+fewer boardings than by bus alone, and 195 keep their boardings and are 9.1 minutes
+faster on average. None got slower or needed more boardings, and every journey
+passed checks for gaps between segments, walks over 300 m, two walks in a row and
+the transfer count. Neftçilər m/st → 28 May m/st now takes the red line, 19.9
+minutes against 40.6 by bus 49. Şah İsmayıl Xətai → Ulduz takes the branch line,
+the interchange and the red line, 17.2 minutes against 54.4 by two buses.
+Həzi Aslanov m/st → Sahil m/st stays on bus 20, because the metro would need the
+change at Əhmədli. What #664's rule costs: in 320 of 590 random trips a journey
+with one more boarding would be at least 10 minutes faster (22 on average, waits
+not counted), but 262 of those exist by bus alone, so this is the rule's trade-off
+and not the metro's; 135 of them use the metro.
+
+**Refreshing.** In route_efficiency, `python3 data/metro_scraper.py` and
+`python3 data/build_metro.py`; then here
+`python3 scripts/bus/build_metro_json.py <path to route_efficiency>`. If the
+services changed, `metro.test.ts` fails on its list of rides: update that list and
+this section together, since they are what riders are told. The file is
+re-included in `.gitignore`, whose `*.json` line would otherwise keep it out of git
+and so off the box, and `metro.test.ts` fails if it stops being.
+
 ## API and UI
 
 `POST /api/avtobus/find` accepts positive PostgreSQL integer IDs. Invalid JSON,
@@ -149,7 +244,8 @@ invalid IDs and identical stops return 400 before loading the graph. Unknown
 stops or an unreachable destination return 404; initialization failures return
 500 with a retryable error message. Error bodies keep the string shape consumed
 by the client. A successful response includes origin/destination metadata and a
-single `RouteResult`; bus segments include their direction and terminal name.
+single `RouteResult`. Every segment has its `mode`; bus segments include their
+direction and terminal name, and metro segments their line and terminus.
 
 The browser automatically searches when the selected stops change. Each request
 has a generation number; changing stops, swapping them, choosing a location or

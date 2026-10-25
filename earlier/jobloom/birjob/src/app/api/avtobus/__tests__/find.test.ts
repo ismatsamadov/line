@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import { graph, ride, walk } from '@/lib/busroute/__tests__/fixtures';
+import { graph, ride, train, walk } from '@/lib/busroute/__tests__/fixtures';
 
 const { getGraph } = vi.hoisted(() => ({ getGraph: vi.fn() }));
 vi.mock('@/lib/busroute/graph', () => ({ getGraph }));
@@ -53,6 +53,16 @@ describe('POST /api/avtobus/find', () => {
     const res = await POST(request({ fromStopId: 1, toStopId: 3 }));
     expect(res.status).toBe(200);
     expect((await res.json()).route.segments[0].busId).toBe(-1);
+  });
+
+  it('returns a metro ride with its mode and line (#689)', async () => {
+    getGraph.mockResolvedValueOnce(graph({ 1: [walk(30)], 30: [train(31, 1, 5)], 31: [walk(3)] }));
+    const res = await POST(request({ fromStopId: 1, toStopId: 3 }));
+    expect(res.status).toBe(200);
+    const { route } = await res.json();
+    expect(route.segments.map((s: { mode: string }) => s.mode)).toEqual(['walk', 'metro', 'walk']);
+    expect(route.segments[1]).toMatchObject({ busId: -2, busNumber: 'Qırmızı xətt', line: { name: 'Qırmızı xətt', color: '#FF0000' } });
+    expect(route.totalTransfers).toBe(0);
   });
 
   it('returns an actionable error instead of throwing a database exception', async () => {

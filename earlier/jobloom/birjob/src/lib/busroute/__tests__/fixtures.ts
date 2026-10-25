@@ -20,6 +20,12 @@ export const walk = (to: number, distance = 0.2): GraphEdge => ({
   kind: 'walk', toStopId: to, busId: -1, busNumber: 'walk', time: distance / 4.5 * 60,
   distance, fromStopName: '', toStopName: '',
 });
+export const RED = { name: 'Qırmızı xətt', color: '#FF0000' };
+export const train = (to: number, ride: number, time = 1, distance = 1, sequence = 0): GraphEdge => ({
+  kind: 'metro', toStopId: to, busId: -2, busNumber: RED.name, time, distance, line: RED, vehicle: 'train',
+  rideId: `metro:${ride}`, fromSequence: sequence, toSequence: sequence + 1,
+  headsign: `Terminus metro:${ride}`, fromStopName: '', toStopName: '',
+});
 export function graph(edges: Record<number, GraphEdge[]>, stopIds?: number[]) {
   const ids = new Set(stopIds ?? Object.entries(edges).flatMap(([id, rows]) => [Number(id), ...rows.map(e => e.toStopId)]));
   return {

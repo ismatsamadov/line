@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bus, busStop, stop } from './fixtures';
+import { isMetroStation, METRO_STATION_ID_BASE } from '../types';
 
 const db = vi.hoisted(() => ({
   queryStopDetails: vi.fn(), queryBuses: vi.fn(), queryBusStops: vi.fn(), queryWalkingEdges: vi.fn(), queryRouteShapes: vi.fn(),
@@ -89,6 +90,43 @@ describe('transit graph', () => {
     expect(g.getEdges(1)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: 2 }));
     expect(g.getEdges(2)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: 1 }));
     expect(db.queryWalkingEdges).not.toHaveBeenCalled();
+  });
+
+  it('adds the metro: its stations, its rides, and walks to a station from the stops by its exits (#689)', async () => {
+    // A stop 50 m north of Koroğlu's exit at 40.421699, 49.916555 (metro.json).
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(3), stop(4, 40.422149, 49.916555)]);
+    const g = await (await import('../graph')).getGraph();
+    const stations = g.getAllStops().filter(s => isMetroStation(s.id));
+    expect(stations).toHaveLength(27);
+    const koroglu = stations.find(s => s.name === 'Koroğlu')!;
+    expect(g.getEdges(4)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: koroglu.id }));
+    expect(g.getEdges(koroglu.id)).toContainEqual(expect.objectContaining({ kind: 'walk', toStopId: 4 }));
+    expect(g.getEdges(koroglu.id).filter(e => e.kind === 'metro')).toHaveLength(2);
+    // The bus network itself is as it was.
+    expect(g.getEdges(1)).toEqual([expect.objectContaining({ kind: 'bus', toStopId: 2 })]);
+  });
+
+  it('routes by bus alone, and says so, when the metro cannot be added', async () => {
+    vi.doMock('../metro', () => ({ metroNetwork: () => { throw new Error('metro.json unreadable'); } }));
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const g = await (await import('../graph')).getGraph();
+      expect(g.isBuilt()).toBe(true);
+      expect(g.getAllStops().some(s => isMetroStation(s.id))).toBe(false);
+      expect(g.getEdges(1)).toContainEqual(expect.objectContaining({ kind: 'bus', toStopId: 2 }));
+      expect(quiet).toHaveBeenCalledWith(expect.stringContaining('metro not added'), expect.any(Error));
+    } finally {
+      vi.doUnmock('../metro');
+    }
+  });
+
+  it('leaves the metro out rather than give a station the id of a stop', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(3), stop(METRO_STATION_ID_BASE + 1, 40.5)]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getStopInfo(METRO_STATION_ID_BASE + 1)?.name).toBe(`Stop ${METRO_STATION_ID_BASE + 1}`);
+    expect(g.getAllStops().filter(s => isMetroStation(s.id))).toHaveLength(1);
+    expect(quiet).toHaveBeenCalled();
   });
 
   it('shares an in-flight build and never resolves a partial graph', async () => {

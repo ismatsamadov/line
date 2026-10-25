@@ -4,13 +4,14 @@
  * A finite transfer penalty cannot guarantee that one bus beats two.
  *
  * A ride continues only along consecutive positions of the same direction.
+ * A metro ride is a ride like any other (#689): boarding a train or the metro's
+ * express bus counts once, as boarding a bus does, and so does changing trains.
  * One walking edge (at most 300 m) is allowed between rides or at either end;
  * walking edges cannot chain into an unbounded shortcut. A directly walkable
  * destination is returned as a separate short walking journey.
  */
 import type { TransitGraph } from "./graph";
 import type { GraphEdge, LatLng, RouteResult, RouteSegment } from "./types";
-import { WALKING_EDGE_BUS_ID } from "./types";
 import { WALK_RADIUS_KM } from "./geo";
 import { joinLegs } from "./shape";
 
@@ -75,8 +76,10 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
     if (!segment || label.boarded || edge.kind === "walk") {
       segment = {
         busId: edge.busId, busNumber: edge.busNumber,
+        mode: edge.kind === "walk" ? "walk" : edge.kind === "metro" && edge.vehicle === "train" ? "metro" : "bus",
+        ...(edge.kind === "metro" ? { line: edge.line } : {}),
         direction: edge.kind === "bus" ? edge.direction : null,
-        headsign: edge.kind === "bus" ? edge.headsign : null,
+        headsign: edge.kind === "walk" ? null : edge.headsign,
         stops: [{ id: from.id, name: edge.fromStopName || from.name, latitude: from.latitude, longitude: from.longitude }],
         distance: 0, time: 0,
       };
@@ -86,16 +89,16 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
     segment.stops.push({ id: to.id, name: edge.toStopName || to.name, latitude: to.latitude, longitude: to.longitude });
     segment.distance += edge.distance;
     segment.time += edge.time;
-    legs[legs.length - 1].push(edge.kind === "bus" ? edge.path : undefined);
+    legs[legs.length - 1].push(edge.path);
   }
-  // A ride is drawn along the road where its legs have one (shape.ts); a walk stays straight.
+  // A ride is drawn along the road or the track where its legs have one (shape.ts,
+  // metro.ts), a walk to or from a metro station by its exit, any other walk straight.
   segments.forEach((segment, i) => {
-    if (segment.busId === WALKING_EDGE_BUS_ID) return;
     const road = joinLegs(segment.stops.map((s): LatLng => [s.latitude, s.longitude]), legs[i]);
     if (road) segment.path = road;
   });
   let totalStops = 0, lastStopId: number | null = null;
-  for (const segment of segments) if (segment.busId !== WALKING_EDGE_BUS_ID) {
+  for (const segment of segments) if (segment.mode !== "walk") {
     for (const stop of segment.stops) {
       if (stop.id !== lastStopId) totalStops++;
       lastStopId = stop.id;
@@ -134,16 +137,17 @@ export function findRoute(graph: RoutingGraph, source: number, target: number): 
     for (const edge of graph.getEdges(current.stopId)) {
       const walking = edge.kind === "walk";
       if (walking && (current.edge?.kind === "walk" || edge.distance > WALK_RADIUS_KM)) continue;
-      const continuesRide = edge.kind === "bus" && current.edge?.kind === "bus"
-        && current.edge.rideId === edge.rideId && current.edge.toSequence === edge.fromSequence;
+      const last = current.edge;
+      const continuesRide = edge.kind !== "walk" && last !== null && last.kind !== "walk" && last.kind === edge.kind
+        && last.rideId === edge.rideId && last.toSequence === edge.fromSequence;
       const boarded = !walking && !continuesRide;
       const cost: Cost = [
         current.cost[0] + Number(boarded), current.cost[1] + edge.time,
         current.cost[2] + (walking ? edge.distance : 0), current.cost[3] + edge.distance,
       ];
-      const key = edge.kind === "bus"
-        ? `${edge.toStopId}:bus:${edge.rideId}:${edge.toSequence}`
-        : `${edge.toStopId}:walk:${cost[0] > 0 ? "boarded" : "start"}`;
+      const key = edge.kind === "walk"
+        ? `${edge.toStopId}:walk:${cost[0] > 0 ? "boarded" : "start"}`
+        : `${edge.toStopId}:${edge.kind}:${edge.rideId}:${edge.toSequence}`;
       const previous = best.get(key);
       if (previous && compare(previous.cost, cost) <= 0) continue;
       const next: Label = { key, stopId: edge.toStopId, cost, previous: current, edge, boarded };

@@ -23,11 +23,11 @@ export const metadata: Metadata = {
 };
 
 const FAQ = [
-  { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz. Alət əvvəlcə ən az avtobusa minmə tələb edən marşrutu seçir. Eyni sayda avtobus olan variantlar arasında təxmini hərəkət vaxtı, sonra piyada məsafəsi müqayisə olunur. Bir avtobusla getmək mümkündürsə, daha sürətli olsa belə iki avtobuslu variant onu əvəz etmir.' },
+  { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz. Alət avtobus və metro ilə ən az minmə tələb edən marşrutu seçir: metro qatarına minmək də avtobusa minmək kimi bir minmə sayılır. Eyni sayda minmə olan variantlar arasında təxmini hərəkət vaxtı, sonra piyada məsafəsi müqayisə olunur. Bir avtobusla getmək mümkündürsə, daha sürətli olsa belə iki minməli variant (məsələn, avtobus və metro) onu əvəz etmir.' },
   { q: 'Konkret bir avtobusun bütün marşrutunu necə görə bilərəm?', a: '«Xətti göstər» rejiminə keçin və avtobus nömrəsini seçin (məsələn 88). Həmin xəttin bütün marşrutu — başlanğıc dayanacağından son dayanacağa qədər — xəritədə göstərilir, keçdiyi bütün dayanacaqların ardıcıl siyahısı, ümumi uzunluğu və təxmini vaxtı ilə birlikdə. İki istiqamətli xətlərdə «Gediş» və «Qayıdış» arasında keçə bilərsiniz.' },
-  { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — bu, yalnız təxmini hərəkət vaxtıdır. Avtobusun gözlənilməsi, cədvəl və tıxaclar nəzərə alınmır. Avtobus xəttinin ümumi müddəti dayanacaqlar arasındakı hissələrə bərabər bölünür; piyada vaxtı isə təxmini məsafədən hesablanır. Bu alət dəqiq gəliş saatı vermir.' },
-  { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'AYNA açıq nəqliyyat məlumatlarından götürülmüş istinad bazasıdır və avtomatik yenilənmir. Şəhərdə avtobus xətləri dəyişmiş ola bilər. Səfərdən əvvəl cari marşrutu rəsmi mənbələrdən yoxlayın.' },
-  { q: 'Niyə bəzən piyada keçid təklif olunur?', a: `Təyinat dayanacağı düz xətt üzrə ${WALK_METERS} metrədək məsafədədirsə, qısa piyada variantı göstərilir. Digər səfərlərdə başlanğıcda, sonda və avtobuslar arasında ən çox ${WALK_METERS} metrlik piyada keçid mümkündür. Ardıcıl piyada keçidlər birləşdirilmir. Məsafə düz xətt üzrə təxmindir; real piyada yolunu və keçid imkanını xəritədə yoxlayın.` },
+  { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — bu, yalnız təxmini hərəkət vaxtıdır. Avtobusun və qatarın gözlənilməsi, cədvəl və tıxaclar nəzərə alınmır. Avtobus xəttinin ümumi müddəti dayanacaqlar arasındakı hissələrə bərabər bölünür; metro qatarının stansiyalar arası vaxtı Bakı Metropoliteninin öz marşrut planlayıcısındandır, stansiyada eskalatorla və keçidlərdə keçən vaxt isə daxil deyil; piyada vaxtı təxmini məsafədən hesablanır. Bu alət dəqiq gəliş saatı vermir.' },
+  { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'Avtobuslar AYNA açıq nəqliyyat məlumatlarından götürülmüş istinad bazasındandır və avtomatik yenilənmir. Şəhərdə avtobus xətləri dəyişmiş ola bilər. Metro məlumatı (qatar xidmətləri, vaxtlar və stansiya çıxışları) Bakı Metropoliteninin saytından və opendata.az-dan, stansiyaların yeri və xətlərin izi isə OpenStreetMap-dandır (© OpenStreetMap iştirakçıları); 25 oktyabr 2026-cı il vəziyyətini göstərir. O gün 28 May ilə Nizami arasında qatarlar işləmirdi və bu hissədə metronun ekspres avtobusları işləyirdi; Əhmədli ilə Həzi Aslanov arasında isə ayrıca məkik qatar işləyirdi. Səfərdən əvvəl cari marşrutu rəsmi mənbələrdən yoxlayın.' },
+  { q: 'Niyə bəzən piyada keçid təklif olunur?', a: `Təyinat dayanacağı düz xətt üzrə ${WALK_METERS} metrədək məsafədədirsə, qısa piyada variantı göstərilir. Digər səfərlərdə başlanğıcda, sonda və minmələr arasında ən çox ${WALK_METERS} metrlik piyada keçid mümkündür; metro stansiyasına qədər məsafə stansiyanın ən yaxın çıxışına qədər ölçülür. Ardıcıl piyada keçidlər birləşdirilmir. Məsafə düz xətt üzrə təxmindir; real piyada yolunu və keçid imkanını xəritədə yoxlayın.` },
 ];
 
 export default async function Page() {
@@ -52,7 +52,7 @@ export default async function Page() {
         <header className="bj-tool-heading mb-6">
           <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600"><Bus className="h-6 w-6" /></div>
           <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bakı Avtobus Marşrutu Planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün. Yaxud <strong>«Xətti göstər»</strong> rejiminə keçib bir avtobus nömrəsi seçin — həmin xəttin bütün marşrutunu və dayanacaqlarını xəritədə izləyin.</p>
+          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara və metro qatarlarına minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün. Yaxud <strong>«Xətti göstər»</strong> rejiminə keçib bir avtobus nömrəsi seçin — həmin xəttin bütün marşrutunu və dayanacaqlarını xəritədə izləyin.</p>
         </header>
 
         <Component />
@@ -62,7 +62,7 @@ export default async function Page() {
           <ol className="text-gray-700">
             <li><strong>Haradan:</strong> başlanğıc dayanacağını adla axtarın, xəritədən toxunun, və ya «yaxınımdakı dayanacaqdan başla» düyməsi ilə avtomatik seçin.</li>
             <li><strong>Hara:</strong> təyinat dayanacağını seçin.</li>
-            <li><strong>Marşrutu tap:</strong> alət ən az avtobusa minmə tələb edən marşrutu, keçidləri və təxmini hərəkət vaxtını addım-addım göstərir. {WALK_METERS} metrədək qısa səfərlər üçün piyada variantı göstərilə bilər.</li>
+            <li><strong>Marşrutu tap:</strong> alət avtobus və metro ilə ən az minmə tələb edən marşrutu, keçidləri və təxmini hərəkət vaxtını addım-addım göstərir. {WALK_METERS} metrədək qısa səfərlər üçün piyada variantı göstərilə bilər.</li>
           </ol>
 
           <h2 className="text-xl font-bold text-gray-900">Bir avtobus xəttinin marşrutunu gör</h2>
@@ -77,9 +77,9 @@ export default async function Page() {
 
           <h2 className="text-xl font-bold text-gray-900">Məhdudiyyətlər</h2>
           <p className="text-gray-700">
-            Bu alət marşrut <strong>topologiyasını</strong> (hansı avtobuslar, hansı ardıcıllıq) planlayır — <strong>cədvəl və ya real-vaxt</strong> gəliş saatlarını yox.
-            Vaxt yalnız təxmini hərəkət müddətidir; gözləmə, cədvəl və tıxac daxil deyil. Məsafələr düz xətt üzrə hesablanır.
-            AYNA məlumatlarından götürülmüş istinad bazası avtomatik yenilənmir; cari marşrutu və piyada keçid imkanını səfərdən əvvəl yoxlayın.
+            Bu alət marşrut <strong>topologiyasını</strong> (hansı avtobuslar və metro qatarları, hansı ardıcıllıq) planlayır — <strong>cədvəl və ya real-vaxt</strong> gəliş saatlarını yox.
+            Vaxt yalnız təxmini hərəkət müddətidir; gözləmə, cədvəl və tıxac daxil deyil. Avtobus məsafələri düz xətt üzrə, metro məsafələri xətt boyunca hesablanır.
+            AYNA məlumatlarından götürülmüş istinad bazası və 25 oktyabr 2026-cı il tarixli metro məlumatı avtomatik yenilənmir; cari marşrutu və piyada keçid imkanını səfərdən əvvəl yoxlayın.
             İşə getmək üçün maaş və yol xərclərini hesablamaq istəsəniz, <Link href="/aletler/maas-kalkulyatoru" className="text-orange-600 hover:underline">maaş kalkulyatorumuza</Link> baxın.
           </p>
 

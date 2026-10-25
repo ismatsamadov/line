@@ -1,15 +1,17 @@
 /**
- * Transit graph — weighted directed multigraph of stops.
+ * Transit graph — weighted directed multigraph of stops and metro stations.
  *
  * Bus edges retain direction and consecutive route positions, including loops.
  * Walking connections are rebuilt with a spatial grid from the same stop data.
+ * The metro (metro.ts) adds its stations, its rides and the walks to them (#689).
  */
-import { GraphEdge, StopDetail, Bus, BusStop, LatLng, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER } from "./types";
+import { GraphEdge, StopDetail, Bus, BusStop, LatLng, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER, isMetroStation } from "./types";
 import { haversine } from "./geo";
 import { queryStopDetails, queryBuses, queryBusStops, queryRouteShapes } from "./db";
 import { computeWalkingEdges } from "./walking";
 import { collapseRepeatedSequence } from "./sequence";
 import { legPaths } from "./shape";
+import { metroNetwork } from "./metro";
 
 export class TransitGraph {
   private adjacency: Map<number, GraphEdge[]> = new Map();
@@ -162,9 +164,34 @@ export class TransitGraph {
       walkingEdges++;
     }
 
+    const metroEdges = this.addMetro();
+
     this.built = true;
     const totalEdges = Array.from(this.adjacency.values()).reduce((s, e) => s + e.length, 0);
-    console.log(`[busroute] graph built: ${this.adjacency.size} nodes, ${totalEdges} edges (${walkingEdges} walking, ${roadLegs} bus legs on the road)`);
+    console.log(`[busroute] graph built: ${this.adjacency.size} nodes, ${totalEdges} edges (${walkingEdges} walking, ${roadLegs} bus legs on the road, ${metroEdges} metro)`);
+  }
+
+  /**
+   * The metro's stations and edges (#689), all or none. It is read from a file in
+   * the repository, not queried, but a fault in it must not take every search down
+   * with it: the planner then routes by bus alone, and only a console error says so.
+   */
+  private addMetro(): number {
+    try {
+      const busStops = this.getAllStops();
+      const clash = busStops.find((s) => isMetroStation(s.id));
+      if (clash) throw new Error(`stop ${clash.id} is in the range kept for metro stations`);
+      const metro = metroNetwork(busStops);
+      for (const station of metro.stations) {
+        this.stopInfo.set(station.id, station);
+        this.adjacency.set(station.id, []);
+      }
+      for (const { from, edge } of metro.edges) this.adjacency.get(from)!.push(edge);
+      return metro.edges.length;
+    } catch (error) {
+      console.error("[busroute] metro not added; routing by bus only:", error);
+      return 0;
+    }
   }
 }
 
