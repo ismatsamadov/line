@@ -22,7 +22,7 @@ interface BusTransit {
    *  `=== false`. */
   eventLoggingEnabled?: boolean;
   windowDays: number;
-  dataset: { lines: number; stops: number; hubs: number; carriers: number; avgLength: number; avgDuration: number; coords: number; routesGeo: number; walkEdges: number };
+  dataset: { lines: number; stops: number; hubs: number; carriers: number; avgLength: number; avgDuration: number; coords: number; routesGeo: number };
   carriers: CarrierRow[];
   views: { window: number; visitors: number; lifetime: number };
   daily: DailyRow[];
@@ -115,11 +115,10 @@ export default function BusTransitPanel() {
             <FrozenSeriesNote what={`The “Planner views (${windowDays}d)” and “Visitors” tiles below, and the views/day trend under them`} />
           )}
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Tile label={`Planner views (${windowDays}d)`} value={n(d.views.window)} emphasis={d.eventLoggingEnabled !== false} />
             <Tile label="Visitors" value={n(d.views.visitors)} />
             <Tile label="Lifetime views" value={n(d.views.lifetime)} sub="all-time" />
-            <Tile label="Walking edges" value={n(d.dataset.walkEdges)} sub="≤300m transfers" />
           </div>
 
           <MiniBars title={`Route-planner views / day (${windowDays}d)`} rows={d.daily} windowDays={windowDays} />

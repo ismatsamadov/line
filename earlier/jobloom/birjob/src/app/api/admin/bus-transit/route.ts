@@ -26,7 +26,7 @@ interface DimRow { key: string; visitors: number }
 interface CarrierRow { carrier: string; lines: number }
 interface BusTransit {
   windowDays: number;
-  dataset: { lines: number; stops: number; hubs: number; carriers: number; avgLength: number; avgDuration: number; coords: number; routesGeo: number; walkEdges: number };
+  dataset: { lines: number; stops: number; hubs: number; carriers: number; avgLength: number; avgDuration: number; coords: number; routesGeo: number };
   carriers: CarrierRow[];
   views: { window: number; visitors: number; lifetime: number };
   daily: DailyRow[];
@@ -36,7 +36,7 @@ interface BusTransit {
 
 const EMPTY = (windowDays: number): BusTransit => ({
   windowDays,
-  dataset: { lines: 0, stops: 0, hubs: 0, carriers: 0, avgLength: 0, avgDuration: 0, coords: 0, routesGeo: 0, walkEdges: 0 },
+  dataset: { lines: 0, stops: 0, hubs: 0, carriers: 0, avgLength: 0, avgDuration: 0, coords: 0, routesGeo: 0 },
   carriers: [],
   views: { window: 0, visitors: 0, lifetime: 0 },
   daily: [], byCountry: [], byDevice: [],
@@ -48,7 +48,7 @@ const _fetch = unstable_cache(
     since.setUTCHours(0, 0, 0, 0);
 
     const [ds, carrierRows, viewsRow, lifetimeRow, dailyRows, byCountry, byDevice] = await Promise.all([
-      prisma.$queryRaw<[{ lines: bigint; stops: bigint; hubs: bigint; carriers: bigint; avg_len: number; avg_dur: number; coords: bigint; routes_geo: bigint; walk_edges: bigint }]>`
+      prisma.$queryRaw<[{ lines: bigint; stops: bigint; hubs: bigint; carriers: bigint; avg_len: number; avg_dur: number; coords: bigint; routes_geo: bigint }]>`
         SELECT (SELECT COUNT(*) FROM bus.bus_buses)::bigint AS lines,
                (SELECT COUNT(*) FROM bus.bus_stop_details)::bigint AS stops,
                (SELECT COUNT(*) FROM bus.bus_stop_details WHERE is_transport_hub)::bigint AS hubs,
@@ -56,8 +56,7 @@ const _fetch = unstable_cache(
                (SELECT COALESCE(AVG(route_length), 0) FROM bus.bus_buses WHERE route_length > 0)::float8 AS avg_len,
                (SELECT COALESCE(AVG(duration_minuts), 0) FROM bus.bus_buses WHERE duration_minuts > 0)::float8 AS avg_dur,
                (SELECT COUNT(*) FROM bus.bus_route_coordinates)::bigint AS coords,
-               (SELECT COUNT(DISTINCT route_id) FROM bus.bus_route_coordinates)::bigint AS routes_geo,
-               (SELECT COUNT(*) FROM bus.bus_walking_edges)::bigint AS walk_edges
+               (SELECT COUNT(DISTINCT route_id) FROM bus.bus_route_coordinates)::bigint AS routes_geo
       `,
       prisma.$queryRaw<{ carrier: string; lines: bigint }[]>`
         SELECT COALESCE(NULLIF(carrier, ''), '(naməlum)') AS carrier, COUNT(*)::bigint AS lines
@@ -111,7 +110,6 @@ const _fetch = unstable_cache(
         avgDuration: Number(d?.avg_dur ?? 0),
         coords: Number(d?.coords ?? 0),
         routesGeo: Number(d?.routes_geo ?? 0),
-        walkEdges: Number(d?.walk_edges ?? 0),
       },
       carriers: carrierRows.map(r => ({ carrier: r.carrier, lines: Number(r.lines) })),
       views: {

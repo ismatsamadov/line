@@ -99,8 +99,9 @@ the same coordinates. A spatial grid covers nearby Baku stops without an all-pai
 scan. Connections do not depend on input order or bus membership; even two stops
 served by the same line can need a walk because their directions differ. The
 graph no longer reads legacy `bus_walking_edges`, whose generation omitted useful
-pairs. That table and every reference row remain intact; no migration or production
-write is required to repair the graph.
+pairs. That table kept its rows until the owner had it dropped on 2026-10-25 (#688,
+`prisma/migrations/2026-10-25_drop_retired_data.sql`); every other reference table
+remains, and no migration or production write was needed to repair the graph.
 
 `getGraph()` caches the initialization **promise**, returning only a completed
 graph to concurrent callers. A failure clears that promise so the next request
