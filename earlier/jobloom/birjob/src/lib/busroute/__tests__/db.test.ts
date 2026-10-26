@@ -9,7 +9,7 @@ const prisma = vi.hoisted(() => ({
 }));
 vi.mock('@/lib/prisma', () => ({ prisma }));
 
-import { queryBusLine } from '../db';
+import { listStopsForGeo, queryBusLine } from '../db';
 
 const detail = (id: number) => ({ id, code: null, name: `Stop ${id}`, latitude: 40.4, longitude: 49.8, is_transport_hub: false });
 
@@ -82,5 +82,32 @@ describe('queryBusLine', () => {
 
     const line = await queryBusLine(7, 1);
     expect(line?.stops.map((s) => s.id)).toEqual(loop);
+  });
+
+  it('still returns the ordered stops when optional road geometry cannot load', async () => {
+    const quiet = vi.spyOn(console, 'error').mockImplementation(() => {});
+    prisma.bus_bus_stops.findMany
+      .mockResolvedValueOnce([{ direction_type_id: 1 }])
+      .mockResolvedValueOnce([{ stop_id: 1 }, { stop_id: 2 }]);
+    prisma.bus_stop_details.findMany.mockResolvedValue([detail(1), detail(2)]);
+    prisma.bus_routes.findMany.mockRejectedValueOnce(new Error('geometry unavailable'));
+    try {
+      const line = await queryBusLine(160, 1);
+      expect(line?.stops.map((s) => s.id)).toEqual([1, 2]);
+      expect(line?.coordinates).toEqual([]);
+      expect(quiet).toHaveBeenCalledWith(expect.stringContaining('line geometry not loaded'), expect.any(Error));
+    } finally {
+      quiet.mockRestore();
+    }
+  });
+
+  it('keeps corrupt out-of-area points out of the picker and the line map', async () => {
+    const details = [detail(1), { ...detail(2), latitude: 4.05 }, { ...detail(3), longitude: NaN }];
+    prisma.bus_stop_details.findMany.mockResolvedValue(details);
+    expect((await listStopsForGeo()).map((s) => s.id)).toEqual([1]);
+    prisma.bus_bus_stops.findMany
+      .mockResolvedValueOnce([{ direction_type_id: 1 }])
+      .mockResolvedValueOnce(details.map((d) => ({ stop_id: d.id })));
+    expect((await queryBusLine(160, 1))?.stops.map((s) => s.id)).toEqual([1]);
   });
 });

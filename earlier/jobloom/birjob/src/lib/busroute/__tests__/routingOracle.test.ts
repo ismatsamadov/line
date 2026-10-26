@@ -1,0 +1,93 @@
+import { describe, expect, it } from 'vitest';
+import { findRoute } from '../routing';
+import type { GraphEdge } from '../types';
+import { graph, ride, train, walk } from './fixtures';
+
+type Cost = [minutes: number, walking: number, distance: number];
+type Line = { stops: number[]; legs: GraphEdge[] };
+const compare = (a: Cost, b: Cost) => a[0] - b[0] || a[1] - b[1] || a[2] - b[2];
+function keep(best: Map<number, Cost>, id: number, cost: Cost) {
+  const previous = best.get(id);
+  if (!previous || compare(cost, previous) < 0) best.set(id, cost);
+}
+
+/** A different model from the production edge/state Dijkstra: in round n, board
+ * any line once, ride any contiguous stretch, then optionally walk once. Every
+ * round adds exactly one boarding, so its first reachable destination is minimal.
+ * Compare all three secondary costs inside each round, including origin walks. */
+function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to: number) {
+  const withWalk = (arrivals: Map<number, Cost>) => {
+    const result = new Map(arrivals);
+    for (const [at, cost] of arrivals) for (const edge of walks.get(at) ?? []) {
+      keep(result, edge.toStopId, [cost[0] + edge.time, cost[1] + edge.distance, cost[2] + edge.distance]);
+    }
+    return result;
+  };
+  let previous = withWalk(new Map([[from, [0, 0, 0] as Cost]]));
+  if (previous.has(to)) return { boardings: 0, cost: previous.get(to)! };
+  for (let boardings = 1; boardings <= 6; boardings++) {
+    const arrivals = new Map<number, Cost>();
+    for (const line of lines) for (let i = 0; i < line.legs.length; i++) {
+      const start = previous.get(line.stops[i]);
+      if (!start) continue;
+      let minutes = start[0], distance = start[2];
+      for (let j = i; j < line.legs.length; j++) {
+        minutes += line.legs[j].time;
+        distance += line.legs[j].distance;
+        keep(arrivals, line.stops[j + 1], [minutes, start[1], distance]);
+      }
+    }
+    previous = withWalk(arrivals);
+    if (previous.has(to)) return { boardings, cost: previous.get(to)! };
+  }
+  return null;
+}
+
+describe('routing against an independent boarding-round cost oracle', () => {
+  it('agrees on boardings, movement time, walking and distance with loops, buses, metro and walking interchanges', () => {
+    let seed = 20261026;
+    const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
+    for (let network = 0; network < 30; network++) {
+      const edges: Record<number, GraphEdge[]> = {};
+      const lines = Array.from({ length: 4 }, (_, i): Line => {
+        const stops = Array.from({ length: 3 + random(3) }, () => 1 + random(6));
+        const legs = stops.slice(1).map((to, sequence) => (i % 2 ? train : ride)(to, i + 1, 1 + random(10), 1 + random(5), sequence));
+        legs.forEach((leg, sequence) => (edges[stops[sequence]] ??= []).push(leg));
+        return { stops, legs };
+      });
+      const walks = new Map<number, GraphEdge[]>();
+      for (let a = 1; a <= 6; a++) for (let b = a + 1; b <= 6; b++) {
+        if (random(5) !== 0) continue;
+        // Binary-exact lengths make equal-cost tie cases independent of addition order.
+        const distance = random(2) ? 0.125 : 0.25;
+        for (const [from, to] of [[a, b], [b, a]]) {
+          const edge = walk(to, distance);
+          (edges[from] ??= []).push(edge);
+          walks.set(from, [...(walks.get(from) ?? []), edge]);
+        }
+      }
+      const g = graph(edges, [1, 2, 3, 4, 5, 6]);
+      for (let from = 1; from <= 6; from++) for (let to = 1; to <= 6; to++) {
+        if (from === to) continue;
+        const expected = rounds(lines, walks, from, to);
+        const actual = findRoute(g, from, to);
+        const context = JSON.stringify({ network, from, to, lines: lines.map(l => l.stops) });
+        expect(Boolean(actual), context).toBe(Boolean(expected));
+        if (!actual || !expected) continue;
+        const boardings = actual.segments.filter(s => s.mode !== 'walk').length;
+        const walking = actual.segments.filter(s => s.mode === 'walk').reduce((sum, s) => sum + s.distance, 0);
+        expect(boardings, context).toBe(expected.boardings);
+        expect(actual.totalTransfers, context).toBe(Math.max(0, boardings - 1));
+        expect(actual.totalTime, context).toBeCloseTo(Math.round(expected.cost[0] * 10) / 10, 8);
+        expect(walking, context).toBeCloseTo(expected.cost[1], 8);
+        expect(actual.totalDistance, context).toBeCloseTo(Math.round(expected.cost[2] * 100) / 100, 8);
+        expect(actual.segments[0].stops[0].id, context).toBe(from);
+        expect(actual.segments.at(-1)!.stops.at(-1)!.id, context).toBe(to);
+        for (let i = 1; i < actual.segments.length; i++) {
+          expect(actual.segments[i - 1].stops.at(-1)!.id, context).toBe(actual.segments[i].stops[0].id);
+          expect(actual.segments[i].mode === 'walk' && actual.segments[i - 1].mode === 'walk', context).toBe(false);
+        }
+      }
+    }
+  });
+});

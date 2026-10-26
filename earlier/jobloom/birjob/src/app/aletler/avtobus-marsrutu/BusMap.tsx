@@ -8,7 +8,7 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
 import { isMetroStation } from "@/lib/busroute/types";
-import { haversine } from "@/lib/busroute/geo";
+import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
 import { segmentColors } from "./segmentColors";
@@ -18,9 +18,6 @@ const DEFAULT_ZOOM = 12;
 // Single line-viewer trajectory — blue, distinct from the route colours + the
 // orange stop clusters so "this whole bus line" reads at a glance.
 const LINE_COLOR = "#2563eb";
-// A click on empty map snaps to the nearest stop only within this radius (km),
-// so a tap far from any stop doesn't silently grab something across town.
-const SNAP_RADIUS_KM = 0.6;
 // Backstop for a redraw deferred behind an animation: Leaflet's own timers end a
 // zoom animation within 250ms and drain the cluster queue within ~300ms, so this
 // only ever fires if an event was missed — a late redraw beats a lost one.
@@ -37,6 +34,7 @@ export interface BusMapProps {
   /** Called with the chosen stop — from a marker tap OR a snap from empty map. */
   onStopClick: (stop: StopDetail) => void;
   isVisible?: boolean;
+  onMiss?: () => void;
 }
 
 /** Big, finger-friendly pin for start/destination/transfer (divIcon → no image deps). */
@@ -245,7 +243,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
  * flip side of that contract is that a React re-render must not mutate those
  * layers while Leaflet is mid-animation either; see the redraw effect.
  */
-export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -253,6 +251,8 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
   // Latest props read inside Leaflet event handlers without forcing a redraw.
   const clickRef = useRef(onStopClick);
   clickRef.current = onStopClick;
+  const missRef = useRef(onMiss);
+  missRef.current = onMiss;
   const stopsRef = useRef(stops);
   stopsRef.current = stops;
   const fitRef = useRef<FitTargets>({ route, line, fromStop, toStop });
@@ -277,16 +277,11 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     cluster.addTo(map);
     const overlay = L.layerGroup().addTo(map);
 
-    // Tap on EMPTY map → snap to nearest stop (within SNAP_RADIUS_KM).
+    // Tap on empty map → use the same 600 m radius as location selection.
     map.on("click", (e: L.LeafletMouseEvent) => {
-      const all = stopsRef.current;
-      let best: StopDetail | null = null;
-      let min = Infinity;
-      for (const s of all) {
-        const dist = haversine(e.latlng.lat, e.latlng.lng, s.latitude, s.longitude);
-        if (dist < min) { min = dist; best = s; }
-      }
-      if (best && min <= SNAP_RADIUS_KM) clickRef.current(best);
+      const nearest = nearestStop(stopsRef.current, e.latlng.lat, e.latlng.lng);
+      if (nearest) clickRef.current(nearest.stop);
+      else missRef.current?.();
     });
 
     // A fit made while the map sat 0×0 in the phone's hidden tab is redone once the
@@ -380,5 +375,5 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     };
   }, [stops, fromStop, toStop, route, line, userLocation]);
 
-  return <div ref={containerRef} className="h-full w-full" />;
+  return <div ref={containerRef} className="h-full w-full" role="region" aria-label="Bakı dayanacaqları və marşrut xəritəsi" />;
 }

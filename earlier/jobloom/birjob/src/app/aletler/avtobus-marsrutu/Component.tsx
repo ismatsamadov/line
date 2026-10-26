@@ -1,244 +1,44 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode, type KeyboardEvent, type RefObject } from "react";
+import { useState, useEffect, useCallback, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Bus, ArrowDownUp, LocateFixed, Search, X, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin } from "lucide-react";
+import { Bus, ArrowDownUp, LocateFixed, Search, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin, Info, RotateCcw, Footprints, ChevronRight } from "lucide-react";
 import SupportCTA from "@/components/SupportCTA";
 import type { StopDetail, RouteResult, BusLite, BusLineDetail } from "@/lib/busroute/types";
 import JourneyView from "./JourneyView";
-import { haversine } from "@/lib/busroute/geo";
+import Picker from "./Picker";
+import { nearestStop, searchStops, searchBuses } from "./search";
+import { movementMinutes } from "./journeyFormatting";
 
 const BusMap = dynamic(() => import("./BusMap"), {
   ssr: false,
   loading: () => <div className="flex h-full w-full items-center justify-center bg-gray-100 text-sm text-gray-400">Xəritə yüklənir…</div>,
 });
 
-function pickerKeys(event: KeyboardEvent<HTMLDivElement>, ref: RefObject<HTMLDivElement>, close: () => void) {
-  const input = ref.current?.querySelector('input');
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    input?.focus();
-    // Focusing the input opens suggestions; close after that focus handler.
-    close();
-    return;
-  }
-  if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
-  const options = Array.from(ref.current?.querySelectorAll<HTMLButtonElement>('[data-picker-option]') ?? []);
-  if (!options.length) return;
-  event.preventDefault();
-  const index = options.indexOf(document.activeElement as HTMLButtonElement);
-  const next = index + (event.key === 'ArrowDown' ? 1 : -1);
-  if (next < 0 && index >= 0) { input?.focus(); return; }
-  const target = options[index < 0 && event.key === 'ArrowUp' ? options.length - 1 : Math.min(Math.max(next, 0), options.length - 1)];
-  target.focus();
-  target.scrollIntoView({ block: 'nearest' });
-}
-
-function StopPicker({
-  label, placeholder, stops, selected, onSelect, dotClass, active = false, onActivate,
-}: {
-  label: string; placeholder: string; stops: StopDetail[];
-  selected: StopDetail | null; onSelect: (s: StopDetail | null) => void; dotClass: string;
-  /** True when this field is the current map-tap target — gets a highlight ring. */
-  active?: boolean; onActivate?: () => void;
+function StopPicker({ label, stops, selected, onSelect, active, onActivate, loading }: {
+  label: string; stops: StopDetail[]; selected: StopDetail | null;
+  onSelect: (stop: StopDetail | null) => void; active: boolean; onActivate: () => void; loading: boolean;
 }) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
-    return stops
-      .filter((s) => s.name.toLowerCase().includes(q) || (s.code ?? "").toLowerCase().includes(q))
-      .slice(0, 20);
-  }, [query, stops]);
-
-  useEffect(() => {
-    function onOutside(e: MouseEvent | TouchEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onOutside);
-    document.addEventListener("touchstart", onOutside);
-    return () => {
-      document.removeEventListener("mousedown", onOutside);
-      document.removeEventListener("touchstart", onOutside);
-    };
-  }, []);
-
-  return (
-    <div ref={ref} onKeyDown={event => pickerKeys(event, ref, () => setOpen(false))}>
-      <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-700">
-        <span className={`inline-block h-2.5 w-2.5 rounded-full ${dotClass}`} />
-        {label}
-      </div>
-      {selected ? (
-        <div
-          className={`flex w-full items-center justify-between rounded-xl border bg-gray-50 px-3 py-3 text-left transition ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
-        >
-          <button type="button" onClick={onActivate} className="min-w-0 flex-1 text-left" aria-label={`${label}: ${selected.name}`}>
-            <span className="block truncate text-sm font-medium text-gray-900">{selected.name}</span>
-            {selected.code ? <span className="text-xs text-gray-400">{selected.code}</span> : null}
-          </button>
-          <button
-            type="button"
-            onClick={() => { onSelect(null); setQuery(""); requestAnimationFrame(() => ref.current?.querySelector('input')?.focus()); }}
-            aria-label={`${label} seçimini sil`}
-            className="ml-2 shrink-0 min-w-[44px] min-h-[44px] grid place-items-center text-gray-400 hover:text-gray-600"
-          >
-            <X className="h-4 w-4" />
-          </button>
-        </div>
-      ) : (
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            inputMode="search"
-            autoComplete="off"
-            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => { setOpen(true); onActivate?.(); }}
-            aria-label={placeholder}
-            placeholder={placeholder}
-            className={`w-full rounded-xl border bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-orange-400 focus:ring-orange-400 ${active ? "border-orange-400 ring-2 ring-orange-200" : "border-gray-200"}`}
-          />
-          {open && filtered.length > 0 && (
-            <div className="bj-picker-suggestions absolute z-[1000] mt-1 max-h-64 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg" role="group" aria-label="Uyğun dayanacaqlar">
-              {filtered.map((s) => (
-                <button
-                  key={s.id}
-                  data-picker-option
-                  type="button"
-                  // Select on click (a real tap) — NOT touchend. touchend fires
-                  // even when the touch started here and then dragged to scroll
-                  // the list, which used to auto-select a stop mid-scroll. click
-                  // isn't dispatched after a scroll/drag, so this is scroll-safe.
-                  // Safe from the outside-click handler since the dropdown lives
-                  // inside this picker's ref (so it isn't pre-closed).
-                  onClick={() => { onSelect(s); setQuery(""); setOpen(false); }}
-                  className="block w-full px-3 py-2 min-h-[44px] text-left hover:bg-orange-50 focus:bg-orange-50"
-                >
-                  <span className="block truncate text-sm text-gray-800">{s.name}</span>
-                  {s.code ? <span className="text-xs text-gray-400">{s.code}</span> : null}
-                </button>
-              ))}
-            </div>
-          )}
-          {open && query.trim() && filtered.length === 0 && (
-            <div className="absolute z-[1000] mt-1 w-full rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-500 shadow-lg">
-              «{query}» üzrə dayanacaq tapılmadı
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const search = useCallback((query: string) => searchStops(stops, query).map(stop => ({
+    id: stop.id, name: stop.name, detail: stop.code ? `Kod: ${stop.code}` : "Avtobus dayanacağı",
+  })), [stops]);
+  return <Picker label={label} placeholder="Dayanacaq adı və ya kodu…" searchItems={search}
+    selected={selected ? { id: selected.id, name: selected.name, detail: selected.code ? `Kod: ${selected.code}` : "Avtobus dayanacağı" } : null}
+    onSelect={id => onSelect(stops.find(stop => stop.id === id) ?? null)}
+    {...{ active, onActivate, loading }} emptyHint="Əsas dayanacaqlar · ad və ya kodla axtarın"
+    icon={<span className={`h-2.5 w-2.5 rounded-full ${label === "Haradan" ? "bg-green-600" : "bg-red-600"}`} />} />;
 }
 
-// Natural bus-number order: pure numbers first (numerically), then the rest
-// (H1, TX, …) alphabetically. "88" < "88A" via the localeCompare tail.
-function compareBusNumber(a: string, b: string): number {
-  const na = parseInt(a, 10), nb = parseInt(b, 10);
-  const aNum = !Number.isNaN(na), bNum = !Number.isNaN(nb);
-  if (aNum && bNum && na !== nb) return na - nb;
-  if (aNum && !bNum) return -1;
-  if (!aNum && bNum) return 1;
-  return a.localeCompare(b, "az");
-}
-
-/** Searchable bus-number picker (by number or endpoint name). */
-function BusPicker({
-  buses, selected, onSelect, loading,
-}: {
-  buses: BusLite[]; selected: BusLite | null; onSelect: (b: BusLite | null) => void; loading: boolean;
+function BusPicker({ buses, selected, onSelect, loading }: {
+  buses: BusLite[]; selected: BusLite | null; onSelect: (bus: BusLite | null) => void; loading: boolean;
 }) {
-  const [query, setQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  const sorted = useMemo(() => [...buses].sort((a, b) => compareBusNumber(a.number, b.number)), [buses]);
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const base = q
-      ? sorted.filter((b) =>
-          b.number.toLowerCase().includes(q) ||
-          b.first_point.toLowerCase().includes(q) ||
-          b.last_point.toLowerCase().includes(q))
-      : sorted;
-    return base.slice(0, 40);
-  }, [query, sorted]);
-
-  useEffect(() => {
-    function onOutside(e: MouseEvent | TouchEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onOutside);
-    document.addEventListener("touchstart", onOutside);
-    return () => {
-      document.removeEventListener("mousedown", onOutside);
-      document.removeEventListener("touchstart", onOutside);
-    };
-  }, []);
-
-  return (
-    <div ref={ref} onKeyDown={event => pickerKeys(event, ref, () => setOpen(false))}>
-      <div className="mb-1 flex items-center gap-2 text-sm font-semibold text-gray-700">
-        <Bus className="h-4 w-4 text-blue-600" />
-        Avtobus nömrəsi
-      </div>
-      {selected ? (
-        <button
-          type="button"
-          onClick={() => { onSelect(null); setQuery(""); setOpen(true); }}
-          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-3 py-3 text-left"
-        >
-          <span className="flex min-w-0 items-center gap-2">
-            <span className="shrink-0 rounded-lg bg-blue-600 px-2 py-0.5 text-sm font-extrabold text-white">{selected.number}</span>
-            <span className="truncate text-xs text-gray-500">{selected.first_point} ↔ {selected.last_point}</span>
-          </span>
-          <X className="ml-2 h-4 w-4 shrink-0 text-gray-400" />
-        </button>
-      ) : (
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            inputMode="search"
-            autoComplete="off"
-            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
-            aria-label="Avtobus nömrəsi və ya son dayanacaq"
-            placeholder={loading ? "Avtobuslar yüklənir…" : "Nömrə və ya son dayanacaq axtar…"}
-            disabled={loading}
-            className="w-full rounded-xl border border-gray-200 bg-white py-3 pl-9 pr-3 text-sm shadow-sm focus:border-blue-400 focus:ring-blue-400 disabled:opacity-60"
-          />
-          {open && filtered.length > 0 && (
-            <div className="bj-picker-suggestions absolute z-[1000] mt-1 max-h-72 w-full overflow-auto rounded-xl border border-gray-200 bg-white shadow-lg" role="group" aria-label="Uyğun avtobuslar">
-              {filtered.map((b) => (
-                <button
-                  key={b.id}
-                  data-picker-option
-                  type="button"
-                  onClick={() => { onSelect(b); setQuery(""); setOpen(false); }}
-                  className="flex w-full items-center gap-2 px-3 py-2 min-h-[44px] text-left hover:bg-blue-50 focus:bg-blue-50"
-                >
-                  <span className="w-12 shrink-0 rounded-md bg-blue-100 px-1.5 py-0.5 text-center text-xs font-bold text-blue-700">{b.number}</span>
-                  <span className="truncate text-sm text-gray-700">{b.first_point} ↔ {b.last_point}</span>
-                </button>
-              ))}
-            </div>
-          )}
-          {open && query.trim() && filtered.length === 0 && !loading && (
-            <div className="absolute z-[1000] mt-1 w-full rounded-xl border border-gray-200 bg-white p-3 text-sm text-gray-500 shadow-lg">
-              «{query}» üzrə avtobus tapılmadı
-            </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+  const search = useCallback((query: string) => searchBuses(buses, query).map(bus => ({
+    id: bus.id, name: `${bus.first_point} → ${bus.last_point}`, detail: "Avtobus xətti", badge: bus.number,
+  })), [buses]);
+  return <Picker label="Avtobus nömrəsi" placeholder="Məsələn: 88, H1 və ya son dayanacaq" searchItems={search}
+    selected={selected ? { id: selected.id, name: `${selected.first_point} → ${selected.last_point}`, detail: "Xətti dəyişmək üçün toxunun", badge: selected.number } : null}
+    onSelect={id => onSelect(buses.find(bus => bus.id === id) ?? null)} loading={loading}
+    emptyHint="Avtobuslar · nömrə və ya son dayanacaqla axtarın" icon={<Bus className="h-4 w-4 text-blue-600" />} />;
 }
 
 /** Line summary: number, endpoints, stats, and the full ordered stop list. */
@@ -248,7 +48,7 @@ function LineSummary({ line }: { line: BusLineDetail }) {
       <div className="flex items-center gap-2">
         <span className="rounded-lg bg-blue-600 px-2.5 py-1 text-sm font-extrabold text-white">{line.number}</span>
         <span className="flex min-w-0 flex-wrap items-center gap-1 text-sm font-medium text-gray-800">
-          {line.first_point} <ArrowRight className="h-3.5 w-3.5 text-gray-400" /> {line.last_point}
+          {line.stops[0]?.name ?? line.first_point} <ArrowRight className="h-3.5 w-3.5 text-gray-400" /> {line.stops[line.stops.length - 1]?.name ?? line.last_point}
         </span>
       </div>
 
@@ -266,6 +66,8 @@ function LineSummary({ line }: { line: BusLineDetail }) {
           <div className="text-xs text-gray-400">dəq (tam)</div>
         </div>
       </div>
+
+      <p className="mt-3 text-xs leading-relaxed text-gray-500">Tam xətt üçün təxmini hərəkət vaxtı. Gözləmə və tıxac daxil deyil.</p>
 
       {line.stops.length > 0 && (
         <ol className="mt-4 space-y-0">
@@ -307,8 +109,8 @@ function TabBtn({ id, icon, active, onSelect, children }: {
 }) {
   return (
     <button
-      onClick={() => onSelect(id)}
-      className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${active ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
+      type="button" aria-pressed={active} onClick={() => onSelect(id)}
+      className={`flex items-center justify-center gap-1.5 min-h-11 rounded-lg px-2 py-2 text-sm font-semibold transition ${active ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
     >
       {icon}{children}
     </button>
@@ -317,6 +119,10 @@ function TabBtn({ id, icon, active, onSelect, children }: {
 
 export default function Component() {
   const [stops, setStops] = useState<StopDetail[]>([]);
+  const [stopsLoading, setStopsLoading] = useState(true);
+  const [stopsError, setStopsError] = useState<string | null>(null);
+  const [locationNote, setLocationNote] = useState<string | null>(null);
+  const locationReqRef = useRef(0);
   const [fromStop, setFromStop] = useState<StopDetail | null>(null);
   const [toStop, setToStop] = useState<StopDetail | null>(null);
   const [route, setRoute] = useState<RouteResult | null>(null);
@@ -328,7 +134,10 @@ export default function Component() {
   // Which field a map tap fills next ("from" first). Drives the pick-mode banner.
   const [pickTarget, setPickTarget] = useState<PickTarget>("from");
   // Mobile: one of the two panes is shown at a time (lg shows both side-by-side).
+  const [mapNotice, setMapNotice] = useState<string | null>(null);
+  const [mapRequested, setMapRequested] = useState(false);
   const [mobileTab, setMobileTab] = useState<MobileTab>("panel");
+  const resultRef = useRef<HTMLDivElement>(null);
   // Two modes: point-to-point route finder (default) OR view one bus line's full trajectory.
   const [mode, setMode] = useState<PlannerMode>("route");
 
@@ -343,22 +152,53 @@ export default function Component() {
   // latest (so clearing/switching the bus mid-load can't resurrect a stale line).
   const lineReqRef = useRef(0);
 
-  const clearRoute = useCallback(() => {
-    routeReqRef.current++;
-    setRoute(null); setLoading(false); setError(null);
+  useEffect(() => {
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    const loadDesktopMap = () => { if (desktop.matches) setMapRequested(true); };
+    loadDesktopMap();
+    desktop.addEventListener("change", loadDesktopMap);
+    return () => desktop.removeEventListener("change", loadDesktopMap);
   }, []);
 
   useEffect(() => {
-    // The 500 body is JSON too: without the status check a failed load read as an
-    // empty stop list, with no message (#685).
-    fetch("/api/avtobus/stops")
-      .then((r) => { if (!r.ok) throw new Error(`stops ${r.status}`); return r.json(); })
-      .then((d) => setStops(d.stops || []))
-      .catch(() => setError("Dayanacaqlar yüklənmədi. Yenidən cəhd edin."));
+    if (mobileTab === "map") setMapRequested(true);
+  }, [mobileTab]);
+
+  useEffect(() => {
+    if (!route || window.matchMedia("(min-width: 1024px)").matches) return;
+    resultRef.current?.scrollIntoView({
+      block: "start", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
+    });
+  }, [route]);
+
+  const clearRoute = useCallback(() => {
+    routeReqRef.current++;
+    locationReqRef.current++;
+    setLocating(false);
+    setRoute(null); setLoading(false); setError(null);
   }, []);
+
+  const loadStops = useCallback(async () => {
+    setStopsLoading(true); setStopsError(null);
+    try {
+      const response = await fetch("/api/avtobus/stops");
+      if (!response.ok) throw new Error("stops");
+      const data = await response.json();
+      if (!Array.isArray(data.stops) || !data.stops.length) throw new Error("empty stops");
+      setStops(data.stops);
+    } catch {
+      setStopsError("Dayanacaqlar yüklənmədi. İnternet bağlantınızı yoxlayıb yenidən cəhd edin.");
+    } finally { setStopsLoading(false); }
+  }, []);
+
+  useEffect(() => { void loadStops(); }, [loadStops]);
 
   const handleFind = useCallback(async () => {
     if (!fromStop || !toStop) return;
+    if (fromStop.id === toStop.id) {
+      setError("Başlanğıc və təyinat eynidir. Başqa təyinat dayanacağı seçin.");
+      return;
+    }
     const requestId = ++routeReqRef.current;
     setLoading(true); setError(null); setRoute(null);
     try {
@@ -382,48 +222,49 @@ export default function Component() {
   // Set a stop from the search dropdown, then advance the active target so the
   // next map tap / search naturally fills the OTHER field.
   const selectFrom = useCallback((s: StopDetail | null) => {
-    clearRoute(); setFromStop(s); if (s) setPickTarget("to");
+    clearRoute(); setLocationNote(null); setUserLocation(null); setFromStop(s); if (s) setPickTarget("to");
   }, [clearRoute]);
   const selectTo = useCallback((s: StopDetail | null) => {
     clearRoute(); setToStop(s); if (s) setPickTarget("from");
   }, [clearRoute]);
 
   const handleLocate = useCallback(() => {
-    if (!navigator.geolocation) { setError("Brauzeriniz məkanı dəstəkləmir."); return; }
-    setLocating(true);
+    if (!navigator.geolocation) { setError("Brauzeriniz məkanı dəstəkləmir. Dayanacağı adla və ya xəritədən seçin."); return; }
+    const requestId = ++locationReqRef.current;
+    setLocating(true); setError(null); setLocationNote(null);
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
+      pos => {
+        if (requestId !== locationReqRef.current) return;
         const { latitude: lat, longitude: lng } = pos.coords;
-        setUserLocation({ lat, lng });
-        if (stops.length) {
-          let nearest = stops[0];
-          let min = Infinity;
-          for (const s of stops) {
-            const d = haversine(lat, lng, s.latitude, s.longitude);
-            if (d < min) { min = d; nearest = s; }
-          }
-          selectFrom(nearest);
+        const nearest = nearestStop(stops, lat, lng);
+        setLocating(false);
+        if (!nearest) {
+          setError("600 metr yaxınlıqda dayanacaq tapılmadı. Bakıdakı dayanacağı adla və ya xəritədən seçin.");
+          return;
         }
+        selectFrom(nearest.stop);
+        setUserLocation({ lat, lng });
+        setLocationNote(`Seçilən dayanacaq təxminən ${Math.round(nearest.distance * 1000)} m məsafədədir. Ora piyada yol və vaxt marşrut hesabına daxil deyil.`);
+      },
+      failure => {
+        if (requestId !== locationReqRef.current) return;
+        setError(failure.code === 1 ? "Məkan icazəsi verilmədi. Dayanacağı adla və ya xəritədən seçə bilərsiniz." : "Məkan alınmadı. Yenidən cəhd edin və ya dayanacağı özünüz seçin.");
         setLocating(false);
       },
-      () => { setError("Məkan alınmadı. İcazəni yoxlayın."); setLocating(false); },
-      // Standard accuracy is plenty for "nearest stop" and avoids the GPS-grade
-      // provider that makes Chrome/macOS retry (and spam kCLErrorLocationUnknown
-      // to the console) when it can't get a precise fix on a desktop. A cached
-      // fix up to 5 min old is fine and skips a fresh CoreLocation query.
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
   }, [stops, selectFrom]);
 
   const handleSwap = useCallback(() => {
-    clearRoute(); setFromStop(toStop); setToStop(fromStop);
+    clearRoute(); setLocationNote(null); setUserLocation(null); setFromStop(toStop); setToStop(fromStop);
   }, [fromStop, toStop, clearRoute]);
 
   // A map tap (on a marker OR snapped from empty map) fills the ACTIVE field,
   // then advances to the other one — so the user always knows what a tap does.
   const handleMapClick = useCallback((stop: StopDetail) => {
-    clearRoute();
+    setMapNotice(null); clearRoute();
     if (pickTarget === "from") {
+      setLocationNote(null); setUserLocation(null);
       setFromStop(stop);
       setPickTarget(toStop ? "from" : "to");
     } else {
@@ -439,15 +280,16 @@ export default function Component() {
   }, [fromStop, toStop, mode, handleFind]);
 
   // ── Line-viewer handlers ──────────────────────────────────────────────────
+  const [lineDirection, setLineDirection] = useState(1);
   const fetchLine = useCallback(async (busId: number, direction: number) => {
     const reqId = ++lineReqRef.current;
-    setLineLoading(true); setLineError(null);
+    setLineDirection(direction); setLineLoading(true); setLineError(null);
     try {
       const res = await fetch(`/api/avtobus/line?busId=${busId}&direction=${direction}`);
       const data = await res.json();
       if (lineReqRef.current !== reqId) return; // superseded (cleared/switched)
       if (!res.ok) { setLineError(data.error || "Xətt tapılmadı"); setLine(null); return; }
-      setLine(data.line);
+      setLine(data.line); setLineDirection(data.line.direction);
       setMobileTab("panel");
     } catch {
       if (lineReqRef.current !== reqId) return;
@@ -472,34 +314,43 @@ export default function Component() {
     if (lineBus) fetchLine(lineBus.id, dir);
   }, [lineBus, fetchLine]);
 
-  // Switch mode; lazy-load the bus list the first time line mode is opened.
-  const enterMode = useCallback((m: PlannerMode) => {
-    if (m === mode) return;
+  const loadBuses = useCallback(async () => {
+    setBusesLoading(true); setLineError(null);
+    try {
+      const response = await fetch("/api/avtobus/buses");
+      if (!response.ok) throw new Error("buses");
+      const data = await response.json();
+      if (!Array.isArray(data.buses) || !data.buses.length) throw new Error("empty buses");
+      setBuses(data.buses);
+    } catch { setLineError("Avtobuslar yüklənmədi. Yenidən cəhd edin."); }
+    finally { setBusesLoading(false); }
+  }, []);
+
+  const enterMode = useCallback((nextMode: PlannerMode) => {
+    if (nextMode === mode) return;
     clearRoute();
-    setMode(m);
-    if (m === "line" && buses.length === 0 && !busesLoading) {
-      setBusesLoading(true);
-      fetch("/api/avtobus/buses")
-        .then((r) => { if (!r.ok) throw new Error(`buses ${r.status}`); return r.json(); })
-        .then((d) => setBuses(d.buses || []))
-        .catch(() => setLineError("Avtobuslar yüklənmədi. Yenidən cəhd edin."))
-        .finally(() => setBusesLoading(false));
+    lineReqRef.current++; // Leaving line mode must also invalidate its pending response.
+    setLineLoading(false);
+    setMode(nextMode); setMobileTab("panel");
+    if (nextMode === "line") {
+      if (!buses.length && !busesLoading) void loadBuses();
+      else if (lineBus && !line) void fetchLine(lineBus.id, lineDirection);
     }
-  }, [mode, buses.length, busesLoading, clearRoute]);
+  }, [mode, buses.length, busesLoading, clearRoute, loadBuses, lineBus, line, lineDirection, fetchLine]);
 
   return (
-    <div>
+    <div id="marsrut-planlayici" className="scroll-mt-24">
       {/* Mode switch — always visible: point-to-point route finder vs. view a whole line. */}
-      <div className="mb-3 grid max-w-md grid-cols-2 gap-1 rounded-xl bg-gray-100 p-1">
+      <div className="mb-4 grid max-w-md grid-cols-2 gap-1 rounded-2xl border border-gray-200 bg-white p-1.5" role="group" aria-label="Alət rejimi">
         <button
-          onClick={() => enterMode("route")}
-          className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${mode === "route" ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
+          aria-pressed={mode === "route"} onClick={() => enterMode("route")}
+          className={`flex items-center justify-center gap-1.5 min-h-11 rounded-lg px-2 py-2 text-sm font-semibold transition ${mode === "route" ? "bg-white text-orange-700 shadow-sm" : "text-gray-500"}`}
         >
           <Search className="h-4 w-4" /> Marşrut tap
         </button>
         <button
-          onClick={() => enterMode("line")}
-          className={`flex items-center justify-center gap-1.5 rounded-lg py-2 text-sm font-semibold transition ${mode === "line" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500"}`}
+          aria-pressed={mode === "line"} onClick={() => enterMode("line")}
+          className={`flex items-center justify-center gap-1.5 min-h-11 rounded-lg px-2 py-2 text-sm font-semibold transition ${mode === "line" ? "bg-white text-blue-700 shadow-sm" : "text-gray-500"}`}
         >
           <Route className="h-4 w-4" /> Xətti göstər
         </button>
@@ -511,29 +362,37 @@ export default function Component() {
         <TabBtn id="map" icon={<MapIcon className="h-4 w-4" />} active={mobileTab === "map"} onSelect={setMobileTab}>Xəritə</TabBtn>
       </div>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,380px)_1fr] lg:gap-4">
+      <div className="lg:grid lg:grid-cols-[minmax(0,390px)_minmax(0,1fr)] lg:items-start lg:gap-5">
         {/* Controls / results pane */}
-        <div className={`${mobileTab === "panel" ? "block" : "hidden"} space-y-3 lg:block`}>
+        <div className={`${mobileTab === "panel" ? "block" : "hidden"} min-w-0 space-y-4 rounded-2xl border border-gray-200 bg-white p-4 shadow-sm sm:p-5 lg:block`}>
           {mode === "route" ? (
             <>
+              <div>
+                <h2 className="text-lg font-bold text-gray-900">Hara gedirsiniz?</h2>
+                <p className="mt-1 text-xs leading-relaxed text-gray-500">Avtobus və metro ilə daha az dəyişmə. İki dayanacaq seçin.</p>
+              </div>
+              {stopsError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                <p>{stopsError}</p>
+                <button onClick={loadStops} disabled={stopsLoading} className="mt-2 flex min-h-11 items-center gap-2 font-semibold underline"><RotateCcw className="h-4 w-4" /> Yenidən yüklə</button>
+              </div>}
               <button
                 onClick={handleLocate}
                 disabled={locating || stops.length === 0}
-                className="flex w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white py-3 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 disabled:opacity-50"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 py-2.5 text-sm font-semibold text-orange-800 transition hover:bg-orange-100 disabled:opacity-50"
               >
                 <LocateFixed className="h-4 w-4" />
                 {locating ? "Məkan tapılır…" : "Yaxınımdakı dayanacaqdan başla"}
               </button>
 
-              <StopPicker label="Haradan" placeholder="Başlanğıc dayanacağı axtar…" stops={stops} selected={fromStop} onSelect={selectFrom} dotClass="bg-green-600" active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
+              <StopPicker label="Haradan" loading={stopsLoading || !!stopsError} stops={stops} selected={fromStop} onSelect={selectFrom} active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
 
-              <div className="flex justify-center">
-                <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" className="rounded-lg border border-gray-200 bg-white p-2 text-gray-500 shadow-sm transition hover:bg-gray-50">
-                  <ArrowDownUp className="h-4 w-4" />
+              <div className="-my-1 flex justify-end">
+                <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" disabled={!fromStop && !toStop} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-40">
+                  <ArrowDownUp className="h-4 w-4" /> Yerləri dəyiş
                 </button>
               </div>
 
-              <StopPicker label="Hara" placeholder="Təyinat dayanacağı axtar…" stops={stops} selected={toStop} onSelect={selectTo} dotClass="bg-red-600" active={pickTarget === "to"} onActivate={() => setPickTarget("to")} />
+              <StopPicker label="Hara" loading={stopsLoading || !!stopsError} stops={stops} selected={toStop} onSelect={selectTo} active={pickTarget === "to"} onActivate={() => setPickTarget("to")} />
 
               <button
                 onClick={handleFind}
@@ -541,17 +400,20 @@ export default function Component() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
               >
                 {loading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Marşrut axtarılır…</>
-                         : <><Bus className="h-4 w-4" /> Marşrutu tap</>}
+                         : <><Bus className="h-4 w-4" /> {route ? "Yenidən hesabla" : "Marşrutu tap"}</>}
               </button>
 
+              {locationNote && <p role="status" className="flex gap-2 rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-gray-600"><Footprints className="mt-0.5 h-4 w-4 shrink-0" />{locationNote}</p>}
               {error && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                   {error}
                   <SupportCTA variant="inline" className="mt-1 block" />
                 </div>
               )}
+              <p className="flex items-start gap-2 text-xs leading-relaxed text-gray-500"><Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />Vaxt təxminidir. Gözləmə və tıxac daxil deyil.</p>
+              <div role="status" aria-live="polite" className="sr-only">{loading ? "Marşrut axtarılır" : route ? "Marşrut hazırdır. Addımlar aşağıda göstərilir." : ""}</div>
               {route && (
-                <>
+                <div ref={resultRef} className="scroll-mt-24 space-y-3">
                   <button
                     onClick={() => setMobileTab("map")}
                     className="flex w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 py-2.5 text-sm font-semibold text-orange-700 transition hover:bg-orange-100 lg:hidden"
@@ -559,9 +421,9 @@ export default function Component() {
                     <MapIcon className="h-4 w-4" /> Nəticəni xəritədə gör
                   </button>
                   <JourneyView route={route} />
-                </>
+                </div>
               )}
-              {!route && !error && (
+              {!route && !error && !loading && (
                 <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
                   <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                   Dayanacağın adını bilmirsiniz? «Xəritə»yə keçin və istədiyiniz yerə toxunun — ən yaxın dayanacaq avtomatik seçilir.
@@ -570,6 +432,7 @@ export default function Component() {
             </>
           ) : (
             <>
+              <div><h2 className="text-lg font-bold text-gray-900">Avtobus hara gedir?</h2><p className="mt-1 text-xs leading-relaxed text-gray-500">Xətti seçin, dayanacaqları və hər iki istiqaməti görün.</p></div>
               <BusPicker buses={buses} selected={lineBus} onSelect={selectLineBus} loading={busesLoading} />
 
               {/* Gediş / Qayıdış toggle — only when the line has two directions. */}
@@ -578,9 +441,9 @@ export default function Component() {
                   {line.availableDirections.slice(0, 2).map((d, i) => (
                     <button
                       key={d}
-                      onClick={() => changeLineDirection(d)}
+                      aria-pressed={line.direction === d} onClick={() => changeLineDirection(d)}
                       disabled={lineLoading}
-                      className={`rounded-lg py-2 text-sm font-semibold transition disabled:opacity-60 ${line.direction === d ? "bg-white text-blue-700 shadow-sm" : "text-gray-500"}`}
+                      className={`min-h-11 rounded-lg px-2 py-2 text-sm font-semibold transition disabled:opacity-60 ${line.direction === d ? "bg-white text-blue-700 shadow-sm" : "text-gray-500"}`}
                     >
                       {i === 0 ? "Gediş" : "Qayıdış"}
                     </button>
@@ -589,13 +452,14 @@ export default function Component() {
               )}
 
               {lineError && (
-                <div className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+                <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                   {lineError}
+                  <button onClick={() => lineBus ? fetchLine(lineBus.id, lineDirection) : loadBuses()} disabled={lineLoading || busesLoading} className="mt-2 flex min-h-11 items-center gap-2 font-semibold underline"><RotateCcw className="h-4 w-4" /> Yenidən cəhd et</button>
                   <SupportCTA variant="inline" className="mt-1 block" />
                 </div>
               )}
               {lineLoading && (
-                <div className="flex items-center justify-center gap-2 rounded-xl bg-gray-50 py-4 text-sm text-gray-500">
+                <div role="status" className="flex items-center justify-center gap-2 rounded-xl bg-gray-50 py-4 text-sm text-gray-500">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-transparent" /> Xətt yüklənir…
                 </div>
               )}
@@ -626,13 +490,13 @@ export default function Component() {
         </div>
 
         {/* Map pane */}
-        <div className={`${mobileTab === "map" ? "block" : "hidden"} lg:block`}>
+        <div className={`${mobileTab === "map" ? "block" : "hidden"} min-w-0 lg:sticky lg:top-24 lg:block`}>
           {/* Line mode: a simple info banner (no map-tap picking here). */}
           {mode === "line" ? (
             <div className="mb-2 flex items-center gap-1.5 rounded-xl border border-blue-200 bg-blue-50 p-2.5 text-xs text-gray-600">
               <Route className="h-3.5 w-3.5 shrink-0 text-blue-500" />
               {line
-                ? <span><strong className="text-blue-700">{line.number}</strong> xətti — {line.first_point} ↔ {line.last_point} · {line.stops.length} dayanacaq</span>
+                ? <span><strong className="text-blue-700">{line.number}</strong> xətti — {line.stops[0]?.name ?? line.first_point} → {line.stops[line.stops.length - 1]?.name ?? line.last_point} · {line.stops.length} dayanacaq</span>
                 : <span>Avtobus nömrəsini seçin — xəttin bütün marşrutu xəritədə görünəcək.</span>}
             </div>
           ) : !route ? (
@@ -643,24 +507,24 @@ export default function Component() {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
-                  onClick={() => setPickTarget("from")}
+                  aria-pressed={pickTarget === "from"} onClick={() => setPickTarget("from")}
                   className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "from" ? "border-green-500 bg-white text-green-700 ring-2 ring-green-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
                 >
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-600" />
-                  Başlanğıc{fromStop ? " ✓" : ""}
+                  <span className="min-w-0 truncate">{fromStop ? fromStop.name : "Başlanğıc seç"}</span>
                 </button>
                 <button
-                  onClick={() => setPickTarget("to")}
+                  aria-pressed={pickTarget === "to"} onClick={() => setPickTarget("to")}
                   className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "to" ? "border-red-500 bg-white text-red-700 ring-2 ring-red-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
                 >
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
-                  Təyinat{toStop ? " ✓" : ""}
+                  <span className="min-w-0 truncate">{toStop ? toStop.name : "Təyinat seç"}</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white p-2.5">
-              <span className="flex items-center gap-1.5 text-xs text-gray-600"><Bus className="h-3.5 w-3.5 text-orange-500" /> Marşrut xəritədə göstərilir.</span>
+              <span className="min-w-0 text-xs text-gray-700"><strong className="block text-sm text-gray-900">≈ {movementMinutes(route.totalTime)} dəq hərəkət</strong>{route.totalTransfers === 0 ? "Dəyişmə yoxdur" : `${route.totalTransfers} dəyişmə`} · {fromStop?.name} → {toStop?.name}</span>
               <button
                 onClick={() => { clearRoute(); setToStop(null); setPickTarget("to"); }}
                 className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
@@ -670,8 +534,9 @@ export default function Component() {
             </div>
           )}
 
-          <div className="h-[64vh] min-h-[380px] overflow-hidden rounded-2xl border border-gray-200 lg:h-[600px]">
-            <BusMap
+          {mapNotice && mode === "route" && <p role="status" className="mb-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">{mapNotice}</p>}
+          <div className="relative isolate h-[60vh] min-h-[360px] overflow-hidden rounded-2xl border border-gray-200 bg-gray-100 shadow-sm lg:h-[580px]">
+            {mapRequested && <BusMap
               stops={stops}
               fromStop={mode === "line" ? null : fromStop}
               toStop={mode === "line" ? null : toStop}
@@ -680,8 +545,11 @@ export default function Component() {
               userLocation={mode === "line" ? null : userLocation}
               onStopClick={mode === "line" ? () => {} : handleMapClick}
               isVisible={mobileTab === "map"}
-            />
+              onMiss={mode === "route" ? () => setMapNotice("Bu nöqtədən 600 metr yaxınlıqda dayanacaq yoxdur. Dayanacaq işarəsinə toxunun və ya xəritədə başqa yer seçin.") : undefined}
+            />}
           </div>
+          <p className="mt-2 flex items-center gap-3 text-[11px] text-gray-500"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-600" />Başlanğıc</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-600" />Təyinat</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-2 border-dashed border-gray-500" />Piyada</span></p>
+          <button onClick={() => setMobileTab("panel")} className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 lg:hidden"><ListOrdered className="h-4 w-4" />{route ? "Marşrut addımlarına bax" : "Dayanacaq seçiminə qayıt"}<ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>
     </div>

@@ -26,3 +26,11 @@ export function haversine(
 
 export const WALK_RADIUS_KM = 0.3; // 300 meters
 export const WALK_SPEED_KMH = 4.5; // average walking speed
+
+/** The reference network covers Baku and its surrounding settlements. A point
+ * can be a valid world coordinate and still be corrupt here (517's 4.05° N).
+ * Keep the same generous envelope used by the reference-data audit. */
+export function isBakuCoordinate(latitude: number, longitude: number): boolean {
+  return Number.isFinite(latitude) && Number.isFinite(longitude)
+    && latitude >= 39.5 && latitude <= 41.5 && longitude >= 48.5 && longitude <= 51;
+}

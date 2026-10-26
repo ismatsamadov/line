@@ -86,6 +86,13 @@ SELECT id, name, latitude, longitude FROM bus.bus_stop_details
  WHERE latitude NOT BETWEEN 39.5 AND 41.5 OR longitude NOT BETWEEN 48.5 AND 51;
 ```
 
+Since 2026-10-26, `isBakuCoordinate` in `geo.ts` applies this same generous
+envelope in the graph, the stop picker/map data and the line viewer. It rejects
+nonfinite coordinates as well as world-valid points outside the network's area,
+including the old latitude 4.05. A rejected stop breaks its adjacent graph legs
+instead of creating a shortcut through it. This protects searches and maps; it
+does not repair the underlying rows or replace the read-only data audit above.
+
 The graph uses haversine distance between stops. A bus line's stored duration is
 spread evenly over its legs; missing/nonpositive duration falls back to 30
 minutes for the whole line. Neither figure is road geometry or a live estimate.
@@ -139,6 +146,9 @@ nothing fits, and the map then joins the stops. Distances and times do not chang
 they still come from straight lines between stops, as the page says. If the lines
 fail to load, the graph builds without them and every ride is drawn straight until
 the process restarts: the graph is built once, and only a console error says so.
+The line viewer also catches a failure reading its optional road geometry: it
+returns the ordered stops with empty coordinates, allowing the map to join those
+stops. A geometry-table failure therefore does not hide an otherwise usable line.
 
 Measured on a copy of the production tables on 2026-10-24: 11,230 of 11,355 legs get
 the road, and the graph builds in about 1.1 s with the lines. Of 300 random trips,
@@ -255,23 +265,77 @@ the current selection. Results show boarding/alighting stops, walking endpoints,
 terminal direction and movement-time limitations. Walking-only journeys are
 labeled “Piyada,” rather than “0 avtobus.”
 
+Stop and bus searches fold Azerbaijani letters and Latin keyboard equivalents
+(including dotted İ), support words in any order, and rank exact names/codes
+before prefix and partial matches. Empty stop searches suggest transport hubs.
+The picker uses a labeled combobox and listbox; arrow keys select an option,
+Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
+bus-list failures have retry controls rather than looking like an empty network.
+
+GPS and empty-map taps choose a stop only within 600 m. That selection radius is
+separate from the routing graph's 300 m walking-transfer limit. The GPS selection
+shows the approximate distance to its stop and says that this access walk is not
+included in the itinerary's movement time. A location callback is invalidated by
+later selections or a mode change, so delayed GPS cannot replace a newer origin.
+
 `GET /api/avtobus/line` takes `busId` as a positive PostgreSQL integer written in
 digits, and `direction` as 1 or 2 (no direction means 1); anything else is a 400
 before any query. `parseInt` used to read “1junk” and “1.5” as 1 and pass ids past
 int4 to Prisma, which threw. The stop and bus lists show an error when their
-request fails; a 500 body is JSON too, and used to read as an empty list. On a phone
-the map mounts in the hidden tab, where Leaflet measures it as 0×0, so a fit made
-then landed at maximum zoom on the journey's middle; whenever the map goes from
-0×0 to a real size it fits again, and an ordinary window resize keeps the view
-(#685).
+request fails; a 500 body is JSON too, and used to read as an empty list. On a phone,
+the map loads when first opened and remains mounted when its tab is hidden. Desktop
+loads it immediately. A fit made while hidden once landed at maximum zoom on the
+journey's middle; whenever the map goes from 0×0 to a real size it fits again, and
+an ordinary window resize keeps the view (#685). New phone results scroll into view,
+respecting reduced-motion preferences. The line summary uses the returned stop order
+for its endpoints, including the return direction.
 
-## Verification for #664
+## Automated verification
 
 Tests cover direct-bus preference, minimum transfers, tie-breaks, origin and
 interchange walks, the walking limit, directions, loops, unreachable stops,
 initialization concurrency/retry and API input/error handling. An independent
 round-by-boardings oracle checks 900 trips over generated small networks. The
 spatial grid is checked against exhaustive haversine pairs.
+
+`routingOracle.test.ts` adds 900 generated trips checked against a separate
+boarding-round cost oracle. It expands complete contiguous ride stretches in each
+round and allows one walk between rounds, rather than reproducing the production
+edge/state Dijkstra. Its mixed bus/metro networks include loops, origin walks,
+interchanges and destination walks. It checks every ranking objective, transfer
+counts, segment continuity and the absence of consecutive walking segments.
+
+## Verification on 2026-10-26
+
+The targeted planner, bus-routing and API suites passed 118 tests in 14 files. Regression
+tests cover the historical out-of-area latitude, consistent filtering for the
+picker and line map, and usable line stops when optional geometry cannot load.
+
+A separate harness built the real graph, metro and shapes against a read-only
+local AYNA snapshot (3,456 served stops, 208 buses), mocking only the database
+reads. Of 600 sampled pairs, 594 had a route and six were unreachable; 68 routes
+used metro and the largest transfer count was four. Every boarding count agreed
+with an independent line-round oracle. Endpoint continuity, walking limits,
+movement-time/distance sums and geometry jump checks passed; 1,472 of 1,488 rides
+had a matched shape. This was local snapshot verification, without production
+writes. The harness and exported snapshot remain outside the repository. Browser
+launch and local PostgreSQL initialization were blocked by the sandbox, so this
+run does not establish browser behavior for the redesigned interface. TypeScript,
+Next lint and architecture checks pass. The production compiler also passes using
+actual Archivo files downloaded through curl and supplied locally to Next's font
+loader, since Node cannot resolve Google Fonts here. Full prerendering stops on
+job pages that require the unavailable database. The full gate cannot pass in this
+environment: PostgreSQL/network-binding integration suites cannot run. Correcting
+PATH during deployment preflight made Python lint and all 414 Python tests pass.
+No gate checks were bypassed to publish or deploy these changes.
+
+Three separate temporary React server-rendering tests verify the actual page and
+journey component: one H1, labeled comboboxes, unique element IDs, canonical/OG URL,
+all three JSON-LD blocks, agreement between visible FAQ and schema answers, and
+boarding/alighting instructions, intermediate stops and walking-only output.
+These checks establish HTML/SEO output, not browser layout or interactions.
+
+## Historical verification for #664
 
 A read-only production snapshot on 2026-10-17 contained 3,456 stops, 208 buses and
 402 directions. A local comparison with the previous implementation checked 200

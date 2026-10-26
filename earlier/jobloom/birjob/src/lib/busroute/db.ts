@@ -8,6 +8,7 @@ import { prisma } from "@/lib/prisma";
 import type { StopDetail, Bus, BusStop, BusLite, BusLineDetail, BusLineStop, LatLng } from "./types";
 import { collapseRepeatedSequence } from "./sequence";
 import { joinLegs, legPaths } from "./shape";
+import { isBakuCoordinate } from "./geo";
 
 export async function queryStopDetails(): Promise<StopDetail[]> {
   const rows = await prisma.bus_stop_details.findMany({ orderBy: { id: "asc" } });
@@ -114,7 +115,7 @@ export async function listStopsForGeo() {
   const rows = await prisma.bus_stop_details.findMany({
     select: { id: true, code: true, name: true, latitude: true, longitude: true, is_transport_hub: true },
   });
-  return rows.map((r) => ({
+  return rows.filter((r) => isBakuCoordinate(r.latitude, r.longitude)).map((r) => ({
     id: r.id,
     code: r.code ?? "",
     name: r.name,
@@ -193,7 +194,7 @@ export async function queryBusLine(
   const stops: BusLineStop[] = [];
   for (const r of stopRows) {
     const d = detailById.get(r.stop_id);
-    if (!d) continue;
+    if (!d || !isBakuCoordinate(d.latitude, d.longitude)) continue;
     // De-dupe consecutive identical stops (data sometimes repeats a hub).
     if (stops.length && stops[stops.length - 1].id === d.id) continue;
     stops.push({
@@ -207,7 +208,13 @@ export async function queryBusLine(
   // are (#685): a recorded line can be broken, misfiled or backwards (521's second
   // direction is stored as longitude, latitude), so it is never drawn as stored.
   // Empty when no leg has a road; the map then joins the stops.
-  const lines = await queryBusLines(busId);
+  let lines: Map<number, LatLng[]>;
+  try {
+    lines = await queryBusLines(busId);
+  } catch (error) {
+    console.error("[busroute] line geometry not loaded; drawing between stops:", error);
+    lines = new Map();
+  }
   const own = lines.get(direction);
   const others = [...lines].filter(([d]) => d !== direction).map(([, line]) => line);
   const points = stops.map((s): LatLng => [s.latitude, s.longitude]);

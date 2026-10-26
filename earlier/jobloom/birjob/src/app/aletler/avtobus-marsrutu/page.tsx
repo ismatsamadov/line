@@ -1,6 +1,6 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
-import { Bus, ChevronRight } from 'lucide-react';
+import { Bus, ChevronDown, ChevronRight, Info } from 'lucide-react';
 import { getToolBySlug } from '@/lib/tools';
 import RelatedTools from '@/components/tools/RelatedTools';
 import { getNonce } from '@/lib/csp';
@@ -16,10 +16,10 @@ const PAGE_URL = `https://www.birjob.com/aletler/${tool.slug}`;
 const WALK_METERS = Math.round(WALK_RADIUS_KM * 1000);
 
 export const metadata: Metadata = {
-  title: { absolute: 'Bakı Avtobus Marşrutu — Daha Az Dəyişmə ilə (Pulsuz) | BirJob' },
+  title: { absolute: 'Bakı Avtobus Marşrutu və Metro — Marşrut Tap | BirJob' },
   description: tool.description, keywords: tool.keywords,
   alternates: { canonical: PAGE_URL },
-  openGraph: { images: ['/opengraph-image'], title: tool.label, description: tool.description, url: PAGE_URL, type: 'website' },
+  openGraph: { images: ['/opengraph-image'], title: 'Bakı avtobus və metro marşrut planlayıcısı', description: tool.description, url: PAGE_URL, type: 'website', locale: 'az_AZ' },
 };
 
 const FAQ = [
@@ -34,7 +34,7 @@ export default async function Page() {
   const nonce = await getNonce();
   return (
     <>
-      <JsonLd nonce={nonce} data={buildWebApplication({ name: tool.label, url: PAGE_URL, description: tool.description })} />
+      <JsonLd nonce={nonce} data={buildWebApplication({ name: 'Bakı avtobus və metro marşrut planlayıcısı', url: PAGE_URL, description: tool.description, category: 'UtilitiesApplication' })} />
       <JsonLd nonce={nonce} data={buildBreadcrumb([
         { name: 'BirJob', url: '/' },
         { name: 'Alətlər', url: '/aletler' },
@@ -49,47 +49,57 @@ export default async function Page() {
           <span className="text-gray-700">{tool.label}</span>
         </nav>
 
-        <header className="bj-tool-heading mb-6">
-          <div className="mb-3 inline-flex h-11 w-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600"><Bus className="h-6 w-6" /></div>
-          <h1 className="text-2xl font-extrabold text-gray-900 sm:text-3xl">Bakı Avtobus Marşrutu Planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-gray-600">{tool.tagline}. Başlanğıc və təyinat dayanacağını seçin — hansı avtobuslara və metro qatarlarına minəcəyinizi, dəyişmələri, piyada keçidlərini və təxmini vaxtı xəritədə görün. Yaxud <strong>«Xətti göstər»</strong> rejiminə keçib bir avtobus nömrəsi seçin — həmin xəttin bütün marşrutunu və dayanacaqlarını xəritədə izləyin.</p>
+        <header className="mb-5 sm:mb-7">
+          <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-orange-700"><Bus aria-hidden="true" className="h-4 w-4" />Bakı · Avtobus və metro</div>
+          <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Bakı avtobus marşrutu planlayıcısı</h1>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">Haradan hara gedirsiniz? Dayanacaqları seçin, avtobus və metro ilə daha az dəyişməli yolu xəritədə görün. Pulsuz və qeydiyyatsız.</p>
         </header>
 
         <Component />
 
-        <section className="prose prose-gray mt-10 max-w-none">
-          <h2 className="text-xl font-bold text-gray-900">Necə istifadə etməli?</h2>
-          <ol className="text-gray-700">
-            <li><strong>Haradan:</strong> başlanğıc dayanacağını adla axtarın, xəritədən toxunun, və ya «yaxınımdakı dayanacaqdan başla» düyməsi ilə avtomatik seçin.</li>
-            <li><strong>Hara:</strong> təyinat dayanacağını seçin.</li>
-            <li><strong>Marşrutu tap:</strong> alət avtobus və metro ilə ən az minmə tələb edən marşrutu, keçidləri və təxmini hərəkət vaxtını addım-addım göstərir. {WALK_METERS} metrədək qısa səfərlər üçün piyada variantı göstərilə bilər.</li>
+        <section className="mt-10" aria-labelledby="planner-help">
+          <h2 id="planner-help" className="text-xl font-bold text-gray-900">Marşrutu necə tapmaq olar?</h2>
+          <ol className="mt-4 grid gap-3 sm:grid-cols-3">
+            {[
+              ['Başlanğıcı seçin', 'Dayanacağın adını və ya kodunu yazın, xəritədə seçin, yaxud yaxınınızdakı dayanacağı tapın.'],
+              ['Təyinatı seçin', 'Getmək istədiyiniz dayanacağı seçin. Alət avtobus və metronu birlikdə nəzərə alır.'],
+              ['Yolunuzu izləyin', 'Harada minəcəyinizi, neçə dayanacaq gedəcəyinizi və harada dəyişəcəyinizi addım-addım görün.'],
+            ].map(([title, text], index) => (
+              <li key={title} className="rounded-xl border border-gray-200 bg-white p-4">
+                <span className="mb-2 flex h-6 w-6 items-center justify-center rounded-full bg-orange-50 text-xs font-bold text-orange-700" aria-hidden="true">{index + 1}</span>
+                <h3 className="text-sm font-semibold text-gray-900">{title}</h3>
+                <p className="mt-1 text-sm leading-relaxed text-gray-600">{text}</p>
+              </li>
+            ))}
           </ol>
+        </section>
 
-          <h2 className="text-xl font-bold text-gray-900">Bir avtobus xəttinin marşrutunu gör</h2>
-          <p className="text-gray-700">
-            Hansı avtobusun hara getdiyini bilmək istəyirsiniz? <strong>«Xətti göstər»</strong> rejiminə keçin və avtobus
-            nömrəsini (məsələn 1, 65, 88, H1) və ya son dayanacağın adını yazın. Alət həmin xəttin <strong>bütün
-            marşrutunu</strong> — başlanğıc dayanacağından son dayanacağa qədər — xəritədə çəkir və keçdiyi bütün
-            dayanacaqları ardıcıllıqla sadalayır. Xəttin ümumi uzunluğunu (km) və bütün marşrutun təxmini müddətini
-            (dəqiqə) də göstərir. İki istiqamətli xətlər üçün <strong>«Gediş»</strong> və <strong>«Qayıdış»</strong>
-            istiqamətləri arasında keçid edə bilərsiniz.
-          </p>
+        <section className="mt-7 grid gap-5 rounded-2xl border border-gray-200 bg-white p-5 sm:grid-cols-2 sm:p-6">
+          <div>
+            <h2 className="text-base font-bold text-gray-900">Hansı avtobus hara gedir?</h2>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600"><strong>«Xətti göstər»</strong> rejimində avtobus nömrəsini (məsələn, 1, 65, 88 və ya H1) və ya son dayanacağın adını axtarın. Xəttin bütün dayanacaqlarını və marşrutunu xəritədə görün. Mövcud olduqda «Gediş» və «Qayıdış» istiqamətləri arasında keçin.</p>
+            <p className="mt-3 text-sm leading-relaxed text-gray-600">İşə gediş üçün maaş və xərcləri planlayırsınız? <Link href="/aletler/maas-kalkulyatoru" className="font-medium text-orange-700 underline underline-offset-2">Maaş kalkulyatoruna</Link> da baxın.</p>
+          </div>
+          <div>
+            <h2 className="flex items-center gap-2 text-base font-bold text-gray-900"><Info aria-hidden="true" className="h-4 w-4 text-orange-600" />Məlumat və məhdudiyyətlər</h2>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">Bu alət canlı gəliş saatı göstərmir. Vaxta gözləmə, cədvəl, tıxac və metro daxilində keçidlər daxil deyil. Avtobus və piyada məsafələri düz xətt üzrə, metro məsafələri xətt boyunca hesablanır.</p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">Avtobuslar <a href="https://ayna.gov.az/az" className="font-medium text-orange-700 underline underline-offset-2">AYNA</a> istinad bazasından, metro xidmətləri <a href="https://metro.gov.az/" className="font-medium text-orange-700 underline underline-offset-2">Bakı Metropoliteni</a> və opendata.az-dan götürülüb. Metro məlumatı 25 oktyabr 2026-cı il vəziyyətinə uyğundur. Bazalar avtomatik yenilənmir; səfərdən əvvəl cari xidməti yoxlayın.</p>
+            <p className="mt-2 text-xs text-gray-500">Metro xəritə məlumatı: <a href="https://www.openstreetmap.org/copyright" className="underline underline-offset-2">© OpenStreetMap iştirakçıları, ODbL</a>.</p>
+          </div>
+        </section>
 
-          <h2 className="text-xl font-bold text-gray-900">Məhdudiyyətlər</h2>
-          <p className="text-gray-700">
-            Bu alət marşrut <strong>topologiyasını</strong> (hansı avtobuslar və metro qatarları, hansı ardıcıllıq) planlayır — <strong>cədvəl və ya real-vaxt</strong> gəliş saatlarını yox.
-            Vaxt yalnız təxmini hərəkət müddətidir; gözləmə, cədvəl və tıxac daxil deyil. Avtobus məsafələri düz xətt üzrə, metro məsafələri xətt boyunca hesablanır.
-            AYNA məlumatlarından götürülmüş istinad bazası və 25 oktyabr 2026-cı il tarixli metro məlumatı avtomatik yenilənmir; cari marşrutu və piyada keçid imkanını səfərdən əvvəl yoxlayın.
-            İşə getmək üçün maaş və yol xərclərini hesablamaq istəsəniz, <Link href="/aletler/maas-kalkulyatoru" className="text-orange-600 hover:underline">maaş kalkulyatorumuza</Link> baxın.
-          </p>
-
-          <h2 className="text-xl font-bold text-gray-900">Tez-tez verilən suallar</h2>
-          {FAQ.map(f => (
-            <div key={f.q} className="mt-3">
-              <h3 className="font-semibold text-gray-900">{f.q}</h3>
-              <p className="text-gray-700">{f.a}</p>
-            </div>
-          ))}
+        <section className="mt-8" aria-labelledby="planner-faq">
+          <h2 id="planner-faq" className="mb-4 text-xl font-bold text-gray-900">Tez-tez verilən suallar</h2>
+          <div className="divide-y divide-gray-200 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            {FAQ.map(f => (
+              <details key={f.q} className="group px-4 sm:px-5">
+                <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-3 py-4 focus-visible:outline focus-visible:outline-2 focus-visible:outline-orange-500 [&::-webkit-details-marker]:hidden">
+                  <h3 className="text-sm font-semibold text-gray-900">{f.q}</h3><ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-gray-500 transition-transform group-open:rotate-180" />
+                </summary>
+                <p className="pb-5 text-sm leading-relaxed text-gray-600">{f.a}</p>
+              </details>
+            ))}
+          </div>
         </section>
 
         <div className="mt-10"><RelatedTools currentSlug={tool.slug} /></div>

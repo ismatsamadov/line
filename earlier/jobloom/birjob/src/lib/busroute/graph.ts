@@ -6,7 +6,7 @@
  * The metro (metro.ts) adds its stations, its rides and the walks to them (#689).
  */
 import { GraphEdge, StopDetail, Bus, BusStop, LatLng, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER, isMetroStation } from "./types";
-import { haversine } from "./geo";
+import { haversine, isBakuCoordinate } from "./geo";
 import { queryStopDetails, queryBuses, queryBusStops, queryRouteShapes } from "./db";
 import { computeWalkingEdges } from "./walking";
 import { collapseRepeatedSequence } from "./sequence";
@@ -61,8 +61,7 @@ export class TransitGraph {
     let roadLegs = 0;
 
     for (const stop of stopDetails) {
-      if (Number.isFinite(stop.latitude) && Number.isFinite(stop.longitude)
-        && Math.abs(stop.latitude) <= 90 && Math.abs(stop.longitude) <= 180) this.stopInfo.set(stop.id, stop);
+      if (isBakuCoordinate(stop.latitude, stop.longitude)) this.stopInfo.set(stop.id, stop);
     }
     for (const bus of buses) this.busInfo.set(bus.id, bus);
 

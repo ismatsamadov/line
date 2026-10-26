@@ -84,6 +84,15 @@ describe('transit graph', () => {
     expect(g.getEdges(2)).toEqual([]);
   });
 
+  it('rejects world-valid points outside the Baku network without bridging their route legs', async () => {
+    // The pre-migration latitude of route 517 was world-valid, in the Indian Ocean.
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2, 4.05, 49.8), stop(3)]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getStopInfo(2)).toBeUndefined();
+    expect(g.getEdges(1)).toEqual([]);
+    expect(g.getEdges(3)).toEqual([]);
+  });
+
   it('rebuilds walking connectivity without reading the legacy precomputed table', async () => {
     db.queryStopDetails.mockResolvedValue([stop(1, 40), stop(2, 40.001)]);
     const g = await (await import('../graph')).getGraph();
