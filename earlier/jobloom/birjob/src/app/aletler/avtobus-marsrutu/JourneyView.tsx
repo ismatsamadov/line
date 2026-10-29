@@ -1,5 +1,6 @@
-import { ArrowRight, Bus, ChevronDown, Footprints, Info, TrainFront } from "lucide-react";
+import { ArrowRight, Bike, Bus, ChevronDown, Footprints, Info, TrainFront } from "lucide-react";
 import type { RouteResult, RouteSegment } from "@/lib/busroute/types";
+import type { JourneyBikeParking } from "@/lib/busroute/bike";
 import { isMetroStation } from "@/lib/busroute/types";
 import { segmentColors } from "./segmentColors";
 import { movementMinutes, travelledStopCount } from "./journeyFormatting";
@@ -8,7 +9,7 @@ import { movementMinutes, travelledStopCount } from "./journeyFormatting";
 const placeName = (stop: RouteSegment["stops"][number] | undefined) =>
   stop && (isMetroStation(stop.id) ? `${stop.name} metrosu` : stop.name);
 
-export default function JourneyView({ route }: { route: RouteResult }) {
+export default function JourneyView({ route, bikeParking = null }: { route: RouteResult; bikeParking?: JourneyBikeParking | null }) {
   const colors = segmentColors(route);
   const rides = route.segments.filter(segment => segment.mode !== "walk");
   const walkOnly = rides.length === 0;
@@ -96,6 +97,20 @@ export default function JourneyView({ route }: { route: RouteResult }) {
           );
         })}
       </ol>
+
+      {/* The racks beside the first boarding and the last alighting (#692): AYNA's
+          parking places, for a rider who cycles to the bus or the metro. */}
+      {bikeParking && (
+        <div role="group" aria-label="Velosiped parkinqi" className="border-t border-gray-100 px-4 py-3 sm:px-5">
+          <p className="flex items-center gap-1.5 text-sm font-bold text-gray-900"><Bike aria-hidden="true" className="h-4 w-4 text-green-700" />Velosiped parkinqi</p>
+          <ul className="mt-2 space-y-1 text-sm text-gray-700">
+            {([["Minmə yeri", bikeParking.boarding], ["Düşmə yeri", bikeParking.alighting]] as const).map(([label, end]) => end && (
+              <li key={label} className="break-words"><span className="font-semibold">{label}, {placeName(end.stop)}:</span> {end.parking.name} · ≈&nbsp;{Math.round(end.parking.distance * 1000)}&nbsp;m</li>
+            ))}
+          </ul>
+          <p className="mt-1.5 text-xs leading-relaxed text-gray-500">Dayanacağa velosipedlə gəlirsinizsə, onu bu parkinqdə saxlaya bilərsiniz. Məsafə düz xətt üzrə təxminidir; parkinq xəritədə «P» ilə göstərilir. Mənbə: AYNA, opendata.az.</p>
+        </div>
+      )}
 
       <div className="flex items-start gap-2 border-t border-gray-100 bg-gray-50 px-4 py-3 text-xs leading-relaxed text-gray-600 sm:px-5">
         <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />

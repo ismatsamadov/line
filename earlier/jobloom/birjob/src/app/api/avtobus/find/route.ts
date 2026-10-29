@@ -3,6 +3,7 @@ import { getGraph } from "@/lib/busroute/graph";
 import { z } from "zod";
 import { parseJsonBody } from "@/lib/apiValidate";
 import { findRoute } from "@/lib/busroute/routing";
+import { journeyBikeParking, type JourneyBikeParking } from "@/lib/busroute/bike";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,10 +33,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Bu dayanacaqlar arasında marşrut tapılmadı" }, { status: 404 });
     }
 
+    // The bicycle racks beside the journey's first boarding and last alighting (#692).
+    // A fault there must not cost the journey: it is sent without them.
+    let bikeParking: JourneyBikeParking | null = null;
+    try {
+      bikeParking = journeyBikeParking(route);
+    } catch (error) {
+      console.error("[avtobus] bike parking not added:", error);
+    }
+
     return NextResponse.json({
       from: { id: fromStop.id, name: fromStop.name },
       to: { id: toStop.id, name: toStop.name },
       route,
+      bikeParking,
     });
   } catch (error) {
     console.error("[avtobus] find failed:", error);

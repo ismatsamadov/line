@@ -2,8 +2,14 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { graph, ride, train, walk } from '@/lib/busroute/__tests__/fixtures';
 
-const { getGraph } = vi.hoisted(() => ({ getGraph: vi.fn() }));
+const { getGraph, journeyBikeParking } = vi.hoisted(() => ({ getGraph: vi.fn(), journeyBikeParking: vi.fn() }));
 vi.mock('@/lib/busroute/graph', () => ({ getGraph }));
+// The real racks, through a spy a test can make fail (#692).
+vi.mock('@/lib/busroute/bike', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/lib/busroute/bike')>();
+  journeyBikeParking.mockImplementation(actual.journeyBikeParking);
+  return { ...actual, journeyBikeParking };
+});
 import { POST } from '../find/route';
 
 const request = (body: unknown) => new NextRequest('https://www.birjob.com/api/avtobus/find', {
@@ -63,6 +69,30 @@ describe('POST /api/avtobus/find', () => {
     expect(route.segments.map((s: { mode: string }) => s.mode)).toEqual(['walk', 'metro', 'walk']);
     expect(route.segments[1]).toMatchObject({ busId: -2, busNumber: 'Qırmızı xətt', line: { name: 'Qırmızı xətt', color: '#FF0000' } });
     expect(route.totalTransfers).toBe(0);
+  });
+
+  it('sends the bicycle racks beside the journey (#692)', async () => {
+    const res = await POST(request({ fromStopId: 1, toStopId: 3 }));
+    const body = await res.json();
+    expect(journeyBikeParking).toHaveBeenCalledWith(body.route);
+    // The fixture's stops lie at 49° E, west of Baku and of every rack.
+    expect(body.bikeParking).toBeNull();
+    const rack = { stop: { id: 1, name: 'Stop 1', latitude: 40.01, longitude: 49 }, parking: { name: 'MPV-1-2', latitude: 40.0101, longitude: 49, distance: 0.011 } };
+    journeyBikeParking.mockReturnValueOnce({ boarding: rack, alighting: null });
+    expect((await (await POST(request({ fromStopId: 1, toStopId: 3 }))).json()).bikeParking).toEqual({ boarding: rack, alighting: null });
+  });
+
+  it('still returns the journey when its racks cannot be worked out (#692)', async () => {
+    journeyBikeParking.mockImplementationOnce(() => { throw new Error('bike.json unreadable'); });
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    try {
+      const res = await POST(request({ fromStopId: 1, toStopId: 3 }));
+      expect(res.status).toBe(200);
+      const body = await res.json();
+      expect(body.route.segments).toHaveLength(1);
+      expect(body.bikeParking).toBeNull();
+      expect(log).toHaveBeenCalledWith('[avtobus] bike parking not added:', expect.any(Error));
+    } finally { log.mockRestore(); }
   });
 
   it('returns an actionable error instead of throwing a database exception', async () => {

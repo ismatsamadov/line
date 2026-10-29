@@ -8,6 +8,7 @@ import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
 import { isMetroStation } from "@/lib/busroute/types";
+import { BIKE, type JourneyBikeParking } from "@/lib/busroute/bike";
 import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
@@ -22,6 +23,13 @@ const LINE_COLOR = "#2563eb";
 // zoom animation within 250ms and drain the cluster queue within ~300ms, so this
 // only ever fires if an event was missed — a late redraw beats a lost one.
 const ANIM_SETTLE_MS = 700;
+// Bicycle lanes and racks (#692): a dotted green, apart from every route line, which is
+// solid, and from the walk, which is dashed grey. Racks show from this zoom on, where
+// they stop crowding each other (the median gap between two is 260 m).
+const BIKE_COLOR = "#15803d";
+const BIKE_PARKING_MIN_ZOOM = 14;
+const BIKE_LAYER_NAME = "Velosiped zolaqları";
+const BIKE_ATTRIBUTION = 'Velosiped: <a href="https://opendata.az/@azerbaycan-yerustu-neqliyyat-agentliyi">AYNA, opendata.az</a>';
 
 export interface BusMapProps {
   stops: StopDetail[];
@@ -35,6 +43,8 @@ export interface BusMapProps {
   onStopClick: (stop: StopDetail) => void;
   isVisible?: boolean;
   onMiss?: () => void;
+  /** The racks beside the found route's first boarding and last alighting (#692). */
+  bikeParking?: JourneyBikeParking | null;
 }
 
 /** Big, finger-friendly pin for start/destination/transfer (divIcon → no image deps). */
@@ -75,6 +85,39 @@ function stationIcon(color: string): L.DivIcon {
   });
 }
 
+/** A bicycle rack the step list names: a "P" in the lanes' green, in the same hit box. */
+function bikeParkingIcon(): L.DivIcon {
+  const box = 30;
+  const d = 18;
+  return L.divIcon({
+    className: "",
+    iconSize: [box, box],
+    iconAnchor: [box / 2, box / 2],
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:${box}px;height:${box}px"><div style="width:${d}px;height:${d}px;border-radius:4px;background:${BIKE_COLOR};border:2px solid white;box-shadow:0 1px 3px rgba(0,0,0,.4);color:#fff;font:700 10px/14px sans-serif;text-align:center">P</div></div>`,
+  });
+}
+
+/**
+ * Baku's bicycle lanes, with its racks in a group of their own that the map adds once
+ * zoomed in (#692). Neither takes a tap on the map: a lane is not interactive at all,
+ * and a rack shows its name without the tap going on to choose the nearest stop.
+ */
+function bikeLayers(): { lanes: L.LayerGroup; racks: L.LayerGroup } {
+  const lanes = L.layerGroup([], { attribution: BIKE_ATTRIBUTION });
+  for (const lane of BIKE.lanes) {
+    L.polyline(lane.path, {
+      color: BIKE_COLOR, weight: 4, opacity: 0.9, dashArray: "1, 7", lineCap: "round", lineJoin: "round", interactive: false,
+    }).addTo(lanes);
+  }
+  const racks = L.layerGroup();
+  for (const rack of BIKE.parking) {
+    L.circleMarker([rack.latitude, rack.longitude], {
+      radius: 5, color: "#ffffff", weight: 2, fillColor: BIKE_COLOR, fillOpacity: 1, bubblingMouseEvents: false,
+    }).bindTooltip(`Velosiped parkinqi · ${rack.name}`, { direction: "top", offset: [0, -4] }).addTo(racks);
+  }
+  return { lanes, racks };
+}
+
 /** Branded cluster bubble with the child count (replaces markercluster default). */
 function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   const count = cluster.getChildCount();
@@ -97,6 +140,7 @@ interface DrawArgs {
   line: BusLineDetail | null;
   userLocation: { lat: number; lng: number } | null;
   onStopClick: (stop: StopDetail) => void;
+  bikeParking: JourneyBikeParking | null;
 }
 
 /**
@@ -105,7 +149,7 @@ interface DrawArgs {
  * Only ever called through the redraw effect below, which serialises it against
  * Leaflet's animations — never call it directly from an event handler.
  */
-function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick }: DrawArgs): void {
+function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick, bikeParking }: DrawArgs): void {
   cluster.clearLayers();
   overlay.clearLayers();
 
@@ -150,6 +194,15 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       drawn.add(s.id);
       L.marker([s.latitude, s.longitude], { icon: stationIcon(stationColor.get(s.id) ?? "#111827"), keyboard: false })
         .bindTooltip(`${s.name} metrosu`, { direction: "top", offset: [0, -6] })
+        .addTo(overlay);
+    }
+    // The racks the step list names (#692), at every zoom, unlike the rest.
+    const racks = new Set<string>();
+    for (const end of [bikeParking?.boarding, bikeParking?.alighting]) {
+      if (!end || racks.has(end.parking.name)) continue;
+      racks.add(end.parking.name);
+      L.marker([end.parking.latitude, end.parking.longitude], { icon: bikeParkingIcon(), keyboard: false })
+        .bindTooltip(`Velosiped parkinqi · ${end.parking.name}`, { direction: "top", offset: [0, -6] })
         .addTo(overlay);
     }
     // Transfer markers between rides.
@@ -243,7 +296,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
  * flip side of that contract is that a React re-render must not mutate those
  * layers while Leaflet is mid-animation either; see the redraw effect.
  */
-export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss, bikeParking = null }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -276,6 +329,23 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
     });
     cluster.addTo(map);
     const overlay = L.layerGroup().addTo(map);
+
+    // The bicycle lanes (#692), on unless switched off in the corner; their racks join
+    // them from BIKE_PARKING_MIN_ZOOM on. Added once: no redraw touches them.
+    const bike = bikeLayers();
+    // Every vector shares one canvas, painted in the order the layers were added, so
+    // lanes switched back on would paint over the found route until the next redraw.
+    bike.lanes.on("add", () => bike.lanes.eachLayer((layer) => {
+      if (layer instanceof L.Polyline) layer.bringToBack();
+    }));
+    bike.lanes.addTo(map);
+    L.control.layers(undefined, { [BIKE_LAYER_NAME]: bike.lanes }, { collapsed: false }).addTo(map);
+    const showRacks = () => {
+      if (map.getZoom() >= BIKE_PARKING_MIN_ZOOM) bike.lanes.addLayer(bike.racks);
+      else bike.lanes.removeLayer(bike.racks);
+    };
+    map.on("zoomend", showRacks);
+    showRacks();
 
     // Tap on empty map → use the same 600 m radius as location selection.
     map.on("click", (e: L.LeafletMouseEvent) => {
@@ -347,7 +417,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       detach();
       drawFeatures({
         map, cluster, overlay,
-        stops, fromStop, toStop, route, line, userLocation,
+        stops, fromStop, toStop, route, line, userLocation, bikeParking,
         onStopClick: (stop) => clickRef.current(stop),
       });
     };
@@ -373,7 +443,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       drawn = true;
       detach();
     };
-  }, [stops, fromStop, toStop, route, line, userLocation]);
+  }, [stops, fromStop, toStop, route, line, userLocation, bikeParking]);
 
   return <div ref={containerRef} className="h-full w-full" role="region" aria-label="Bakı dayanacaqları və marşrut xəritəsi" />;
 }

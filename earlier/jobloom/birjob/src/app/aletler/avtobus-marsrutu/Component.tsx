@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 import { Bus, ArrowDownUp, LocateFixed, Search, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin, Info, RotateCcw, Footprints, ChevronRight } from "lucide-react";
 import SupportCTA from "@/components/SupportCTA";
 import type { StopDetail, RouteResult, BusLite, BusLineDetail } from "@/lib/busroute/types";
+import type { JourneyBikeParking } from "@/lib/busroute/bike";
 import JourneyView from "./JourneyView";
 import Picker from "./Picker";
 import { nearestStop, searchStops, searchBuses } from "./search";
@@ -126,6 +127,8 @@ export default function Component() {
   const [fromStop, setFromStop] = useState<StopDetail | null>(null);
   const [toStop, setToStop] = useState<StopDetail | null>(null);
   const [route, setRoute] = useState<RouteResult | null>(null);
+  // The racks beside the route's first boarding and last alighting (#692).
+  const [bikeParking, setBikeParking] = useState<JourneyBikeParking | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const routeReqRef = useRef(0);
@@ -175,7 +178,7 @@ export default function Component() {
     routeReqRef.current++;
     locationReqRef.current++;
     setLocating(false);
-    setRoute(null); setLoading(false); setError(null);
+    setRoute(null); setBikeParking(null); setLoading(false); setError(null);
   }, []);
 
   const loadStops = useCallback(async () => {
@@ -200,7 +203,7 @@ export default function Component() {
       return;
     }
     const requestId = ++routeReqRef.current;
-    setLoading(true); setError(null); setRoute(null);
+    setLoading(true); setError(null); setRoute(null); setBikeParking(null);
     try {
       const res = await fetch("/api/avtobus/find", {
         method: "POST",
@@ -211,6 +214,7 @@ export default function Component() {
       if (requestId !== routeReqRef.current) return;
       if (!res.ok) { setError(data.error || "Marşrut tapılmadı"); return; }
       setRoute(data.route);
+      setBikeParking(data.bikeParking ?? null);
       setMobileTab("panel"); // show the step-by-step result on mobile
     } catch {
       if (requestId === routeReqRef.current) setError("Şəbəkə xətası. Yenidən cəhd edin.");
@@ -420,7 +424,7 @@ export default function Component() {
                   >
                     <MapIcon className="h-4 w-4" /> Nəticəni xəritədə gör
                   </button>
-                  <JourneyView route={route} />
+                  <JourneyView route={route} bikeParking={bikeParking} />
                 </div>
               )}
               {!route && !error && !loading && (
@@ -545,10 +549,11 @@ export default function Component() {
               userLocation={mode === "line" ? null : userLocation}
               onStopClick={mode === "line" ? () => {} : handleMapClick}
               isVisible={mobileTab === "map"}
+              bikeParking={mode === "line" ? null : bikeParking}
               onMiss={mode === "route" ? () => setMapNotice("Bu nöqtədən 600 metr yaxınlıqda dayanacaq yoxdur. Dayanacaq işarəsinə toxunun və ya xəritədə başqa yer seçin.") : undefined}
             />}
           </div>
-          <p className="mt-2 flex items-center gap-3 text-[11px] text-gray-500"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-600" />Başlanğıc</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-600" />Təyinat</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-2 border-dashed border-gray-500" />Piyada</span></p>
+          <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-600" />Başlanğıc</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-600" />Təyinat</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-2 border-dashed border-gray-500" />Piyada</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-[3px] border-dotted border-green-700" />Velosiped zolağı</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-white bg-green-700 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]" />Velosiped parkinqi</span></p>
           <button onClick={() => setMobileTab("panel")} className="mt-3 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 text-sm font-semibold text-gray-700 lg:hidden"><ListOrdered className="h-4 w-4" />{route ? "Marşrut addımlarına bax" : "Dayanacaq seçiminə qayıt"}<ChevronRight className="h-4 w-4" /></button>
         </div>
       </div>

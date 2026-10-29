@@ -3,7 +3,9 @@
 The planner answers “which buses and metro trains should I take between these
 stops?” from the retained AYNA reference snapshot and a snapshot of the metro
 (`src/lib/busroute/metro.json`, #689). It has no schedule, vehicle positions,
-traffic or waiting-time feed. Neither snapshot refreshes automatically.
+traffic or waiting-time feed. Neither snapshot refreshes automatically. The map
+also draws AYNA's bicycle lanes and racks, and a journey names the racks beside it
+(`bike.json`, [Bicycles](#bicycles-692)); nothing routes by bicycle.
 
 ```mermaid
 flowchart LR
@@ -14,6 +16,7 @@ flowchart LR
   D --> M[metro.json]
   D --> F[Minimum-boardings search]
   F --> G[Bus, metro and walking instructions]
+  G --> K[bike.json: racks beside the journey]
 ```
 
 ## Ranking
@@ -248,14 +251,74 @@ this section together, since they are what riders are told. The file is
 re-included in `.gitignore`, whose `*.json` line would otherwise keep it out of git
 and so off the box, and `metro.test.ts` fails if it stops being.
 
+## Bicycles (#692)
+
+The map draws Baku's bicycle lanes and bicycle racks, and a found journey names the
+racks nearest its first boarding and its last alighting. Both come from AYNA's open data
+on opendata.az, under CC0 (Creative Commons CCZero): "Velosiped zolaqlarının coğrafi
+koordinatları" (the lanes, its layer "Mövcud zolaqlar", file of 24 September 2026) and
+"Velosiped parkinq məntəqələrinin coğrafi koordinatları" (the racks, its layer
+"velosiped məntəqələri yeni", MPV-1-2 to MPV-185-2, file of 4 May 2026; the portal's
+24 September date for it is an edit of the description, and the layer inside is named
+after an older file, "velosiped məntəqələri.11 sentyabr.kmz"). The issue pointed at
+samirmehd1yev/TransportTech, a hackathon repository whose two KMZ files are byte for byte
+the portal's, so `src/lib/busroute/bike.json` is built from the portal's files.
+`scripts/bus/build_bike_json.py` writes it and records both files' SHA-256.
+
+**What the data is.** 60 lane segments on 54 streets, 57.1 km in all (the file has a
+61st record, for 8 Noyabr pr., with no points), and 185 racks, four of them on the
+Absheron coast north of the city (MPV-144-2 to MPV-147-2). The parking dataset says what
+it covers: only where the racks are, and not how much they are used, by how many people,
+or any other operating figure. They are places to leave a bicycle; nothing in the data is
+a bicycle to hire. The same file holds 649 points named MPS-* under "My Places", which
+the script leaves out on purpose: the file's name (mpv-v-mps) pairs them with the racks,
+and the dataset's Russian title names bicycles and scooters, so they read as scooter
+parking; only the MPV layer is named for bicycles.
+
+**Why nothing routes by bicycle.** A cycle leg needs a bicycle where the journey starts,
+which the data cannot say, and a road network for cycling, which the planner does not
+have. It would also undo #664's ranking: a leg on a bicycle is no boarding, so riding all
+the way would beat every bus. The planner keeps its stop-to-stop journeys and adds what
+the data supports: where to leave the bicycle.
+
+**Beside a journey** (`journeyBikeParking` in `bike.ts`, called by
+`POST /api/avtobus/find`). The rack nearest the first ride's first stop or station, and
+the one nearest the last ride's last, each within the planner's 300 m walk. A walk before
+the first ride or after the last is not counted, since the bicycle takes its place, and a
+journey on foot gets none. The response carries them as `bikeParking`: `boarding` and
+`alighting`, either of them null, or null altogether. If they cannot be worked out, the
+journey is sent without them and the console says why. The step list names each rack
+with its stop and its straight-line distance, and the map marks it with a green "P" at
+any zoom.
+
+**On the map** (`BusMap.tsx`). The lanes are a dotted green line, apart from every route
+line (solid) and the walk (dashed grey). The racks are green dots from zoom 14, where
+they stop crowding each other: the median gap between a rack and its nearest neighbour is
+260 m. A switch in the map's corner, "Velosiped zolaqları", turns both off. Neither takes
+a tap: a lane is not interactive, and a rack shows its name without the tap going on to
+choose the nearest stop. `bike.json` travels in the map's chunk (7.6 KB gzipped), so it
+loads with the map and not with the page.
+
+**Measured** on 2026-10-29 against route_efficiency's `data/ayna.db` (the same 3,456
+served stops as production): 453 stops have a rack within 300 m and 170 within 100 m.
+16 of the 27 metro stations have one within 300 m of the station's point, 15 of them
+within 120 m, and 178 of the 185 racks are within 300 m of a stop.
+
+**Refreshing.** AYNA says it updates the parking dataset every six months. Download the two
+files from their dataset pages (the script's header has the addresses), then
+`python3 scripts/bus/build_bike_json.py movcud-zolaqlar-velo.kmz mpv-v-mps.-son.kmz`.
+If what they hold changed, `bike.test.ts` fails on its counts: update them and this
+section together. The file is re-included in `.gitignore`, as metro.json is, and
+`bike.test.ts` fails if it stops being.
+
 ## API and UI
 
 `POST /api/avtobus/find` accepts positive PostgreSQL integer IDs. Invalid JSON,
 invalid IDs and identical stops return 400 before loading the graph. Unknown
 stops or an unreachable destination return 404; initialization failures return
 500 with a retryable error message. Error bodies keep the string shape consumed
-by the client. A successful response includes origin/destination metadata and a
-single `RouteResult`. Every segment has its `mode`; bus segments include their
+by the client. A successful response includes origin/destination metadata, a
+single `RouteResult` and the racks beside it, `bikeParking` (#692). Every segment has its `mode`; bus segments include their
 direction and terminal name, and metro segments their line and terminus.
 
 The browser automatically searches when the selected stops change. Each request
