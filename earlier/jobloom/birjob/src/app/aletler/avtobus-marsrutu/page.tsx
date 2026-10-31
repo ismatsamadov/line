@@ -14,6 +14,9 @@ import { WALK_RADIUS_KM } from '@/lib/busroute/geo';
 const tool = getToolBySlug('avtobus-marsrutu')!;
 const PAGE_URL = `https://www.birjob.com/aletler/${tool.slug}`;
 const WALK_METERS = Math.round(WALK_RADIUS_KM * 1000);
+// The open study of the bus network (#694), linked by its DOI, never its repository: that
+// URL carries a name (#449).
+const STUDY_URL = 'https://doi.org/10.5281/zenodo.23604370';
 
 export const metadata: Metadata = {
   title: { absolute: 'Bakı Avtobus Marşrutu və Metro — Marşrut Tap | BirJob' },
@@ -85,6 +88,7 @@ export default async function Page() {
             <h2 className="flex items-center gap-2 text-base font-bold text-gray-900"><Info aria-hidden="true" className="h-4 w-4 text-orange-600" />Məlumat və məhdudiyyətlər</h2>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Bu alət canlı gəliş saatı göstərmir. Vaxta gözləmə, cədvəl, tıxac və metro daxilində keçidlər daxil deyil. Avtobus və piyada məsafələri düz xətt üzrə, metro məsafələri xətt boyunca hesablanır.</p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Avtobuslar <a href="https://ayna.gov.az/az" className="font-medium text-orange-700 underline underline-offset-2">AYNA</a> istinad bazasından, metro xidmətləri <a href="https://metro.gov.az/" className="font-medium text-orange-700 underline underline-offset-2">Bakı Metropoliteni</a> və opendata.az-dan götürülüb. Metro məlumatı 25 oktyabr 2026-cı il vəziyyətinə uyğundur. Bazalar avtomatik yenilənmir; səfərdən əvvəl cari xidməti yoxlayın.</p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">Bakı avtobus şəbəkəsinin səmərəliliyi eyni AYNA xəritə məlumatı ilə <a href={STUDY_URL} className="font-medium text-orange-700 underline underline-offset-2">açıq tədqiqatda</a> ölçülüb; tədqiqatın kodu və məlumatları hər kəs üçün açıqdır.</p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Velosiped zolaqları (24 sentyabr 2026-cı il) və parkinq məntəqələri (4 may 2026-cı il) AYNA-nın <a href="https://opendata.az/@azerbaycan-yerustu-neqliyyat-agentliyi" className="font-medium text-orange-700 underline underline-offset-2">opendata.az</a> portalındakı açıq məlumatlarındandır. Alət velosipedlə marşrut hesablamır.</p>
             <p className="mt-2 text-xs text-gray-500">Metro xəritə məlumatı: <a href="https://www.openstreetmap.org/copyright" className="underline underline-offset-2">© OpenStreetMap iştirakçıları, ODbL</a>.</p>
           </div>
