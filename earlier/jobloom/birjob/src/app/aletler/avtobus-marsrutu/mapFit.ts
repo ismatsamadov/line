@@ -14,9 +14,17 @@ export interface FitTargets {
 /** The two Leaflet map methods a fit uses. Kept apart from Leaflet, which needs a
  *  browser, so the rules below run in the unit tests. */
 export interface FitMap {
-  fitBounds(bounds: [number, number][], options: { padding: [number, number] }): unknown;
+  fitBounds(bounds: [number, number][], options: FitPadding): unknown;
   setView(center: [number, number], zoom: number): unknown;
 }
+
+type FitPadding = { padding: [number, number] } | { paddingTopLeft: [number, number]; paddingBottomRight: [number, number] };
+
+// A chosen stop's, place's or location's label stands above its marker, a place's above
+// a pin 36 px tall (#720), so a view of the ends keeps room at the top for the label
+// and the layer switch in the corner: with 50 px all round, an end near the top had its
+// label under the switch.
+const ENDS_PADDING: FitPadding = { paddingTopLeft: [50, 110], paddingBottomRight: [50, 40] };
 
 /** Fit the view to the most relevant features. */
 export function fitFeatures(map: FitMap, { route, line, from, to }: FitTargets): void {
@@ -27,14 +35,14 @@ export function fitFeatures(map: FitMap, { route, line, from, to }: FitTargets):
     for (const seg of route.segments) {
       for (const point of seg.path ?? seg.stops.map((s): [number, number] => [s.latitude, s.longitude])) coords.push(point);
     }
-    if (coords.length) map.fitBounds(coords, { padding: [50, 50] });
+    if (coords.length) map.fitBounds(coords, ENDS_PADDING);
   } else if (line) {
     const coords: [number, number][] = line.coordinates.length >= 2
       ? line.coordinates.map((c) => [c.latitude, c.longitude])
       : line.stops.map((s) => [s.latitude, s.longitude]);
     if (coords.length) map.fitBounds(coords, { padding: [50, 50] });
   } else if (from && to) {
-    map.fitBounds([[from.latitude, from.longitude], [to.latitude, to.longitude]], { padding: [60, 60] });
+    map.fitBounds([[from.latitude, from.longitude], [to.latitude, to.longitude]], ENDS_PADDING);
   } else if (from) {
     map.setView([from.latitude, from.longitude], 15);
   }

@@ -135,15 +135,15 @@ function bikeLayers(): { lanes: L.LayerGroup; racks: L.LayerGroup } {
   return { lanes, racks };
 }
 
-/** A named place: a square in its end's colour, apart from the round stop pins. */
+/** A chosen place: a map pin in its end's colour, its tip on the place, apart from the
+ *  round stops and the square bicycle racks it often stands beside (#720). */
 function placeIcon(color: string): L.DivIcon {
-  const box = 30;
-  const d = 16;
   return L.divIcon({
     className: "",
-    iconSize: [box, box],
-    iconAnchor: [box / 2, box / 2],
-    html: `<div style="display:flex;align-items:center;justify-content:center;width:${box}px;height:${box}px"><div style="width:${d}px;height:${d}px;border-radius:4px;background:${color};border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.45)"></div></div>`,
+    iconSize: [28, 36],
+    iconAnchor: [14, 35],
+    tooltipAnchor: [0, -30],
+    html: `<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))"><path d="M14 1.5C7.1 1.5 1.5 6.9 1.5 13.7 1.5 23 14 34.5 14 34.5S26.5 23 26.5 13.7C26.5 6.9 20.9 1.5 14 1.5z" fill="${color}" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="13.5" r="4.5" fill="#fff"/></svg>`,
   });
 }
 
@@ -301,7 +301,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
       .addTo(overlay);
   }
-  // A chosen place, a square in its end's colour, or the person's location, a blue dot,
+  // A chosen place, a pin in its end's colour, or the person's location, a blue dot,
   // labelled like a chosen stop (#720). A found journey's walk from or to it is drawn
   // with the route, dashed as every walk is. Leaflet reads a tooltip as HTML and a
   // place's name is OpenStreetMap's, so it is escaped.
@@ -311,7 +311,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       ? L.circleMarker([place.latitude, place.longitude], { radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3 })
       : L.marker([place.latitude, place.longitude], { icon: placeIcon(from ? "#16a34a" : "#dc2626"), keyboard: false });
     marker.bindTooltip(`${from ? "Başlanğıc" : "Təyinat"}: ${escapeXml(place.name)}`, {
-      permanent: true, direction: "top", offset: [0, -12], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
+      permanent: true, direction: "top", offset: [0, place.here ? -12 : -4], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
     }).addTo(overlay);
   }
 
