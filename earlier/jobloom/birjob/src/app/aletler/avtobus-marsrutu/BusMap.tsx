@@ -9,6 +9,7 @@ import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/types";
 import { isMetroStation } from "@/lib/busroute/types";
 import { BIKE, type JourneyBikeParking } from "@/lib/busroute/bike";
+import { escapeXml } from "@/lib/escapeXml";
 import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
@@ -23,6 +24,8 @@ const LINE_COLOR = "#2563eb";
 // zoom animation within 250ms and drain the cluster queue within ~300ms, so this
 // only ever fires if an event was missed — a late redraw beats a lost one.
 const ANIM_SETTLE_MS = 700;
+// One empty list, so a map with no places does not redraw on every render.
+const NO_PLACES: MapPlace[] = [];
 // Bicycle lanes and racks (#692): a dotted green, apart from every route line, which is
 // solid, and from the walk, which is dashed grey. Racks show from this zoom on, where
 // they stop crowding each other (the median gap between two is 260 m).
@@ -30,6 +33,19 @@ const BIKE_COLOR = "#15803d";
 const BIKE_PARKING_MIN_ZOOM = 14;
 const BIKE_LAYER_NAME = "Velosiped zolaqları";
 const BIKE_ATTRIBUTION = 'Velosiped: <a href="https://opendata.az/@azerbaycan-yerustu-neqliyyat-agentliyi">AYNA, opendata.az</a>';
+// The tiles, the metro's stations and track and the named places (#720) are all
+// OpenStreetMap's, credited as its contributors ask, in the page's language.
+const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> iştirakçıları';
+
+/** A named place chosen as the start or the destination (#720), with the stop that
+ *  stands for it until journeys can start and end at a point. */
+export interface MapPlace {
+  end: "from" | "to";
+  name: string;
+  latitude: number;
+  longitude: number;
+  stop: StopDetail;
+}
 
 export interface BusMapProps {
   stops: StopDetail[];
@@ -45,6 +61,8 @@ export interface BusMapProps {
   onMiss?: () => void;
   /** The racks beside the found route's first boarding and last alighting (#692). */
   bikeParking?: JourneyBikeParking | null;
+  /** The named places chosen as the start or the destination (#720). */
+  places?: MapPlace[];
 }
 
 /** Big, finger-friendly pin for start/destination/transfer (divIcon → no image deps). */
@@ -118,6 +136,18 @@ function bikeLayers(): { lanes: L.LayerGroup; racks: L.LayerGroup } {
   return { lanes, racks };
 }
 
+/** A named place: a square in its end's colour, apart from the round stop pins. */
+function placeIcon(color: string): L.DivIcon {
+  const box = 30;
+  const d = 16;
+  return L.divIcon({
+    className: "",
+    iconSize: [box, box],
+    iconAnchor: [box / 2, box / 2],
+    html: `<div style="display:flex;align-items:center;justify-content:center;width:${box}px;height:${box}px"><div style="width:${d}px;height:${d}px;border-radius:4px;background:${color};border:3px solid white;box-shadow:0 1px 4px rgba(0,0,0,.45)"></div></div>`,
+  });
+}
+
 /** Branded cluster bubble with the child count (replaces markercluster default). */
 function clusterIcon(cluster: L.MarkerCluster): L.DivIcon {
   const count = cluster.getChildCount();
@@ -141,6 +171,7 @@ interface DrawArgs {
   userLocation: { lat: number; lng: number } | null;
   onStopClick: (stop: StopDetail) => void;
   bikeParking: JourneyBikeParking | null;
+  places: MapPlace[];
 }
 
 /**
@@ -149,7 +180,7 @@ interface DrawArgs {
  * Only ever called through the redraw effect below, which serialises it against
  * Leaflet's animations — never call it directly from an event handler.
  */
-function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick, bikeParking }: DrawArgs): void {
+function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick, bikeParking, places }: DrawArgs): void {
   cluster.clearLayers();
   overlay.clearLayers();
 
@@ -277,6 +308,18 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3,
     }).bindTooltip("Sizin yeriniz", { direction: "top" }).addTo(overlay);
   }
+  // A chosen place and a dotted line to the stop that stands for it (#720). The walk
+  // is not part of the journey yet, so it is drawn apart from a counted walk (dashed).
+  // Leaflet reads a tooltip as HTML and the name is OpenStreetMap's, so it is escaped.
+  for (const place of places) {
+    const color = place.end === "from" ? "#16a34a" : "#dc2626";
+    L.polyline([[place.latitude, place.longitude], [place.stop.latitude, place.stop.longitude]], {
+      color, weight: 3, opacity: 0.75, dashArray: "1, 7", lineCap: "round", interactive: false,
+    }).addTo(overlay);
+    L.marker([place.latitude, place.longitude], { icon: placeIcon(color), keyboard: false })
+      .bindTooltip(escapeXml(place.name), { direction: "top", offset: [0, -10] })
+      .addTo(overlay);
+  }
 
   fitFeatures(map, { route, line, fromStop, toStop });
 }
@@ -296,7 +339,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
  * flip side of that contract is that a React re-render must not mutate those
  * layers while Leaflet is mid-animation either; see the redraw effect.
  */
-export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss, bikeParking = null }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss, bikeParking = null, places = NO_PLACES }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -315,9 +358,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
   useEffect(() => {
     if (mapRef.current || !containerRef.current) return;
     const map = L.map(containerRef.current, { preferCanvas: true, zoomControl: true }).setView(BAKU_CENTER, DEFAULT_ZOOM);
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", { attribution: OSM_ATTRIBUTION }).addTo(map);
 
     const cluster = L.markerClusterGroup({
       chunkedLoading: true,
@@ -417,7 +458,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       detach();
       drawFeatures({
         map, cluster, overlay,
-        stops, fromStop, toStop, route, line, userLocation, bikeParking,
+        stops, fromStop, toStop, route, line, userLocation, bikeParking, places,
         onStopClick: (stop) => clickRef.current(stop),
       });
     };
@@ -443,7 +484,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       drawn = true;
       detach();
     };
-  }, [stops, fromStop, toStop, route, line, userLocation, bikeParking]);
+  }, [stops, fromStop, toStop, route, line, userLocation, bikeParking, places]);
 
   return <div ref={containerRef} className="h-full w-full" role="region" aria-label="Bakı dayanacaqları və marşrut xəritəsi" />;
 }
