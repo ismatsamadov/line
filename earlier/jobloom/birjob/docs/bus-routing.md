@@ -432,6 +432,63 @@ consecutive walking segments. Both oracles assert that more than ten of their tr
 take more boardings than the fewest, so the penalty is exercised and not only the
 boarding count.
 
+## Verification for #721 (2026-11-11)
+
+The owner's request was `{fromStopId: 1343, toStopId: 3642}`: Azərbaycan Hava
+Yolları QSC in central Baku to Nizami Gəncəvi adına uşaq kitabxanası in Sumqayıt,
+24.8 km apart. Only 503, in its second direction, stops within 400 m of the
+library, so every journey ends on it; the question is where to board it.
+
+- **Before:** walk 261 m, 61 for 19 stops, 525 for 7 stops to Xırdalan
+  Qəbirstanlığı, then 503 for 28 stops: three boardings, 94.6 minutes as then
+  estimated. The 300 m walk ruled out the 28 May hub 355 m away, and equal time
+  shares made 525 twice as fast as its line, so the journey caught 503 at Xırdalan.
+- **Times shared by length alone:** 61, a walk to 8 Noyabr, the purple line to
+  Avtovağzal, a walk, then 503 from Avtovağzal m/st: three boardings, 104.4 minutes.
+- **After (400 m walks as well):** walk 379 m to 28 May m/st (stop 1711), bus 2 for
+  16 stops to Biləcəri dairəsi, walk 248 m to Avtovağzal m/st, then 503 for 35
+  stops: two boardings, 112.8 minutes. Timed the same way, the old journey takes
+  109.7 minutes, so the new one costs 142.8 against its 154.7. The cost rule does
+  not change this answer; the fewest boardings are also the cheapest here.
+
+No defect was found in the search itself. On 196 routable random pairs the old
+search returned exactly the fewest-boardings journey that an independent search
+over boardings and minutes found: its state keys, ride continuation, stale-entry
+skipping and early return are sound. The wrong journey came from the model: the
+walk limit, the equal shares and the rule.
+
+**Measured on 200 random pairs** (seed 721; 196 routable before and after), each
+change on its own with the others as before:
+
+- times shared by length: 116 answers change, none in its number of boardings;
+- 400 m walks: 44 change, 20 of them to one boarding fewer;
+- the cost rule: 48 change, all to more boardings (46 by one, 2 by two), each
+  saving at least 15 minutes and 19.9 at the median.
+
+All together 147 of 196 answers change. Timing old and new journeys alike, by
+length: 13 need fewer boardings (12 one fewer, one two fewer; 234 m more walking at
+the median), 93 keep their count and save 3.3 minutes at the median (6.3 on
+average), and 41 add boardings and save 26.3 minutes at the median (31.2 on
+average, never under 15). Boardings over the 196 trips go from 522 to 551 and
+average walking from 266 to 283 m. The time shown rises by 3.3 minutes at the
+median: equal shares had let the search find legs faster than their line.
+
+**Search cost**, old and new in one run on those pairs (the old search on the old
+model): 7.0 ms at the median instead of 13.8, and 13.4 ms at the 95th percentile
+instead of 29.3; another run gave 7.9 and 15.1 against 13.8 and 31.4. Labels
+settled went from 6,240 to 7,217 at the median and from 14,102 to 14,373 at the
+95th percentile, with 16,590 walking edges instead of 10,264; 1343 → 3642 settles
+13,537 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
+keyed by edge, the new search returned the same journey as with strings for all
+200 pairs.
+
+**How.** A scratch PostgreSQL was loaded from route_efficiency's `data/ayna.db`
+(the same 3,456 served stops, 208 buses and 11,786 stop rows as production, stop
+order from its `seq`) and read by the real `graph.ts` through Prisma. Running the
+old search on the new graph, with equal shares restored and walks over 300 m left
+out, reproduced all 200 old answers. The harness and the database stay outside the
+repository; nothing was read from or written to production.
+
 ## Verification on 2026-10-26
 
 The targeted planner, bus-routing and API suites passed 118 tests in 14 files. Regression
