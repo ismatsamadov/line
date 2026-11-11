@@ -603,9 +603,9 @@ keep each answer while the page is open. Middleware hands the path to its route 
 robots.txt keeps `/api/` out of the index (`placesEdge.test.ts`).
 
 **In the pickers** (`usePlaceSearch.ts`, `search.ts`, `Picker.tsx`). The browser asks
-once typing pauses for 250 ms, keeps each answer while the picker is on the page, aborts a
-superseded request and drops an answer that arrives for it, and meanwhile shows the last
-answer's places that still match what is typed. Stops and places share one list: the
+as the person types, at most once every 250 ms and the first at once, keeps each answer
+while the picker is on the page, shows a query's own answer only for that query, and
+meanwhile shows an earlier answer's places that still match what is typed. Stops and places share one list: the
 better match first, whichever it is; [Routing from a place](#routing-from-a-place-720)
 has how equal matches are ordered and how the list waits for its places. A place has its
 own pin and reads, for example, "Ticarət mərkəzi · dayanacağa 84 m: Gənclik m/st": the
@@ -746,11 +746,19 @@ airport, a bus station or a mall comes first (`HUB_PLACES`), then a stop, then a
 place, then a café, restaurant, shop, school or one of the other eleven everyday kinds
 (`EVERYDAY_PLACES`), which also ranks one step below its match: typing "gənclik" had
 listed two cafés above Gənclik m/st. Rows a picker has shown never move, since a tap may
-be on its way to one; the places answer a moment after the stops, so a new query's list
-waits for them, at most until 300 ms after they are asked for (`HOLD_MS`, from the
-keystroke), and says "Axtarılır…" meanwhile. While a longer query is asked, the places
-of the last answer that still match are ranked for it as the stops are (`placeRank`),
-so typing on needs no wait; places that come after the list is shown go below it.
+be on its way to one; the places answer a moment after the stops, so when nothing stands
+in for them the list waits, says "Axtarılır…", and lists the stops and places together
+once they come, or at most 550 ms after the keystroke that began the wait (`HOLD_MS`). It
+waits once a burst of typing: restarted at every keystroke, it kept the list empty while
+anyone typed a key within 550 ms of the last, and the stops never showed. The places are
+asked for while typing, at most every 250 ms, and until a query's own answer comes the
+places of an earlier one that still match stand in, ranked for it as the search ranks
+them (`placeRank`, with the search's own rules from `placeMatch.ts`): the answer for the
+longest query the typed one starts with, or, when a letter is taken back, for the
+shortest that starts with it. Asked only once typing paused, the places for what was
+typed last came after its stops were listed, and went below them. Places that come
+after the list is shown go below it, and an answer that comes after its query changed
+only ever stands in.
 "gənclik", "koroglu", "nerimanov" and "avtovağzal" each list their metro station first.
 The places search ranks by the journey's other end, sent in its address, which logs
 and error reports keep; the person's location goes there only to two decimals, about
@@ -869,10 +877,16 @@ tested with its pickers and map as stand-ins (`Component.test.ts`): the find req
 for places, stops and the location, map taps after a destination place, the location's
 point in the place search's address, and a location known only to a kilometre and a
 half. The pickers are tested for rows that keep their places when the places arrive, a
-query told to the owner in the same update, and the chosen end's description; the
-lists for "gənclik", "koroglu", "nerimanov" and "avtovağzal" with the real places, the
-ranks of places carried over, the nearest named stop a place's row names, and the
-point to two decimals are tested in `search.test.ts`.
+query told to the owner in the same update, the chosen end's description, and an empty
+list while a new query's places are held for; the lists for "gənclik", "koroglu",
+"nerimanov" and "avtovağzal" with the real places, the ranks of places carried over,
+the same ranks as the search's over every prefix of twenty names people type, the
+nearest named stop a place's row names, and the point to two decimals are tested in
+`search.test.ts`. `usePlaceSearch.test.ts` types at a key every 120 ms: at most one
+request every 250 ms, the list held once from the first keystroke, the places that came
+while typing standing in for later queries and for a shorter one, and a late answer
+that never becomes a newer query's own. A location sure to exactly 1 km is used, and
+after a rough one the next try asks for a fresh fix.
 
 ## Verification for #721 (2026-11-11)
 
