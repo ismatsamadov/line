@@ -3,7 +3,7 @@ import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { EVERYDAY_PLACES, nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { EVERYDAY_PLACES, keepShownRows, nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
   id, name, code, latitude: 40.4, longitude: 49.85, is_transport_hub: hub,
@@ -98,6 +98,19 @@ describe("stops and places in one list (#720)", () => {
     // A metro station's name that starts with the query beats a café's that is it.
     const neriman = suggestEnds([], "nəriman", [at("n6", "Nəriman", 0, "cafe", "Kafe"), at("n7", "Nəriman Nərimanov", 1, "metro", "Metro stansiyası")]);
     expect(neriman.map(s => s.kind === "place" && s.place.id)).toEqual(["n7", "n6"]);
+  });
+
+  it("keeps the rows shown for a query in place and adds later ones below them", () => {
+    const row = (key: string) => ({ key });
+    const first = keepShownRows(null, "gənclik", [row("s1"), row("s2")]);
+    expect(first.rows.map(r => r.key)).toEqual(["s1", "s2"]);
+    // The places answer, ranked above the stops: below them instead, and a row shown
+    // that the answer leaves out stays where it was.
+    const answered = keepShownRows(first, "gənclik", [row("p1"), row("s2"), row("p2")]);
+    expect(answered.rows.map(r => r.key)).toEqual(["s1", "s2", "p1", "p2"]);
+    expect(keepShownRows(answered, "gənclik", [row("p1"), row("s1"), row("s2"), row("p2")])).toEqual(answered);
+    // Another query is ordered as it comes.
+    expect(keepShownRows(answered, "gənclik m", [row("p1"), row("s2")]).rows.map(r => r.key)).toEqual(["p1", "s2"]);
   });
 
   it("names everyday kinds that places.json has", () => {

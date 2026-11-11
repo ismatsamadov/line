@@ -61,6 +61,28 @@ export function suggestEnds(stops: StopDetail[], query: string, places: PlaceMat
   return found.sort((a, b) => a.rank - b.rank || order(a) - order(b));
 }
 
+/** The rows a picker has shown for one query, in the order shown. */
+export interface ShownRows<T> {
+  query: string;
+  rows: T[];
+}
+
+/**
+ * The rows to show for `query`: `fresh` as it is for a new query, but for the query
+ * already on screen every row shown stays where it is and rows that arrive later go
+ * below them (#720). The places answer a moment after the stops, and merged into them
+ * they pushed the shown rows down under the finger about to tap one: on a phone the
+ * first row turned from the stop "Gənclik küç. 120" into a café. The next keystroke
+ * orders the list afresh.
+ */
+export function keepShownRows<T extends { key: string }>(shown: ShownRows<T> | null, query: string, fresh: T[]): ShownRows<T> {
+  if (!shown || shown.query !== query) return { query, rows: fresh };
+  const latest = new Map(fresh.map(row => [row.key, row]));
+  const rows = shown.rows.map(row => latest.get(row.key) ?? row);
+  const kept = new Set(rows.map(row => row.key));
+  return { query, rows: [...rows, ...fresh.filter(row => !kept.has(row.key))] };
+}
+
 export function searchBuses(buses: BusLite[], query: string): BusLite[] {
   const q = normalizeSearch(query);
   return buses.map(bus => ({ bus, rank: q ? rank(q, `${bus.first_point} ${bus.last_point}`, bus.number) : 0 }))

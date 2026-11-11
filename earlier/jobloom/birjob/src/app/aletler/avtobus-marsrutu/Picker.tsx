@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import { Search, X, MapPin, MapPinned, LocateFixed } from "lucide-react";
+import { keepShownRows, type ShownRows } from "./search";
 
 /** One suggestion. `kind` sets its icon: a stop, a named place, or the person's
  *  location once chosen (#720). */
@@ -12,7 +13,8 @@ export default function Picker<T extends PickerItem>({ label, placeholder, searc
   label: string; placeholder: string; searchItems: (query: string) => T[]; selected: PickerItem | null;
   onSelect: (item: T | null) => void; onActivate?: () => void;
   active?: boolean; loading?: boolean; icon?: ReactNode; emptyHint: string;
-  /** Told of every change of the query, for results the picker does not search itself. */
+  /** Told of every change of the query, in the same update, for results the picker does
+   *  not search itself. */
   onQueryChange?: (query: string) => void;
   /** More results are on their way, so an empty list is not yet "nothing found". */
   pending?: boolean;
@@ -28,11 +30,21 @@ export default function Picker<T extends PickerItem>({ label, placeholder, searc
   // The active option by key, not position: results that arrive later (places) can
   // move it, and the highlight must stay on what the person chose with the arrows.
   const [activeKey, setActiveKey] = useState<string | null>(null);
-  const items = useMemo(() => searchItems(query), [searchItems, query]);
+  // Rows already shown for what is typed keep their places when more arrive for it (the
+  // places, after the stops): those go below, never under the finger (keepShownRows).
+  // Recomputing from the same rows gives the same rows, so a repeated render is harmless.
+  const shown = useRef<ShownRows<T> | null>(null);
+  const items = useMemo(() => {
+    shown.current = keepShownRows(shown.current, query, searchItems(query));
+    return shown.current.rows;
+  }, [searchItems, query]);
   const index = activeKey === null ? -1 : items.findIndex(item => item.key === activeKey);
   const expanded = open && !selected && !loading;
 
-  useEffect(() => { onQueryChange?.(query); }, [query, onQueryChange]);
+  // The owner hears of a new query in the same update as the picker, not an effect later:
+  // one render with the new query and the old query's places listed those places as
+  // the new query's first rows, and keepShownRows then kept them (#720).
+  const changeQuery = (next: string) => { setQuery(next); onQueryChange?.(next); };
 
   useEffect(() => {
     function outside(event: PointerEvent) {
@@ -47,11 +59,11 @@ export default function Picker<T extends PickerItem>({ label, placeholder, searc
   }, [expanded, index, id]);
 
   function choose(item: T) {
-    onSelect(item); setQuery(""); setOpen(false); setActiveKey(null);
+    onSelect(item); changeQuery(""); setOpen(false); setActiveKey(null);
     requestAnimationFrame(() => selectedRef.current?.focus());
   }
   function edit() {
-    onSelect(null); setQuery(""); setOpen(true); setActiveKey(null);
+    onSelect(null); changeQuery(""); setOpen(true); setActiveKey(null);
     requestAnimationFrame(() => inputRef.current?.focus());
   }
   function keys(event: KeyboardEvent<HTMLInputElement>) {
@@ -96,7 +108,7 @@ export default function Picker<T extends PickerItem>({ label, placeholder, searc
             role="combobox" aria-autocomplete="list" aria-expanded={expanded} aria-controls={`${id}-list`}
             aria-activedescendant={expanded && index >= 0 ? `${id}-option-${index}` : undefined}
             value={query} disabled={loading} placeholder={loading ? "Məlumat yüklənir…" : placeholder}
-            onChange={event => { setQuery(event.target.value); setOpen(true); setActiveKey(null); }}
+            onChange={event => { changeQuery(event.target.value); setOpen(true); setActiveKey(null); }}
             onFocus={() => { setOpen(true); onActivate?.(); }} onKeyDown={keys}
             className={`min-h-[58px] w-full rounded-xl border bg-white py-3 pl-10 pr-3 text-base text-gray-900 placeholder:text-sm placeholder:text-gray-400 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-100 disabled:bg-gray-50 ${active ? "border-orange-300" : "border-gray-200"}`} />
         </div>
