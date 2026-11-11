@@ -487,7 +487,7 @@ export default function Component() {
                 onSelectStop={selectFrom} onSelectPlace={place => choosePlaceMatch("from", place)} active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
 
               <div className="-my-1 flex justify-end">
-                <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" disabled={!fromStop && !toStop && !fromPlace && !toPlace} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-40">
+                <button onClick={handleSwap} title="Yerləri dəyiş" aria-label="Yerləri dəyiş" disabled={!fromStop && !toStop && !fromPlace && !toPlace} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-40">
                   <ArrowDownUp className="h-4 w-4" /> Yerləri dəyiş
                 </button>
               </div>
