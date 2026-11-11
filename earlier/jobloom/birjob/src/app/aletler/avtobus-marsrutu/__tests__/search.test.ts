@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
-import { nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { EVERYDAY_PLACES, nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
   id, name, code, latitude: 40.4, longitude: 49.85, is_transport_hub: hub,
@@ -79,6 +81,29 @@ describe("stops and places in one list (#720)", () => {
     expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["s2", "n9", "s1", "w2", "s3", "w3", "n4"]);
     // A place's looser matches count with a stop's loosest.
     expect(merged.at(-1)?.rank).toBe(2);
+  });
+
+  it("puts a stop, a metro station or a mall that starts with the query above a café of that very name", () => {
+    const at = (id: string, name: string, rank: number, category: string, label: string): PlaceMatch => ({
+      id, name, category, label, latitude: 40.4, longitude: 49.85, rank,
+    });
+    // As the server sends them for "gənclik": exact names first, the metro before the cafés.
+    const places = [
+      at("n1", "Gənclik", 0, "metro", "Metro stansiyası"), at("n2", "Gənclik", 0, "cafe", "Kafe"),
+      at("n3", "Gənclik", 0, "cafe", "Kafe"), at("w4", "Gənclik Mall", 1, "mall", "Ticarət mərkəzi"),
+      at("n5", "Gənclik Market", 1, "supermarket", "Supermarket"),
+    ];
+    const merged = suggestEnds([stop(1, "Gənclik m/st", "1001")], "gənclik", places);
+    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["n1", "s1", "w4", "n2", "n3", "n5"]);
+    // A metro station's name that starts with the query beats a café's that is it.
+    const neriman = suggestEnds([], "nəriman", [at("n6", "Nəriman", 0, "cafe", "Kafe"), at("n7", "Nəriman Nərimanov", 1, "metro", "Metro stansiyası")]);
+    expect(neriman.map(s => s.kind === "place" && s.place.id)).toEqual(["n7", "n6"]);
+  });
+
+  it("names everyday kinds that places.json has", () => {
+    const { labels } = JSON.parse(readFileSync(fileURLToPath(new URL("../../../../lib/busroute/places.json", import.meta.url)), "utf8"));
+    for (const category of EVERYDAY_PLACES) expect(labels, category).toHaveProperty(category);
+    expect(EVERYDAY_PLACES.has("metro") || EVERYDAY_PLACES.has("mall")).toBe(false);
   });
 
   it("offers the hubs for an empty query, and places alone where no stop matches", () => {
