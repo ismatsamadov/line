@@ -14,6 +14,7 @@ import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
 import { segmentColors } from "./segmentColors";
+import { END_COLORS, PLACE_PIN_PATH } from "./mapMarks";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
@@ -143,7 +144,7 @@ function placeIcon(color: string): L.DivIcon {
     iconSize: [28, 36],
     iconAnchor: [14, 35],
     tooltipAnchor: [0, -30],
-    html: `<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))"><path d="M14 1.5C7.1 1.5 1.5 6.9 1.5 13.7 1.5 23 14 34.5 14 34.5S26.5 23 26.5 13.7C26.5 6.9 20.9 1.5 14 1.5z" fill="${color}" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="13.5" r="4.5" fill="#fff"/></svg>`,
+    html: `<svg width="28" height="36" viewBox="0 0 28 36" aria-hidden="true" style="display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.45))"><path d="${PLACE_PIN_PATH}" fill="${color}" stroke="#fff" stroke-width="2.5"/><circle cx="14" cy="13.5" r="4.5" fill="#fff"/></svg>`,
   });
 }
 
@@ -309,7 +310,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
     const from = place.end === "from";
     const marker = place.here
       ? L.circleMarker([place.latitude, place.longitude], { radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3 })
-      : L.marker([place.latitude, place.longitude], { icon: placeIcon(from ? "#16a34a" : "#dc2626"), keyboard: false });
+      : L.marker([place.latitude, place.longitude], { icon: placeIcon(END_COLORS[place.end]), keyboard: false });
     marker.bindTooltip(`${from ? "Başlanğıc" : "Təyinat"}: ${escapeXml(place.name)}`, {
       permanent: true, direction: "top", offset: [0, place.here ? -12 : -4], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
     }).addTo(overlay);
