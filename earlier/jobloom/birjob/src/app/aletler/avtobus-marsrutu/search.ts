@@ -133,3 +133,9 @@ export function nearestStop(stops: StopDetail[], lat: number, lng: number, radiu
   }
   return stop && distance <= radiusKm ? { stop, distance } : null;
 }
+
+/** A point to two decimals, about 1 km: how near the person's location the place search
+ *  may be told it is, since its address reaches caches, logs and error reports (#720). */
+export const coarsePoint = (point: { latitude: number; longitude: number }) => ({
+  latitude: Math.round(point.latitude * 100) / 100, longitude: Math.round(point.longitude * 100) / 100,
+});

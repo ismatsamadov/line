@@ -11,7 +11,7 @@ import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { isBakuCoordinate } from "@/lib/busroute/geo";
 import JourneyView from "./JourneyView";
 import Picker, { type PickerItem } from "./Picker";
-import { nearestStop, searchBuses, suggestEnds } from "./search";
+import { coarsePoint, nearestStop, searchBuses, suggestEnds } from "./search";
 import { usePlaceSearch } from "./usePlaceSearch";
 import { movementMinutes } from "./journeyFormatting";
 import type { MapPlace } from "./BusMap";
@@ -360,13 +360,12 @@ export default function Component() {
   }, [pickTarget, toStop, clearRoute]);
 
   // Each picker's places put the ones nearer the journey's other end first (#720). The
-  // search sends that point in its address, which caches and logs keep, so the person's
-  // location is never it: the named stop nearest it stands in, or nothing.
-  const namedStops = useMemo(() => stops.filter(stop => stop.name.trim()), [stops]);
-  const rankingPoint = useCallback((place: ChosenPlace | null, stop: StopDetail | null): Point | null => place?.id === HERE
-    ? servedStopNear(namedStops, place)?.stop ?? null : place ?? stop, [namedStops]);
-  const fromPoint = useMemo(() => rankingPoint(fromPlace, fromStop), [rankingPoint, fromPlace, fromStop]);
-  const toPoint = useMemo(() => rankingPoint(toPlace, toStop), [rankingPoint, toPlace, toStop]);
+  // search sends that point in its address, which caches, logs and error reports keep, so
+  // the person's location goes only to about 1 km (coarsePoint).
+  const rankingPoint = (place: ChosenPlace | null, stop: StopDetail | null): Point | null =>
+    place?.id === HERE ? coarsePoint(place) : place ?? stop;
+  const fromPoint = useMemo(() => rankingPoint(fromPlace, fromStop), [fromPlace, fromStop]);
+  const toPoint = useMemo(() => rankingPoint(toPlace, toStop), [toPlace, toStop]);
   // The chosen places, and the person's location, on the map.
   const mapPlaces = useMemo((): MapPlace[] => ([["from", fromPlace], ["to", toPlace]] as const).flatMap(([end, place]) => place
     ? [{ end, name: place.name, latitude: place.latitude, longitude: place.longitude, here: place.id === HERE }] : []), [fromPlace, toPlace]);

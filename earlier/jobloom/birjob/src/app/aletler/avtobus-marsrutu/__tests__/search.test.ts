@@ -3,7 +3,7 @@ import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { coarsePoint, EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 import { buildPlaceIndex, searchPlaces } from "@/lib/busroute/places";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
@@ -165,6 +165,10 @@ describe("nearby stop selection", () => {
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85)).toBeNull();
     // Within a wider radius when asked: a place's nearest stop is named up to 1 km (#720).
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85, 1)?.stop.id).toBe(1);
+  });
+
+  it("tells where a point is only to two decimals, about 1 km (#720)", () => {
+    expect(coarsePoint({ latitude: 40.377134, longitude: 49.854137 })).toEqual({ latitude: 40.38, longitude: 49.85 });
   });
 });
 
