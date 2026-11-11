@@ -461,12 +461,13 @@ for its endpoints, including the return direction.
 
 Tests cover the boarding penalty below, at and above its threshold, tie-breaks,
 origin and interchange walks, the walking limit, directions, loops, unreachable
-stops, the length-shared leg times, a graph that hands back copies of its edges,
-initialization concurrency/retry and API input/error handling. An independent
-round-by-boardings oracle checks 900 trips over generated small networks, choosing
-the round with the lowest minutes plus penalties. The spatial grid is checked
-against exhaustive haversine pairs, at Baku's latitude and at the network's
-northern edge.
+stops, the length-shared leg times with a missing or a misplaced stop, a graph that
+hands back copies of its edges, initialization concurrency/retry and API
+input/error handling. An independent round-by-boardings oracle checks 900 trips over
+generated small networks, choosing the round with the lowest minutes plus
+penalties. The spatial grid is checked against exhaustive haversine pairs, at Baku's
+latitude and at the network's northern edge, and its cell sizes against the
+shortest degrees in the network's area.
 
 `routingOracle.test.ts` adds 900 generated trips checked against a separate
 boarding-round cost oracle. It expands complete contiguous ride stretches in each
