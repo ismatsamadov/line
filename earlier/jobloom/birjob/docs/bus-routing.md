@@ -504,27 +504,28 @@ what ODbL 4.6 asks to be offered with it on request. Wherever places are listed 
 picker credits "© OpenStreetMap iştirakçıları" under them, the map's attribution says the
 same, and the page's FAQ and data notes name OpenStreetMap and the snapshot's date.
 
-**Search** (`places.ts`, `GET /api/avtobus/places?q=…&near=lat,lng`). The file is read
-on the server only. The route builds an in-memory index from it once per process, on the
+**Search** (`places.ts`, `GET /api/avtobus/places?q=…&near=lat,lng`). The file is read on
+the server only. The route builds an in-memory index from it once per process, on the
 first search, and keeps no failed build, as `getGraph()` does; it answers at most eight
 places, so the browser never loads the file. Names fold as the stop search folds them
 (`searchText.ts`, shared by both: case, the Azerbaijani letters and dotted İ for a Latin
 keyboard, and the Cyrillic ә that 216 AYNA stop names type for ə), and Cyrillic stays,
-for the Russian names. The ranking: the name itself, then a name starting with the
-query, then a name whose words start with the query's words in any order, then looser
-matches, a query word of four letters or more inside the name or the category's own
-name ("gənclik metro"). Among equal matches a match on the shown name comes before one
-on another name, then the weightier category (a metro station, airport or mall before a
-supermarket or a café, and a feature with a Wikidata entry a little higher), then, given
-`near`, the nearer place, then the shorter name. The pickers send the journey's other end
-as `near`, so of the 91 supermarkets named "Bravo" the ones near it come first. A query
-that folds to under two letters finds nothing. zod refuses an empty query, one over 100
-characters and a malformed point or one outside the area with a 400 before any search.
-If the index cannot be built the route answers 200 with no places and `degraded: true`,
-uncached, and the pickers say place search is unavailable and keep every stop. Answers
-are cached for a day, like the stop and bus lists: the data changes only with a deploy.
-Middleware hands the path to its route and robots.txt keeps `/api/` out of the index
-(`placesEdge.test.ts`).
+for the Russian names. An apostrophe joins its word rather than splitting it, so "papa
+johns" finds the six Papa John's ("john s" before); no stop name has one. The ranking:
+the name itself, then a name starting with the query, then a name whose words start with
+the query's words in any order, then looser matches, a query word of four letters or more
+inside the name or the category's own name ("gənclik metro"). Among equal matches a match
+on the shown name comes before one on another name, then the weightier category (a metro
+station, airport or mall before a supermarket or a café, and a feature with a Wikidata
+entry a little higher), then, given `near`, the nearer place, then the shorter name. The
+pickers send the journey's other end as `near`, so of the 91 supermarkets named "Bravo"
+the ones near it come first. A query that folds to under two letters finds nothing. zod
+refuses an empty query, one over 100 characters and a malformed point or one outside the
+area with a 400 before any search. If the index cannot be built the route answers 200
+with no places and `degraded: true`, uncached, and the pickers say place search is
+unavailable and keep every stop. Answers are cached for a day, like the stop and bus
+lists: the data changes only with a deploy. Middleware hands the path to its route and
+robots.txt keeps `/api/` out of the index (`placesEdge.test.ts`).
 
 **In the pickers** (`usePlaceSearch.ts`, `search.ts`, `Picker.tsx`). The browser asks
 once typing pauses for 250 ms, keeps each answer while the picker is on the page, aborts a

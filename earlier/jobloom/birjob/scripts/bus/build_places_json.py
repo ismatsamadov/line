@@ -185,6 +185,7 @@ NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az",
              "official_name", "official_name:az", "brand", "brand:az")
 SCHWA = re.compile("[\u04d9\u04d8]")  # Cyrillic schwas, typed for the Latin letter
 CYRILLIC = re.compile("[\u0400-\u04ff]")
+APOSTROPHES = re.compile("['`\u00b4\u02bc\u2018\u2019]")
 
 
 def km(a, b):
@@ -198,10 +199,12 @@ def km(a, b):
 def fold(value):
     """A name as the planner's search compares it (src/lib/busroute/searchText.ts): lower
     case, Azerbaijani letters on a Latin keyboard (ə and the Cyrillic ә as e, ı as i, other
-    marks dropped), Cyrillic kept, everything else a space."""
+    marks dropped), Cyrillic kept, apostrophes dropped ("John's" is one word), everything
+    else a space."""
     value = value.replace("İ", "i").replace("I", "ı").lower()
     value = value.replace("ə", "e").replace("\u04d9", "e").replace("ı", "i")
     value = "".join(c for c in unicodedata.normalize("NFD", value) if not unicodedata.combining(c))
+    value = APOSTROPHES.sub("", value)
     return " ".join(re.sub("[^a-z0-9\u0430-\u044f]+", " ", value).split())
 
 

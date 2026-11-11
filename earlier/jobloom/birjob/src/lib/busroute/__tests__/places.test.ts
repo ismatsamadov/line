@@ -199,5 +199,8 @@ describe('searchPlaces (#720)', () => {
     expect(first('qiz qalasi')).toMatchObject({ name: 'Qız Qalası', category: 'sight' });
     expect(first('mərdəkan')).toMatchObject({ name: 'Mərdəkan', category: 'settlement' });
     expect(searchPlaces(real, "mcdonald's")).toHaveLength(8);
+    // An apostrophe joins its word: "papa johns" found none of the six before.
+    expect(searchPlaces(real, 'papa johns').map((p) => p.alias ?? p.name)).toEqual(Array(6).fill("Papa John's"));
+    expect(searchPlaces(real, 'mcdonalds').map((p) => p.name)).toEqual(Array(8).fill("McDonald's"));
   });
 });

@@ -11,6 +11,14 @@ describe('normalizeSearch (#720)', () => {
     expect(normalizeSearch(input)).toBe(expected);
   });
 
+  it('joins a word an apostrophe splits, whichever apostrophe it is', () => {
+    // "papa johns" found none of the six Papa John's: "john's" folded to "john s".
+    for (const name of ["Papa John's", 'Papa John’s', 'Papa Johnʼs', 'Papa John‘s', 'Papa John`s', 'Papa John´s']) {
+      expect(normalizeSearch(name), name).toBe('papa johns');
+    }
+    expect(normalizeSearch("McDonald's")).toBe(normalizeSearch('McDonalds'));
+  });
+
   it('writes its letters as escapes, so that a look-alike cannot hide in the code', () => {
     // ə and the Cyrillic ә sat side by side in one character class, and the combining
     // marks' range was two invisible characters.

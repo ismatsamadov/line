@@ -6,6 +6,7 @@
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { normalizeSearch } from '../searchText';
 
 const SCRIPT = fileURLToPath(new URL('../../../../scripts/bus/build_places_json.py', import.meta.url));
 
@@ -32,6 +33,12 @@ describe('build_places_json.py (#720)', () => {
     expect(query).toContain(`[date:"${snapshot}"]`);
     // The ways and relations are given once with their centre and once with their bounding box.
     expect(query).toMatch(/out tags center qt;\nout ids bb qt;\n$/);
+  });
+
+  it('folds a name as the search does, so that the names it dedupes are the ones the search cannot tell apart', () => {
+    const names = ['İÇƏRİŞƏHƏR', 'Bakı', 'Kotal qәs.', 'Гянджлик Молл', 'Ёлка, Йод', '  28-May m/st. ', "Papa John's",
+      'Domino’s Pizza', 'Papa Johnʼs', 'L‘Occitane', 'Tod`s', 'Levi´s', 'Şüvəlan Çimərliyi', 'Gənclik Mall / Ganjlik'];
+    expect(python('print(json.dumps([b.fold(n) for n in data]))', names)).toEqual(names.map(normalizeSearch));
   });
 
   it('waits as Retry-After says, in seconds or as an HTTP date, and two minutes an attempt without it', () => {
