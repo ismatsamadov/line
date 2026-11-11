@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { bus, busStop, stop } from './fixtures';
 import { isMetroStation, METRO_STATION_ID_BASE } from '../types';
+import { haversine } from '../geo';
 
 const db = vi.hoisted(() => ({
   queryStopDetails: vi.fn(), queryBuses: vi.fn(), queryBusStops: vi.fn(), queryWalkingEdges: vi.fn(), queryRouteShapes: vi.fn(),
@@ -64,6 +65,53 @@ describe('transit graph', () => {
     const g = await (await import('../graph')).getGraph();
     expect(g.getEdges(1).find(e => e.kind === 'bus')).toMatchObject({ distance: 0, time: 15 });
     expect(g.getEdges(2).find(e => e.kind === 'bus')).toMatchObject({ distance: 0, time: 15 });
+  });
+
+  it("counts a missing stop's stretch at the straight line, so the rest of the line keeps its pace (#721)", async () => {
+    // Stop 3 has no coordinates: its two legs are broken, but the bus still covers 2 to 4.
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(4), stop(5)]);
+    db.queryBusStops.mockResolvedValue([1, 2, 3, 4, 5].map((s, i) => busStop(10, s, i)));
+    const g = await (await import('../graph')).getGraph();
+    const leg = (id: number) => g.getEdges(id).find(e => e.kind === 'bus');
+    // 1.1 km legs either side of a 2.2 km gap: 30 minutes for 4.4 km.
+    expect(leg(1)?.time).toBeCloseTo(7.5, 9);
+    expect(leg(4)?.time).toBeCloseTo(7.5, 9);
+    expect(leg(2)).toBeUndefined();
+  });
+
+  describe('a stop that sticks out of its ride (#721)', () => {
+    // Stops 1-5 every 556 m up 49° E, but stop 3 stands 2 km east of the road: its two
+    // legs run 4.15 km where the road runs 1.11 km.
+    const stops = [stop(1, 40.005), stop(2, 40.01), stop(3, 40.015, 49.0235), stop(4, 40.02), stop(5, 40.025)];
+    const road: [number, number][] = [[40.005, 49], [40.01, 49], [40.015, 49], [40.02, 49], [40.025, 49]];
+    const built = async (line?: [number, number][]) => {
+      db.queryStopDetails.mockResolvedValue(stops);
+      db.queryBusStops.mockResolvedValue([1, 2, 3, 4, 5].map((s, i) => busStop(10, s, i)));
+      db.queryRouteShapes.mockResolvedValue(new Map(line ? [['10:1', line]] : []));
+      const g = await (await import('../graph')).getGraph();
+      return (id: number) => g.getEdges(id).find(e => e.kind === 'bus')!;
+    };
+    const km = (a: number, b: number) => haversine(stops[a - 1].latitude, stops[a - 1].longitude, stops[b - 1].latitude, stops[b - 1].longitude);
+
+    it('counts as the straight line between its neighbours when the recorded line passes it by', async () => {
+      const leg = await built(road);
+      // 30 minutes for 0.56 + 1.11 + 0.56 km, the misplaced stop's legs sharing the 1.11.
+      const pace = 30 / (km(1, 2) + km(2, 4) + km(4, 5));
+      expect(leg(1).time).toBeCloseTo(pace * km(1, 2), 9);
+      expect(leg(4).time).toBeCloseTo(pace * km(4, 5), 9);
+      expect(leg(2).time + leg(3).time).toBeCloseTo(pace * km(2, 4), 9);
+      expect(leg(2).time / leg(3).time).toBeCloseTo(km(2, 3) / km(3, 4), 9);
+      // Their distances share it alike, so neither leg runs at 120 km/h.
+      expect(leg(2).distance + leg(3).distance).toBeCloseTo(km(2, 4), 9);
+      expect(leg(2).time / leg(2).distance).toBeCloseTo(pace, 9);
+    });
+
+    it('keeps its legs when the recorded line goes out to it, or when there is no line to tell', async () => {
+      const byLength = 30 / (km(1, 2) + km(2, 3) + km(3, 4) + km(4, 5));
+      expect((await built([road[0], road[1], [40.015, 49.0235], road[3], road[4]]))(1).time).toBeCloseTo(byLength * km(1, 2), 9);
+      vi.resetModules();
+      expect((await built())(1).time).toBeCloseTo(byLength * km(1, 2), 9);
+    });
   });
 
   it('gives each leg its stretch of the recorded line (#685)', async () => {

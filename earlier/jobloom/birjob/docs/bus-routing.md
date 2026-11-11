@@ -106,7 +106,8 @@ optimization modes were removed; the endpoint exposes one complete itinerary.
 direction, travel order is cumulative `total_distance`, then `bus_stop_id` and
 `id` as stable tie-breaks. This agrees with the line viewer. Repeated stops stay
 in the graph with distinct positions so a ride cannot jump across a loop. A
-missing stop breaks its adjacent legs; it is not skipped to invent a shortcut.
+missing stop breaks its adjacent legs; it is not skipped to invent a shortcut,
+though its stretch still counts for the line's time (below).
 
 The snapshot stores 120A's stops twice in each direction (bus_id 160: 30 rows for
 15 stops and 28 for 14, every row at `total_distance` 23.4), so travel order puts
@@ -162,6 +163,41 @@ is not added to the time shown.
 transfer stop once while preserving repeated visits around loops and distinct
 walking-transfer endpoints.
 
+Shared by length, one stop in the wrong place sets the pace of its whole line, so
+two cases count differently (`shareLengths` in `graph.ts`, #721). A run of stops
+without coordinates breaks its legs, but the bus still covers that stretch: it
+counts as the straight line between the stops either side, and the rest of the
+line keeps its pace (in a synthetic line of ten stops, one missing had made the
+others 29% slower). And a stop is taken to be misplaced when its two legs run more
+than three times the straight line between its neighbours, and over a kilometre
+longer, while the recorded line ([Road shapes](#road-shapes)) passes it by but
+runs on through the legs beyond: its two legs then share that straight line, for
+their time and their distance alike. This is the only use routing makes of the
+recorded lines, and without them it changes nothing. Sixteen stops on the snapshot
+stick out that far. Fourteen lie on their line, where the bus does go out of its
+way (145 to Binəqədi Gənclər Şəhərciyi, 3.6 km of legs for 1.1 between its
+neighbours), and keep their legs. The other two are suspected errors in the data.
+The right coordinates are unknown, so no migration corrects them:
+
+- **Stop 3841**, Zabrat-Kürdəxanı şosesi, 18, the second stop of 537's second
+  direction, is stored at 40.520541, 49.950679, 1.1 km from both of 537's
+  recorded lines while the stops either side lie on them. The stop beside the
+  terminus in the other direction, 3840 (Zabrat-Kürdəxanı şosesi, 19), is stored
+  2.8 km south at the same longitude. 3841's legs ran 5.43 km where its
+  neighbours are 0.78 apart, took 15.3 of the direction's 70 minutes, and left the
+  other 26 legs 19% fast.
+- **Stop 3095**: 536's second direction lists "28 May küçəsi 222" as stop 3095,
+  whose own record is C.Cavadov küç. 72A, at 40.529394, 49.849165: a point on
+  536's route, but not between those neighbours. Its legs ran 4.73 km for 0.71,
+  took 14.6 of 88 minutes, and left the other 32 legs 14% fast.
+
+The rule changes the time of 62 legs, all in those two directions, and the
+distance of the four through the two stops. Both directions now run at their
+lines' pace, 17.3 and 16.7 km/h in a straight line, through the stop as well. Of
+the review's 1,500 random pairs (seed 20261111) 34 answers change, and 4 of the
+200 below, each on 536 or 537: some journeys now board 537 at its first stop or
+536 at its second instead of going round the detour, and others take another bus.
+
 `walking.ts` builds bidirectional connections of at most `WALK_RADIUS_KM` from
 the same coordinates. That limit is 400 m, about five minutes on foot and the
 distance a bus stop is usually taken to serve; it was 300 m until #721, which left
@@ -210,7 +246,8 @@ Bus edges carry their leg's road, and a journey's ride joins them
 (`RouteSegment.path`). The line viewer matches its stops to the bus's lines the same
 way, so it no longer draws a broken line as stored; its coordinates are empty when
 nothing fits, and the map then joins the stops. Distances and times do not change:
-they still come from straight lines between stops, as the page says. If the lines
+they still come from straight lines between stops, as the page says, apart from the
+legs of a stop the line passes by ([Graph and data](#graph-and-data)). If the lines
 fail to load, the graph builds without them and every ride is drawn straight until
 the process restarts: the graph is built once, and only a console error says so.
 The line viewer also catches a failure reading its optional road geometry: it
