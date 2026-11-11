@@ -657,7 +657,8 @@ reaches (at the destination), the nearest first, at most `ACCESS_STOP_LIMIT`, 64
 no bus serves is never one; the snapshot's 385 such stops have no name either. The
 location button and, before this, a place used the nearest stop within 600 m, and the
 journey could walk on from it, 400 m more; within 1 km every such start is one walk, so
-no journey it could give is lost. Measured over the 12,634 places of `places.json`:
+no journey it could give is lost. Measured over the 12,634 places `places.json` had at
+the time:
 
 | Radius | Places with no stop or station that close | Stops at a place: median, 90th pct., most |
 | --- | --- | --- |
@@ -751,14 +752,19 @@ keystroke), and says "Axtarılır…" meanwhile. While a longer query is asked, 
 of the last answer that still match are ranked for it as the stops are (`placeRank`),
 so typing on needs no wait; places that come after the list is shown go below it.
 "gənclik", "koroglu", "nerimanov" and "avtovağzal" each list their metro station first.
-The places search ranks by the journey's other end, sent in its address, which caches,
-logs and error reports keep; the person's location goes there only to two decimals,
-about 1 km (`coarsePoint`). A location known only to more than 1 km is not used.
+The places search ranks by the journey's other end, sent in its address, which logs
+and error reports keep; the person's location goes there only to two decimals, about
+1 km (`coarsePoint`). A location known only to more than 1 km is not used, and the next
+try asks the GPS for a fresh fix: asked again for a quick one, up to a minute old, the
+browser gave the same rough fix back.
 
 **How it was measured.** On a scratch PostgreSQL loaded as for the #721 verification
 below (route_efficiency's `data/ayna.db`: 3,841 stops, 3,456 of them served, 208 buses
-and 11,786 stop rows), through the real `graph.ts`, with the `places.json` of 11
-November 2026. The harness is a vitest file outside the repository: it builds the graph
+and 11,786 stop rows) and its buses' route lines (109,147 points), through the real
+`graph.ts`, with the `places.json` of 11 November 2026 before a games hall left it
+(12,634 places). The numbers come out as here only with the route lines loaded: #721's
+`measuredLength` reads them to tell a misplaced stop, which changes some rides' times.
+The harness is a vitest file outside the repository: it builds the graph
 with `getGraph()`, draws place pairs with the tests' linear congruential generator from
 seed 720, answers each with `findJourney` and with `findRoute` between the places'
 nearest stops, and tallies them; nothing else is needed to repeat it. The page was

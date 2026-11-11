@@ -373,8 +373,8 @@ export default function Component() {
   }, [pickTarget, toStop, toPlace, clearRoute]);
 
   // Each picker's places put the ones nearer the journey's other end first (#720). The
-  // search sends that point in its address, which caches, logs and error reports keep, so
-  // the person's location goes only to about 1 km (coarsePoint).
+  // search sends that point in its address, which logs and error reports keep, so the
+  // person's location goes only to about 1 km (coarsePoint).
   const rankingPoint = (place: ChosenPlace | null, stop: StopDetail | null): Point | null =>
     place?.id === HERE ? coarsePoint(place) : place ?? stop;
   const fromPoint = useMemo(() => rankingPoint(fromPlace, fromStop), [fromPlace, fromStop]);

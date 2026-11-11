@@ -143,7 +143,7 @@ export const placeStopNear = (stops: StopDetail[], place: { latitude: number; lo
   nearestStop(stops, place.latitude, place.longitude, ACCESS_RADIUS_KM, { named: true });
 
 /** A point to two decimals, about 1 km: how near the person's location the place search
- *  may be told it is, since its address reaches caches, logs and error reports (#720). */
+ *  may be told it is, since its address reaches logs and error reports (#720). */
 export const coarsePoint = (point: { latitude: number; longitude: number }) => ({
   latitude: Math.round(point.latitude * 100) / 100, longitude: Math.round(point.longitude * 100) / 100,
 });
