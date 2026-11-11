@@ -55,8 +55,9 @@ const journeyEnd = (side: "from" | "to", place: ChosenPlace | null, stop: StopDe
   ? { [side]: { latitude: place.latitude, longitude: place.longitude, name: place.name } }
   : { [`${side}StopId`]: stop?.id };
 
-/** A start or destination: a stop, a named place, or the person's location. */
-function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace, active, onActivate, loading, near }: {
+/** A start or destination: a stop, a named place, or the person's location. Exported for
+ *  its tests. */
+export function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace, active, onActivate, loading, near }: {
   label: string; stops: StopDetail[]; selected: StopDetail | null; place: ChosenPlace | null;
   onSelectStop: (stop: StopDetail | null) => void; onSelectPlace: (place: PlaceMatch) => void;
   active: boolean; onActivate: () => void; loading: boolean; near: Point | null;

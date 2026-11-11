@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fileURLToPath } from 'node:url';
 import type { ReactNode } from 'react';
 import { mountComponent, defaultExport, type FoundElement } from '@/test/clientComponent';
+import type { PlaceSearch } from '../usePlaceSearch';
 import * as access from '@/lib/busroute/access';
 import * as geo from '@/lib/busroute/geo';
 import type { PlaceMatch } from '@/lib/busroute/places';
@@ -31,23 +32,27 @@ let bodies: unknown[];
 let position: { latitude: number; longitude: number; accuracy: number };
 // What each request for the location asked the browser for.
 let asked: PositionOptions[];
+let placeSearch: PlaceSearch;
 
 const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
 
+const Picker = () => null;
+const imports = {
+  'next/dynamic': defaultExport(() => BusMap),
+  'lucide-react': icons,
+  '@/components/SupportCTA': defaultExport(Stub),
+  '@/lib/busroute/access': access,
+  '@/lib/busroute/geo': geo,
+  './JourneyView': defaultExport(Stub),
+  './Picker': defaultExport(Picker),
+  './search': search,
+  './usePlaceSearch': { usePlaceSearch: () => placeSearch },
+  './journeyFormatting': journeyFormatting,
+  './mapMarks': mapMarks,
+};
+
 function planner() {
-  const view = mountComponent<Record<string, never>>(FILE, {
-    'next/dynamic': defaultExport(() => BusMap),
-    'lucide-react': icons,
-    '@/components/SupportCTA': defaultExport(Stub),
-    '@/lib/busroute/access': access,
-    '@/lib/busroute/geo': geo,
-    './JourneyView': defaultExport(Stub),
-    './Picker': defaultExport(Stub),
-    './search': search,
-    './usePlaceSearch': { usePlaceSearch: () => ({ places: [], pending: false, degraded: false, holding: false }) },
-    './journeyFormatting': journeyFormatting,
-    './mapMarks': mapMarks,
-  });
+  const view = mountComponent<Record<string, never>>(FILE, imports);
   const render = async () => { view.render({}); await flush(); view.render({}); };
   const end = (label: string) => view.find(el => el.props.label === label)[0].props;
   const map = () => view.find(el => el.type === BusMap)[0].props;
@@ -62,6 +67,7 @@ beforeEach(() => {
   bodies = [];
   asked = [];
   position = { latitude: 40.377134, longitude: 49.854137, accuracy: 25 };
+  placeSearch = { places: [], pending: false, degraded: false, holding: false };
   vi.stubGlobal('window', { matchMedia: () => ({ matches: true, addEventListener() {}, removeEventListener() {} }) });
   vi.stubGlobal('navigator', { geolocation: { getCurrentPosition: (ok: (p: unknown) => void, _fail: unknown, options: PositionOptions) => {
     asked.push(options);
@@ -124,6 +130,15 @@ describe('the planner (#720)', () => {
     await p.render();
     expect(p.end('Haradan').place).toBeNull();
     expect(p.alert()).toContain('±1.5 km dəqiqliklə');
+    // Sure to 1 km exactly, as far as a place's walk to its first stop, it is used.
+    position = { ...position, accuracy: 1000.5 };
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(p.end('Haradan').place).toBeNull();
+    position = { ...position, accuracy: 1000 };
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(p.end('Haradan').place).toMatchObject({ name: 'Sizin yeriniz', label: 'Məkan dəqiqliyi ±1000 m' });
   });
 
   it('asks for a fresh fix from the GPS once a rough one was refused, and quickly again after', async () => {
@@ -142,5 +157,39 @@ describe('the planner (#720)', () => {
     p.button('Olduğum yerdən başla').onClick();
     await p.render();
     expect(asked[2]).toEqual(asked[0]);
+  });
+
+  it('swaps the ends with the button named for it', async () => {
+    const p = planner();
+    await p.render();
+    p.end('Haradan').onSelectPlace(mall);
+    await p.render();
+    p.end('Hara').onSelectStop(STOPS[1]);
+    await p.render();
+    expect(p.button('Yerləri dəyiş')).toMatchObject({ title: 'Yerləri dəyiş', 'aria-label': 'Yerləri dəyiş' });
+    p.button('Yerləri dəyiş').onClick();
+    await p.render();
+    expect(bodies.at(-1)).toEqual({ fromStopId: 2, to: { latitude: 40.39989, longitude: 49.85283, name: 'Gənclik Mall' } });
+  });
+});
+
+describe('a start or destination picker (#720)', () => {
+  const endPicker = () => {
+    const view = mountComponent<Record<string, unknown>>(FILE, imports, 'EndPicker');
+    const props = { label: 'Haradan', stops: STOPS, selected: null, place: null, onSelectStop() {}, onSelectPlace() {},
+      active: true, onActivate() {}, loading: false, near: null };
+    const search = (query: string) => {
+      view.render(props);
+      return (view.find(el => el.type === Picker)[0].props.searchItems(query) as Array<{ key: string }>).map(item => item.key);
+    };
+    return { search };
+  };
+
+  it("lists nothing while a new query's places are held for, then ranks them in with the stops", () => {
+    const { search } = endPicker();
+    placeSearch = { places: [], pending: true, degraded: false, holding: true };
+    expect(search('gənclik')).toEqual([]);
+    placeSearch = { places: [mall], pending: false, degraded: false, holding: false };
+    expect(search('gənclik')).toEqual(['pw674677959', 's1']);
   });
 });
