@@ -185,13 +185,13 @@ describe('searchPlaces (#720)', () => {
     expect(found[0]).toEqual({ id: 'n1', name: 'Gənclik', category: 'metro', label: 'Metro stansiyası', latitude: 40.4, longitude: 49.851, rank: 0 });
     expect(searchPlaces(index, 'mall gənc').map((p) => [p.id, p.rank])).toEqual([['w2', 1]]); // 2, a mall a step up
     // The category's name counts too, below every match on the name.
-    expect(searchPlaces(index, 'gənclik metro').map((p) => [p.id, p.rank])).toEqual([['n1', 2]]); // 3, a station a step up
+    expect(searchPlaces(index, 'gənclik metro').map((p) => [p.id, p.rank])).toEqual([['n1', 3]]);
     expect(searchPlaces(index, 'sarayi').map((p) => [p.id, p.rank])).toEqual([['n7', 2]]);
     expect(searchPlaces(index, 'vanşahlar').map((p) => [p.id, p.rank])).toEqual([['n7', 3]]);
     expect(ids('ahl')).toEqual([]); // under four letters, a word must start a word
   });
 
-  it('lets a station, an airport or a mall a step up from its words\' match, never to the name itself', () => {
+  it('counts a station\'s, an airport\'s or a mall\'s words starting with the query as its name starting so', () => {
     // "nerimanov" is the station's second word; eight places whose names start with it
     // filled the list, and the station was not in it.
     const offices = ['Parkı', 'Məhkəməsi', 'Bələdiyyəsi', 'Prokurorluğu', 'Polis İdarəsi', 'İcra Şöbəsi', 'Mədəniyyət Evi', 'Kitabxanası']
@@ -201,6 +201,12 @@ describe('searchPlaces (#720)', () => {
     expect(searchPlaces(hub, 'nəriman nərimanov')[0]).toMatchObject({ id: 'n9', rank: 0 });
     // A mall that starts with what was typed stays below the place that is named it.
     expect(searchPlaces(index, 'gənclik').map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['w2', 1], ['n3', 2]]);
+    // Among equals the better match before the step comes first: the trade centre named
+    // Sədərək before a smaller one named after it; and a looser match does not step up.
+    const malls = buildPlaceIndex({ labels, places: [row('n1', 'Mini Sədərək', 'mall'), row('n2', 'Sədərək Ticarət Mərkəzi', 'mall'),
+      row('n3', 'Avtovağzal', 'metro'), row('n4', 'Vağzal Kafe', 'sight')] });
+    expect(searchPlaces(malls, 'sederek').map((p) => [p.id, p.rank])).toEqual([['n2', 1], ['n1', 1]]);
+    expect(searchPlaces(malls, 'vagzal').map((p) => [p.id, p.rank])).toEqual([['n4', 1], ['n3', 3]]);
   });
 
   it('folds Azerbaijani letters for a Latin keyboard and finds the other names', () => {

@@ -39,8 +39,8 @@ export interface Place {
 
 export interface PlaceMatch extends Place {
   /** 0 the name itself, 1 the start of it, 2 the start of each of its words, 3 looser:
-   *  a word found inside it, or the category's name ("gənclik metro"). A station, an
-   *  airport or a mall counts a step better from 2 down (HUBS). */
+   *  a word found inside it, or the category's name ("gənclik metro"). A station's, an
+   *  airport's or a mall's 2 counts as 1 (HUBS). */
   rank: number;
   /** The other name that matched, when the one shown did not ("Ganjlik Mall"). */
   alias?: string;
@@ -57,10 +57,11 @@ const WEIGHT: Record<string, number> = {
   kindergarten: 3, post_office: 3, bank: 3, office: 3, shop: 3,
 };
 const NOTABLE = 2;
-// Where journeys most often start and end, and few of each: a match on one counts a step
-// better, though never as the name itself. Strictly by match, "nerimanov" listed eight
-// courts, offices and a park whose names start with Nərimanov, and not the station
-// Nəriman Nərimanov, whose second word it is.
+// Where journeys most often start and end, and few of each: a name whose words start with
+// the query's counts as one that starts with it. Strictly by match, "nerimanov" listed
+// eight courts, offices and a park whose names start with Nərimanov, and not the station
+// Nəriman Nərimanov, whose second word it is. A looser match does not step up: "vağzal"
+// inside "Avtovağzal" is no reason to list the bus station above the sea terminal.
 const HUBS: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
 export const PLACE_SEARCH_LIMIT = 8;
 
@@ -126,12 +127,14 @@ function rankCompact(query: string, name: string): number {
 
 /**
  * The best places for what a person typed: exact names, then names that start with it,
- * then names whose words start with its words in any order, then looser matches, with a
- * station, an airport or a mall a step up from its words' match (HUBS). A query that
+ * then names whose words start with its words in any order, then looser matches, a
+ * station, an airport or a mall whose words start with them counting as starting with
+ * it (HUBS). A query that
  * matches nothing is tried again without its spaces against names without theirs, so
  * that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
  * equal matches a match on the shown name comes before one on another name, then the
- * category's weight, then, given `near`, the nearer place: 91 supermarkets are named
+ * category's weight, then the better match before that step, then, given `near`, the
+ * nearer place: 91 supermarkets are named
  * "Bravo", and the one near the other end of the journey is the likelier one. A query
  * that folds to under two letters finds nothing.
  */
@@ -142,11 +145,11 @@ export function searchPlaces(
   const q = normalizeSearch(query);
   if (q.length < 2) return [];
   const queryWords = q.split(" ");
-  const found: Array<{ entry: Entry; rank: number; which: number; distance: number }> = [];
-  const add = (entry: Entry, rank: number, which: number) => {
-    if (rank > 1 && HUBS.has(entry.place.category)) rank--;
+  const found: Array<{ entry: Entry; rank: number; matched: number; which: number; distance: number }> = [];
+  const add = (entry: Entry, matched: number, which: number) => {
+    const rank = matched === 2 && HUBS.has(entry.place.category) ? 1 : matched;
     const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
-    found.push({ entry, rank, which, distance });
+    found.push({ entry, rank, matched, which, distance });
   };
   for (const entry of index.entries) {
     if (!queryWords.every((w) => entry.haystack.includes(w))) continue;
@@ -174,7 +177,7 @@ export function searchPlaces(
     }
   }
   found.sort((a, b) => a.rank - b.rank || Number(a.which > 0) - Number(b.which > 0)
-    || b.entry.weight - a.entry.weight || a.distance - b.distance
+    || b.entry.weight - a.entry.weight || a.matched - b.matched || a.distance - b.distance
     || a.entry.place.name.length - b.entry.place.name.length
     || a.entry.place.name.localeCompare(b.entry.place.name, "az") || a.entry.place.id.localeCompare(b.entry.place.id));
   return found.slice(0, limit).map(({ entry, rank, which }) => ({
