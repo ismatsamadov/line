@@ -7,22 +7,25 @@
  * nearest.
  *
  * A walk is measured as every other walk in the planner is (walking.ts, metro.ts): in a
- * straight line at WALK_SPEED_KMH, and to a station's nearest exit, by which it is drawn.
+ * straight line, to a station's nearest exit by which it is drawn, and timed with its
+ * streets reckoned in (walkMinutes in geo.ts).
  */
 import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON } from "./geo";
 import type { TransitGraph } from "./graph";
 import type { LatLng } from "./types";
 
 // How far a journey walks from its point to its first stop or station, or from its
-// last one to its point: 1 km, about 13 minutes, which is less than one boarding costs
-// (routing.ts). The location button took the nearest stop within 600 m instead, and
-// the journey could walk on from there, 400 m more; within 1 km every such journey is
-// one walk, so none of them is lost. 96% of the places in places.json have a stop or
-// station that close, against 91% within 600 m.
+// last one to its point: 1 km in a straight line, about 17 minutes on its streets. The
+// location button took the nearest stop within 600 m instead, and the journey could
+// walk on from there, 400 m more; within 1 km every such journey is one walk, so none
+// of them is lost. 96% of the places in places.json have a stop or station that close,
+// against 91% within 600 m.
 export const ACCESS_RADIUS_KM = 1;
 // The most stops and stations a search starts from, or ends at, at each point, the
-// nearest first. The densest place has 63 within 1 km, and a search took as long with
-// all of them as with the nearest 12, so today the limit leaves nothing out: it only
+// nearest first. No place has more than 63 within 1 km, so for a place the limit leaves
+// nothing out; any other point in the area has at most 65, and only a few (4 of 53,360
+// points on a grid over the network), which loses at most their farthest stop or two.
+// A search took as long with every stop as with the nearest 12, so the limit only
 // bounds a request's work if the stops or the radius grow. docs/bus-routing.md has the
 // numbers behind both choices.
 export const ACCESS_STOP_LIMIT = 64;

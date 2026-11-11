@@ -19,7 +19,7 @@
  */
 import { z } from "zod";
 import metroJson from "./metro.json";
-import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
+import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON, WALK_RADIUS_KM, walkMinutes } from "./geo";
 import type { GraphEdge, LatLng, StopDetail } from "./types";
 import { METRO_RIDE_BUS_ID, METRO_STATION_ID_BASE, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER } from "./types";
 
@@ -63,7 +63,7 @@ export function metroNetwork(busStops: StopDetail[], raw: unknown = metroJson): 
     from: from.id,
     edge: {
       kind: "walk", toStopId: to.id, busId: WALKING_EDGE_BUS_ID, busNumber: WALKING_EDGE_BUS_NUMBER,
-      distance, time: (distance / WALK_SPEED_KMH) * 60, fromStopName: from.name, toStopName: to.name,
+      distance, time: walkMinutes(distance), fromStopName: from.name, toStopName: to.name,
       ...(path ? { path } : {}),
     },
   });

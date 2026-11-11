@@ -3,7 +3,7 @@
  * load. A spatial grid avoids comparing every pair; legacy precomputed rows
  * omitted useful links based on route membership and input order (#664).
  */
-import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
+import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON, WALK_RADIUS_KM, walkMinutes } from "./geo";
 import { StopDetail, WalkingEdge } from "./types";
 
 export function computeWalkingEdges(
@@ -21,7 +21,7 @@ export function computeWalkingEdges(
       for (const b of cells.get(`${x + dx}:${y + dy}`) ?? []) {
         const dist = haversine(a.latitude, a.longitude, b.latitude, b.longitude);
         if (dist > WALK_RADIUS_KM) continue;
-        const walkTime = (dist / WALK_SPEED_KMH) * 60; // minutes
+        const walkTime = walkMinutes(dist);
         edges.push({ from_stop_id: a.id, to_stop_id: b.id, distance_km: dist, time_min: walkTime });
         edges.push({ from_stop_id: b.id, to_stop_id: a.id, distance_km: dist, time_min: walkTime });
       }

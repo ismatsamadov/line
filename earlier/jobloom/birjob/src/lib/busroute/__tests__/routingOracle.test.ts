@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { BOARDING_PENALTY_MIN, findJourney, findRoute, MAX_WALK_ONLY_KM } from '../routing';
-import { accessWalks } from '../access';
-import { haversine, WALK_SPEED_KMH } from '../geo';
+import { BOARDING_PENALTY_MIN, findJourney, findRoute, MAX_WALK_INSTEAD_MIN, MAX_WALK_ONLY_KM } from '../routing';
+import { ACCESS_RADIUS_KM } from '../access';
+import { haversine } from '../geo';
 import type { GraphEdge, LatLng } from '../types';
 import { graph, ride, train, walk } from './fixtures';
 
@@ -58,8 +58,9 @@ function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to
 /** The same rounds between two points (#720). Round one boards at a stop the origin
  * walks to, at that walk's cost and with no other walk before it; a journey ends with
  * a ride to a stop the destination is walked to from, and that walk, never a walk
- * before it. Walking the whole way wins when it is within MAX_WALK_ONLY_KM and costs
- * no more than the cheapest round. */
+ * before it. Walking the whole way is the answer within MAX_WALK_INSTEAD_MIN when it
+ * costs no more than the cheapest round, and within MAX_WALK_ONLY_KM when no round
+ * reaches the destination. */
 function roundsBetweenPoints(lines: Line[], walks: Map<number, GraphEdge[]>, access: Map<number, Cost>, egress: Map<number, Cost>, onFoot: Cost) {
   const withWalk = (arrivals: Map<number, Cost>) => {
     const result = new Map(arrivals);
@@ -94,8 +95,9 @@ function roundsBetweenPoints(lines: Line[], walks: Map<number, GraphEdge[]>, acc
     if (arrival && (!best || score({ boardings, cost: arrival }) < score(best))) best = { boardings, cost: arrival };
     previous = withWalk(arrivals);
   }
-  const km = onFoot[1];
-  if (km <= MAX_WALK_ONLY_KM && (!best || onFoot[0] <= score(best))) return { boardings: 0, cost: onFoot };
+  const [minutes, km] = onFoot;
+  if (km <= MAX_WALK_ONLY_KM && minutes <= MAX_WALK_INSTEAD_MIN && (!best || minutes <= score(best))) return { boardings: 0, cost: onFoot };
+  if (km <= MAX_WALK_ONLY_KM && !best) return { boardings: 0, cost: onFoot };
   return best;
 }
 
@@ -174,7 +176,8 @@ describe('journeys between points against the same oracle (#720)', () => {
     // Stops and points along a strip 7.5 km long and 400 m wide, so a point has a stop
     // or two within a walk and the walk the whole way is sometimes within its limit.
     const somewhere = (): LatLng => [40.3 + random(675) / 10000, 49.8 + random(50) / 10000];
-    const walkCost = (km: number): Cost => [(km / WALK_SPEED_KMH) * 60, km, km];
+    // On its streets: 1.3 times the straight line, at 4.5 km/h.
+    const walkCost = (km: number): Cost => [((km * 1.3) / 4.5) * 60, km, km];
     for (let network = 0; network < 40; network++) {
       const edges: Record<number, GraphEdge[]> = {};
       const lines = Array.from({ length: 4 }, (_, i): Line => {
@@ -199,10 +202,13 @@ describe('journeys between points against the same oracle (#720)', () => {
       for (let trip = 0; trip < 15; trip++) {
         const [oLat, oLng] = somewhere(), [dLat, dLng] = somewhere();
         const O = { latitude: oLat, longitude: oLng, name: 'O' }, D = { latitude: dLat, longitude: dLng, name: 'D' };
-        const away = accessWalks(g, O, 'origin'), home = accessWalks(g, D, 'destination');
-        const expected = roundsBetweenPoints(lines, walks,
-          new Map(away.map(w => [w.stopId, walkCost(w.distance)])), new Map(home.map(w => [w.stopId, walkCost(w.distance)])),
-          walkCost(haversine(oLat, oLng, dLat, dLng)));
+        // The walks to and from the points, found here and not by accessWalks: every stop
+        // within the radius, served or not (a stop no line serves is a dead end anyway).
+        const within = (lat: number, lng: number) => new Map([1, 2, 3, 4, 5, 6]
+          .map(id => [id, haversine(lat, lng, ...at[id])] as const).filter(([, km]) => km <= ACCESS_RADIUS_KM)
+          .map(([id, km]) => [id, walkCost(km)]));
+        const away = within(oLat, oLng);
+        const expected = roundsBetweenPoints(lines, walks, away, within(dLat, dLng), walkCost(haversine(oLat, oLng, dLat, dLng)));
         const actual = findJourney(g, O, D).route;
         const context = JSON.stringify({ network, trip, O, D, lines: lines.map(l => l.stops), at });
         expect(Boolean(actual), context).toBe(Boolean(expected));
@@ -222,7 +228,8 @@ describe('journeys between points against the same oracle (#720)', () => {
         if (boardings === 0) onFoot++;
         else {
           rides++;
-          if (actual.segments[1].stops[0].id !== away[0].stopId) otherThanNearest++;
+          const boardable = [...away].filter(([id]) => (edges[id] ?? []).some(e => e.kind !== 'walk')).sort((a, b) => a[1][0] - b[1][0]);
+          if (actual.segments[1].stops[0].id !== boardable[0][0]) otherThanNearest++;
         }
       }
     }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { findJourney, findRoute, MAX_WALK_ONLY_KM } from '../routing';
+import { findJourney, findRoute, MAX_WALK_INSTEAD_MIN, MAX_WALK_ONLY_KM } from '../routing';
 import { ACCESS_RADIUS_KM, accessWalks } from '../access';
-import { haversine, WALK_RADIUS_KM } from '../geo';
+import { haversine, WALK_DETOUR, WALK_RADIUS_KM, walkMinutes } from '../geo';
 import { DESTINATION_POINT_ID, ORIGIN_POINT_ID, type LatLng } from '../types';
 import { graph, ride, train, walk } from './fixtures';
 
@@ -24,6 +24,12 @@ describe('accessWalks: the stops and stations a point walks to (#720)', () => {
     expect(accessWalks(g, O, 'origin').map(w => w.stopId)).toEqual([1]);
     expect(accessWalks(g, O, 'destination').map(w => w.stopId)).toEqual([2]);
     expect(accessWalks(g, O, 'origin')[0].distance).toBeCloseTo(0.1, 9);
+  });
+
+  it('takes a stop at exactly the radius, and none beyond it', () => {
+    const exactly = haversine(...north(0), ...north(0.1));
+    expect(accessWalks(g, O, 'origin', { radiusKm: exactly }).map(w => w.stopId)).toEqual([1]);
+    expect(accessWalks(g, O, 'origin', { radiusKm: exactly - 1e-12 })).toEqual([]);
   });
 
   it('takes the nearest first, within the radius and up to the limit', () => {
@@ -55,12 +61,13 @@ describe('a journey from and to a point (#720)', () => {
     const { route } = findJourney(g, O, D);
     expect(ids(route)).toEqual([[ORIGIN_POINT_ID, 2], [2, 3], [3, DESTINATION_POINT_ID]]);
     expect(modes(route)).toEqual(['walk', 'bus', 'walk']);
-    // The walks count: 500 m and 100 m at 4.5 km/h, 6.7 and 1.3 minutes, and their distance.
-    expect(route).toMatchObject({ totalTime: 23, totalDistance: 1.6, totalTransfers: 0, totalStops: 2 });
-    expect(route!.segments[0]).toMatchObject({ distance: expect.closeTo(0.5, 9), time: expect.closeTo(6.67, 2) });
+    // The walks count: 500 m and 100 m, 8.7 and 1.7 minutes on their streets, and their
+    // straight-line distance.
+    expect(route).toMatchObject({ totalTime: 25.4, totalDistance: 1.6, totalTransfers: 0, totalStops: 2 });
+    expect(route!.segments[0]).toMatchObject({ distance: expect.closeTo(0.5, 9), time: expect.closeTo(8.67, 2) });
     expect(route!.segments[0].stops[0]).toEqual({ id: ORIGIN_POINT_ID, name: 'Gənclik Mall', latitude: O.latitude, longitude: O.longitude });
     expect(route!.segments[2].stops[1]).toEqual({ id: DESTINATION_POINT_ID, name: 'Kitabxana', latitude: D.latitude, longitude: D.longitude });
-    // The nearest stop's two buses win once the direct bus is slow enough: 52.7 against 63.
+    // The nearest stop's two buses win once the direct bus is slow enough: 53.5 against 65.4.
     const slow = graph({ 1: [ride(4, 10, 10)], 4: [ride(3, 20, 10)], 2: [ride(3, 30, 40)] }, undefined, { at });
     expect(ids(findJourney(slow, O, D).route)).toEqual([[ORIGIN_POINT_ID, 1], [1, 4], [4, 3], [3, DESTINATION_POINT_ID]]);
   });
@@ -114,15 +121,31 @@ describe('walking the whole way (#720)', () => {
   const near = (minutes: number, km = 1.5) => graph({ 1: [ride(2, 10, minutes)] }, undefined, { at: { 1: north(0.05), 2: north(km - 0.05) } });
   const O = point(0, 'O');
 
+  it('times every walk on its streets, 1.3 times its straight line at 4.5 km/h', () => {
+    expect(WALK_DETOUR).toBe(1.3);
+    expect(walkMinutes(1.5)).toBeCloseTo(26, 9);
+  });
+
   it('walks when that costs no more than every journey that rides', () => {
-    // On foot 20 minutes; the bus 0.7 + 3 + 0.7 minutes and a boarding, 19.3.
-    expect(modes(findJourney(near(3), O, point(1.5, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
-    // A bus of 4 minutes costs 20.3.
-    const { route } = findJourney(near(4), O, point(1.5, 'D'));
+    // On foot 26 minutes; the bus 0.9 + 9 + 0.9 minutes and a boarding, 25.7.
+    expect(modes(findJourney(near(9), O, point(1.5, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+    // A bus of 10 minutes costs 26.7.
+    const { route } = findJourney(near(10), O, point(1.5, 'D'));
     expect(ids(route)).toEqual([[ORIGIN_POINT_ID, DESTINATION_POINT_ID]]);
-    expect(route).toMatchObject({ totalTime: 20, totalDistance: 1.5, totalTransfers: 0, totalStops: 0 });
+    expect(route).toMatchObject({ totalTime: 26, totalDistance: 1.5, totalTransfers: 0, totalStops: 0 });
     expect(route!.segments[0]).toMatchObject({ mode: 'walk', busId: -1 });
     expect(route!.segments[0].path).toBeUndefined();
+  });
+
+  it('walks on a tie with a journey that rides', () => {
+    // The stops stand on the points, so the journey that rides costs its bus and a
+    // boarding exactly: the walk's 26 minutes, to the last bit.
+    const walk = walkMinutes(haversine(...north(0), ...north(1.5)));
+    const tie = graph({ 1: [ride(2, 10, walk - 15)] }, undefined, { at: { 1: north(0), 2: north(1.5) } });
+    expect(walk - 15 + 15).toBe(walk);
+    const { route } = findJourney(tie, O, point(1.5, 'D'));
+    expect(modes(route)).toEqual(['walk']);
+    expect(route!.totalTime).toBe(26);
   });
 
   it('walks without searching when the walk costs less than a boarding', () => {
@@ -132,21 +155,38 @@ describe('walking the whole way (#720)', () => {
     // Which stops serve a ride is worked out once per graph; the search is what is left.
     accessWalks(spy, O, 'origin');
     searched.length = 0;
-    // 1 km takes 13.3 minutes on foot: no journey that rides can cost less.
-    expect(modes(findJourney(spy, O, point(1, 'D')).route)).toEqual(['walk']);
+    // 850 m takes 14.7 minutes on foot: no journey that rides can cost less.
+    expect(walkMinutes(0.85)).toBeLessThan(15);
+    expect(modes(findJourney(spy, O, point(0.85, 'D')).route)).toEqual(['walk']);
     expect(searched).toEqual([]);
-    // 1.2 km takes 16, more than a boarding: the bus is weighed, and loses at 16.3.
-    expect(modes(findJourney(spy, O, point(1.2, 'D')).route)).toEqual(['walk']);
+    // 880 m takes 15.3, more than a boarding: the bus is weighed, and loses at 16.5.
+    expect(modes(findJourney(spy, O, point(0.88, 'D')).route)).toEqual(['walk']);
     expect(searched).toContain(1);
   });
 
-  it('walks where nothing rides, up to the limit, and rides beyond it however slowly', () => {
+  it('walks where nothing rides, up to its limit, and is never offered against a ride beyond half an hour', () => {
     expect(MAX_WALK_ONLY_KM).toBe(2);
+    expect(MAX_WALK_INSTEAD_MIN).toBe(30);
     const none = graph({}, []);
     expect(modes(findJourney(none, O, point(1.9, 'D')).route)).toEqual(['walk']);
     expect(findJourney(none, O, point(2.1, 'D'))).toEqual({ route: null, stranded: 'origin' });
-    // On foot 2.5 km takes 33 minutes; the bus takes 40 and still wins.
+    // 1.9 km takes 32.9 minutes on foot: a bus of 40 minutes (56.7 with its boarding and
+    // walks) costs more, and is the answer all the same.
+    expect(modes(findJourney(near(40, 1.9), O, point(1.9, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+    expect(modes(findJourney(near(40, 1.9), O, point(1.9, 'D'), { walkInsteadMin: 33 }).route)).toEqual(['walk']);
+    // Beyond 2 km the bus is the answer however slow.
     expect(modes(findJourney(near(40, 2.5), O, point(2.5, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+  });
+
+  it('holds the walk the whole way to its limits, inclusive', () => {
+    // At exactly the distance or the minutes a walk is allowed, it is offered.
+    const km = haversine(...north(0), ...north(1.9));
+    const none = graph({}, []);
+    expect(modes(findJourney(none, O, point(1.9, 'D'), { walkOnlyKm: km }).route)).toEqual(['walk']);
+    expect(findJourney(none, O, point(1.9, 'D'), { walkOnlyKm: km - 1e-9 }).route).toBeNull();
+    const slow = near(40, 1.9);
+    expect(modes(findJourney(slow, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) }).route)).toEqual(['walk']);
+    expect(modes(findJourney(slow, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) - 1e-9 }).route)).toEqual(['walk', 'bus', 'walk']);
   });
 
   it('says which end has no stop within a walk, and nothing when the stops are not connected', () => {

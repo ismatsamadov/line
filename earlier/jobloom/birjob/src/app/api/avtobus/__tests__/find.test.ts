@@ -121,9 +121,11 @@ describe('POST /api/avtobus/find', () => {
       { id: -1, name: 'Gənclik Mall', latitude: 40.0095, longitude: 49 }, expect.objectContaining({ id: 1 }),
     ]);
     expect(route.segments[2].stops.at(-1)).toEqual({ id: -2, name: 'Kitabxana', latitude: 40.0305, longitude: 49 });
-    // 56 m each way at 4.5 km/h, and the 10-minute bus.
+    // 56 m each way, timed on its streets (1.3 times the straight line at 4.5 km/h), and
+    // the 10-minute bus.
     expect(route.segments[0].distance).toBeCloseTo(0.0556, 3);
-    expect(route).toMatchObject({ totalTime: 11.5, totalDistance: 1.11, totalTransfers: 0 });
+    expect(route.segments[0].time).toBeCloseTo(0.964, 3);
+    expect(route).toMatchObject({ totalTime: 11.9, totalDistance: 1.11, totalTransfers: 0 });
   });
 
   it('routes between a stop and a place either way, and names a nameless point (#720)', async () => {

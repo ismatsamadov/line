@@ -28,7 +28,7 @@
 import type { TransitGraph } from "./graph";
 import type { GraphEdge, JourneyPoint, LatLng, RouteResult, RouteSegment, StopDetail } from "./types";
 import { DESTINATION_POINT_ID, isJourneyPoint, ORIGIN_POINT_ID, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER } from "./types";
-import { haversine, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
+import { haversine, WALK_RADIUS_KM, walkMinutes } from "./geo";
 import { joinLegs } from "./shape";
 import { accessWalks, type AccessGraph, type AccessOptions } from "./access";
 
@@ -240,17 +240,21 @@ export function findRoute(graph: RoutingGraph, source: number, target: number): 
 export type JourneyEnd = { stopId: number } | JourneyPoint;
 export type JourneyGraph = RoutingGraph & AccessGraph;
 
-// The longest walk offered instead of a ride, in a straight line: about 27 minutes.
-// Within it the walk is the answer whenever it costs no more than every journey that
-// rides, or when nothing rides there. Further, a journey that rides is the answer even
-// when its boardings cost more. On random place pairs the walk was the cheaper in 119
-// of 120 pairs within 2 km, in 66 of 120 between 2 and 3 km, and still in 17 of 120
-// beyond, as walks of 41 to 63 minutes: 15 minutes a boarding is an allowance for the
-// wait, not a measured one, and too rough to send someone on an hour's walk.
+// The walk the whole way, which boards nothing and so wins a tie with any journey that
+// rides. It is offered against a journey that rides when it takes no more than
+// MAX_WALK_INSTEAD_MIN, about 1.7 km in a straight line, and costs no more; and when
+// nothing rides there, up to MAX_WALK_ONLY_KM in a straight line (35 minutes). Further,
+// a journey that rides is the answer even when its boardings cost more: 15 minutes a
+// boarding is an allowance for the wait, not a measured one, and too rough to send
+// someone on a long walk instead. Without a limit, on random place pairs the walk was
+// the cheaper in 17 of 120 pairs more than 3 km apart, as walks of 41 to 63 minutes
+// reckoned in a straight line (docs/bus-routing.md).
+export const MAX_WALK_INSTEAD_MIN = 30;
 export const MAX_WALK_ONLY_KM = 2;
 
 export interface JourneyOptions extends AccessOptions {
   walkOnlyKm?: number;
+  walkInsteadMin?: number;
 }
 
 export interface Journey {
@@ -264,10 +268,11 @@ const pointStop = (point: JourneyPoint, id: number): StopDetail => ({
   id, code: "", name: point.name, latitude: point.latitude, longitude: point.longitude, is_transport_hub: false,
 });
 
-/** A walk in a straight line, or by a station's exit, as metro.ts draws one. */
+/** A walk drawn in a straight line, or by a station's exit as metro.ts draws one, and
+ *  timed with its streets reckoned in (walkMinutes). */
 const walkEdge = (from: StopDetail, to: StopDetail, distance: number, exit?: LatLng): GraphEdge => ({
   kind: "walk", toStopId: to.id, busId: WALKING_EDGE_BUS_ID, busNumber: WALKING_EDGE_BUS_NUMBER,
-  distance, time: (distance / WALK_SPEED_KMH) * 60, fromStopName: from.name, toStopName: to.name,
+  distance, time: walkMinutes(distance), fromStopName: from.name, toStopName: to.name,
   ...(exit ? { path: [[from.latitude, from.longitude], exit, [to.latitude, to.longitude]] } : {}),
 });
 
@@ -289,17 +294,19 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
     getEdges: (id) => edges.get(id) ?? graph.getEdges(id),
   };
 
-  // The whole way on foot boards nothing, so it wins a tie with a journey that rides.
+  // The whole way on foot: offered when nothing rides within MAX_WALK_ONLY_KM, and
+  // against a journey that rides within MAX_WALK_INSTEAD_MIN.
   const km = haversine(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
-  const minutes = (km / WALK_SPEED_KMH) * 60;
+  const minutes = walkMinutes(km);
   const walkable = km <= (options.walkOnlyKm ?? MAX_WALK_ONLY_KM);
+  const competes = walkable && minutes <= (options.walkInsteadMin ?? MAX_WALK_INSTEAD_MIN);
   const start: Label = { key: startAt(origin.id), stopId: origin.id, cost: [0, 0, 0, 0, 0], previous: null, edge: null, boarded: false };
   const walkOnly = () => reconstruct(withPoints, {
     key: walkedTo(destination.id, false), stopId: destination.id, previous: start,
     edge: walkEdge(origin, destination, km), boarded: false, cost: [minutes, 0, km, km, minutes],
   });
   // Every journey that rides pays for a boarding, so a shorter walk needs no search.
-  if (walkable && minutes <= BOARDING_PENALTY_MIN) return { route: walkOnly() };
+  if (competes && minutes <= BOARDING_PENALTY_MIN) return { route: walkOnly() };
 
   const away = "stopId" in from ? null : accessWalks(graph, from, "origin", options);
   const home = "stopId" in to ? null : accessWalks(graph, to, "destination", options);
@@ -308,7 +315,7 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
     const stop = graph.getStopInfo(walk.stopId)!;
     edges.set(stop.id, [...graph.getEdges(stop.id), walkEdge(stop, destination, walk.distance, walk.exit)]);
   }
-  const found = cheapest(withPoints, [start], destination.id, walkable ? minutes : Infinity);
+  const found = cheapest(withPoints, [start], destination.id, competes ? minutes : Infinity);
   if (found) return { route: reconstruct(withPoints, found) };
   if (walkable) return { route: walkOnly() };
   if (away?.length === 0) return { route: null, stranded: "origin" };

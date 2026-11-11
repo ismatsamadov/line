@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BOARDING_PENALTY_MIN, findRoute, numberRidePositions } from '../routing';
-import { WALK_RADIUS_KM, WALK_SPEED_KMH } from '../geo';
+import { WALK_RADIUS_KM, walkMinutes } from '../geo';
 import type { GraphEdge } from '../types';
 import { graph, RED, ride, train, walk } from './fixtures';
 
@@ -91,8 +91,9 @@ describe('journey choice: minutes plus a boarding penalty (#664, #721)', () => {
     expect(route.totalTransfers).toBe(0);
     expect(route.totalStops).toBe(0);
     expect(findRoute(graph({ 1: [walk(2, WALK_RADIUS_KM + 0.01)] }), 1, 2)).toBeNull();
-    // The longest walk costs less than one boarding, so a walk alone is always the cheapest journey.
-    expect(WALK_RADIUS_KM / WALK_SPEED_KMH * 60).toBeLessThan(BOARDING_PENALTY_MIN);
+    // The longest walk, 6.9 minutes on its streets, costs less than one boarding, so a walk
+    // alone is always the cheapest journey.
+    expect(walkMinutes(WALK_RADIUS_KM)).toBeLessThan(BOARDING_PENALTY_MIN);
   });
 
   it('walks up to the limit to the first bus, and no further (#721)', () => {

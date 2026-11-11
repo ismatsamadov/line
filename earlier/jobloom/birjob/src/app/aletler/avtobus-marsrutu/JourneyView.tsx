@@ -2,8 +2,12 @@ import { ArrowRight, Bike, Bus, ChevronDown, Footprints, Info, MapPin, TrainFron
 import type { RouteResult, RouteSegment } from "@/lib/busroute/types";
 import type { JourneyBikeParking } from "@/lib/busroute/bike";
 import { isJourneyPoint, isMetroStation } from "@/lib/busroute/types";
+import { WALK_DETOUR } from "@/lib/busroute/geo";
 import { segmentColors } from "./segmentColors";
 import { movementMinutes, travelledStopCount, walkLength } from "./journeyFormatting";
+
+// How much longer than its straight line a walk is reckoned on its streets, in percent.
+const DETOUR_PERCENT = Math.round((WALK_DETOUR - 1) * 100);
 
 /** A stop by name, a metro station as "<name> metrosu" so a walk says where it goes. */
 const placeName = (stop: RouteSegment["stops"][number] | undefined) =>
@@ -71,7 +75,7 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
                   <>
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold text-gray-900"><Footprints aria-hidden="true" className="h-4 w-4" />Piyada gedin <span className="text-xs font-normal text-gray-600">≈ {movementMinutes(segment.time)} dəq · {walkLength(segment.distance)}</span></p>
                     <p className="mt-1 break-words text-sm text-gray-600"><WalkEnd stop={from} /> → <WalkEnd stop={to} /></p>
-                    <p className="mt-1 text-xs leading-relaxed text-gray-500">Məsafə düz xətt üzrə təxminidir; piyada keçidini yoxlayın.</p>
+                    <p className="mt-1 text-xs leading-relaxed text-gray-500">Məsafə düz xətt üzrədir, vaxt küçələrlə yol üçün {DETOUR_PERCENT}% artıq hesablanıb; piyada keçidini yoxlayın.</p>
                   </>
                 ) : (
                   <>
@@ -120,7 +124,7 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
 
       <div className="flex items-start gap-2 border-t border-gray-100 bg-gray-50 px-4 py-3 text-xs leading-relaxed text-gray-600 sm:px-5">
         <Info aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0" />
-        <p>{walkOnly ? "Piyada yol düz xətt üzrə təxmin edilir; real yolu və keçid imkanını xəritədə yoxlayın." : `Vaxt təxminidir. Gözləmə, cədvəl və tıxac daxil deyil.${byMetro ? " Metro daxilində keçid və eskalator vaxtı da daxil deyil." : ""} Avtobus və piyada məsafələri düz xətt üzrə hesablanır.`}</p>
+        <p>{walkOnly ? `Məsafə düz xətt üzrədir, piyada vaxtı küçələrlə yol üçün ${DETOUR_PERCENT}% artıq hesablanıb; real yolu və keçid imkanını xəritədə yoxlayın.` : `Vaxt təxminidir. Gözləmə, cədvəl və tıxac daxil deyil.${byMetro ? " Metro daxilində keçid və eskalator vaxtı da daxil deyil." : ""} Avtobus və piyada məsafələri düz xətt üzrədir; piyada vaxtı küçələrlə yol üçün ${DETOUR_PERCENT}% artıq hesablanır.`}</p>
       </div>
     </section>
   );
