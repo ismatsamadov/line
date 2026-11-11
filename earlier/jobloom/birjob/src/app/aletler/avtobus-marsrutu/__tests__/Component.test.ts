@@ -1,8 +1,8 @@
 /**
  * The planner's own state (#720): what it asks /api/avtobus/find for once two ends are
- * chosen, where a map tap goes, and what the place search is told of the person's
- * location. The pickers and the map are stand-ins whose props the tests call, as a tap
- * or a choice in the browser would.
+ * chosen, where a map tap goes, what the place search is told of the person's location,
+ * and how the location is asked for. The pickers and the map are stand-ins whose props
+ * the tests call, as a tap or a choice in the browser would.
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +29,8 @@ const library: PlaceMatch = { id: 'n1', name: 'Kitabxana', category: 'culture', 
 
 let bodies: unknown[];
 let position: { latitude: number; longitude: number; accuracy: number };
+// What each request for the location asked the browser for.
+let asked: PositionOptions[];
 
 const flush = async () => { for (let i = 0; i < 5; i++) await Promise.resolve(); };
 
@@ -58,9 +60,13 @@ function planner() {
 
 beforeEach(() => {
   bodies = [];
+  asked = [];
   position = { latitude: 40.377134, longitude: 49.854137, accuracy: 25 };
   vi.stubGlobal('window', { matchMedia: () => ({ matches: true, addEventListener() {}, removeEventListener() {} }) });
-  vi.stubGlobal('navigator', { geolocation: { getCurrentPosition: (ok: (p: unknown) => void) => ok({ coords: position }) } });
+  vi.stubGlobal('navigator', { geolocation: { getCurrentPosition: (ok: (p: unknown) => void, _fail: unknown, options: PositionOptions) => {
+    asked.push(options);
+    ok({ coords: position });
+  } } });
   vi.stubGlobal('fetch', vi.fn(async (url: string, init?: { body?: string }) => {
     if (url === '/api/avtobus/stops') return { ok: true, json: async () => ({ stops: STOPS }) };
     bodies.push(JSON.parse(init!.body!));
@@ -118,5 +124,23 @@ describe('the planner (#720)', () => {
     await p.render();
     expect(p.end('Haradan').place).toBeNull();
     expect(p.alert()).toContain('±1.5 km dəqiqliklə');
+  });
+
+  it('asks for a fresh fix from the GPS once a rough one was refused, and quickly again after', async () => {
+    position = { ...position, accuracy: 1500 };
+    const p = planner();
+    await p.render();
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(asked).toEqual([{ enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }]);
+    // Asked the same way, the browser hands the same rough fix back for a minute.
+    position = { ...position, accuracy: 30 };
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(asked[1]).toEqual({ enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+    expect(p.end('Haradan').place).toMatchObject({ name: 'Sizin yeriniz' });
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(asked[2]).toEqual(asked[0]);
   });
 });

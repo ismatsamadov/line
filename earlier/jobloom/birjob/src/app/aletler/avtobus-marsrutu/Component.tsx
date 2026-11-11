@@ -184,6 +184,9 @@ export default function Component() {
   const [stopsLoading, setStopsLoading] = useState(true);
   const [stopsError, setStopsError] = useState<string | null>(null);
   const locationReqRef = useRef(0);
+  // After a location too rough to use, the next try asks for a fresh fix, from the GPS
+  // where there is one (handleLocate).
+  const preciseNextRef = useRef(false);
   const [fromStop, setFromStop] = useState<StopDetail | null>(null);
   const [toStop, setToStop] = useState<StopDetail | null>(null);
   // A named place or the person's location chosen instead of a stop (#720): an end is
@@ -326,9 +329,11 @@ export default function Component() {
         // walk a journey takes to its first stop, it could start the journey at the wrong
         // stops while timing their walks to the minute, so it is not used.
         if (!(accuracy <= ACCESS_RADIUS_KM * 1000)) {
+          preciseNextRef.current = true;
           setError(`Brauzer yerinizi yalnız təxminən ±${(accuracy / 1000).toFixed(1)} km dəqiqliklə verdi; bu, yaxındakı dayanacağı seçmək üçün azdır. GPS-i yandırıb yenidən cəhd edin, ya da başlanğıcı adla və ya xəritədən seçin.`);
           return;
         }
+        preciseNextRef.current = false;
         choosePlace("from", { id: HERE, name: HERE_NAME, label: `Məkan dəqiqliyi ±${Math.round(accuracy)} m`, latitude, longitude });
       },
       failure => {
@@ -336,7 +341,12 @@ export default function Component() {
         setError(failure.code === 1 ? "Məkan icazəsi verilmədi. Dayanacağı adla və ya xəritədən seçə bilərsiniz." : "Məkan alınmadı. Yenidən cəhd edin və ya dayanacağı özünüz seçin.");
         setLocating(false);
       },
-      { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+      // A quick fix, which may be a minute old and come from Wi-Fi or the network, is
+      // enough most times. Asked so again after a rough one, the browser handed the same
+      // fix back for that minute, so the retry the message asks for wants a fresh one.
+      preciseNextRef.current
+        ? { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        : { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
   }, [choosePlace]);
 
