@@ -60,7 +60,7 @@ function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to
  * a ride to a stop the destination is walked to from, and that walk, never a walk
  * before it. Walking the whole way is the answer within MAX_WALK_INSTEAD_MIN when it
  * costs no more than the cheapest round, and within MAX_WALK_ONLY_KM when no round
- * reaches the destination. */
+ * reaches the destination or the cheapest takes no fewer minutes. */
 function roundsBetweenPoints(lines: Line[], walks: Map<number, GraphEdge[]>, access: Map<number, Cost>, egress: Map<number, Cost>, onFoot: Cost) {
   const withWalk = (arrivals: Map<number, Cost>) => {
     const result = new Map(arrivals);
@@ -96,9 +96,9 @@ function roundsBetweenPoints(lines: Line[], walks: Map<number, GraphEdge[]>, acc
     previous = withWalk(arrivals);
   }
   const [minutes, km] = onFoot;
-  if (km <= MAX_WALK_ONLY_KM && minutes <= MAX_WALK_INSTEAD_MIN && (!best || minutes <= score(best))) return { boardings: 0, cost: onFoot };
-  if (km <= MAX_WALK_ONLY_KM && !best) return { boardings: 0, cost: onFoot };
-  return best;
+  if (km > MAX_WALK_ONLY_KM) return best;
+  if (!best || best.cost[0] >= minutes) return { boardings: 0, cost: onFoot };
+  return minutes <= MAX_WALK_INSTEAD_MIN && minutes <= score(best) ? { boardings: 0, cost: onFoot } : best;
 }
 
 /** The fewest boardings that reach `to` at all: rounds without costs. */
@@ -171,7 +171,7 @@ describe('routing against an independent boarding-round cost oracle', () => {
 
 describe('journeys between points against the same oracle (#720)', () => {
   it('agrees on the stops walked to and from, the boardings, the times and walking the whole way', () => {
-    let seed = 20261111, otherThanNearest = 0, onFoot = 0, rides = 0;
+    let seed = 20261111, otherThanNearest = 0, onFoot = 0, rides = 0, slowerRide = 0;
     const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
     // Stops and points along a strip 7.5 km long and 400 m wide, so a point has a stop
     // or two within a walk and the walk the whole way is sometimes within its limit.
@@ -207,8 +207,8 @@ describe('journeys between points against the same oracle (#720)', () => {
         const within = (lat: number, lng: number) => new Map([1, 2, 3, 4, 5, 6]
           .map(id => [id, haversine(lat, lng, ...at[id])] as const).filter(([, km]) => km <= ACCESS_RADIUS_KM)
           .map(([id, km]) => [id, walkCost(km)]));
-        const away = within(oLat, oLng);
-        const expected = roundsBetweenPoints(lines, walks, away, within(dLat, dLng), walkCost(haversine(oLat, oLng, dLat, dLng)));
+        const away = within(oLat, oLng), home = within(dLat, dLng);
+        const expected = roundsBetweenPoints(lines, walks, away, home, walkCost(haversine(oLat, oLng, dLat, dLng)));
         const actual = findJourney(g, O, D).route;
         const context = JSON.stringify({ network, trip, O, D, lines: lines.map(l => l.stops), at });
         expect(Boolean(actual), context).toBe(Boolean(expected));
@@ -225,8 +225,12 @@ describe('journeys between points against the same oracle (#720)', () => {
           expect(actual.segments[i - 1].stops.at(-1)!.id, context).toBe(actual.segments[i].stops[0].id);
           expect(actual.segments[i].mode === 'walk' && actual.segments[i - 1].mode === 'walk', context).toBe(false);
         }
-        if (boardings === 0) onFoot++;
-        else {
+        if (boardings === 0) {
+          onFoot++;
+          // Past half an hour on foot, a walk chosen over a journey that rides: a slower one.
+          const ridden = roundsBetweenPoints(lines, walks, away, home, [Infinity, Infinity, Infinity]);
+          if (expected.cost[0] > MAX_WALK_INSTEAD_MIN && ridden) slowerRide++;
+        } else {
           rides++;
           const boardable = [...away].filter(([id]) => (edges[id] ?? []).some(e => e.kind !== 'walk')).sort((a, b) => a[1][0] - b[1][0]);
           if (actual.segments[1].stops[0].id !== boardable[0][0]) otherThanNearest++;
@@ -237,5 +241,6 @@ describe('journeys between points against the same oracle (#720)', () => {
     expect(rides).toBeGreaterThan(100);
     expect(onFoot).toBeGreaterThan(50);
     expect(otherThanNearest).toBeGreaterThan(10);
+    expect(slowerRide).toBeGreaterThan(0);
   });
 });

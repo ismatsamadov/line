@@ -164,18 +164,34 @@ describe('walking the whole way (#720)', () => {
     expect(searched).toContain(1);
   });
 
-  it('walks where nothing rides, up to its limit, and is never offered against a ride beyond half an hour', () => {
+  it('walks where nothing rides or the ride is slower, up to its limit, and past half an hour loses to a faster ride', () => {
     expect(MAX_WALK_ONLY_KM).toBe(2);
     expect(MAX_WALK_INSTEAD_MIN).toBe(30);
     const none = graph({}, []);
     expect(modes(findJourney(none, O, point(1.9, 'D')).route)).toEqual(['walk']);
     expect(findJourney(none, O, point(2.1, 'D'))).toEqual({ route: null, stranded: 'origin' });
-    // 1.9 km takes 32.9 minutes on foot: a bus of 40 minutes (56.7 with its boarding and
-    // walks) costs more, and is the answer all the same.
-    expect(modes(findJourney(near(40, 1.9), O, point(1.9, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
-    expect(modes(findJourney(near(40, 1.9), O, point(1.9, 'D'), { walkInsteadMin: 33 }).route)).toEqual(['walk']);
+    // 1.9 km takes 32.9 minutes on foot. A bus of 20 minutes, 21.7 with its walks, is
+    // faster before its wait, and is the answer though it costs 36.7 with its boarding.
+    expect(modes(findJourney(near(20, 1.9), O, point(1.9, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+    expect(modes(findJourney(near(20, 1.9), O, point(1.9, 'D'), { walkInsteadMin: 33 }).route)).toEqual(['walk']);
+    // A bus of 40 minutes is slower than the walk even before its wait.
+    expect(modes(findJourney(near(40, 1.9), O, point(1.9, 'D')).route)).toEqual(['walk']);
     // Beyond 2 km the bus is the answer however slow.
     expect(modes(findJourney(near(40, 2.5), O, point(2.5, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+  });
+
+  it('walks rather than ride three buses for longer than the walk takes', () => {
+    // As from 40.59678, 49.66272 to 40.57931, 49.66120: on foot 33.8 minutes, and the
+    // journey that rides took three buses and 102.1.
+    const D = point(1.95, 'D');
+    const g = graph({ 1: [ride(3, 1, 30)], 3: [ride(4, 2, 30)], 4: [ride(2, 3, 40)] }, undefined, {
+      at: { 1: north(0.05), 2: north(1.9), 3: north(5), 4: north(-3) },
+    });
+    expect(walkMinutes(haversine(...north(0), ...north(1.95)))).toBeCloseTo(33.8, 1);
+    const rides = findJourney(g, O, D, { walkOnlyKm: 0 }).route;
+    expect(modes(rides)).toEqual(['walk', 'bus', 'bus', 'bus', 'walk']);
+    expect(rides!.totalTime).toBeCloseTo(101.7, 9);
+    expect(modes(findJourney(g, O, D).route)).toEqual(['walk']);
   });
 
   it('holds the walk the whole way to its limits, inclusive', () => {
@@ -184,9 +200,14 @@ describe('walking the whole way (#720)', () => {
     const none = graph({}, []);
     expect(modes(findJourney(none, O, point(1.9, 'D'), { walkOnlyKm: km }).route)).toEqual(['walk']);
     expect(findJourney(none, O, point(1.9, 'D'), { walkOnlyKm: km - 1e-9 }).route).toBeNull();
-    const slow = near(40, 1.9);
-    expect(modes(findJourney(slow, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) }).route)).toEqual(['walk']);
-    expect(modes(findJourney(slow, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) - 1e-9 }).route)).toEqual(['walk', 'bus', 'walk']);
+    const fast = near(20, 1.9);
+    expect(modes(findJourney(fast, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) }).route)).toEqual(['walk']);
+    expect(modes(findJourney(fast, O, point(1.9, 'D'), { walkInsteadMin: walkMinutes(km) - 1e-9 }).route)).toEqual(['walk', 'bus', 'walk']);
+    // Past half an hour a ride exactly as fast as the walk loses to it, and one a hair
+    // faster wins. The stops stand on the points, so the ride takes its bus's minutes.
+    const onPoints = (minutes: number) => graph({ 1: [ride(2, 10, minutes)] }, undefined, { at: { 1: north(0), 2: north(1.9) } });
+    expect(modes(findJourney(onPoints(walkMinutes(km)), O, point(1.9, 'D')).route)).toEqual(['walk']);
+    expect(modes(findJourney(onPoints(walkMinutes(km) - 1e-9), O, point(1.9, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
   });
 
   it('says which end has no stop within a walk, and nothing when the stops are not connected', () => {

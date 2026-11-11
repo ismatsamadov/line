@@ -703,18 +703,25 @@ should the stops or the radius grow and loses almost nothing.
 wins a tie with every journey that rides. Up to `MAX_WALK_INSTEAD_MIN`, 30 minutes on
 its streets (about 1.7 km in a straight line), it is the answer when it costs no more
 than the cheapest journey that rides; up to `MAX_WALK_ONLY_KM`, 2 km in a straight line,
-it is the answer when nothing rides there. A walk of 15 minutes or less (865 m) costs
+it is the answer when nothing rides there, or when the cheapest journey that rides takes
+as long or longer even before its waits. A walk of 15 minutes or less (865 m) costs
 no more than any journey that rides, so it needs no search, and a longer one bounds the
 search: it stops once nothing left can be cheaper. On random place pairs, 60 in each
 band of straight-line distance, the walk was the cheaper in 56 of those from 1.1 to 1.5
 km and was the answer in all 56; from 1.5 to 2 km it was the cheaper in 43 and the
-answer in 27, the other 16 taking more than 30 minutes; it was still the cheaper in 22
-pairs from 2 to 2.5 km, 11 from 2.5 to 3 km and 5 beyond, and offered in none. Without
-the limits, with walks timed on their straight line, it won as walks of 41 to 63
-minutes, mostly over journeys with two boardings: 15 minutes a boarding is an
-allowance for the wait, not a measured one, and too rough to send someone on a long
-walk instead, so beyond those limits a journey that rides is the answer whatever it
-costs. A point with no stop within 1 km and too far to walk gets an error naming it.
+answer in 27, the other 16 taking more than 30 minutes against a faster ride; it was
+still the cheaper in 22 pairs from 2 to 2.5 km, 11 from 2.5 to 3 km and 5 beyond, and
+offered in none. Without the limits, with walks timed on their straight line, it won as
+walks of 41 to 63 minutes, mostly over journeys with two boardings: 15 minutes a
+boarding is an allowance for the wait, not a measured one, and too rough to send
+someone on a long walk instead, so past 30 minutes a journey that rides is the answer
+whatever its boardings cost, if it is faster, and beyond 2 km whatever it takes. Past
+30 minutes any journey that rides had won at first: from 40.59678, 49.66272 to
+40.57931, 49.66120, three buses in 102 minutes against a walk of 34. Of 300 random
+place pairs whose walk takes 30 to 35 minutes (1.73 to 2 km), 294 have a journey that
+rides, and 6 of those take as long as the walk or longer, by 1 to 72 minutes, before
+any wait; the walk is the answer for those 6 and for none of the other 288. A point
+with no stop within 1 km and too far to walk gets an error naming it.
 
 **Cost.** Finding a point's stops scans the served stops once, 26 to 39 µs; which stops
 a ride serves is worked out once per graph. Timed seven times each, on a busy laptop,

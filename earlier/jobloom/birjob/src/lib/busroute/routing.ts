@@ -242,13 +242,15 @@ export type JourneyGraph = RoutingGraph & AccessGraph;
 
 // The walk the whole way, which boards nothing and so wins a tie with any journey that
 // rides. It is offered against a journey that rides when it takes no more than
-// MAX_WALK_INSTEAD_MIN, about 1.7 km in a straight line, and costs no more; and when
-// nothing rides there, up to MAX_WALK_ONLY_KM in a straight line (35 minutes). Further,
-// a journey that rides is the answer even when its boardings cost more: 15 minutes a
-// boarding is an allowance for the wait, not a measured one, and too rough to send
-// someone on a long walk instead. Without a limit, on random place pairs the walk was
-// the cheaper in 17 of 120 pairs more than 3 km apart, as walks of 41 to 63 minutes
-// reckoned in a straight line (docs/bus-routing.md).
+// MAX_WALK_INSTEAD_MIN, about 1.7 km in a straight line, and costs no more. Up to
+// MAX_WALK_ONLY_KM in a straight line (35 minutes) it is offered when nothing rides
+// there, or when the journey that rides takes as long or longer before any wait: three
+// buses in 102 minutes were the answer over a walk of 34 (#720). Otherwise a journey
+// that rides is the answer even when its boardings cost more: 15 minutes a boarding is
+// an allowance for the wait, not a measured one, and too rough to send someone on a
+// long walk instead. Without a limit, on random place pairs the walk was the cheaper in
+// 17 of 120 pairs more than 3 km apart, as walks of 41 to 63 minutes reckoned in a
+// straight line (docs/bus-routing.md).
 export const MAX_WALK_INSTEAD_MIN = 30;
 export const MAX_WALK_ONLY_KM = 2;
 
@@ -294,8 +296,8 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
     getEdges: (id) => edges.get(id) ?? graph.getEdges(id),
   };
 
-  // The whole way on foot: offered when nothing rides within MAX_WALK_ONLY_KM, and
-  // against a journey that rides within MAX_WALK_INSTEAD_MIN.
+  // The whole way on foot: offered within MAX_WALK_ONLY_KM when nothing rides or the
+  // ride is no faster, and against a cheaper journey that rides within MAX_WALK_INSTEAD_MIN.
   const km = haversine(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
   const minutes = walkMinutes(km);
   const walkable = km <= (options.walkOnlyKm ?? MAX_WALK_ONLY_KM);
@@ -316,7 +318,9 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
     edges.set(stop.id, [...graph.getEdges(stop.id), walkEdge(stop, destination, walk.distance, walk.exit)]);
   }
   const found = cheapest(withPoints, [start], destination.id, competes ? minutes : Infinity);
-  if (found) return { route: reconstruct(withPoints, found) };
+  // Up to MAX_WALK_ONLY_KM a ride no faster than the walk, before any wait, never wins.
+  // Within MAX_WALK_INSTEAD_MIN the bound has already let only a cheaper one through.
+  if (found && !(walkable && found.cost[4] >= minutes)) return { route: reconstruct(withPoints, found) };
   if (walkable) return { route: walkOnly() };
   if (away?.length === 0) return { route: null, stranded: "origin" };
   if (home?.length === 0) return { route: null, stranded: "destination" };
