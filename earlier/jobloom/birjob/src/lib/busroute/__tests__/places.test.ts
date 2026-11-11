@@ -208,6 +208,11 @@ describe('searchPlaces (#720)', () => {
       row('n3', 'Avtovağzal', 'metro'), row('n4', 'Vağzal Kafe', 'sight')] });
     expect(searchPlaces(malls, 'sederek').map((p) => [p.id, p.rank])).toEqual([['n2', 1], ['n1', 1]]);
     expect(searchPlaces(malls, 'vagzal').map((p) => [p.id, p.rank])).toEqual([['n4', 1], ['n3', 3]]);
+    // Nor does a match on the district the mappers add after " / ".
+    const district = buildPlaceIndex({ labels, places: [row('n1', 'Lotos Ticarət Mərkəzi / 8-ci km', 'mall'),
+      row('n2', '8 km Maşın Bazarı', 'sight')] });
+    expect(searchPlaces(district, '8 km').map((p) => [p.id, p.rank])).toEqual([['n2', 1], ['n1', 2]]);
+    expect(searchPlaces(district, 'lotos').map((p) => [p.id, p.rank])).toEqual([['n1', 1]]);
   });
 
   it('folds Azerbaijani letters for a Latin keyboard and finds the other names', () => {
@@ -265,6 +270,7 @@ describe('searchPlaces (#720)', () => {
     expect(first('nerimanov')).toMatchObject({ name: 'Nəriman Nərimanov', category: 'metro' });
     expect(first('28 mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
     expect(first('28mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
+    expect(first('8 km')).toMatchObject({ name: '8 km Maşın Bazarı' });
     expect(first('parkbulvar')).toMatchObject({ name: 'Park Bulvar', category: 'mall', rank: 0 });
     expect(first('hazi aslanov')).toMatchObject({ name: 'Həzi Aslanov', category: 'metro' });
     expect(searchPlaces(real, 'гянджлик').slice(0, 2)).toMatchObject([

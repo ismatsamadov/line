@@ -61,7 +61,9 @@ const NOTABLE = 2;
 // the query's counts as one that starts with it. Strictly by match, "nerimanov" listed
 // eight courts, offices and a park whose names start with Nərimanov, and not the station
 // Nəriman Nərimanov, whose second word it is. A looser match does not step up: "vağzal"
-// inside "Avtovağzal" is no reason to list the bus station above the sea terminal.
+// inside "Avtovağzal" is no reason to list the bus station above the sea terminal. Nor
+// does a match on the district the mappers add after " / ": "8 km" is not a mall's name
+// for "Lotos Ticarət Mərkəzi / 8-ci km".
 const HUBS: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
 export const PLACE_SEARCH_LIMIT = 8;
 
@@ -77,6 +79,8 @@ interface Entry {
   haystack: string;
   /** Every name folded with its spaces taken out, for a query typed without them. */
   compact: string[];
+  /** Every name's words before the mappers' " / " and the place after it. */
+  ownWords: string[][];
   weight: number;
 }
 
@@ -97,6 +101,7 @@ export function buildPlaceIndex(raw: unknown): PlaceIndex {
       others, names, words: names.map((n) => n.split(" ")), labelWords,
       haystack: `${names.join(" ")} ${labelWords.join(" ")}`,
       compact: names.map((n) => n.replaceAll(" ", "")),
+      ownWords: [name, ...others].map((n) => normalizeSearch(n.split(" / ")[0]).split(" ")),
       weight: (WEIGHT[category] ?? 0) + (notable ? NOTABLE : 0),
     };
   });
@@ -145,7 +150,9 @@ export function searchPlaces(
   const queryWords = q.split(" ");
   const found: Array<{ entry: Entry; rank: number; matched: number; which: number; distance: number }> = [];
   const add = (entry: Entry, matched: number, which: number) => {
-    const rank = matched === 2 && HUBS.has(entry.place.category) ? 1 : matched;
+    const own = entry.ownWords[which];
+    const rank = matched === 2 && HUBS.has(entry.place.category)
+      && queryWords.every((q) => own.some((w) => w.startsWith(q))) ? 1 : matched;
     const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
     found.push({ entry, rank, matched, which, distance });
   };
