@@ -373,7 +373,7 @@ export default function Component() {
             <>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Hara gedirsiniz?</h2>
-                <p className="mt-1 text-xs leading-relaxed text-gray-500">Avtobus və metro ilə daha az dəyişmə. İki dayanacaq seçin.</p>
+                <p className="mt-1 text-xs leading-relaxed text-gray-500">Avtobus və metro ilə ən əlverişli yol. İki dayanacaq seçin.</p>
               </div>
               {stopsError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
                 <p>{stopsError}</p>

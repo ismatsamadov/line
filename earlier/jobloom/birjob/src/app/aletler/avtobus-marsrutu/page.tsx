@@ -57,7 +57,7 @@ export default async function Page() {
         <header className="mb-5 sm:mb-7">
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-orange-700"><Bus aria-hidden="true" className="h-4 w-4" />Bakı · Avtobus və metro</div>
           <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Bakı avtobus marşrutu planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">Haradan hara gedirsiniz? Dayanacaqları seçin, avtobus və metro ilə daha az dəyişməli yolu xəritədə görün. Pulsuz və qeydiyyatsız.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">Haradan hara gedirsiniz? Dayanacaqları seçin, avtobus və metro ilə ən əlverişli yolu xəritədə görün. Pulsuz və qeydiyyatsız.</p>
         </header>
 
         <Component />
