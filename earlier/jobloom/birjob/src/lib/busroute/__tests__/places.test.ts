@@ -63,13 +63,34 @@ describe('places.json (#720)', () => {
     }
   });
 
-  it('leaves out names that only say what the place is', () => {
+  it('leaves out names that only say what the place is, or are a building\'s number', () => {
     // "Kafe" ×100 would fill a search for cafés with rows nobody can tell apart.
     const names = new Set(data.places.map(([, name]) => normalizeSearch(name)));
-    for (const plain of ['Kafe', 'Market', 'Məscid', 'Uşaq bağçası', 'Parkinq', 'Aptek', 'İnşaat Malları', 'Abidə']) {
+    for (const plain of ['Kafe', 'Market', 'Məscid', 'Uşaq bağçası', 'Parkinq', 'Aptek', 'İnşaat Malları', 'Abidə',
+      'Bina 1', 'Bina 11', 'ev 111a', 'Корпус № 2', 'Дом', 'Ev', 'Мужской салон', 'Шашлычная', 'Чайхана-кальянная']) {
       expect(names.has(normalizeSearch(plain)), plain).toBe(false);
     }
     expect(data.places.some(([, name]) => / ATM$/i.test(name))).toBe(false);
+    // A building's word with more to it is a name: a housing cooperative, a guest house.
+    expect(names.has('bina mtk') && names.has('ev goradil')).toBe(true);
+  });
+
+  it('leaves out country houses mapped as guest houses, and the misspelt first of the numbered buildings', () => {
+    expect(data.places.filter(([, name, category]) => category === 'hotel' && /дача/i.test(name))).toEqual([]);
+    expect(data.places.some(([id]) => id === 'w630137385')).toBe(false); // "Корупс № 1"
+  });
+
+  it('writes no word in both alphabets, which neither keyboard can type (CORRECTIONS in the build script)', () => {
+    for (const [id, name, , , , , aliases] of data.places) {
+      for (const n of [name, ...aliases]) {
+        const mixed = (n.match(/\p{L}+/gu) ?? []).filter((w) => /\p{Script=Latin}/u.test(w) && /\p{Script=Cyrillic}/u.test(w));
+        expect(mixed, `${id} ${n}`).toEqual([]);
+      }
+    }
+    const named = (id: string) => data.places.find(([placeId]) => placeId === id)?.[1];
+    expect(named('n4481359889')).toBe('Araz Market / Babək'); // "Araя": я is z in the Russian layout
+    expect(named('n9943368707')).toBe('Leon Palace Şadlıq Sarayı');
+    expect(named('n4212308706')).toBe('Lotos Ticarət Mərkəzi / 8-ci km');
   });
 
   it('keeps out the name a vandal gave Heydar Aliyev\'s grave (CORRECTIONS in the build script)', () => {
@@ -127,12 +148,12 @@ describe('places.json (#720)', () => {
     for (const [, , category] of data.places) counts[category]++;
     expect(counts).toEqual({
       metro: 27, rail: 54, bus_station: 15, airport: 8, port: 10, mall: 145, market: 62, supermarket: 1032,
-      shop: 1849, restaurant: 1559, cafe: 1144, hotel: 427, university: 83, college: 123, school: 634,
+      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 423, university: 78, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
-      office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 210, sport: 222, fun: 66,
-      worship: 199, beach: 60, settlement: 133, area: 161, residential: 480,
+      office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 210, sport: 221, fun: 66,
+      worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_658);
+    expect(data.places).toHaveLength(12_633);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });

@@ -111,6 +111,19 @@ print(json.dumps(result))`);
     }
   });
 
+  it('leaves out a building\'s number and a dacha mapped as a guest house, not a name with more to it', () => {
+    const result = python(`print(json.dumps({
+    "plain": [b.plain(n) for n in data],
+    "dacha": [b.dacha("hotel", "дача друга рашида"), b.dacha("hotel", "Dacha Resort"), b.dacha("restaurant", "Дача")],
+    "mixed": [b.mixed("Araя Market"), b.mixed("Gənclik Mall / Гянджлик"), b.mixed("8km Детский Сад")]}))`,
+    ['Bina 1', 'ev 111a', 'Корпус № 2', 'Дом', 'Bina', 'Bina MTK', 'Ev Goradil', 'Дом Книги', 'Мужской салон', 'Kafe']);
+    expect(result).toEqual({
+      plain: [true, true, true, true, true, false, false, false, true, true],
+      dacha: [true, false, false],
+      mixed: [['Araя'], [], []],
+    });
+  });
+
   it('flags for a person the names with an insult, a curse or a political word, and not the ministries', () => {
     const names = ['Heydar Aliyev mafia boss grave', 'Хуйня', 'Qəhbə', 'Corrupt regime',
       'Daxili İşlər Nazirliyi', 'Hugo Boss', 'Художественный музей', 'Воронеж', 'Gənclik Mall'];

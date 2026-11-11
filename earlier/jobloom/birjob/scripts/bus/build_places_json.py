@@ -29,8 +29,10 @@ Standard library only. What it decides, so that the planner does not have to:
   their :az and :ru forms. The mappers' "Name \\ Place" convention is written
   "Name / Place", and Cyrillic schwas inside Latin words become Latin ones.
 - A name that only says what the place is ("Kafe", "Market", "Məscid", "Uşaq bağçası")
-  is left out, and so is a name with no letters ("1941-1945"): neither can be told apart
-  from the next one in a list. Stations and settlements keep theirs.
+  is left out, and so is a building's number ("Bina 1", "Корпус № 2") and a name with no
+  letters ("1941-1945"): none can be told apart from the next one in a list. Stations and
+  settlements keep theirs. A guest house named a dacha is someone's country house, and is
+  left out too.
 - The metro is the planner's own: the 27 stations of metro.json, with its names and
   coordinates, and the other names of the OpenStreetMap station each one matches. A
   station OpenStreetMap has and metro.json has not (a depot, a station being built) is
@@ -163,8 +165,9 @@ SHOPS = {
     "outdoor", "bicycle", "music", "musical_instrument", "gift", "optician", "pet",
     "variety_store", "car", "motorcycle", "fabric", "video_games", "photo", "art", "wholesale",
 }
-# Names that only say what a place is, as the search folds them (fold() below).
+# Names that only say what a place is, as the search folds them (fold() below: й is и).
 GENERIC = {
+    "кафе", "магазин", "аптека", "мужскои салон", "чаихана", "чаихана кальянная", "шашлычная",
     "abide", "aptek", "apteka", "atelye", "avtovagzal", "ayaqqabi", "bag", "bank", "bar",
     "bazar", "belediyye", "berber", "berberxana", "cafe", "carousel", "cayxana", "cay evi",
     "cimerlik", "dayanacaq", "defterxana", "dua evi", "elektrik yarimstansiya", "etriyyat",
@@ -180,6 +183,9 @@ GENERIC = {
     "tikinti materiallari", "trenajor", "tualet", "universitet", "usaq bagcasi",
     "usaq geyimi", "xestexana", "yataqxana", "zoo magaza", "zoo market",
 }
+# A building's word and its number, or the word alone ("Bina 1", "Корпус № 2", "ev 111a"),
+# as fold() writes it.
+NUMBERED = re.compile(r"^(?:bina|blok|block|korpus|building|корпус|блок|дом|здание|ev)(?: \d+[a-z]?)?$")
 # Categories whose names are proper names however plain they look ("Avtovağzal" station).
 KEEP_PLAIN_NAMES = {"metro", "rail", "settlement", "area"}
 # Larger features are mapped as a node and an outline further apart.
@@ -197,6 +203,22 @@ NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az",
 CORRECTIONS = [
     ("n3755614407", "name:en", "Heydar Aliyev mafia boss grave", None,
      "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
+    ("w630137385", "*", "Корупс № 1", None,
+     "the first of a university's numbered buildings, misspelt; NUMBERED leaves out Корпус № 2 to 5"),
+    # A word in two alphabets cannot be typed on either keyboard (mixed() names them).
+    ("n4481359889", "name", "Araя Market / Babək", "Araz Market / Babək",
+     "typed in the Russian keyboard layout, where я is z; its website is arazmarket.az"),
+    ("n9943368707", "name", "Leon Palaсу Şadlıq Sarayı", "Leon Palace Şadlıq Sarayı",
+     "typed in the Russian keyboard layout, where с and у are c and e"),
+    ("n4212308706", "name", "Lotos Ticarət Mərkəzi \\ 8-сш ль", "Lotos Ticarət Mərkəzi \\ 8-ci km",
+     "typed in the Russian keyboard layout, where сш ль is ci km: the 8-ci km district"),
+    ("n3950438053", "name:ru", "Бакe-Пассажирская", "Баку-Пассажирская",
+     "typed in the Latin layout, where e is у: Baku's central station"),
+    ("n11750428580", "name", "У DЯDИ МАКСА", "У ДЯДИ МАКСА", "a Latin D for the Cyrillic Д"),
+    ("n10832269743", "name", "Tomponaj vэ Neft Layları İdarəsi", "Tomponaj və Neft Layları İdarəsi",
+     "the Cyrillic э for ə"),
+    ("n13785626480", "name:ru", "Kнижное кафе", "Книжное кафе", "a Latin K for the Cyrillic К"),
+    ("n2629778353", "name:ru", "Tехнический Колледж", "Технический Колледж", "a Latin T for the Cyrillic Т"),
 ]
 # Outlines placed at a feature inside them rather than at their centre: (the feature it
 # is placed at, why). The build stops if either is missing from the answer, or the one is
@@ -229,6 +251,7 @@ REVIEW = re.compile(
     ")")
 SCHWA = re.compile("[\u04d9\u04d8]")  # Cyrillic schwas, typed for the Latin letter
 CYRILLIC = re.compile("[\u0400-\u04ff]")
+LATIN = re.compile("[A-Za-z\u00c0-\u024f\u0259]")
 APOSTROPHES = re.compile("['`\u00b4\u02bc\u2018\u2019]")
 
 
@@ -371,10 +394,22 @@ def names(t):
 
 
 def plain(name):
-    """Whether a name says only what the place is, or has no letters. A cash machine
-    ("Kapital Bank ATM") is not a bank one can go into either."""
+    """Whether a name says only what the place is, is a building's number, or has no
+    letters. A cash machine ("Kapital Bank ATM") is not a bank one can go into either."""
     words = fold(name).split()
-    return " ".join(words) in GENERIC or sum(c.isalpha() for c in name) < 2 or "atm" in words
+    return (" ".join(words) in GENERIC or bool(NUMBERED.match(" ".join(words)))
+            or sum(c.isalpha() for c in name) < 2 or "atm" in words)
+
+
+def dacha(category, name):
+    """Whether a place is someone's country house mapped as a guest house ("дача друга
+    рашида", a friend's dacha)."""
+    return category == "hotel" and "дача" in fold(name).split()
+
+
+def mixed(name):
+    """The words of a name in both alphabets ("Araя"), which neither keyboard can type."""
+    return [w for w in re.findall(r"[^\W\d_]+", name) if LATIN.search(w) and CYRILLIC.search(w)]
 
 
 def notable(t):
@@ -550,10 +585,11 @@ def build(path):
         sys.exit(f"{path}: read from a database of {read}, before the snapshot ({SNAPSHOT})")
     # The ways and relations come twice: with their tags and centre, then with their
     # bounding box alone (QUERY's last output).
-    elements, stale = correct([e for e in answer["elements"] if "tags" in e])
+    features = [e for e in answer["elements"] if "tags" in e]
+    elements, stale = correct(features)
     bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
 
-    places, plain_names, outside = [], Counter(), []
+    places, plain_names, dachas, outside = [], Counter(), [], []
     for e in elements:
         t = e.get("tags", {})
         cat = category(t) if t.get("name") else None
@@ -565,6 +601,9 @@ def build(path):
         shown, others = named
         if cat not in KEEP_PLAIN_NAMES and plain(shown):
             plain_names[fold(shown)] += 1
+            continue
+        if dacha(cat, shown):
+            dachas.append(shown)
             continue
         if not any(c.isalpha() for c in shown):
             continue
@@ -602,8 +641,9 @@ def build(path):
     ]) + "\n}\n", encoding="utf-8")
     counts = Counter(p["category"] for p in places)
     print(f"wrote {OUT}: {len(places)} places ({OUT.stat().st_size / 1e6:.2f} MB) from "
-          f"{len(elements)} features of {source['snapshot']}; left out {sum(plain_names.values())} "
-          f"with a plain name and {len(outside)} centred outside the area ({', '.join(outside)})")
+          f"{len(features)} features of {source['snapshot']}; left out {sum(plain_names.values())} "
+          f"with a plain name, {len(dachas)} dachas mapped as guest houses and {len(outside)} centred "
+          f"outside the area ({', '.join(outside)})")
     print("  " + ", ".join(f"{cat} {counts[cat]}" for cat in LABELS))
     # Settlements and areas are regions, whose centre is as good a point as any.
     large = sorted(((km((b["minlat"], b["minlon"]), (b["maxlat"], b["maxlon"])), p) for p in places
@@ -617,6 +657,8 @@ def build(path):
           f"{', '.join(missing) or 'none'}")
     review = to_review(places)
     print(f"  {len(review)} names to read for vandalism (REVIEW): {', '.join(review)}")
+    slips = [f"{n} ({p['id']})" for p in places for n in [p["name"], *p["aliases"]] if mixed(n)]
+    print(f"  {len(slips)} names with a word in both alphabets, to correct in CORRECTIONS: {', '.join(slips) or 'none'}")
 
 
 def main(argv):

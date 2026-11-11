@@ -438,7 +438,7 @@ section together. The file is re-included in `.gitignore`, as metro.json is, and
 The start and destination pickers offer named places beside the stops: malls, markets,
 restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
 government offices, embassies, banks, sights, metro stations, settlements and more,
-12,658 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+12,633 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
 mərkəzi"). This is phase 1 of 2. A chosen place stands for the stop nearest it, within
 600 m, exactly as the location button's point does: the journey starts or ends at that
 stop, and a note gives the straight-line distance to it and says that walk is not
@@ -472,9 +472,11 @@ a hospital that is also a building is a hospital); parking, fuel, pharmacies, ca
 corner shops, industry and named buildings with no other tag get none. A place's name is
 `name:az`, else `name`. `name`, `name:ru`, `name:en`, `alt_name`, `old_name`,
 `short_name`, `official_name` and `brand`, with their `:az` and `:ru` forms, are searched
-as its other names, so "Ganjlik Mall" and "Гянджлик" find Gənclik. 672 features were left
+as its other names, so "Ganjlik Mall" and "Гянджлик" find Gənclik. 693 features were left
 out because their name only says what they are ("Kafe", "Market", "Məscid", "Uşaq
-bağçası") or has no letters, which no list could tell apart, and one, Yaşma Bağları,
+bağçası", "Шашлычная"), is a building's number ("Bina 1", "Корпус № 2", "ev 111a") or has
+no letters, which no list could tell apart; three guest houses named a dacha ("дача друга
+рашида", a friend's dacha), which are someone's country house; and one, Yaşma Bağları,
 because its centre is outside the area. Two features of one category and one name mapped
 twice, a mall's point and its outline or a town's point and its boundary, are one place
 when they lie within 300 m (1 km for parks, beaches and residential complexes, 1.5 km for
@@ -508,23 +510,30 @@ name and other name with a word from `REVIEW` (insults, profanity, crime and pol
 English, Azerbaijani and Russian) for a person to read: four on 11 November, none of them
 vandalism (the café Mafiya's three names and the anti-corruption directorate's English
 name). The review that found the grave's name read all 12,658 places and found no other.
-`ALIASES` adds the names people search a well-known place by that OpenStreetMap does not
-have, each with where the name is used: the airport is also "Aeroport", "Hava limanı",
-"Airport" and "Аэропорт", which in Baku mean no other (OpenStreetMap names the places
-around it VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB
-Aeroport). Before them "aeroport" listed a clinic first, and "airport" the Aeroekspress
-stop in town.
+Nine corrections more: the first of a university's numbered buildings, misspelt "Корупс №
+1" (the rule above leaves out the other four), and eight names typed partly in the other
+alphabet, which neither keyboard finds: "Araя Market" is Araz Market (я is z in the
+Russian keyboard layout), "Leon Palaсу" Leon Palace and "8-сш ль" 8-ci km the same way,
+and a Latin K, T, D or e stands in a Russian word. The build names every word in both
+alphabets, to be corrected so, and `places.test.ts` fails on one. Two places that quote
+the film The Diamond Arm ("Цигель Цигель", "Аптека") are not jokes: they mark where it
+was filmed in İçərişəhər, which the Old City's tours visit, and stay. `ALIASES` adds the
+names people search a well-known place by that OpenStreetMap does not have, each with
+where the name is used: the airport is also "Aeroport", "Hava limanı", "Airport" and
+"Аэропорт", which in Baku mean no other (OpenStreetMap names the places around it VIP
+terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport). Before
+them "aeroport" listed a clinic first, and "airport" the Aeroekspress stop in town.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
-travel to (electronics, clothes, furniture, books and the like), 1,559 restaurants and
-fast-food places, 1,198 government offices, 1,144 cafés, 1,032 supermarkets, 634
-schools, 480 residential complexes, 445 offices, 427 hotels, 398 hospitals, 388
-kindergartens, 388 sights, 256 post offices, 242 banks, 230 clinics, 222 sports venues,
-216 parks, 210 cultural centres and libraries, 199 places of worship, 161 areas, 145
-malls, 133 settlements, 123 colleges, 83 universities, 66 embassies, 66 theatres and
-cinemas, 66 amusement places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27
-metro stations, 15 bus stations, 10 ports, 8 airport features and 4 squares.
-`places.test.ts` pins each count, the snapshot date, the header and the shape.
+travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
+fast-food places, 1,198 government offices, 1,142 cafés, 1,032 supermarkets, 634 schools,
+468 residential complexes, 445 offices, 423 hotels, 398 hospitals, 388 kindergartens, 388
+sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 216 parks, 210
+cultural centres and libraries, 199 places of worship, 161 areas, 145 malls, 133
+settlements, 123 colleges, 78 universities, 66 embassies, 66 theatres and cinemas, 66
+amusement places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27 metro
+stations, 15 bus stations, 10 ports, 8 airport features and 4 squares. `places.test.ts`
+pins each count, the snapshot date, the header and the shape.
 
 **ODbL.** `places.json` is a derived database. Its header records the credit, the
 licence, the snapshot's timestamp, the day it was read, the query and the SHA-256 of the
