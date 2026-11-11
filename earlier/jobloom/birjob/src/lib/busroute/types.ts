@@ -85,7 +85,7 @@ export interface BusLineDetail {
   coordinates: Array<{ latitude: number; longitude: number }>;
 }
 
-/** A straight-line walking connection of at most 300 m. */
+/** A straight-line walking connection of at most WALK_RADIUS_KM (geo.ts). */
 export interface WalkingEdge {
   from_stop_id: number;
   to_stop_id: number;

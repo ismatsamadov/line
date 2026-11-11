@@ -40,7 +40,7 @@ export interface NearbyBikeParking extends BikeParking {
   distance: number;
 }
 
-/** The rack nearest a point, if one is within a walk (300 m, as every walk here). */
+/** The rack nearest a point, if one is within a walk (WALK_RADIUS_KM, as every walk here). */
 export function nearestBikeParking(
   latitude: number, longitude: number, parking: readonly BikeParking[] = BIKE.parking,
 ): NearbyBikeParking | null {
