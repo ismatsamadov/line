@@ -252,9 +252,10 @@ function shareLengths(points: Array<LatLng | undefined>, lengths: Array<number |
 }
 
 /**
- * The recorded route lines, or none. They only draw rides along the road, so a
- * failed read logs and leaves every ride straight between its stops instead of
- * failing the graph and, with it, every search.
+ * The recorded route lines, or none. They draw rides along the road and tell a
+ * misplaced stop (shareLengths), so a failed read logs and leaves every ride straight
+ * between its stops, timed as stored, instead of failing the graph and, with it,
+ * every search.
  */
 async function loadShapes(): Promise<Map<string, LatLng[]>> {
   try {
