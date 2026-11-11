@@ -215,6 +215,17 @@ describe('searchPlaces (#720)', () => {
     expect(searchPlaces(index, 'ada')[0]).not.toHaveProperty('alias');
   });
 
+  it('tries a query that matches nothing again without its spaces, against names without theirs', () => {
+    expect(searchPlaces(index, 'gənclikmall')).toMatchObject([{ id: 'w2', rank: 0 }]);
+    expect(searchPlaces(index, 'ganjlikmall')).toMatchObject([{ id: 'w2', rank: 0, alias: 'Ganjlik Mall' }]);
+    expect(searchPlaces(index, 'gənc likma').map((p) => [p.id, p.rank])).toEqual([['w2', 1], ['n3', 3]]); // Yeni Gənclik Market
+    expect(ids('likmall')).toEqual(['w2']); // four letters or more: somewhere in the name
+    expect(ids('ikm')).toEqual([]);
+    // A query that matches with its spaces keeps that match: "Adapark" stays a looser one.
+    const two = buildPlaceIndex({ labels, places: [row('n1', 'Ada Park', 'sight'), row('n2', 'Adapark', 'sight')] });
+    expect(searchPlaces(two, 'ada park').map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['n2', 3]]);
+  });
+
   it('puts the weightier category first among equal matches, and the nearer place among equals', () => {
     expect(ids('bravo')).toEqual(['n4', 'n5']); // the same: then by id
     expect(ids('bravo', { near: { latitude: 40.4, longitude: 49.9 } })).toEqual(['n5', 'n4']);
@@ -246,6 +257,8 @@ describe('searchPlaces (#720)', () => {
     }
     expect(first('nerimanov')).toMatchObject({ name: 'Nəriman Nərimanov', category: 'metro' });
     expect(first('28 mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
+    expect(first('28mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
+    expect(first('parkbulvar')).toMatchObject({ name: 'Park Bulvar', category: 'mall', rank: 0 });
     expect(first('hazi aslanov')).toMatchObject({ name: 'Həzi Aslanov', category: 'metro' });
     expect(searchPlaces(real, 'гянджлик').slice(0, 2)).toMatchObject([
       { name: 'Gənclik', category: 'metro', alias: 'Гянджлик' }, { name: 'Gənclik Mall', alias: 'Гянджлик Мол' },

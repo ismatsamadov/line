@@ -74,6 +74,8 @@ interface Entry {
   labelWords: string[];
   /** All of the above in one string: a query word missing from it cannot match. */
   haystack: string;
+  /** Every name folded with its spaces taken out, for a query typed without them. */
+  compact: string[];
   weight: number;
 }
 
@@ -93,6 +95,7 @@ export function buildPlaceIndex(raw: unknown): PlaceIndex {
       place: { id, name, category, label, latitude, longitude },
       others, names, words: names.map((n) => n.split(" ")), labelWords,
       haystack: `${names.join(" ")} ${labelWords.join(" ")}`,
+      compact: names.map((n) => n.replaceAll(" ", "")),
       weight: (WEIGHT[category] ?? 0) + (notable ? NOTABLE : 0),
     };
   });
@@ -113,10 +116,20 @@ function rankLoosely(queryWords: string[], name: string, words: string[], labelW
     || (q.length >= 4 && name.includes(q)));
 }
 
+/** How well a name with its spaces taken out matches the query taken so: as the name
+ *  itself, its start, or, four letters or more, somewhere in it. */
+function rankCompact(query: string, name: string): number {
+  if (name === query) return 0;
+  if (name.startsWith(query)) return 1;
+  return query.length >= 4 && name.includes(query) ? 3 : Infinity;
+}
+
 /**
  * The best places for what a person typed: exact names, then names that start with it,
  * then names whose words start with its words in any order, then looser matches, with a
- * station, an airport or a mall a step up from its words' match (HUBS). Among
+ * station, an airport or a mall a step up from its words' match (HUBS). A query that
+ * matches nothing is tried again without its spaces against names without theirs, so
+ * that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
  * equal matches a match on the shown name comes before one on another name, then the
  * category's weight, then, given `near`, the nearer place: 91 supermarkets are named
  * "Bravo", and the one near the other end of the journey is the likelier one. A query
@@ -130,6 +143,11 @@ export function searchPlaces(
   if (q.length < 2) return [];
   const queryWords = q.split(" ");
   const found: Array<{ entry: Entry; rank: number; which: number; distance: number }> = [];
+  const add = (entry: Entry, rank: number, which: number) => {
+    if (rank > 1 && HUBS.has(entry.place.category)) rank--;
+    const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
+    found.push({ entry, rank, which, distance });
+  };
   for (const entry of index.entries) {
     if (!queryWords.every((w) => entry.haystack.includes(w))) continue;
     let rank = Infinity, which = 0;
@@ -142,9 +160,18 @@ export function searchPlaces(
       if (which < 0) continue;
       rank = 3;
     }
-    if (rank > 1 && HUBS.has(entry.place.category)) rank--;
-    const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
-    found.push({ entry, rank, which, distance });
+    add(entry, rank, which);
+  }
+  if (found.length === 0) {
+    const compact = q.replaceAll(" ", "");
+    for (const entry of index.entries) {
+      let rank = Infinity, which = 0;
+      for (let i = 0; i < entry.compact.length && rank > 0; i++) {
+        const r = rankCompact(compact, entry.compact[i]);
+        if (r < rank) { rank = r; which = i; }
+      }
+      if (rank < Infinity) add(entry, rank, which);
+    }
   }
   found.sort((a, b) => a.rank - b.rank || Number(a.which > 0) - Number(b.which > 0)
     || b.entry.weight - a.entry.weight || a.distance - b.distance

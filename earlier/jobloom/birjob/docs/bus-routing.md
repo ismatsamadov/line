@@ -566,16 +566,18 @@ inside the name or the category's own name ("gənclik metro"). A metro or railwa
 an airport, a bus station or a mall counts a step better from a words' match down, though
 never as the name itself, and the route sends that rank (`HUBS`): strictly by match,
 "nerimanov" listed eight courts, offices and a park whose names start with Nərimanov, and
-not the station Nəriman Nərimanov, whose second word it is, which now comes first. Among
-equal matches a match on the shown name comes before one on another name, then the
-weightier category (a metro station, airport or mall before a supermarket or a café, and
-a feature with a Wikidata entry a little higher), then, given `near`, the nearer place,
-then the shorter name. The pickers send the journey's other end as `near`, so of the 91
-supermarkets named "Bravo" the ones near it come first. A query that folds to under two
-letters finds nothing. zod refuses an empty query, one over 100 characters and a
-malformed point or one outside the area with a 400 before any search. If the index cannot
-be built the route answers 200 with no places and `degraded: true`, uncached, and the
-pickers say place search is unavailable and keep every stop. Answers are cached for a
+not the station Nəriman Nərimanov, whose second word it is, which now comes first. A
+query that matches nothing is tried again without its spaces against the names without
+theirs, so "28mall" and "parkbulvar" find 28 Mall and Park Bulvar; typos are not looked
+for. Among equal matches a match on the shown name comes before one on another name, then
+the weightier category (a metro station, airport or mall before a supermarket or a café,
+and a feature with a Wikidata entry a little higher), then, given `near`, the nearer
+place, then the shorter name. The pickers send the journey's other end as `near`, so of
+the 91 supermarkets named "Bravo" the ones near it come first. A query that folds to
+under two letters finds nothing. zod refuses an empty query, one over 100 characters and
+a malformed point or one outside the area with a 400 before any search. If the index
+cannot be built the route answers 200 with no places and `degraded: true`, uncached, and
+the pickers say place search is unavailable and keep every stop. Answers are cached for a
 day, like the stop and bus lists: the data changes only with a deploy. Middleware hands
 the path to its route and robots.txt keeps `/api/` out of the index
 (`placesEdge.test.ts`).
