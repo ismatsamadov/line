@@ -95,9 +95,9 @@ export default function Picker<T extends PickerItem>({ label, placeholder, searc
       </label>
       {selected ? (
         <div className={`flex min-h-[58px] items-center gap-2 rounded-xl border bg-white px-3 ${active ? "border-orange-300" : "border-gray-200"}`}>
-          <button ref={selectedRef} type="button" onClick={edit} aria-label={`${label}: ${selected.name}. Dəyişmək üçün seçin`} className="min-w-0 flex-1 py-2 text-left focus-visible:outline-orange-500">
+          <button ref={selectedRef} type="button" onClick={edit} aria-label={`${label}: ${selected.name}. Dəyişmək üçün seçin`} aria-describedby={`${id}-detail`} className="min-w-0 flex-1 py-2 text-left focus-visible:outline-orange-500">
             <span className="block truncate text-sm font-semibold text-gray-900">{selected.badge && <span className="mr-2 rounded bg-blue-100 px-1.5 py-0.5 text-blue-800">{selected.badge}</span>}{selected.kind === "place" && <MapPinned aria-hidden="true" className="mr-1.5 inline h-4 w-4 -translate-y-px text-orange-600" />}{selected.kind === "here" && <LocateFixed aria-hidden="true" className="mr-1.5 inline h-4 w-4 -translate-y-px text-indigo-600" />}{selected.name}</span>
-            <span className="block truncate text-xs text-gray-500">{selected.detail || "Dayanacağı dəyişmək üçün toxunun"}</span>
+            <span id={`${id}-detail`} className="block truncate text-xs text-gray-500">{selected.detail || "Dayanacağı dəyişmək üçün toxunun"}</span>
           </button>
           <button type="button" onClick={edit} aria-label={`${label} seçimini sil`} className="grid h-11 w-11 shrink-0 place-items-center rounded-lg text-gray-500 hover:bg-gray-100 focus-visible:outline-orange-500"><X className="h-4 w-4" /></button>
         </div>

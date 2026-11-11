@@ -70,4 +70,13 @@ describe('the end picker (#720)', () => {
     view.render(props());
     expect(rows()).toEqual(['pv1']);
   });
+
+  it("reads a chosen end's detail with its name", () => {
+    const { view, base } = picker();
+    view.render({ ...base, selected: { key: 'pw1', name: 'Gənclik Mall', detail: 'Ticarət mərkəzi', kind: 'place' } });
+    const [button] = view.find(el => el.type === 'button' && typeof el.props['aria-describedby'] === 'string');
+    const [detail] = view.find(el => el.props.id === button.props['aria-describedby']);
+    expect(button.props['aria-label']).toBe('Haradan: Gənclik Mall. Dəyişmək üçün seçin');
+    expect(detail.props.children).toBe('Ticarət mərkəzi');
+  });
 });
