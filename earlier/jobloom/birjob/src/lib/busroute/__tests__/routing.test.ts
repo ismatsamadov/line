@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { findRoute } from '../routing';
+import { WALK_RADIUS_KM } from '../geo';
 import type { GraphEdge } from '../types';
 import { graph, RED, ride, train, walk } from './fixtures';
 
@@ -69,7 +70,14 @@ describe('minimum-boardings routing (#664)', () => {
     expect(busIds(route)).toEqual([]);
     expect(route.totalTransfers).toBe(0);
     expect(route.totalStops).toBe(0);
-    expect(findRoute(graph({ 1: [walk(2, 0.31)] }), 1, 2)).toBeNull();
+    expect(findRoute(graph({ 1: [walk(2, WALK_RADIUS_KM + 0.01)] }), 1, 2)).toBeNull();
+  });
+
+  it('walks up to the limit to the first bus, and no further (#721)', () => {
+    // As from Azərbaycan Hava Yolları to the 28 May hub, 355 m away.
+    const route = findRoute(graph({ 1: [walk(2, 0.355)], 2: [ride(3, 10)] }), 1, 3)!;
+    expect(route.segments.map(s => s.mode)).toEqual(['walk', 'bus']);
+    expect(findRoute(graph({ 1: [walk(2, WALK_RADIUS_KM + 0.001)], 2: [ride(3, 10)] }), 1, 3)).toBeNull();
   });
 
   it('counts changing direction on the same bus number as another boarding', () => {

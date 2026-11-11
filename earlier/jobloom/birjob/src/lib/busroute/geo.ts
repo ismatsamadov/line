@@ -24,8 +24,18 @@ export function haversine(
   return EARTH_RADIUS_KM * c;
 }
 
-export const WALK_RADIUS_KM = 0.3; // 300 meters
+// The longest straight-line walk in a journey: about five minutes, the distance a
+// bus stop is usually taken to serve. It was 300 m until #721, which left the stop
+// "Azərbaycan Hava Yolları QSC" without the 28 May hub 355 m away, so the trip to
+// Sumqayıt took three buses where two go through Avtovağzal.
+export const WALK_RADIUS_KM = 0.4;
 export const WALK_SPEED_KMH = 4.5; // average walking speed
+
+// The shortest a degree of latitude and of longitude gets inside the envelope below
+// (up to 41.5° N). Spatial searches size their cells and boxes with them, so any
+// pair within a walk falls in neighbouring cells.
+export const MIN_KM_PER_DEGREE_LAT = 110.5;
+export const MIN_KM_PER_DEGREE_LON = 83;
 
 /** The reference network covers Baku and its surrounding settlements. A point
  * can be a valid world coordinate and still be corrupt here (517's 4.05° N).

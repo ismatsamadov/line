@@ -112,6 +112,18 @@ describe('transit graph', () => {
     expect(g.getEdges(3)).toEqual([]);
   });
 
+  it("walks from Azərbaycan Hava Yolları to the 28 May hub, 355 m away (#721)", async () => {
+    // Stops 1343 and 105 as AYNA places them, and a stop 449 m east of 1343 and 416 m
+    // from 105, beyond a walk from either.
+    db.queryStopDetails.mockResolvedValue([stop(1343, 40.376582, 49.848714), stop(105, 40.37937, 49.850749), stop(7, 40.376582, 49.854015)]);
+    db.queryBusStops.mockResolvedValue([]);
+    const g = await (await import('../graph')).getGraph();
+    const walks = (id: number) => g.getEdges(id).filter(e => e.kind === 'walk' && !isMetroStation(e.toStopId));
+    expect(walks(1343)).toEqual([expect.objectContaining({ toStopId: 105, distance: expect.closeTo(0.355, 3) })]);
+    expect(walks(105).map(e => e.toStopId)).toEqual([1343]);
+    expect(walks(7)).toEqual([]);
+  });
+
   it('rebuilds walking connectivity without reading the legacy precomputed table', async () => {
     db.queryStopDetails.mockResolvedValue([stop(1, 40), stop(2, 40.001)]);
     const g = await (await import('../graph')).getGraph();

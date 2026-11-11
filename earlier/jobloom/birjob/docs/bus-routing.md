@@ -21,7 +21,7 @@ flowchart LR
 
 ## Ranking
 
-A destination directly connected by a walking edge of at most 300 m gets an
+A destination directly connected by a walking edge of at most 400 m gets an
 explicit walking-only result. Other trips are ranked lexicographically:
 
 1. Number of boardings.
@@ -122,9 +122,15 @@ transfer stop once while preserving repeated visits around loops and distinct
 walking-transfer endpoints.
 
 `walking.ts` builds bidirectional connections of at most `WALK_RADIUS_KM` from
-the same coordinates. A spatial grid covers nearby Baku stops without an all-pairs
-scan. Connections do not depend on input order or bus membership; even two stops
-served by the same line can need a walk because their directions differ. The
+the same coordinates. That limit is 400 m, about five minutes on foot and the
+distance a bus stop is usually taken to serve; it was 300 m until #721, which left
+Azərbaycan Hava Yolları QSC (stop 1343) without the 28 May hub (stop 105) 355 m
+away, so its trip to Sumqayıt took three buses where two go through Avtovağzal. A
+spatial grid covers nearby Baku stops without an all-pairs scan; its cells, and
+the boxes the metro searches around a station's exits, are sized from the limit
+for the narrowest degree of longitude in the network's area. Connections do not
+depend on input order or bus membership; even two stops served by the same line
+can need a walk because their directions differ. The
 graph no longer reads legacy `bus_walking_edges`, whose generation omitted useful
 pairs. That table kept its rows until the owner had it dropped on 2026-10-25 (#688,
 `prisma/migrations/2026-10-25_drop_retired_data.sql`); every other reference table
@@ -224,14 +230,15 @@ AYNA's stop ids end at 3,841, and the graph leaves the metro out rather than let
 stop id into that range. The stop picker does not offer stations, so journeys still
 start and end at bus stops. A ride's legs are `metro` edges with the ride's
 identity and consecutive positions, which the search continues exactly like a bus
-direction. A stop within 300 m of a station's nearest exit gets a walk to and from
-the station, measured to that exit and drawn by it (stop, exit, station); the
-minutes inside the station, escalators and passages, are not counted. The two
-pairs of stations within 300 m of each other are the interchanges, 28 May and Cəfər
-Cabbarlı (35 m) and Memar Əcəmi and Memar Əcəmi-2 (129 m), and are joined by
-walks. A walk still cannot follow a walk, so a walk to one station cannot go on to
-the next on foot. Bakmil's only exit has no bus stop within 300 m (the nearest is
-0.7 km away), so no journey uses Bakmil. If the metro cannot be built the graph is
+direction. A stop within a walk (400 m) of a station's nearest exit gets a walk to
+and from the station, measured to that exit and drawn by it (stop, exit, station);
+the minutes inside the station, escalators and passages, are not counted. The two
+pairs of stations within a walk of each other are the interchanges, 28 May and
+Cəfər Cabbarlı (35 m) and Memar Əcəmi and Memar Əcəmi-2 (129 m), and are joined by
+walks; the next closest pair is 812 m apart. A walk still cannot follow a walk, so
+a walk to one station cannot go on to the next on foot. Bakmil's only exit has no
+bus stop within a walk (the nearest is 0.7 km away), so no journey uses Bakmil.
+If the metro cannot be built the graph is
 built without it and the console says so, as with the road shapes.
 
 **Shown.** A segment has a `mode` (`bus`, `metro` or `walk`); a metro train or the
@@ -300,7 +307,7 @@ the data supports: where to leave the bicycle.
 
 **Beside a journey** (`journeyBikeParking` in `bike.ts`, called by
 `POST /api/avtobus/find`). The rack nearest the first ride's first stop or station, and
-the one nearest the last ride's last, each within the planner's 300 m walk. A walk before
+the one nearest the last ride's last, each within the planner's walk (400 m). A walk before
 the first ride or after the last is not counted, since the bicycle takes its place, and a
 journey on foot gets none. The response carries them as `bikeParking`: `boarding` and
 `alighting`, either of them null, or null altogether. If they cannot be worked out, the
@@ -353,7 +360,7 @@ Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
 bus-list failures have retry controls rather than looking like an empty network.
 
 GPS and empty-map taps choose a stop only within 600 m. That selection radius is
-separate from the routing graph's 300 m walking-transfer limit. The GPS selection
+separate from the routing graph's 400 m walking-transfer limit. The GPS selection
 shows the approximate distance to its stop and says that this access walk is not
 included in the itinerary's movement time. A location callback is invalidated by
 later selections or a mode change, so delayed GPS cannot replace a newer origin.
