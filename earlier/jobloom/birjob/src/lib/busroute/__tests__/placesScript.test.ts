@@ -10,7 +10,8 @@ import { normalizeSearch } from '../searchText';
 
 const SCRIPT = fileURLToPath(new URL('../../../../scripts/bus/build_places_json.py', import.meta.url));
 
-/** Run `code` with the script imported as `b` (its main() does not run), JSON in and out. */
+/** Run `code` with the script imported as `b` (its main() does not run), JSON in and out.
+ *  -B: no bytecode written into scripts/bus/__pycache__ by a test run. */
 function python(code: string, input: unknown = null): unknown {
   const program = [
     'import importlib.util, json, sys',
@@ -20,7 +21,7 @@ function python(code: string, input: unknown = null): unknown {
     'data = json.load(sys.stdin)',
     code,
   ].join('\n');
-  const run = spawnSync('python3', ['-I', '-c', program, SCRIPT], { input: JSON.stringify(input), encoding: 'utf8' });
+  const run = spawnSync('python3', ['-I', '-B', '-c', program, SCRIPT], { input: JSON.stringify(input), encoding: 'utf8' });
   expect(run.stderr).toBe('');
   expect(run.status).toBe(0);
   return JSON.parse(run.stdout);
