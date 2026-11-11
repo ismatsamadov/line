@@ -484,7 +484,18 @@ names, plus the names of the OpenStreetMap station each one matches (Koroğlu is
 found as Məşədi Əzizbəyov). A way or a relation sits at the centre Overpass gives it, the
 middle of its bounding box, to five decimals. The query asks for the bounding boxes too,
 and the build names every outline over 2 km across that is not a settlement or an area
-(15), so that a person can check its centre is somewhere one can go.
+(14), so that a person can check its centre is somewhere one can go. The airport's was
+not: its outline is 4 by 6 km, and its centre, on the airfield, was 1,027 m from the
+nearest stop, so the place people choose for "aeroport" could not be reached. `PLACED_AT`
+puts it at Terminal 1, its international terminal, 150 m from the stop where the H1 bus
+starts; the build stops if either goes missing or the terminal leaves the airport's
+bounding box. The airport keeps its own place, under the names people type, and Terminal
+1 its own. No other airport, port or beach without a stop within 600 m is that case: 11
+are mapped as points, and the outlines' whole bounding boxes are over 500 m from a served
+stop (the beach clubs of the north shore lie that far below the coast road), save Qala
+Aerodromu, a military air base with no public entrance, and two IDEA public beaches on
+the north shore, strips of 820 and 930 m whose bounding boxes come within 340 and 520 m
+of a stop, with nothing mapped inside them to place them at.
 
 **Corrections.** What a person decided after reading the data is `CORRECTIONS` in the
 script: a feature, a tag, the value as mapped, the value used instead or none, and why;
@@ -497,6 +508,12 @@ name and other name with a word from `REVIEW` (insults, profanity, crime and pol
 English, Azerbaijani and Russian) for a person to read: four on 11 November, none of them
 vandalism (the café Mafiya's three names and the anti-corruption directorate's English
 name). The review that found the grave's name read all 12,658 places and found no other.
+`ALIASES` adds the names people search a well-known place by that OpenStreetMap does not
+have, each with where the name is used: the airport is also "Aeroport", "Hava limanı",
+"Airport" and "Аэропорт", which in Baku mean no other (OpenStreetMap names the places
+around it VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB
+Aeroport). Before them "aeroport" listed a clinic first, and "airport" the Aeroekspress
+stop in town.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,559 restaurants and

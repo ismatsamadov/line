@@ -82,6 +82,12 @@ describe('places.json (#720)', () => {
       .toEqual(['n3755614407', 'HEYDƏR ƏLİYEV', 'sight', 40.36175, 49.81999, 0, ['Могила Гейдара Алиева']]);
   });
 
+  it('puts the airport at its Terminal 1, not mid-airfield (PLACED_AT in the build script)', () => {
+    const at = (id: string) => data.places.find(([placeId]) => placeId === id)!;
+    expect(at('w163717459').slice(1, 5)).toEqual(['Heydər Əliyev Beynəlxalq Aeroportu', 'airport', ...at('w372129341').slice(3, 5)]);
+    expect(at('w163717459')[6]).toEqual(expect.arrayContaining(['Aeroport', 'Hava limanı', 'Airport', 'Аэропорт']));
+  });
+
   it('holds one place per name and category where OpenStreetMap maps it twice', () => {
     // The node of a mall and its outline, the node of a town and its boundary: the
     // script's DUPLICATE_KM, larger for larger features.
@@ -204,11 +210,18 @@ describe('searchPlaces (#720)', () => {
     expect(first('ganjlik')).toMatchObject({ name: 'Gənclik', category: 'metro', alias: 'Ganjlik' });
     expect(first('ada universiteti')).toMatchObject({ name: 'ADA Universiteti', category: 'university' });
     expect(first('bakı dövlət universiteti')).toMatchObject({ name: 'Bakı Dövlət Universiteti' });
-    expect(first('heydər əliyev beynəlxalq aeroportu')).toMatchObject({ category: 'airport' });
     expect(first('port baku')).toMatchObject({ name: 'Port Baku', category: 'mall' });
     expect(first('qiz qalasi')).toMatchObject({ name: 'Qız Qalası', category: 'sight' });
     expect(first('mərdəkan')).toMatchObject({ name: 'Mərdəkan', category: 'settlement' });
     expect(searchPlaces(real, "mcdonald's")).toHaveLength(8);
+    // The airport is the first answer for the words people use for it, and sits by a stop
+    // a bus serves: Beynəlxalq Hava Limanı Terminal 1 (AYNA code 1001585), where the H1
+    // starts. At its outline's centre, on the airfield, the nearest stop was 1,027 m away.
+    for (const query of ['аэропорт', 'airport', 'aeroport', 'hava limanı', 'heydər əliyev beynəlxalq aeroportu']) {
+      const airport = searchPlaces(real, query)[0];
+      expect(airport, query).toMatchObject({ id: 'w163717459', name: 'Heydər Əliyev Beynəlxalq Aeroportu', category: 'airport' });
+      expect(haversine(airport.latitude, airport.longitude, 40.464605, 50.052728), query).toBeLessThan(0.6);
+    }
     // An apostrophe joins its word: "papa johns" found none of the six before.
     expect(searchPlaces(real, 'papa johns').map((p) => p.alias ?? p.name)).toEqual(Array(6).fill("Papa John's"));
     expect(searchPlaces(real, 'mcdonalds').map((p) => p.name)).toEqual(Array(8).fill("McDonald's"));

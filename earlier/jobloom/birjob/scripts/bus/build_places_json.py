@@ -38,7 +38,8 @@ Standard library only. What it decides, so that the planner does not have to:
 - A way or a relation is placed at its centre as Overpass gives it, the middle of its
   bounding box. Coordinates keep five decimals (about 1 m). The centre of an outline over
   LARGE_KM across can be nowhere one can go, so the build names each one for a person to
-  check; the bounding boxes come in the query's last output.
+  check; the bounding boxes come in the query's last output. PLACED_AT puts such a feature
+  at a feature inside it instead: the airport at its passenger terminal.
 - Two features of one category with the same name (as the search folds it) within
   DUPLICATE_KM of each other are one place: the POI node of a mall and its building, the
   node of a town and its boundary. A node is kept before an outline, whose centre can
@@ -51,6 +52,8 @@ Standard library only. What it decides, so that the planner does not have to:
   value as mapped and stops applying once OpenStreetMap changes it; the build names it.
 - Every name and other name with a word from REVIEW (insults, profanity, crime, politics)
   is printed at each build for a person to read; vandalism goes into CORRECTIONS.
+- ALIASES adds other names people search a well-known place by that OpenStreetMap does
+  not have, each with where the name is used.
 
 ODbL 4.6: places.json is a derived database. This script, its query and the snapshot's
 date (recorded in the file) are how it is produced; docs/bus-routing.md says so.
@@ -195,6 +198,22 @@ CORRECTIONS = [
     ("n3755614407", "name:en", "Heydar Aliyev mafia boss grave", None,
      "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
 ]
+# Outlines placed at a feature inside them rather than at their centre: (the feature it
+# is placed at, why). The build stops if either is missing from the answer, or the one is
+# not inside the other's bounding box.
+PLACED_AT = {
+    "w163717459": ("w372129341", "the airport's outline is 4 by 6 km and its centre is on the airfield, "
+                                 "1 km from any stop; Terminal 1, its international terminal, is where "
+                                 "the H1 bus starts"),
+}
+# Other names people search a well-known place by that OpenStreetMap does not have:
+# (the names, where they are used). One whose feature is missing from the answer is named
+# by the build, to be removed.
+ALIASES = {
+    "w163717459": (["Aeroport", "Hava limanı", "Airport", "Аэропорт"],
+                   "Baku's one passenger airport is the airport: the places around it are mapped as "
+                   "VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport"),
+}
 # Word starts a person reads every name and other name for at each refresh, as fold()
 # writes them (no diacritics, й as и): insults, profanity, crime and politics, in English,
 # Azerbaijani and Russian.
@@ -398,6 +417,33 @@ def correct(elements):
     return out, [c for c in CORRECTIONS if c not in applied]
 
 
+def place_and_name(places, elements, bounds):
+    """Move the places PLACED_AT names to the feature inside them, and add ALIASES; return
+    the ids ALIASES names that no place has."""
+    by_id = {p["id"]: p for p in places}
+    where = {e["type"][0] + str(e["id"]): point(e) for e in elements}
+    for place_id, (inside, _) in PLACED_AT.items():
+        b = bounds.get(place_id)
+        if place_id not in by_id or inside not in where or b is None:
+            sys.exit(f"PLACED_AT: {place_id} or {inside} is missing from the answer")
+        lat, lon = where[inside]
+        if not (b["minlat"] <= lat <= b["maxlat"] and b["minlon"] <= lon <= b["maxlon"]):
+            sys.exit(f"PLACED_AT: {inside} is not inside {place_id}'s outline")
+        by_id[place_id]["point"] = where[inside]
+    missing = []
+    for place_id, (extra, _) in ALIASES.items():
+        place = by_id.get(place_id)
+        if place is None:
+            missing.append(place_id)
+            continue
+        seen = {fold(n) for n in [place["name"], *place["aliases"]]}
+        for name in extra:
+            if fold(name) not in seen:
+                seen.add(fold(name))
+                place["aliases"].append(name)
+    return missing
+
+
 def to_review(places):
     """Each name and other name with a word from REVIEW, with its place."""
     return [f"{n} ({p['category']} {p['id']}{'' if n == p['name'] else ', other name of ' + p['name']})"
@@ -528,6 +574,7 @@ def build(path):
             continue
         places.append({"id": e["type"][0] + str(e["id"]), "name": shown, "category": cat, "point": point(e),
                        "notable": notable(t), "aliases": others})
+    missing = place_and_name(places, elements, bounds)
     places = dedupe(places) + metro_places(elements)
     order = list(LABELS)
     places.sort(key=lambda p: (order.index(p["category"]), fold(p["name"]), p["id"]))
@@ -560,12 +607,14 @@ def build(path):
     print("  " + ", ".join(f"{cat} {counts[cat]}" for cat in LABELS))
     # Settlements and areas are regions, whose centre is as good a point as any.
     large = sorted(((km((b["minlat"], b["minlon"]), (b["maxlat"], b["maxlon"])), p) for p in places
-                    if (b := bounds.get(p["id"])) and p["category"] not in ("metro", "settlement", "area")),
+                    if (b := bounds.get(p["id"])) and p["id"] not in PLACED_AT
+                    and p["category"] not in ("metro", "settlement", "area")),
                    key=lambda item: -item[0])
     large = [f"{p['name']} ({p['category']}, {d:.1f} km)" for d, p in large if d > LARGE_KM]
     print(f"  {len(large)} outlines over {LARGE_KM:g} km across, each at its centre: {', '.join(large)}")
     print(f"  {len(CORRECTIONS) - len(stale)} corrections applied; no longer applying, to be removed: "
-          f"{', '.join(f'{c[0]} {c[1]}' for c in stale) or 'none'}")
+          f"{', '.join(f'{c[0]} {c[1]}' for c in stale) or 'none'}; ALIASES of a missing feature: "
+          f"{', '.join(missing) or 'none'}")
     review = to_review(places)
     print(f"  {len(review)} names to read for vandalism (REVIEW): {', '.join(review)}")
 

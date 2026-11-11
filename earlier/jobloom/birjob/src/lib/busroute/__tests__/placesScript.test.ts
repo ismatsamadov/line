@@ -75,6 +75,42 @@ print(json.dumps({"tags": [e["tags"] for e in out], "stale": [c[0] for c in stal
     }
   });
 
+  it('places an outline at the feature inside it that PLACED_AT names, and adds the names ALIASES has', () => {
+    const result = python(`
+b.PLACED_AT.clear(); b.PLACED_AT["w1"] = ("w2", "a terminal")
+b.ALIASES.clear(); b.ALIASES.update({"w1": (["Aeroport", "Airport", "Big Field"], "used so"), "n9": (["X"], "gone")})
+bounds = {"w1": {"minlat": 40.0, "minlon": 50.0, "maxlat": 40.1, "maxlon": 50.1}}
+places = [{"id": "w1", "name": "Big Field", "category": "airport", "point": (40.05, 50.05), "aliases": ["Airport"]}]
+elements = [{"type": "way", "id": 2, "center": {"lat": 40.01, "lon": 50.02}, "tags": {}}]
+missing = b.place_and_name(places, elements, bounds)
+result = {"place": places[0], "missing": missing}
+elements[0]["center"] = {"lat": 40.2, "lon": 50.02}
+try:
+    b.place_and_name(places, elements, bounds)
+except SystemExit as stop:
+    result["outside"] = str(stop)
+print(json.dumps(result))`);
+    expect(result).toEqual({
+      place: { id: 'w1', name: 'Big Field', category: 'airport', point: [40.01, 50.02], aliases: ['Airport', 'Aeroport'] },
+      missing: ['n9'],
+      outside: "PLACED_AT: w2 is not inside w1's outline",
+    });
+  });
+
+  it('gives every placement and added name a reason', () => {
+    const { placed, aliases } = python('print(json.dumps({"placed": b.PLACED_AT, "aliases": b.ALIASES}))') as
+      { placed: Record<string, [string, string]>; aliases: Record<string, [string[], string]> };
+    for (const [id, [inside, why]] of Object.entries(placed)) {
+      expect(`${id} ${inside}`).toMatch(/^[nwr][1-9]\d* [nwr][1-9]\d*$/);
+      expect(why.length, id).toBeGreaterThan(10);
+    }
+    for (const [id, [names, why]] of Object.entries(aliases)) {
+      expect(id).toMatch(/^[nwr][1-9]\d*$/);
+      expect(names.length, id).toBeGreaterThan(0);
+      expect(why.length, id).toBeGreaterThan(10);
+    }
+  });
+
   it('flags for a person the names with an insult, a curse or a political word, and not the ministries', () => {
     const names = ['Heydar Aliyev mafia boss grave', 'Хуйня', 'Qəhbə', 'Corrupt regime',
       'Daxili İşlər Nazirliyi', 'Hugo Boss', 'Художественный музей', 'Воронеж', 'Gənclik Mall'];

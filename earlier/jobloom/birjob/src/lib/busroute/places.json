@@ -99,7 +99,7 @@
   ["n4396774992","Muxtarov","bus_station",40.32427,49.81806,0,[]],
   ["n3537386606","Penitensiar Xidmətin Avtonəqliyyat Təsərrüfatı","bus_station",40.42667,49.92769,0,[]],
   ["w1119938104","Sumqayıt Avtovağzalı","bus_station",40.58611,49.66369,0,[]],
-  ["w163717459","Heydər Əliyev Beynəlxalq Aeroportu","airport",40.47274,50.04697,1,["Heydər Əliyev Beynəlxalq Aeroportu (GYD)","Международный Аэропорт Баку им. Гейдара Алиева (GYD)","Heydar Aliyev International Airport","Heydər Əliyev adına beynəlxalq aeroportu"]],
+  ["w163717459","Heydər Əliyev Beynəlxalq Aeroportu","airport",40.4659,50.05224,1,["Heydər Əliyev Beynəlxalq Aeroportu (GYD)","Международный Аэропорт Баку им. Гейдара Алиева (GYD)","Heydar Aliyev International Airport","Heydər Əliyev adına beynəlxalq aeroportu","Aeroport","Hava limanı","Airport","Аэропорт"]],
   ["w190520030","Qala Aerodromu","airport",40.4076,50.2042,1,["Baku Kala Air Base"]],
   ["n1042023275","Səngəçal Aerodromu","airport",40.13179,49.46147,0,[]],
   ["r19352764","Termianl 2","airport",40.46276,50.04949,0,[]],
