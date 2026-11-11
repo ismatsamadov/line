@@ -586,10 +586,13 @@ near it come first. A query that folds to under two letters finds nothing. zod r
 empty query, one over 100 characters and a malformed point or one outside the area with a
 400 before any search. If the index cannot be built the route answers 200 with no places
 and `degraded: true`, uncached, and the pickers say place search is unavailable and keep
-every stop. No cache keeps the answers, though the route says one may for a day
-(`s-maxage`, as the stop and bus lists do): Cloudflare's cache rule leaves `/api/` out
-(`docs/owner-actions.md` §2) and browsers ignore `s-maxage`, so every search the pickers
-send reaches the route. It answers from memory: over 735 searches, every prefix of 30
+every stop. The route answers `Cache-Control: no-store`, so neither a browser nor the
+edge keeps an answer past a deploy that changes `places.json`. At first it sent the stop
+and bus lists' `s-maxage` with `stale-while-revalidate` and no `max-age`: Cloudflare's
+cache rule leaves `/api/` out (`docs/owner-actions.md` §2), but Chrome kept each answer
+and, after the data changed, showed it once more while it asked again, for up to a week
+(the airport at its old point on the airfield, on 11 November). Every search the pickers
+send reaches the route, which answers from memory: over 735 searches, every prefix of 30
 names as they are typed, the median took 0.3 ms and 99 in 100 under 2 ms (2026-11-11, on
 a laptop), and the pickers keep each answer while the page is open. Middleware hands the
 path to its route and robots.txt keeps `/api/` out of the index (`placesEdge.test.ts`).

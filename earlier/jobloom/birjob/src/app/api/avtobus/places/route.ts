@@ -25,10 +25,12 @@ export async function GET(request: NextRequest) {
   }
   try {
     const places = searchPlaces(await getPlaceIndex(), query.data.q, { near: query.data.near });
-    // The data changes only with a deploy, like the stop and bus lists.
-    return NextResponse.json({ places }, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
-    });
+    // Never kept, so no answer outlives a deploy that changes places.json. The stop and
+    // bus lists' s-maxage with stale-while-revalidate, sent at first, let Chrome keep an
+    // answer and show it once more after the data changed, for up to a week: the airport
+    // at its old point. A search takes under 2 ms here, and the pickers keep each answer
+    // while the page is open.
+    return NextResponse.json({ places }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     // Degrades open, and says so: the pickers still offer every stop, and the page tells
     // the person places could not be searched. Never cached, so the next search retries.

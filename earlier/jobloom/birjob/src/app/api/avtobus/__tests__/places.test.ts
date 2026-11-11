@@ -34,7 +34,9 @@ describe('GET /api/avtobus/places', () => {
   it('answers the best places for what was typed, with their labels and coordinates', async () => {
     const res = await get('?q=g%C9%99nclik');
     expect(res.status).toBe(200);
-    expect(res.headers.get('cache-control')).toBe('public, s-maxage=86400, stale-while-revalidate=604800');
+    // Not kept by a browser or the edge: an answer from before a deploy that changes
+    // places.json was shown once more, for up to a week, under stale-while-revalidate.
+    expect(res.headers.get('cache-control')).toBe('no-store');
     const { places } = await res.json();
     expect(places).toEqual([
       { id: 'n1', name: 'Gənclik', category: 'metro', label: 'Metro stansiyası', latitude: 40.4, longitude: 49.851, rank: 0 },
