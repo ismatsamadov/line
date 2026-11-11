@@ -14,7 +14,7 @@ stop near it and from a stop to it, counted like any walk
 ```mermaid
 flowchart LR
   P[GET /api/avtobus/places] --> Q[places.json]
-  P -->|a place's point| A
+  P -->|places that match, with their points| A
   A[Stop, place or location] --> B[POST /api/avtobus/find]
   B --> C[Validate stop IDs or points]
   C --> D[Shared graph initialization]
@@ -577,10 +577,14 @@ the 91 supermarkets named "Bravo" the ones near it come first. A query that fold
 under two letters finds nothing. zod refuses an empty query, one over 100 characters and
 a malformed point or one outside the area with a 400 before any search. If the index
 cannot be built the route answers 200 with no places and `degraded: true`, uncached, and
-the pickers say place search is unavailable and keep every stop. Answers are cached for a
-day, like the stop and bus lists: the data changes only with a deploy. Middleware hands
-the path to its route and robots.txt keeps `/api/` out of the index
-(`placesEdge.test.ts`).
+the pickers say place search is unavailable and keep every stop. No cache keeps the
+answers, though the route says one may for a day (`s-maxage`, as the stop and bus lists
+do): Cloudflare's cache rule leaves `/api/` out (`docs/owner-actions.md` §2) and browsers
+ignore `s-maxage`, so every search the pickers send reaches the route. It answers from
+memory: over 735 searches, every prefix of 30 names as they are typed, the median took
+0.3 ms and 99 in 100 under 2 ms (2026-11-11, on a laptop), and the pickers keep each
+answer while the page is open. Middleware hands the path to its route and robots.txt
+keeps `/api/` out of the index (`placesEdge.test.ts`).
 
 **In the pickers** (`usePlaceSearch.ts`, `search.ts`, `Picker.tsx`). The browser asks
 once typing pauses for 250 ms, keeps each answer while the picker is on the page, aborts a
