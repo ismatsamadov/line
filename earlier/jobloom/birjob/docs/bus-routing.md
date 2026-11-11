@@ -5,10 +5,14 @@ stops?” from the retained AYNA reference snapshot and a snapshot of the metro
 (`src/lib/busroute/metro.json`, #689). It has no schedule, vehicle positions,
 traffic or waiting-time feed. Neither snapshot refreshes automatically. The map
 also draws AYNA's bicycle lanes and racks, and a journey names the racks beside it
-(`bike.json`, [Bicycles](#bicycles-692)); nothing routes by bicycle.
+(`bike.json`, [Bicycles](#bicycles-692)); nothing routes by bicycle. The start and
+destination can also be a named place from an OpenStreetMap snapshot (`places.json`,
+[Places](#places-720)), which stands for the stop nearest it.
 
 ```mermaid
 flowchart LR
+  P[GET /api/avtobus/places] --> Q[places.json]
+  P -->|nearest stop| A
   A[Stop selection] --> B[POST /api/avtobus/find]
   B --> C[Validate integer stop IDs]
   C --> D[Shared graph initialization]
@@ -314,8 +318,9 @@ is shown as M1/M2.
 **In the graph** (`metro.ts`, added by `TransitGraph.addMetro`). Stations are nodes
 numbered from `METRO_STATION_ID_BASE` (1,000,000) in their order in `metro.json`;
 AYNA's stop ids end at 3,841, and the graph leaves the metro out rather than let a
-stop id into that range. The stop picker does not offer stations, so journeys still
-start and end at bus stops. A ride's legs are `metro` edges with the ride's
+stop id into that range. The pickers offer the stations as places (#720), but a place
+stands for the stop nearest it, so journeys still start and end at bus stops. A
+ride's legs are `metro` edges with the ride's
 identity and consecutive positions, which the search continues exactly like a bus
 direction. A stop within a walk (400 m) of a station's nearest exit gets a walk to
 and from the station, measured to that exit and drawn by it (stop, exit, station);
@@ -423,6 +428,120 @@ If what they hold changed, `bike.test.ts` fails on its counts: update them and t
 section together. The file is re-included in `.gitignore`, as metro.json is, and
 `bike.test.ts` fails if it stops being.
 
+## Places (#720)
+
+The start and destination pickers offer named places beside the stops: malls, markets,
+restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
+government offices, embassies, banks, sights, metro stations, settlements and more,
+12,658 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+mərkəzi"). This is phase 1 of 2. A chosen place stands for the stop nearest it, within
+600 m, exactly as the location button's point does: the journey starts or ends at that
+stop, and a note gives the straight-line distance to it and says that walk is not
+counted. Phase 2 will walk from the place to any of several stops near it and from
+stops near the destination to the place, counted in the time and distance and drawn on
+the map; the browser already keeps the chosen place's name and coordinates for it
+(`ChosenPlace` in `Component.tsx`).
+
+**Where the places come from.** Google's place data was ruled out: its terms forbid
+storing it and showing Places results on a map that is not Google's, and the planner
+draws OpenStreetMap tiles with Leaflet. The places are OpenStreetMap's, © OpenStreetMap
+contributors, under the Open Database Licence (ODbL) 1.0. `scripts/bus/build_places_json.py`
+sends one query to the Overpass API (overpass-api.de, with a User-Agent naming the
+planner; on a 429 or 504 it waits, for Retry-After when given, and tries at most twice
+more) for every named feature in the network's area that carries one of the tags a
+destination does: amenity, shop, office, tourism, leisure, healthcare, historic, building,
+railway and public-transport stations, aerodromes, place, beaches, retail, commercial and
+residential land, towers, lighthouses and piers. The area is the extent of AYNA's stops
+and about 2 km around it, 39.92–40.66 N and 49.37–50.39 E, inside the envelope
+`isBakuCoordinate` accepts. The answer is saved as it came and the build reads the saved
+file, so a build can be re-run on the same snapshot.
+
+**What the script keeps.** The snapshot of 11 November 2026 (OpenStreetMap data of
+06:09 UTC) had 21,770 features, 5.2 MB. A feature becomes a place when `category()` gives
+it one of the 36 categories (the first test that matches wins, so a hospital that is also
+a building is a hospital); parking, fuel, pharmacies, car repair, corner shops, industry
+and named buildings with no other tag get none. A place's name is `name:az`, else `name`.
+`name`, `name:ru`, `name:en`, `alt_name`, `old_name`, `short_name`, `official_name` and
+`brand`, with their `:az` and `:ru` forms, are searched as its other names, so "Ganjlik
+Mall" and "Гянджлик" find Gənclik. 672 features were left out because their name only
+says what they are ("Kafe", "Market", "Məscid", "Uşaq bağçası") or has no letters, which
+no list could tell apart, and one, Yaşma Bağları, because its centre is outside the area.
+Two features of one category and one name mapped twice, a mall's point and its outline or
+a town's point and its boundary, are one place when they lie within 300 m (1 km for
+parks, beaches and residential complexes, 1.5 km for areas and 5 km for settlements); the
+point is kept before the outline and takes the other's names. The 27 metro stations are
+`metro.json`'s, at its coordinates and with its names, plus the names of the
+OpenStreetMap station each one matches (Koroğlu is still found as Məşədi Əzizbəyov). A
+way or a relation sits at the centre Overpass gives it, the middle of its bounding box,
+to five decimals.
+
+The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
+travel to (electronics, clothes, furniture, books and the like), 1,559 restaurants and
+fast-food places, 1,198 government offices, 1,144 cafés, 1,032 supermarkets, 634
+schools, 480 residential complexes, 445 offices, 427 hotels, 398 hospitals, 388
+kindergartens, 388 sights, 256 post offices, 242 banks, 230 clinics, 222 sports venues,
+216 parks, 210 cultural centres and libraries, 199 places of worship, 161 areas, 145
+malls, 133 settlements, 123 colleges, 83 universities, 66 embassies, 66 theatres and
+cinemas, 66 amusement places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27
+metro stations, 15 bus stations, 10 ports, 8 airport features and 4 squares.
+`places.test.ts` pins each count, the snapshot date, the header and the shape.
+
+**ODbL.** `places.json` is a derived database. Its header records the credit, the
+licence, the snapshot's timestamp, the day it was read, the query and the SHA-256 of the
+answer it was built from; that script and this section are how it is produced, which is
+what ODbL 4.6 asks to be offered with it on request. Wherever places are listed the
+picker credits "© OpenStreetMap iştirakçıları" under them, the map's attribution says the
+same, and the page's FAQ and data notes name OpenStreetMap and the snapshot's date.
+
+**Search** (`places.ts`, `GET /api/avtobus/places?q=…&near=lat,lng`). The file is read
+on the server only. The route builds an in-memory index from it once per process, on the
+first search, and keeps no failed build, as `getGraph()` does; it answers at most eight
+places, so the browser never loads the file. Names fold as the stop search folds them
+(`searchText.ts`, shared by both: case, the Azerbaijani letters and dotted İ for a Latin
+keyboard, and the Cyrillic ә that 216 AYNA stop names type for ə), and Cyrillic stays,
+for the Russian names. The ranking: the name itself, then a name starting with the
+query, then a name whose words start with the query's words in any order, then looser
+matches, a query word of four letters or more inside the name or the category's own
+name ("gənclik metro"). Among equal matches a match on the shown name comes before one
+on another name, then the weightier category (a metro station, airport or mall before a
+supermarket or a café, and a feature with a Wikidata entry a little higher), then, given
+`near`, the nearer place, then the shorter name. The pickers send the journey's other end
+as `near`, so of the 91 supermarkets named "Bravo" the ones near it come first. A query
+that folds to under two letters finds nothing. zod refuses an empty query, one over 100
+characters and a malformed point or one outside the area with a 400 before any search.
+If the index cannot be built the route answers 200 with no places and `degraded: true`,
+uncached, and the pickers say place search is unavailable and keep every stop. Answers
+are cached for a day, like the stop and bus lists: the data changes only with a deploy.
+Middleware hands the path to its route and robots.txt keeps `/api/` out of the index
+(`placesEdge.test.ts`).
+
+**In the pickers** (`usePlaceSearch.ts`, `search.ts`, `Picker.tsx`). The browser asks
+once typing pauses for 250 ms, keeps each answer while the picker is on the page, aborts a
+superseded request and drops an answer that arrives for it, and meanwhile shows the last
+answer's places that still match what is typed. Stops and places share one list: the
+better match first, whichever it is, and a stop before a place that matches as well; a
+place's looser matches count with a stop's loosest. A place has its own pin and reads, for
+example, "Ticarət mərkəzi · dayanacağa 84 m: Gənclik m/st": the other name that found it if
+that was not the shown one, its category, and the stop it stands for, distance first so a
+phone cuts the stop's name rather than the distance. A stop reads "Dayanacaq" with its
+code. The arrow keys keep the option they chose when places arrive and move it. A place
+with no stop within 600 m says so in the list; choosing it selects nothing and says why.
+On the map a chosen place is a square in its end's colour with a dotted line to its stop.
+The view still fits the stops and the journey, not the square, which is at most 600 m away.
+
+**Not searched.** Street addresses and house numbers. On 11 November 2026 OpenStreetMap
+had 8,552 features with both a street and a house number in the whole area (an Overpass
+count, 11:45 UTC), too few for a city of Baku's size to promise a result, and the planner
+has no other address data. The FAQ says so.
+
+**Refreshing.** `python3 scripts/bus/build_places_json.py --fetch places-overpass.json`
+(one query, a few minutes; keep the answer outside the repository), then
+`python3 scripts/bus/build_places_json.py places-overpass.json`. `places.test.ts` fails on
+its counts and snapshot date, and the page's `PLACES_DATE` must move with the snapshot (a
+test compares them): update the counts, this section and the date together. The file is
+re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops
+being.
+
 ## API and UI
 
 `POST /api/avtobus/find` accepts positive PostgreSQL integer IDs. Invalid JSON,
@@ -446,6 +565,8 @@ before prefix and partial matches. Empty stop searches suggest transport hubs.
 The picker uses a labeled combobox and listbox; arrow keys select an option,
 Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
 bus-list failures have retry controls rather than looking like an empty network.
+The start and destination pickers list named places among the stops;
+[Places](#places-720) has how they are searched and what choosing one does.
 
 GPS and empty-map taps choose a stop only within 600 m. That selection radius is
 separate from the routing graph's 400 m walking-transfer limit. The GPS selection

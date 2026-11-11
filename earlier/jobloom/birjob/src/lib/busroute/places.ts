@@ -111,9 +111,9 @@ function rankLoosely(queryWords: string[], name: string, words: string[], labelW
  * The best places for what a person typed: exact names, then names that start with it,
  * then names whose words start with its words in any order, then looser matches. Among
  * equal matches a match on the shown name comes before one on another name, then the
- * category's weight, then, given `near`, the nearer place: "Bravo" has 98 branches, and
- * the one near the other end of the journey is the likelier one. A query that folds to
- * under two letters finds nothing.
+ * category's weight, then, given `near`, the nearer place: 91 supermarkets are named
+ * "Bravo", and the one near the other end of the journey is the likelier one. A query
+ * that folds to under two letters finds nothing.
  */
 export function searchPlaces(
   index: PlaceIndex, query: string,
