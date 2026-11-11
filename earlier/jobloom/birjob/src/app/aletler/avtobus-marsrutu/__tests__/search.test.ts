@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { BusLite, StopDetail } from "@/lib/busroute/types";
-import { nearestStop, normalizeSearch, searchBuses, searchStops } from "../search";
+import type { PlaceMatch } from "@/lib/busroute/places";
+import { nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
   id, name, code, latitude: 40.4, longitude: 49.85, is_transport_hub: hub,
@@ -57,6 +58,32 @@ describe("phone-friendly transit search", () => {
     expect(searchBuses(buses, "88").map(b => b.number)).toEqual(["88", "88A", "188"]);
     expect(searchBuses(buses, "").map(b => b.number)).toEqual(["2", "9", "88", "88A", "188", "H1"]);
     expect(searchBuses(buses, "may neftciler")).toHaveLength(6);
+  });
+});
+
+describe("stops and places in one list (#720)", () => {
+  const place = (id: string, name: string, rank: number, label = "Ticarət mərkəzi"): PlaceMatch => ({
+    id, name, category: "mall", label, latitude: 40.4, longitude: 49.85, rank,
+  });
+  const stops = [stop(1, "Gənclik m/st", "1001"), stop(2, "Gənclik", "1002"), stop(3, "Yeni Gənclik"), stop(4, "Hub", "", true)];
+
+  it("ranks stops with the rank the merge compares", () => {
+    expect(rankStops(stops, "gənclik")).toEqual([
+      { stop: stops[1], rank: 0 }, { stop: stops[0], rank: 1 }, { stop: stops[2], rank: 2 },
+    ]);
+    expect(rankStops(stops, "  ")).toEqual([]);
+  });
+
+  it("puts the better matches first whichever they are, a stop first among equals", () => {
+    const merged = suggestEnds(stops, "gənclik", [place("n9", "Gənclik", 0, "Metro stansiyası"), place("w2", "Gənclik Mall", 1), place("w3", "Mall Gənclik", 2), place("n4", "Gənclik metro", 3)]);
+    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["s2", "n9", "s1", "w2", "s3", "w3", "n4"]);
+    // A place's looser matches count with a stop's loosest.
+    expect(merged.at(-1)?.rank).toBe(2);
+  });
+
+  it("offers the hubs for an empty query, and places alone where no stop matches", () => {
+    expect(suggestEnds(stops, "", [place("w2", "Gənclik Mall", 1)])).toEqual([{ kind: "stop", stop: stops[3], rank: 0 }]);
+    expect(suggestEnds(stops, "28 mall", [place("w5", "28 Mall", 0)])).toEqual([{ kind: "place", place: place("w5", "28 Mall", 0), rank: 0 }]);
   });
 });
 
