@@ -1,13 +1,9 @@
 import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import { haversine } from "@/lib/busroute/geo";
+import { normalizeSearch } from "@/lib/busroute/searchText";
 
-/** Let a phone's Latin keyboard find Azerbaijani names, including dotted İ. */
-export function normalizeSearch(value: string): string {
-  return value.toLocaleLowerCase("az")
-    .replace(/ə/g, "e").replace(/ı/g, "i")
-    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, " ").trim();
-}
+// The folding the place search on the server uses too (#720).
+export { normalizeSearch };
 
 function rank(query: string, name: string, code: string): number {
   const label = normalizeSearch(name), key = normalizeSearch(code);

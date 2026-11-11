@@ -15,6 +15,15 @@ describe("phone-friendly transit search", () => {
     ["  28-May m/st. ", "28 may m st"], ["Əhmədli", "ehmedli"], ["Gənclik", "genclik"],
   ])("normalizes %s", (input, expected) => expect(normalizeSearch(input)).toBe(expected));
 
+  it("folds the Cyrillic ә AYNA types for ə, and keeps Cyrillic for the places' Russian names (#720)", () => {
+    // 216 stop names type it ("Kotal qәs."); they read "kotal q s" before, so "kotal qəs" missed them.
+    expect(normalizeSearch("Kotal qәs.")).toBe("kotal qes");
+    expect(normalizeSearch("Baş Әlәt")).toBe("bas elet");
+    expect(searchStops([stop(1, "Kotal qәs.")], "kotal qəs").map(s => s.id)).toEqual([1]);
+    expect(normalizeSearch("Гянджлик Молл")).toBe("гянджлик молл");
+    expect(normalizeSearch("Ёлка, Йод")).toBe("елка иод");
+  });
+
   it("finds ASCII spellings and reordered words", () => {
     const stops = [stop(1, "Neftçilər m/st"), stop(2, "28 May m/st"), stop(3, "İçərişəhər")];
     expect(searchStops(stops, "neftciler").map(s => s.id)).toEqual([1]);
