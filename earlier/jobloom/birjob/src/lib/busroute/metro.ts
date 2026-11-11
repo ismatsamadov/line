@@ -39,6 +39,9 @@ export type MetroData = z.infer<typeof MetroData>;
 
 export interface MetroNetwork {
   stations: StopDetail[];
+  /** Each station's exits by its id, or the station's own point where none is recorded:
+   *  a walk to a station, from a stop or from a place (#720), is measured to the nearest. */
+  exits: Map<number, LatLng[]>;
   /** Each edge with the node it leaves from. */
   edges: Array<{ from: number; edge: GraphEdge }>;
 }
@@ -90,9 +93,11 @@ export function metroNetwork(busStops: StopDetail[], raw: unknown = metroJson): 
 
   // The stops within a walk of a station's exits, measured to the nearest exit and
   // drawn by it.
+  const exitsOf = new Map<number, LatLng[]>();
   data.stations.forEach((s, i) => {
     const station = stations[i];
     const exits: LatLng[] = s.exits.length ? s.exits : [[s.latitude, s.longitude]];
+    exitsOf.set(station.id, exits);
     const lats = exits.map((e) => e[0]), lngs = exits.map((e) => e[1]);
     const south = Math.min(...lats) - LAT_MARGIN, north = Math.max(...lats) + LAT_MARGIN;
     const west = Math.min(...lngs) - LON_MARGIN, east = Math.max(...lngs) + LON_MARGIN;
@@ -119,5 +124,5 @@ export function metroNetwork(busStops: StopDetail[], raw: unknown = metroJson): 
     walk(a, b, distance);
     walk(b, a, distance);
   }
-  return { stations, edges };
+  return { stations, exits: exitsOf, edges };
 }

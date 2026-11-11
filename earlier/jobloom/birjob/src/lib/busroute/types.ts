@@ -142,6 +142,8 @@ export interface RouteSegment {
   line?: MetroLine;
   direction: number | null;
   headsign: string | null;
+  /** A walk from or to the journey's own place or location has that point as its
+   *  first or last stop, with ORIGIN_POINT_ID or DESTINATION_POINT_ID (#720). */
   stops: Array<{
     id: number;
     name: string;
@@ -172,3 +174,15 @@ export const METRO_RIDE_BUS_ID = -2;
 // Graph ids of metro stations start above every AYNA stop id (3,841 in the snapshot).
 export const METRO_STATION_ID_BASE = 1_000_000;
 export const isMetroStation = (stopId: number) => stopId >= METRO_STATION_ID_BASE;
+
+/** Where a journey starts or ends when that is not a stop: a named place or the
+ *  person's location (#720). */
+export interface JourneyPoint {
+  latitude: number;
+  longitude: number;
+  name: string;
+}
+// The ids such a point takes in a found route's stops, below every stop and station id.
+export const ORIGIN_POINT_ID = -1;
+export const DESTINATION_POINT_ID = -2;
+export const isJourneyPoint = (stopId: number) => stopId === ORIGIN_POINT_ID || stopId === DESTINATION_POINT_ID;

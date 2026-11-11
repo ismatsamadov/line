@@ -17,11 +17,20 @@
  * One walking edge (at most WALK_RADIUS_KM) is allowed between rides or at either
  * end; walking edges cannot chain into an unbounded shortcut. A directly walkable
  * destination is returned as a separate short walking journey.
+ *
+ * A journey can also start or end at a point, a named place or the person's location
+ * (#720): it walks from the point to any stop or station near it, or from one to the
+ * point (access.ts), and those walks count like any other. One search starts from all
+ * the stops near the origin and ends at any of those near the destination, so which
+ * stops a journey uses is chosen by the same rule as the rest of it. When walking the
+ * whole way costs no more than every journey that rides, the answer is the walk.
  */
 import type { TransitGraph } from "./graph";
-import type { GraphEdge, LatLng, RouteResult, RouteSegment } from "./types";
-import { WALK_RADIUS_KM } from "./geo";
+import type { GraphEdge, JourneyPoint, LatLng, RouteResult, RouteSegment, StopDetail } from "./types";
+import { DESTINATION_POINT_ID, isJourneyPoint, ORIGIN_POINT_ID, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER } from "./types";
+import { haversine, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
 import { joinLegs } from "./shape";
+import { accessWalks, type AccessGraph, type AccessOptions } from "./access";
 
 /** Minutes a boarding costs on top of the movement time it brings (#721). */
 export const BOARDING_PENALTY_MIN = 15;
@@ -162,10 +171,10 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
 
 /**
  * The cheapest journey from any of the starting labels to `target` that boards
- * at least once. Starting labels carry their own cost, so a search could also
- * begin with several walks to nearby stops.
+ * at least once, or null when none costs less than `bound`. Starting labels carry
+ * their own cost.
  */
-function cheapest(graph: RoutingGraph, starts: readonly Label[], target: number): Label | null {
+function cheapest(graph: RoutingGraph, starts: readonly Label[], target: number, bound = Infinity): Label | null {
   const best = new Map<StateKey, Label>();
   const queue = new PriorityQueue();
   for (const start of starts) {
@@ -180,11 +189,16 @@ function cheapest(graph: RoutingGraph, starts: readonly Label[], target: number)
     // Queue entries hold immutable labels; an improved label makes the old
     // entry stale, even if it was enqueued before the improvement.
     if (best.get(current.key) !== current) continue;
+    // Labels leave the queue cheapest first, so nothing left costs less (#720).
+    if (current.cost[0] >= bound) return null;
     if (current.stopId === target && current.cost[1] > 0) return current;
 
     for (const edge of graph.getEdges(current.stopId)) {
       const walking = edge.kind === "walk";
-      if (walking && (current.edge?.kind === "walk" || edge.distance > WALK_RADIUS_KM)) continue;
+      // A walk from or to the journey's own point is held to the radius its stops
+      // were found within instead (access.ts).
+      if (walking && (current.edge?.kind === "walk"
+        || (edge.distance > WALK_RADIUS_KM && !isJourneyPoint(current.stopId) && !isJourneyPoint(edge.toStopId)))) continue;
       const last = current.edge;
       const continuesRide = edge.kind !== "walk" && last !== null && last.kind !== "walk" && last.kind === edge.kind
         && last.rideId === edge.rideId && last.toSequence === edge.fromSequence;
@@ -220,4 +234,84 @@ export function findRoute(graph: RoutingGraph, source: number, target: number): 
 
   const destination = cheapest(graph, [start], target);
   return destination && reconstruct(graph, destination);
+}
+
+/** Where a journey starts or ends: a stop or station by its id, or a point (#720). */
+export type JourneyEnd = { stopId: number } | JourneyPoint;
+export type JourneyGraph = RoutingGraph & AccessGraph;
+
+// The longest walk offered instead of a ride, in a straight line: about 27 minutes.
+// Within it the walk is the answer whenever it costs no more than every journey that
+// rides, or when nothing rides there. Further, a journey that rides is the answer even
+// when its boardings cost more. On random place pairs the walk was the cheaper in 119
+// of 120 pairs within 2 km, in 66 of 120 between 2 and 3 km, and still in 17 of 120
+// beyond, as walks of 41 to 63 minutes: 15 minutes a boarding is an allowance for the
+// wait, not a measured one, and too rough to send someone on an hour's walk.
+export const MAX_WALK_ONLY_KM = 2;
+
+export interface JourneyOptions extends AccessOptions {
+  walkOnlyKm?: number;
+}
+
+export interface Journey {
+  route: RouteResult | null;
+  /** The end with no stop or station within a walk, when that is why there is no route. */
+  stranded?: "origin" | "destination";
+}
+
+/** The journey's point as a stop of its route, so reconstruct() can name and place it. */
+const pointStop = (point: JourneyPoint, id: number): StopDetail => ({
+  id, code: "", name: point.name, latitude: point.latitude, longitude: point.longitude, is_transport_hub: false,
+});
+
+/** A walk in a straight line, or by a station's exit, as metro.ts draws one. */
+const walkEdge = (from: StopDetail, to: StopDetail, distance: number, exit?: LatLng): GraphEdge => ({
+  kind: "walk", toStopId: to.id, busId: WALKING_EDGE_BUS_ID, busNumber: WALKING_EDGE_BUS_NUMBER,
+  distance, time: (distance / WALK_SPEED_KMH) * 60, fromStopName: from.name, toStopName: to.name,
+  ...(exit ? { path: [[from.latitude, from.longitude], exit, [to.latitude, to.longitude]] } : {}),
+});
+
+/**
+ * The journey between two ends, either of which may be a point (#720). Between two
+ * stops it is findRoute's. A point joins the graph as a node with walks to the stops
+ * near it, or with walks to it from the stops near it, and one search chooses among
+ * them all.
+ */
+export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEnd, options: JourneyOptions = {}): Journey {
+  if ("stopId" in from && "stopId" in to) return { route: findRoute(graph, from.stopId, to.stopId) };
+  const origin = "stopId" in from ? graph.getStopInfo(from.stopId) : pointStop(from, ORIGIN_POINT_ID);
+  const destination = "stopId" in to ? graph.getStopInfo(to.stopId) : pointStop(to, DESTINATION_POINT_ID);
+  if (!origin || !destination) return { route: null };
+  const points = new Map([origin, destination].filter((end) => isJourneyPoint(end.id)).map((end) => [end.id, end]));
+  const edges = new Map<number, GraphEdge[]>();
+  const withPoints: RoutingGraph = {
+    getStopInfo: (id) => points.get(id) ?? graph.getStopInfo(id),
+    getEdges: (id) => edges.get(id) ?? graph.getEdges(id),
+  };
+
+  // The whole way on foot boards nothing, so it wins a tie with a journey that rides.
+  const km = haversine(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
+  const minutes = (km / WALK_SPEED_KMH) * 60;
+  const walkable = km <= (options.walkOnlyKm ?? MAX_WALK_ONLY_KM);
+  const start: Label = { key: startAt(origin.id), stopId: origin.id, cost: [0, 0, 0, 0, 0], previous: null, edge: null, boarded: false };
+  const walkOnly = () => reconstruct(withPoints, {
+    key: walkedTo(destination.id, false), stopId: destination.id, previous: start,
+    edge: walkEdge(origin, destination, km), boarded: false, cost: [minutes, 0, km, km, minutes],
+  });
+  // Every journey that rides pays for a boarding, so a shorter walk needs no search.
+  if (walkable && minutes <= BOARDING_PENALTY_MIN) return { route: walkOnly() };
+
+  const away = "stopId" in from ? null : accessWalks(graph, from, "origin", options);
+  const home = "stopId" in to ? null : accessWalks(graph, to, "destination", options);
+  if (away) edges.set(origin.id, away.map((walk) => walkEdge(origin, graph.getStopInfo(walk.stopId)!, walk.distance, walk.exit)));
+  for (const walk of home ?? []) {
+    const stop = graph.getStopInfo(walk.stopId)!;
+    edges.set(stop.id, [...graph.getEdges(stop.id), walkEdge(stop, destination, walk.distance, walk.exit)]);
+  }
+  const found = cheapest(withPoints, [start], destination.id, walkable ? minutes : Infinity);
+  if (found) return { route: reconstruct(withPoints, found) };
+  if (walkable) return { route: walkOnly() };
+  if (away?.length === 0) return { route: null, stranded: "origin" };
+  if (home?.length === 0) return { route: null, stranded: "destination" };
+  return { route: null };
 }

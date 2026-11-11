@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { BOARDING_PENALTY_MIN, findRoute } from '../routing';
-import type { GraphEdge } from '../types';
+import { BOARDING_PENALTY_MIN, findJourney, findRoute, MAX_WALK_ONLY_KM } from '../routing';
+import { accessWalks } from '../access';
+import { haversine, WALK_SPEED_KMH } from '../geo';
+import type { GraphEdge, LatLng } from '../types';
 import { graph, ride, train, walk } from './fixtures';
 
 type Cost = [minutes: number, walking: number, distance: number];
@@ -50,6 +52,50 @@ function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to
     const arrival = previous.get(to);
     if (arrival && (!best || score({ boardings, cost: arrival }) < score(best))) best = { boardings, cost: arrival };
   }
+  return best;
+}
+
+/** The same rounds between two points (#720). Round one boards at a stop the origin
+ * walks to, at that walk's cost and with no other walk before it; a journey ends with
+ * a ride to a stop the destination is walked to from, and that walk, never a walk
+ * before it. Walking the whole way wins when it is within MAX_WALK_ONLY_KM and costs
+ * no more than the cheapest round. */
+function roundsBetweenPoints(lines: Line[], walks: Map<number, GraphEdge[]>, access: Map<number, Cost>, egress: Map<number, Cost>, onFoot: Cost) {
+  const withWalk = (arrivals: Map<number, Cost>) => {
+    const result = new Map(arrivals);
+    for (const [at, cost] of arrivals) for (const edge of walks.get(at) ?? []) {
+      keep(result, edge.toStopId, [cost[0] + edge.time, cost[1] + edge.distance, cost[2] + edge.distance]);
+    }
+    return result;
+  };
+  let previous = new Map(access);
+  let best: { boardings: number; cost: Cost } | null = null;
+  const score = (journey: { boardings: number; cost: Cost }) => journey.cost[0] + journey.boardings * BOARDING_PENALTY_MIN;
+  // Six stops, each reached by a ride or by a walk: a journey with the fewest boardings
+  // to anywhere boards at most twelve times.
+  for (let boardings = 1; best ? boardings * BOARDING_PENALTY_MIN <= score(best) : boardings <= 12; boardings++) {
+    const arrivals = new Map<number, Cost>();
+    for (const line of lines) for (let i = 0; i < line.legs.length; i++) {
+      const start = previous.get(line.stops[i]);
+      if (!start) continue;
+      let minutes = start[0], distance = start[2];
+      for (let j = i; j < line.legs.length; j++) {
+        minutes += line.legs[j].time;
+        distance += line.legs[j].distance;
+        keep(arrivals, line.stops[j + 1], [minutes, start[1], distance]);
+      }
+    }
+    const ends = new Map<number, Cost>();
+    for (const [id, walk] of egress) {
+      const ride = arrivals.get(id);
+      if (ride) keep(ends, 0, [ride[0] + walk[0], ride[1] + walk[1], ride[2] + walk[2]]);
+    }
+    const arrival = ends.get(0);
+    if (arrival && (!best || score({ boardings, cost: arrival }) < score(best))) best = { boardings, cost: arrival };
+    previous = withWalk(arrivals);
+  }
+  const km = onFoot[1];
+  if (km <= MAX_WALK_ONLY_KM && (!best || onFoot[0] <= score(best))) return { boardings: 0, cost: onFoot };
   return best;
 }
 
@@ -118,5 +164,71 @@ describe('routing against an independent boarding-round cost oracle', () => {
     }
     // The generated trips exercise the penalty, not only the fewest boardings.
     expect(chosenMoreThanFewest).toBeGreaterThan(10);
+  });
+});
+
+describe('journeys between points against the same oracle (#720)', () => {
+  it('agrees on the stops walked to and from, the boardings, the times and walking the whole way', () => {
+    let seed = 20261111, otherThanNearest = 0, onFoot = 0, rides = 0;
+    const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
+    // Stops and points along a strip 7.5 km long and 400 m wide, so a point has a stop
+    // or two within a walk and the walk the whole way is sometimes within its limit.
+    const somewhere = (): LatLng => [40.3 + random(675) / 10000, 49.8 + random(50) / 10000];
+    const walkCost = (km: number): Cost => [(km / WALK_SPEED_KMH) * 60, km, km];
+    for (let network = 0; network < 40; network++) {
+      const edges: Record<number, GraphEdge[]> = {};
+      const lines = Array.from({ length: 4 }, (_, i): Line => {
+        const stops = Array.from({ length: 3 + random(3) }, () => 1 + random(6));
+        const legs = stops.slice(1).map((to, sequence) => (i % 2 ? train : ride)(to, i + 1, 1 + random(30), 1 + random(5), sequence));
+        legs.forEach((leg, sequence) => (edges[stops[sequence]] ??= []).push(leg));
+        return { stops, legs };
+      });
+      const walks = new Map<number, GraphEdge[]>();
+      for (let a = 1; a <= 6; a++) for (let b = a + 1; b <= 6; b++) {
+        if (random(5) !== 0) continue;
+        const distance = random(2) ? 0.125 : 0.25;
+        for (const [from, to] of [[a, b], [b, a]]) {
+          const edge = walk(to, distance);
+          (edges[from] ??= []).push(edge);
+          walks.set(from, [...(walks.get(from) ?? []), edge]);
+        }
+      }
+      const at: Record<number, LatLng> = {};
+      for (let id = 1; id <= 6; id++) at[id] = somewhere();
+      const g = graph(edges, [1, 2, 3, 4, 5, 6], { at });
+      for (let trip = 0; trip < 15; trip++) {
+        const [oLat, oLng] = somewhere(), [dLat, dLng] = somewhere();
+        const O = { latitude: oLat, longitude: oLng, name: 'O' }, D = { latitude: dLat, longitude: dLng, name: 'D' };
+        const away = accessWalks(g, O, 'origin'), home = accessWalks(g, D, 'destination');
+        const expected = roundsBetweenPoints(lines, walks,
+          new Map(away.map(w => [w.stopId, walkCost(w.distance)])), new Map(home.map(w => [w.stopId, walkCost(w.distance)])),
+          walkCost(haversine(oLat, oLng, dLat, dLng)));
+        const actual = findJourney(g, O, D).route;
+        const context = JSON.stringify({ network, trip, O, D, lines: lines.map(l => l.stops), at });
+        expect(Boolean(actual), context).toBe(Boolean(expected));
+        if (!actual || !expected) continue;
+        const boardings = actual.segments.filter(s => s.mode !== 'walk').length;
+        const walking = actual.segments.filter(s => s.mode === 'walk').reduce((sum, s) => sum + s.distance, 0);
+        expect(boardings, context).toBe(expected.boardings);
+        expect(actual.totalTime, context).toBeCloseTo(Math.round(expected.cost[0] * 10) / 10, 8);
+        expect(walking, context).toBeCloseTo(expected.cost[1], 8);
+        expect(actual.totalDistance, context).toBeCloseTo(Math.round(expected.cost[2] * 100) / 100, 8);
+        expect(actual.segments[0].stops[0].id, context).toBe(-1);
+        expect(actual.segments.at(-1)!.stops.at(-1)!.id, context).toBe(-2);
+        for (let i = 1; i < actual.segments.length; i++) {
+          expect(actual.segments[i - 1].stops.at(-1)!.id, context).toBe(actual.segments[i].stops[0].id);
+          expect(actual.segments[i].mode === 'walk' && actual.segments[i - 1].mode === 'walk', context).toBe(false);
+        }
+        if (boardings === 0) onFoot++;
+        else {
+          rides++;
+          if (actual.segments[1].stops[0].id !== away[0].stopId) otherThanNearest++;
+        }
+      }
+    }
+    // The trips exercise the choice among several stops and the walk the whole way.
+    expect(rides).toBeGreaterThan(100);
+    expect(onFoot).toBeGreaterThan(50);
+    expect(otherThanNearest).toBeGreaterThan(10);
   });
 });

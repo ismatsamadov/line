@@ -18,6 +18,7 @@ export class TransitGraph {
   private adjacency: Map<number, GraphEdge[]> = new Map();
   private stopInfo: Map<number, StopDetail> = new Map();
   private busInfo: Map<number, Bus> = new Map();
+  private stationExits: Map<number, LatLng[]> = new Map();
   private built = false;
 
   isBuilt(): boolean {
@@ -42,6 +43,11 @@ export class TransitGraph {
 
   getAllStopIds(): number[] {
     return Array.from(this.adjacency.keys());
+  }
+
+  /** A metro station's exits, where a walk to it is measured; undefined for a stop. */
+  getStationExits(stopId: number): LatLng[] | undefined {
+    return this.stationExits.get(stopId);
   }
 
   async build(): Promise<void> {
@@ -196,6 +202,7 @@ export class TransitGraph {
         this.stopInfo.set(station.id, station);
         this.adjacency.set(station.id, []);
       }
+      this.stationExits = metro.exits;
       for (const { from, edge } of metro.edges) this.adjacency.get(from)!.push(edge);
       return metro.edges.length;
     } catch (error) {
