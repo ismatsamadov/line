@@ -354,9 +354,14 @@ export default function Component() {
     }
   }, [pickTarget, toStop, clearRoute]);
 
-  // Each picker's places put the ones nearer the journey's other end first (#720).
-  const fromPoint = useMemo((): Point | null => fromPlace ?? fromStop, [fromPlace, fromStop]);
-  const toPoint = useMemo((): Point | null => toPlace ?? toStop, [toPlace, toStop]);
+  // Each picker's places put the ones nearer the journey's other end first (#720). The
+  // search sends that point in its address, which caches and logs keep, so the person's
+  // location is never it: the named stop nearest it stands in, or nothing.
+  const namedStops = useMemo(() => stops.filter(stop => stop.name.trim()), [stops]);
+  const rankingPoint = useCallback((place: ChosenPlace | null, stop: StopDetail | null): Point | null => place?.id === HERE
+    ? servedStopNear(namedStops, place)?.stop ?? null : place ?? stop, [namedStops]);
+  const fromPoint = useMemo(() => rankingPoint(fromPlace, fromStop), [rankingPoint, fromPlace, fromStop]);
+  const toPoint = useMemo(() => rankingPoint(toPlace, toStop), [rankingPoint, toPlace, toStop]);
   // The chosen places, and the person's location, on the map.
   const mapPlaces = useMemo((): MapPlace[] => ([["from", fromPlace], ["to", toPlace]] as const).flatMap(([end, place]) => place
     ? [{ end, name: place.name, latitude: place.latitude, longitude: place.longitude, here: place.id === HERE }] : []), [fromPlace, toPlace]);
