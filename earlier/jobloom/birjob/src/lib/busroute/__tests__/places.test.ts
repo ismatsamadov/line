@@ -72,6 +72,16 @@ describe('places.json (#720)', () => {
     expect(data.places.some(([, name]) => / ATM$/i.test(name))).toBe(false);
   });
 
+  it('keeps out the name a vandal gave Heydar Aliyev\'s grave (CORRECTIONS in the build script)', () => {
+    // Its English name was an insult, and the picker showed it as the other name that
+    // matched "aliyev". The memorial keeps its own name and its Russian one.
+    for (const [id, name, , , , , aliases] of data.places) {
+      for (const n of [name, ...aliases]) expect(n, id).not.toMatch(/mafia boss/i);
+    }
+    expect(data.places.find(([id]) => id === 'n3755614407'))
+      .toEqual(['n3755614407', 'HEYDƏR ƏLİYEV', 'sight', 40.36175, 49.81999, 0, ['Могила Гейдара Алиева']]);
+  });
+
   it('holds one place per name and category where OpenStreetMap maps it twice', () => {
     // The node of a mall and its outline, the node of a town and its boundary: the
     // script's DUPLICATE_KM, larger for larger features.

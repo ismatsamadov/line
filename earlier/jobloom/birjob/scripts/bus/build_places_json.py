@@ -46,6 +46,11 @@ Standard library only. What it decides, so that the planner does not have to:
   it takes the others' names.
 - A way or a relation centred outside the network's area (BBOX), which Overpass returns
   because it reaches into the area, is left out and named.
+- What a person decided after reading the data is in CORRECTIONS, each with its reason: a
+  tag's value replaced or left out, or a whole feature left out. A correction holds the
+  value as mapped and stops applying once OpenStreetMap changes it; the build names it.
+- Every name and other name with a word from REVIEW (insults, profanity, crime, politics)
+  is printed at each build for a person to read; vandalism goes into CORRECTIONS.
 
 ODbL 4.6: places.json is a derived database. This script, its query and the snapshot's
 date (recorded in the file) are how it is produced; docs/bus-routing.md says so.
@@ -183,6 +188,26 @@ LARGE_KM = 2.0
 NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az", "alt_name:ru",
              "old_name", "old_name:az", "old_name:ru", "short_name", "short_name:az",
              "official_name", "official_name:az", "brand", "brand:az")
+# What a person decided after reading the data: (feature, tag, the value as mapped, the
+# value used instead or None to leave it out, why). The tag "*" leaves out the whole
+# feature, and its value is the feature's name.
+CORRECTIONS = [
+    ("n3755614407", "name:en", "Heydar Aliyev mafia boss grave", None,
+     "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
+]
+# Word starts a person reads every name and other name for at each refresh, as fold()
+# writes them (no diacritics, й as и): insults, profanity, crime and politics, in English,
+# Azerbaijani and Russian.
+REVIEW = re.compile(
+    "(?:^| )(?:"
+    r"mafi|thie[fv]|crook|criminal|murder|killer|dictator|tyrant|regime|corrupt|terroris|nazi\b|nazis|"
+    r"fascis|shit|fuck|bitch|cunt|dick\b|whore|slut|porn|idiot|stupid|moron|traitor|"
+    r"ogru|qatil|diktator|rejim\b|terrorcu|fasist|ogras|qehbe|fahise|peyser|gotveren|dalbayob|amciq|"
+    r"axmaq|satqin|xain\b|rusvet|"
+    r"мафи|вор\b|вора\b|воры\b|убийц|диктатор|режим|коррупц|террорист|фашист|нацист|ху[иея]|пизд|"
+    r"еба[нлт]|бляд|блят|сука\b|суки\b|мудак|мудил|гандон|дерьм|говн|жоп|шлюх|пидор|пидар|дебил|"
+    r"идиот|урод|тварь|мраз|сволоч|предател"
+    ")")
 SCHWA = re.compile("[\u04d9\u04d8]")  # Cyrillic schwas, typed for the Latin letter
 CYRILLIC = re.compile("[\u0400-\u04ff]")
 APOSTROPHES = re.compile("['`\u00b4\u02bc\u2018\u2019]")
@@ -349,6 +374,36 @@ def in_bbox(p):
     return south <= p[0] <= north and west <= p[1] <= east
 
 
+def correct(elements):
+    """The features with CORRECTIONS applied, and the corrections whose value OpenStreetMap
+    no longer has (or whose feature it no longer has)."""
+    todo, applied, out = {}, set(), []
+    for c in CORRECTIONS:
+        todo.setdefault(c[0], []).append(c)
+    for e in elements:
+        tags, whole = dict(e["tags"]), False
+        for c in todo.get(e["type"][0] + str(e["id"]), []):
+            _, tag, value, use, _ = c
+            if tags.get("name" if tag == "*" else tag) != value:
+                continue
+            applied.add(c)
+            if tag == "*":
+                whole = True
+            elif use is None:
+                del tags[tag]
+            else:
+                tags[tag] = use
+        if not whole:
+            out.append({**e, "tags": tags})
+    return out, [c for c in CORRECTIONS if c not in applied]
+
+
+def to_review(places):
+    """Each name and other name with a word from REVIEW, with its place."""
+    return [f"{n} ({p['category']} {p['id']}{'' if n == p['name'] else ', other name of ' + p['name']})"
+            for p in places for n in [p["name"], *p["aliases"]] if REVIEW.search(fold(n))]
+
+
 def metro_places(elements):
     """The planner's 27 metro stations, each with the other names of the OpenStreetMap
     station it matches: one of the same name (less a trailing "st." or "-2"), the nearest
@@ -449,7 +504,7 @@ def build(path):
         sys.exit(f"{path}: read from a database of {read}, before the snapshot ({SNAPSHOT})")
     # The ways and relations come twice: with their tags and centre, then with their
     # bounding box alone (QUERY's last output).
-    elements = [e for e in answer["elements"] if "tags" in e]
+    elements, stale = correct([e for e in answer["elements"] if "tags" in e])
     bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
 
     places, plain_names, outside = [], Counter(), []
@@ -509,6 +564,10 @@ def build(path):
                    key=lambda item: -item[0])
     large = [f"{p['name']} ({p['category']}, {d:.1f} km)" for d, p in large if d > LARGE_KM]
     print(f"  {len(large)} outlines over {LARGE_KM:g} km across, each at its centre: {', '.join(large)}")
+    print(f"  {len(CORRECTIONS) - len(stale)} corrections applied; no longer applying, to be removed: "
+          f"{', '.join(f'{c[0]} {c[1]}' for c in stale) or 'none'}")
+    review = to_review(places)
+    print(f"  {len(review)} names to read for vandalism (REVIEW): {', '.join(review)}")
 
 
 def main(argv):

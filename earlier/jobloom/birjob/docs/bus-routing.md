@@ -486,6 +486,18 @@ middle of its bounding box, to five decimals. The query asks for the bounding bo
 and the build names every outline over 2 km across that is not a settlement or an area
 (15), so that a person can check its centre is somewhere one can go.
 
+**Corrections.** What a person decided after reading the data is `CORRECTIONS` in the
+script: a feature, a tag, the value as mapped, the value used instead or none, and why;
+the tag `*` leaves out the whole feature. A correction applies only while OpenStreetMap
+still has that value, so once a mapper fixes it the correction stops applying and the
+build names it, to be removed. The first is an English name a vandal gave Heydar Aliyev's
+grave in the Alley of Honour, which the picker showed as the other name that matched
+"aliyev"; the grave keeps its own name and its Russian one. Every build also prints each
+name and other name with a word from `REVIEW` (insults, profanity, crime and politics, in
+English, Azerbaijani and Russian) for a person to read: four on 11 November, none of them
+vandalism (the café Mafiya's three names and the anti-corruption directorate's English
+name). The review that found the grave's name read all 12,658 places and found no other.
+
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,559 restaurants and
 fast-food places, 1,198 government offices, 1,144 cafés, 1,032 supermarkets, 634
@@ -550,7 +562,9 @@ has no other address data. The FAQ says so.
 `python3 scripts/bus/build_places_json.py --fetch places-overpass.json` (one query, 79
 seconds on 11 November; keep the answer outside the repository), then
 `python3 scripts/bus/build_places_json.py places-overpass.json`. The header's "read" is
-the day of the database Overpass answered from. `places.test.ts` fails on
+the day of the database Overpass answered from. Read the names the build prints for
+review and the corrections it says no longer apply, and change `CORRECTIONS` to suit.
+`places.test.ts` fails on
 its counts and snapshot date, and the page's `PLACES_DATE` must move with the snapshot (a
 test compares them): update the counts, this section and the date together. The file is
 re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops

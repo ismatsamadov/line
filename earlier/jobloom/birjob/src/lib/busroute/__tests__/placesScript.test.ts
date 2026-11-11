@@ -41,6 +41,47 @@ describe('build_places_json.py (#720)', () => {
     expect(python('print(json.dumps([b.fold(n) for n in data]))', names)).toEqual(names.map(normalizeSearch));
   });
 
+  it('applies a correction while OpenStreetMap has the value it corrects, and names it once it has not', () => {
+    const result = python(`
+b.CORRECTIONS[:] = [
+    ("n1", "name:en", "Bad words", None, "vandalism"),
+    ("n2", "name", "Old Nmae", "Old Name", "a typo"),
+    ("n3", "*", "A joke", None, "not a place"),
+    ("n4", "name:en", "Fixed since", None, "vandalism"),
+    ("w5", "name", "Gone", None, "a feature OpenStreetMap no longer has"),
+]
+out, stale = b.correct([
+    {"type": "node", "id": 1, "tags": {"name": "Good", "name:en": "Bad words"}},
+    {"type": "node", "id": 2, "tags": {"name": "Old Nmae"}},
+    {"type": "node", "id": 3, "tags": {"name": "A joke"}},
+    {"type": "node", "id": 4, "tags": {"name": "Good", "name:en": "Good"}},
+])
+print(json.dumps({"tags": [e["tags"] for e in out], "stale": [c[0] for c in stale]}))`);
+    expect(result).toEqual({
+      tags: [{ name: 'Good' }, { name: 'Old Name' }, { name: 'Good', 'name:en': 'Good' }],
+      stale: ['n4', 'w5'],
+    });
+  });
+
+  it('gives every correction a feature, a tag, the value it corrects and a reason', () => {
+    const corrections = python('print(json.dumps(b.CORRECTIONS))') as Array<[string, string, string, string | null, string]>;
+    expect(corrections.length).toBeGreaterThan(0);
+    for (const [id, tag, value, use, why] of corrections) {
+      expect(id).toMatch(/^[nwr][1-9]\d*$/);
+      expect(tag === '*' || /^[a-z_:]+$/.test(tag), `${id} ${tag}`).toBe(true);
+      expect(value.length, id).toBeGreaterThan(0);
+      expect(use === null || (use.length > 0 && use !== value), id).toBe(true);
+      expect(why.length, id).toBeGreaterThan(10);
+    }
+  });
+
+  it('flags for a person the names with an insult, a curse or a political word, and not the ministries', () => {
+    const names = ['Heydar Aliyev mafia boss grave', 'Хуйня', 'Qəhbə', 'Corrupt regime',
+      'Daxili İşlər Nazirliyi', 'Hugo Boss', 'Художественный музей', 'Воронеж', 'Gənclik Mall'];
+    expect(python('print(json.dumps([bool(b.REVIEW.search(b.fold(n))) for n in data]))', names))
+      .toEqual([true, true, true, true, false, false, false, false, false]);
+  });
+
   it('waits as Retry-After says, in seconds or as an HTTP date, and two minutes an attempt without it', () => {
     const waits = python(`
 from datetime import datetime, timedelta, timezone
