@@ -1,13 +1,19 @@
-import { ArrowRight, Bike, Bus, ChevronDown, Footprints, Info, TrainFront } from "lucide-react";
+import { ArrowRight, Bike, Bus, ChevronDown, Footprints, Info, MapPin, TrainFront } from "lucide-react";
 import type { RouteResult, RouteSegment } from "@/lib/busroute/types";
 import type { JourneyBikeParking } from "@/lib/busroute/bike";
-import { isMetroStation } from "@/lib/busroute/types";
+import { isJourneyPoint, isMetroStation } from "@/lib/busroute/types";
 import { segmentColors } from "./segmentColors";
-import { movementMinutes, travelledStopCount } from "./journeyFormatting";
+import { movementMinutes, travelledStopCount, walkLength } from "./journeyFormatting";
 
 /** A stop by name, a metro station as "<name> metrosu" so a walk says where it goes. */
 const placeName = (stop: RouteSegment["stops"][number] | undefined) =>
   stop && (isMetroStation(stop.id) ? `${stop.name} metrosu` : stop.name);
+
+/** One end of a walk: the journey's own place or location with a pin, as the map marks it (#720). */
+function WalkEnd({ stop }: { stop: RouteSegment["stops"][number] | undefined }) {
+  if (!stop || !isJourneyPoint(stop.id)) return <>{placeName(stop)}</>;
+  return <span className="font-semibold text-gray-800"><MapPin aria-hidden="true" className="mr-0.5 inline h-3.5 w-3.5 align-[-2px]" />{stop.name}</span>;
+}
 
 export default function JourneyView({ route, bikeParking = null }: { route: RouteResult; bikeParking?: JourneyBikeParking | null }) {
   const colors = segmentColors(route);
@@ -30,7 +36,7 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
         </div>
         <div className="mt-3 flex flex-wrap gap-x-4 gap-y-2 text-xs font-medium text-gray-700">
           <span>{walkOnly ? "Nəqliyyata minmədən" : route.totalTransfers === 0 ? "Dəyişmə yoxdur" : `${route.totalTransfers} dəyişmə`}</span>
-          {walkingDistance > 0 && <span className="inline-flex items-center gap-1"><Footprints aria-hidden="true" className="h-3.5 w-3.5" />{Math.round(walkingDistance * 1000)} m piyada</span>}
+          {walkingDistance > 0 && <span className="inline-flex items-center gap-1"><Footprints aria-hidden="true" className="h-3.5 w-3.5" />{walkLength(walkingDistance)} piyada</span>}
         </div>
         {!walkOnly && (
           <div className="mt-4 flex flex-wrap items-center gap-1.5" aria-label="Nəqliyyat ardıcıllığı">
@@ -38,7 +44,7 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
               <span key={index} className="inline-flex items-center gap-1.5">
                 {index > 0 && <ArrowRight aria-hidden="true" className="h-3 w-3 text-gray-400" />}
                 <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-xs font-semibold" style={{ color: colors[index] }}>
-                  {segment.mode === "walk" ? <><Footprints aria-hidden="true" className="h-3.5 w-3.5" />{Math.round(segment.distance * 1000)} m</>
+                  {segment.mode === "walk" ? <><Footprints aria-hidden="true" className="h-3.5 w-3.5" />{walkLength(segment.distance)}</>
                     : segment.mode === "metro" ? <><TrainFront aria-hidden="true" className="h-3.5 w-3.5" />{segment.busNumber}</>
                     : <><Bus aria-hidden="true" className="h-3.5 w-3.5" />{segment.busNumber}</>}
                 </span>
@@ -63,8 +69,8 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
               <div className="min-w-0 flex-1 border-l-2 pl-3" style={{ borderColor: color }}>
                 {segment.mode === "walk" ? (
                   <>
-                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold text-gray-900"><Footprints aria-hidden="true" className="h-4 w-4" />Piyada gedin <span className="text-xs font-normal text-gray-600">≈ {movementMinutes(segment.time)} dəq · {Math.round(segment.distance * 1000)} m</span></p>
-                    <p className="mt-1 break-words text-sm text-gray-600">{placeName(from)} → {placeName(to)}</p>
+                    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-bold text-gray-900"><Footprints aria-hidden="true" className="h-4 w-4" />Piyada gedin <span className="text-xs font-normal text-gray-600">≈ {movementMinutes(segment.time)} dəq · {walkLength(segment.distance)}</span></p>
+                    <p className="mt-1 break-words text-sm text-gray-600"><WalkEnd stop={from} /> → <WalkEnd stop={to} /></p>
                     <p className="mt-1 text-xs leading-relaxed text-gray-500">Məsafə düz xətt üzrə təxminidir; piyada keçidini yoxlayın.</p>
                   </>
                 ) : (
