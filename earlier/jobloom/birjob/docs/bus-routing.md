@@ -85,8 +85,11 @@ One walk may occur before the first ride, between rides, and after the last ride
 There is no overall walking budget across a journey with several rides.
 
 The state includes whether a walking arrival has already boarded a bus, so an
-origin walk cannot suppress an otherwise valid bus-and-walk arrival. Queue
-entries whose label has been replaced are skipped. The unused, incorrect Yen
+origin walk cannot suppress an otherwise valid bus-and-walk arrival. A ride's
+state is the edge it arrived by, since one edge reaches each position of a ride,
+and a walk's state is a number made of its stop and that flag. Until #721 both
+were strings built and hashed for every edge tried, most of a search's time.
+Queue entries whose label has been replaced are skipped. The unused, incorrect Yen
 alternative-path implementation and its unused optimization modes were removed;
 the endpoint exposes one complete itinerary.
 
