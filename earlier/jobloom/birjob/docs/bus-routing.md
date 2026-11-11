@@ -531,8 +531,8 @@ Xırdalan campus became Bakı Mühəndislik Universiteti in 2016, and "BMU"; "Al
 and "Пламенные башни" for Flame Towers; and "Heydar Aliyev Center", the centre's own
 English name, where OpenStreetMap has "Center of Heydar Aliev". None of them found its
 place before. Seven metro stations' OpenStreetMap nodes have no Russian name, and get the
-metro's own (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар Джаббарлы,
-Ходжасан): "гянджлик" found Gənclik Mall, not the station.
+names they go by in Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар
+Джаббарлы, Ходжасан): "гянджлик" found Gənclik Mall, not the station.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and

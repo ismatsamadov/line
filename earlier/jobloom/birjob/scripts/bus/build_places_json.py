@@ -246,8 +246,8 @@ ALIASES = {
     "r19380164": (["Heydar Aliyev Center", "Heydar Aliyev Centre"],
                   "the centre's own English name (heydaraliyevcenter.az); OpenStreetMap's is "
                   "\"Center of Heydar Aliev\""),
-    # The metro stations whose OpenStreetMap node has no Russian name, by Bakı Metropoliteni's
-    # Russian names for them (metro.gov.az).
+    # The metro stations whose OpenStreetMap node has no Russian name, by the Russian names
+    # they go by ("Список станций Бакинского метрополитена", ru.ruwiki.ru).
     "n1930089762": (["20 Января"], "the Russian name of the station 20 Yanvar"),
     "n5188836356": (["28 Мая"], "the Russian name of the station 28 May"),
     "n6010348738": (["8 Ноября"], "the Russian name of the station 8 Noyabr"),

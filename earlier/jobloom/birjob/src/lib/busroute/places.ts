@@ -128,15 +128,13 @@ function rankCompact(query: string, name: string): number {
 /**
  * The best places for what a person typed: exact names, then names that start with it,
  * then names whose words start with its words in any order, then looser matches, a
- * station, an airport or a mall whose words start with them counting as starting with
- * it (HUBS). A query that
- * matches nothing is tried again without its spaces against names without theirs, so
- * that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
+ * station, an airport or a mall whose words start with them counting as starting with it
+ * (HUBS). A query that matches nothing is tried again without its spaces against names
+ * without theirs, so that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
  * equal matches a match on the shown name comes before one on another name, then the
  * category's weight, then the better match before that step, then, given `near`, the
- * nearer place: 91 supermarkets are named
- * "Bravo", and the one near the other end of the journey is the likelier one. A query
- * that folds to under two letters finds nothing.
+ * nearer place: 91 supermarkets are named "Bravo", and the one near the other end of the
+ * journey is the likelier one. A query that folds to under two letters finds nothing.
  */
 export function searchPlaces(
   index: PlaceIndex, query: string,
