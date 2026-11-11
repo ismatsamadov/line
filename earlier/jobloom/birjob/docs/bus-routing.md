@@ -7,18 +7,21 @@ traffic or waiting-time feed. Neither snapshot refreshes automatically. The map
 also draws AYNA's bicycle lanes and racks, and a journey names the racks beside it
 (`bike.json`, [Bicycles](#bicycles-692)); nothing routes by bicycle. The start and
 destination can also be a named place from an OpenStreetMap snapshot (`places.json`,
-[Places](#places-720)), which stands for the stop nearest it.
+[Places](#places-720)) or the person's location: the journey then walks from it to a
+stop near it and from a stop to it, counted like any walk
+([Routing from a place](#routing-from-a-place-720)).
 
 ```mermaid
 flowchart LR
   P[GET /api/avtobus/places] --> Q[places.json]
-  P -->|nearest stop| A
-  A[Stop selection] --> B[POST /api/avtobus/find]
-  B --> C[Validate integer stop IDs]
+  P -->|a place's point| A
+  A[Stop, place or location] --> B[POST /api/avtobus/find]
+  B --> C[Validate stop IDs or points]
   C --> D[Shared graph initialization]
   D --> E[PostgreSQL bus reference tables]
   D --> M[metro.json]
   D --> F[Cheapest-journey search]
+  W[access.ts: stops within 1 km of a point] --> F
   F --> G[Bus, metro and walking instructions]
   G --> K[bike.json: racks beside the journey]
 ```
@@ -81,7 +84,9 @@ Changing direction, reboarding after a walk, or boarding at a later occurrence o
 a repeated stop starts another ride. Reconstruction splits instructions at those
 same boarding boundaries, so ranking and displayed transfer counts agree.
 Transfer count is `max(boardings - 1, 0)`. The search takes its starting labels
-with their own costs; the endpoint passes one, at the chosen stop.
+with their own costs; the endpoint passes one, at the chosen stop, or at a point
+whose walks to the stops near it are its edges ([Routing from a
+place](#routing-from-a-place-720)).
 
 Walking edges cannot follow other walking edges. Because the graph includes all
 nearby stop pairs, any permitted straight-line walk within the radius already
@@ -542,15 +547,134 @@ test compares them): update the counts, this section and the date together. The 
 re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops
 being.
 
+## Routing from a place (#720)
+
+A journey can start or end at a point instead of a stop: a place chosen from the
+search, or the person's location. It walks from the point to a stop or metro station
+near it, and from one near the destination to the destination, and those walks count
+in its minutes and kilometres like any other walk. `findJourney` (`routing.ts`) does it
+in the one search that finds a journey between two stops: the point is a node of its
+own, with a walk to each stop and station near it as its edges (`accessWalks`,
+`access.ts`), and the destination is a node that the stops near it walk to. The search
+therefore starts from all the stops near the origin at once, each at its walk's cost,
+and ends at whichever stop near the destination gives the cheapest journey, chosen by
+the rule in [Ranking](#ranking) with the walks in it; it is not one search per pair of
+stops. A walk to a station is measured to its nearest exit and drawn by it (stop,
+exit, station), as `metro.ts` does for a stop. A walk still never follows another: the
+walk from the place cannot go on to another stop on foot, and the walk to the
+destination cannot follow a walk between stops. Between two stops nothing changed:
+`findJourney` hands them to `findRoute`.
+
+**Which stops.** Every stop and station within `ACCESS_RADIUS_KM`, 1 km, about 13
+minutes on foot, that a ride leaves from (at the origin) or reaches (at the
+destination), the nearest first, at most `ACCESS_STOP_LIMIT`, 64. The 385 stops of the
+snapshot that no bus serves (they have no name either) are never one. The location
+button and, before this, a place used the nearest stop within 600 m, and the journey
+could walk on from it, 400 m more; within 1 km every such start is one walk, so no
+journey it could give is lost. Measured over the 12,658 places of `places.json`:
+
+| Radius | Places with no stop or station that close | Stops at a place: median, 90th pct., most |
+| --- | --- | --- |
+| 400 m | 1,843 (14.6%) | 5, 10, 20 |
+| 600 m | 1,152 (9.1%) | 9, 19, 33 |
+| 800 m | 715 (5.6%) | 15, 32, 50 |
+| **1 km** | **485 (3.8%)** | **22, 46, 63** |
+
+On 200 random pairs of places (seed 720), against standing each place for its nearest
+stop within 600 m, with the walks to those stops added to that journey's minutes:
+
+| Radius | Journeys | Cost saved, median and mean | Ever costlier than the nearest stop | Walking per journey, median |
+| --- | --- | --- | --- | --- |
+| nearest stop | 160 | | | 0.58 km |
+| 600 m | 161 | 1.8, 5.8 min | yes, by up to 11.9 min | 0.63 km |
+| 800 m | 174 | 3.5, 7.8 min | yes, by up to 11.9 min | 0.71 km |
+| **1 km** | **182** | **4.5, 9.2 min** | **no** | **0.81 km** |
+| 1.2 km | 187 | 7.2, 10.4 min | no | 0.88 km |
+
+Cost is minutes plus 15 a boarding, the walks included. At 1 km, of the 160 pairs both
+answer, 70 journeys need fewer boardings, one needs one more and 89 as many: 332
+boardings instead of 412. The minutes alone fall by 1.0 at the median and 1.7 on
+average; where a boarding is saved they can rise, by 13.4 at most. 103 of the 153
+journeys that ride in both board or alight at another stop than the nearest, and 120
+of the 160 nearest-stop journeys walked on from that stop to another one first or
+last. 22 of the 40 pairs the nearest stop could not serve get a journey. The walks are
+longer, as the rule lets them be: 317 m at the median for a walk to or from a place
+and 833 m at the 90th percentile, and 77 of the 174 journeys that ride walk more than
+600 m at one end; 39 start or end their rides at a metro station. The cap never binds
+today and the search took as long with every stop as with the nearest 12; a smaller
+cap only cost journeys (8 stops: 6.0 minutes saved on average, and some journeys
+costlier than the nearest stop's; 12: 7.3; 20: 8.5; 30: 9.0; 64: 9.2), so it is set
+above the densest place's 63, to bound a request's work if the stops or the radius
+grow.
+
+**Walking the whole way.** The walk from one end to the other boards nothing, so it
+wins a tie with every journey that rides, and up to `MAX_WALK_ONLY_KM`, 2 km, it is
+the answer when it costs no more than the cheapest journey that rides, or when nothing
+rides there. A walk of 15 minutes or less (1,125 m) costs no more than any journey
+that rides, so it needs no search, and a longer one bounds the search: it stops once
+nothing left can be cheaper. On random place pairs, 60 in each band of straight-line
+distance, the walk was the cheaper in 60 of those from 1.1 to 1.5 km, 59 from 1.5 to 2
+km, 41 from 2 to 2.5 km, 25 from 2.5 to 3 km, 13 from 3 to 4 km and 4 from 4 to 5 km.
+Beyond 3 km it won as walks of 41 to 63 minutes, mostly over journeys with two
+boardings; 15 minutes a boarding is an allowance for the wait, not a measured one, and
+too rough to send someone on an hour's walk instead, so beyond 2 km a journey that
+rides is the answer whatever it costs. A point with no stop within 1 km and too far to
+walk gets an error naming it.
+
+**Cost.** Finding a point's stops scans the served stops once, 33 to 64 µs; which stops
+a ride serves is worked out once per graph. On those 200 pairs a journey from place to
+place took 5.0 ms at the median and 14.7 at the 95th percentile, against 5.4 and 14.2
+for the journey between the nearest stops in the same run. Timed seven times each, 200
+other pairs took 6.9 and 16.1 ms against 6.5 and 13.7, and 60 pairs of places in the
+centre, with 45 or more stops at each end, 4.2 and 12.4 against 5.0 and 15.7: more
+destinations end the search sooner.
+
+**On the page.** A chosen place or the location is sent as its point (`from`/`to`, see
+[API and UI](#api-and-ui)), and the notes that the walk to its stop was not counted are
+gone. The step list starts or ends with the walk, the place marked with a pin and its
+length in kilometres from 1 km. The map marks a place with a pin in its end's colour
+and the location with a blue dot, each labelled as a chosen stop is, draws the walks
+dashed like every walk, and frames the places themselves, with room above for their
+labels. In the pickers a place names the stop nearest it with a name within 1 km, and a
+place with none is listed last and says so. The rows a picker has shown for what is
+typed stay where they are when the places arrive a moment after the stops: those go
+below them, and the next keystroke orders the list afresh. Typing "gənclik" listed two
+cafés above Gənclik m/st; a café, restaurant, shop, school or another of the eleven
+everyday kinds (`EVERYDAY_PLACES`) now ranks one step below its match. The places
+search ranks by the journey's other end, sent in its address; when that end is the
+person's location, the named stop nearest it is sent instead.
+
+**How it was measured.** On a scratch PostgreSQL loaded as for the #721 verification
+below (route_efficiency's `data/ayna.db`, the 3,456 served stops, 208 buses and 11,786
+stop rows) through the real `graph.ts`, with the `places.json` of 11 November 2026; the
+harness stays outside the repository. Its baseline left out the 385 unserved stops,
+which a nearest stop could otherwise have been. The page was checked in headless Chrome
+at 390 × 844 and 1440 × 1000 against `next dev` on that database, the unserved stops
+put back: place to place (Gənclik Mall to Bakı Dövlət Universiteti: 167 m on foot, bus
+3, 447 m on foot, 27 minutes), the location to a place (236 m, bus 1, 270 m, 19
+minutes), and 28 Mall to Fəvvarələr Meydanı on foot (1.2 km, 16 minutes), with no
+console error and no sideways scrolling. The rows shown for "gənclik" stayed put when
+the places came, and the place search sent a stop's point, not the location.
+
 ## API and UI
 
-`POST /api/avtobus/find` accepts positive PostgreSQL integer IDs. Invalid JSON,
-invalid IDs and identical stops return 400 before loading the graph. Unknown
-stops or an unreachable destination return 404; initialization failures return
-500 with a retryable error message. Error bodies keep the string shape consumed
-by the client. A successful response includes origin/destination metadata, a
-single `RouteResult` and the racks beside it, `bikeParking` (#692). Every segment has its `mode`; bus segments include their
-direction and terminal name, and metro segments their line and terminus.
+`POST /api/avtobus/find` accepts, for each end, a positive PostgreSQL integer ID
+(`fromStopId`, `toStopId`) or a point (`from`, `to`: `{latitude, longitude, name?}`,
+#720), exactly one of the two. A point must lie in the network's area
+(`isBakuCoordinate`); its name, at most 200 characters, only goes back as text, and a
+point without one is "Başlanğıc nöqtəsi" or "Təyinat nöqtəsi". Invalid JSON, invalid
+IDs or points, an end given both ways or neither, and identical stops or points return
+400 before loading the graph. Unknown stops or an unreachable destination return 404,
+and so does a point with no stop within 1 km and too far to walk, with an error that
+names it; initialization failures return 500 with a retryable error message. Error
+bodies keep the string shape consumed by the client. A successful response includes
+origin/destination metadata (`{id, name}` for a stop, `{name, latitude, longitude}`
+for a point), a single `RouteResult` and the racks beside it, `bikeParking` (#692).
+Every segment has its `mode`; bus segments include their direction and terminal name,
+and metro segments their line and terminus. A walk from or to a point is a `walk`
+segment whose first or last stop is the point, with id -1 (`ORIGIN_POINT_ID`) or -2
+(`DESTINATION_POINT_ID`), its name and coordinates, and the totals include it, so a
+client that reads only `route.segments` and the totals shows it as any walk.
 
 The browser automatically searches when the selected stops change. Each request
 has a generation number; changing stops, swapping them, choosing a location or
@@ -566,13 +690,16 @@ The picker uses a labeled combobox and listbox; arrow keys select an option,
 Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
 bus-list failures have retry controls rather than looking like an empty network.
 The start and destination pickers list named places among the stops;
-[Places](#places-720) has how they are searched and what choosing one does.
+[Places](#places-720) has how they are searched, and [Routing from a
+place](#routing-from-a-place-720) what choosing one does.
 
-GPS and empty-map taps choose a stop only within 600 m. That selection radius is
-separate from the routing graph's 400 m walking-transfer limit. The GPS selection
-shows the approximate distance to its stop and says that this access walk is not
-included in the itinerary's movement time. A location callback is invalidated by
-later selections or a mode change, so delayed GPS cannot replace a newer origin.
+Empty-map taps choose a stop only within 600 m. That selection radius is separate
+from the routing graph's 400 m walking-transfer limit. The location button
+("Olduğum yerdən başla") makes the person's location the start itself, shown as
+"Sizin yeriniz" with its accuracy, and the journey walks from it (#720); a location
+outside the network's area is refused in the browser, as the server refuses it. A
+location callback is invalidated by later selections or a mode change, so delayed GPS
+cannot replace a newer origin.
 
 `GET /api/avtobus/line` takes `busId` as a positive PostgreSQL integer written in
 digits, and `direction` as 1 or 2 (no direction means 1); anything else is a 400
@@ -607,6 +734,18 @@ every ranking objective, transfer counts, segment continuity and the absence of
 consecutive walking segments. Both oracles assert that more than ten of their trips
 take more boardings than the fewest, so the penalty is exercised and not only the
 boarding count.
+
+Journeys from and to a point (#720) have their own tests (`journey.test.ts`): the stop
+boarded is not the nearest when another is cheaper overall, walks to a stop beyond a
+transfer walk's 400 m, no walk after the walk from the point or before the walk to it,
+a station by its exit, a stop at one end and a point at the other, the walk the whole
+way below, at and above the cost of riding and of its limit, and which end has no stop
+in reach. The same round oracle, starting from the walks to the origin's stops and
+ending with the walks from the destination's, checks 600 generated trips between
+points; it asserts that more than 100 of them ride, more than 50 walk the whole way and
+more than 10 board at another stop than the nearest. The route handler is tested for
+points, a stop and a point, names, the area and identical points, and the picker for
+rows that keep their places when the places arrive.
 
 ## Verification for #721 (2026-11-11)
 
