@@ -3,7 +3,7 @@ import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { coarsePoint, EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { coarsePoint, EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, placeStopNear, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 import { buildPlaceIndex, searchPlaces } from "@/lib/busroute/places";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
@@ -165,6 +165,14 @@ describe("nearby stop selection", () => {
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85)).toBeNull();
     // Within a wider radius when asked: a place's nearest stop is named up to 1 km (#720).
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85, 1)?.stop.id).toBe(1);
+  });
+
+  it("names a place's nearest stop with a name, within a journey's walk (#720)", () => {
+    // A nameless stop is one no bus serves; the named one 330 m on is the one to name.
+    const stops = [{ ...stop(1, ""), latitude: 40.4001 }, { ...stop(2, "Gənclik m/st"), latitude: 40.403 }, { ...stop(3, "Uzaq"), latitude: 40.42 }];
+    expect(placeStopNear(stops, { latitude: 40.4, longitude: 49.85 })?.stop.id).toBe(2);
+    expect(nearestStop(stops, 40.4, 49.85)?.stop.id).toBe(1);
+    expect(placeStopNear(stops, { latitude: 40.39, longitude: 49.85 })).toBeNull();
   });
 
   it("tells where a point is only to two decimals, about 1 km (#720)", () => {

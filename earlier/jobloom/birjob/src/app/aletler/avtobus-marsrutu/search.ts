@@ -1,6 +1,7 @@
 import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { haversine } from "@/lib/busroute/geo";
+import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { normalizeSearch } from "@/lib/busroute/searchText";
 
 // The folding the place search on the server uses too (#720).
@@ -124,15 +125,22 @@ export function searchBuses(buses: BusLite[], query: string): BusLite[] {
 // Do not silently call a stop across town "nearby". Shared with map snapping.
 export const NEARBY_STOP_RADIUS_KM = 0.6;
 
-export function nearestStop(stops: StopDetail[], lat: number, lng: number, radiusKm = NEARBY_STOP_RADIUS_KM) {
+export function nearestStop(stops: StopDetail[], lat: number, lng: number, radiusKm = NEARBY_STOP_RADIUS_KM, { named = false } = {}) {
   let stop: StopDetail | null = null;
   let distance = Infinity;
   for (const candidate of stops) {
+    if (named && !candidate.name.trim()) continue;
     const d = haversine(lat, lng, candidate.latitude, candidate.longitude);
     if (d < distance) { stop = candidate; distance = d; }
   }
   return stop && distance <= radiusKm ? { stop, distance } : null;
 }
+
+/** The stop with a name nearest a place within the walk a journey takes from it, which
+ *  the place's row names. The snapshot's 385 nameless stops are the ones no bus serves,
+ *  which the planner never walks a place to either (#720). */
+export const placeStopNear = (stops: StopDetail[], place: { latitude: number; longitude: number }) =>
+  nearestStop(stops, place.latitude, place.longitude, ACCESS_RADIUS_KM, { named: true });
 
 /** A point to two decimals, about 1 km: how near the person's location the place search
  *  may be told it is, since its address reaches caches, logs and error reports (#720). */
