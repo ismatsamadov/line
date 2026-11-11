@@ -447,8 +447,8 @@ storing it and showing Places results on a map that is not Google's, and the pla
 draws OpenStreetMap tiles with Leaflet. The places are OpenStreetMap's, © OpenStreetMap
 contributors, under the Open Database Licence (ODbL) 1.0. `scripts/bus/build_places_json.py`
 sends one query to the Overpass API (overpass-api.de, with a User-Agent naming the
-planner; on a 429 or 504 it waits, for Retry-After when given, and tries at most twice
-more) for every named feature in the network's area that carries one of the tags a
+planner; on a 429, 502 or 504 it waits, for Retry-After when given, and tries at most
+twice more) for every named feature in the network's area that carries one of the tags a
 destination does: amenity, shop, office, tourism, leisure, healthcare, historic, building,
 railway and public-transport stations, aerodromes, place, beaches, retail, commercial and
 residential land, towers, lighthouses and piers. The area is the extent of AYNA's stops

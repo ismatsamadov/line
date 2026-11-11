@@ -382,7 +382,8 @@ def dedupe(places):
 
 def fetch(path):
     """Send QUERY to Overpass once and save the answer as it came. A 429 (too many
-    requests) or 504 (server busy) waits and tries again, at most twice more."""
+    requests), 502 (all workers busy, as overpass-api.de answered on 2026-11-11) or 504
+    (server busy) waits and tries again, at most twice more."""
     body = urllib.parse.urlencode({"data": QUERY}).encode()
     for attempt in range(1, 4):
         request = urllib.request.Request(API, data=body, headers={"User-Agent": USER_AGENT})
@@ -391,7 +392,7 @@ def fetch(path):
                 raw = response.read()
             break
         except urllib.error.HTTPError as error:
-            if error.code not in (429, 504) or attempt == 3:
+            if error.code not in (429, 502, 504) or attempt == 3:
                 raise
             wait = int(error.headers.get("Retry-After") or 0) or 120 * attempt
             print(f"Overpass answered {error.code}; trying again in {wait} s", file=sys.stderr)
