@@ -123,5 +123,7 @@ describe("nearby stop selection", () => {
     expect(nearestStop([stop(1, "Bakı")], Number.NaN, 49.85)).toBeNull();
     expect(nearestStop([stop(1, "Bakı")], 40.404, 49.85)?.distance).toBeLessThan(0.6);
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85)).toBeNull();
+    // Within a wider radius when asked: a place's nearest stop is named up to 1 km (#720).
+    expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85, 1)?.stop.id).toBe(1);
   });
 });

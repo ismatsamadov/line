@@ -1,11 +1,14 @@
-import type { BusLineDetail, RouteResult, StopDetail } from "@/lib/busroute/types";
+import type { BusLineDetail, RouteResult } from "@/lib/busroute/types";
+
+/** A chosen end: a stop, a named place or the person's location (#720). */
+type End = { latitude: number; longitude: number };
 
 /** What the map fits its view to, most relevant first. */
 export interface FitTargets {
   route: RouteResult | null;
   line: BusLineDetail | null;
-  fromStop: StopDetail | null;
-  toStop: StopDetail | null;
+  from: End | null;
+  to: End | null;
 }
 
 /** The two Leaflet map methods a fit uses. Kept apart from Leaflet, which needs a
@@ -16,9 +19,10 @@ export interface FitMap {
 }
 
 /** Fit the view to the most relevant features. */
-export function fitFeatures(map: FitMap, { route, line, fromStop, toStop }: FitTargets): void {
+export function fitFeatures(map: FitMap, { route, line, from, to }: FitTargets): void {
   if (route) {
-    // The road a ride follows can bend beyond its stops, so the fit takes it in.
+    // The road a ride follows can bend beyond its stops, so the fit takes it in, and a
+    // walk from or to a place has the place as its first or last stop (#720).
     const coords: [number, number][] = [];
     for (const seg of route.segments) {
       for (const point of seg.path ?? seg.stops.map((s): [number, number] => [s.latitude, s.longitude])) coords.push(point);
@@ -29,10 +33,10 @@ export function fitFeatures(map: FitMap, { route, line, fromStop, toStop }: FitT
       ? line.coordinates.map((c) => [c.latitude, c.longitude])
       : line.stops.map((s) => [s.latitude, s.longitude]);
     if (coords.length) map.fitBounds(coords, { padding: [50, 50] });
-  } else if (fromStop && toStop) {
-    map.fitBounds([[fromStop.latitude, fromStop.longitude], [toStop.latitude, toStop.longitude]], { padding: [60, 60] });
-  } else if (fromStop) {
-    map.setView([fromStop.latitude, fromStop.longitude], 15);
+  } else if (from && to) {
+    map.fitBounds([[from.latitude, from.longitude], [to.latitude, to.longitude]], { padding: [60, 60] });
+  } else if (from) {
+    map.setView([from.latitude, from.longitude], 15);
   }
 }
 

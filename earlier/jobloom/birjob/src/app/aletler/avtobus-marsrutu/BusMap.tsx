@@ -37,14 +37,14 @@ const BIKE_ATTRIBUTION = 'Velosiped: <a href="https://opendata.az/@azerbaycan-ye
 // OpenStreetMap's, credited as its contributors ask, in the page's language.
 const OSM_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> iştirakçıları';
 
-/** A named place chosen as the start or the destination (#720), with the stop that
- *  stands for it until journeys can start and end at a point. */
+/** A named place, or the person's location (`here`), chosen as the start or the
+ *  destination (#720). A found journey walks from it or to it. */
 export interface MapPlace {
   end: "from" | "to";
   name: string;
   latitude: number;
   longitude: number;
-  stop: StopDetail;
+  here?: boolean;
 }
 
 export interface BusMapProps {
@@ -54,14 +54,13 @@ export interface BusMapProps {
   route: RouteResult | null;
   /** Line-viewer mode: draw one bus line's full trajectory (takes precedence over browse). */
   line: BusLineDetail | null;
-  userLocation: { lat: number; lng: number } | null;
   /** Called with the chosen stop — from a marker tap OR a snap from empty map. */
   onStopClick: (stop: StopDetail) => void;
   isVisible?: boolean;
   onMiss?: () => void;
   /** The racks beside the found route's first boarding and last alighting (#692). */
   bikeParking?: JourneyBikeParking | null;
-  /** The named places chosen as the start or the destination (#720). */
+  /** The places, or the person's location, chosen as the start or the destination (#720). */
   places?: MapPlace[];
 }
 
@@ -168,7 +167,6 @@ interface DrawArgs {
   toStop: StopDetail | null;
   route: RouteResult | null;
   line: BusLineDetail | null;
-  userLocation: { lat: number; lng: number } | null;
   onStopClick: (stop: StopDetail) => void;
   bikeParking: JourneyBikeParking | null;
   places: MapPlace[];
@@ -180,7 +178,7 @@ interface DrawArgs {
  * Only ever called through the redraw effect below, which serialises it against
  * Leaflet's animations — never call it directly from an event handler.
  */
-function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, userLocation, onStopClick, bikeParking, places }: DrawArgs): void {
+function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, line, onStopClick, bikeParking, places }: DrawArgs): void {
   cluster.clearLayers();
   overlay.clearLayers();
 
@@ -303,25 +301,30 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
       .addTo(overlay);
   }
-  if (userLocation) {
-    L.circleMarker([userLocation.lat, userLocation.lng], {
-      radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3,
-    }).bindTooltip("Sizin yeriniz", { direction: "top" }).addTo(overlay);
-  }
-  // A chosen place and a dotted line to the stop that stands for it (#720). The walk
-  // is not part of the journey yet, so it is drawn apart from a counted walk (dashed).
-  // Leaflet reads a tooltip as HTML and the name is OpenStreetMap's, so it is escaped.
+  // A chosen place, a square in its end's colour, or the person's location, a blue dot,
+  // labelled like a chosen stop (#720). A found journey's walk from or to it is drawn
+  // with the route, dashed as every walk is. Leaflet reads a tooltip as HTML and a
+  // place's name is OpenStreetMap's, so it is escaped.
   for (const place of places) {
-    const color = place.end === "from" ? "#16a34a" : "#dc2626";
-    L.polyline([[place.latitude, place.longitude], [place.stop.latitude, place.stop.longitude]], {
-      color, weight: 3, opacity: 0.75, dashArray: "1, 7", lineCap: "round", interactive: false,
+    const from = place.end === "from";
+    const marker = place.here
+      ? L.circleMarker([place.latitude, place.longitude], { radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3 })
+      : L.marker([place.latitude, place.longitude], { icon: placeIcon(from ? "#16a34a" : "#dc2626"), keyboard: false });
+    marker.bindTooltip(`${from ? "Başlanğıc" : "Təyinat"}: ${escapeXml(place.name)}`, {
+      permanent: true, direction: "top", offset: [0, -12], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
     }).addTo(overlay);
-    L.marker([place.latitude, place.longitude], { icon: placeIcon(color), keyboard: false })
-      .bindTooltip(escapeXml(place.name), { direction: "top", offset: [0, -10] })
-      .addTo(overlay);
   }
 
-  fitFeatures(map, { route, line, fromStop, toStop });
+  fitFeatures(map, fitTargets(route, line, fromStop, toStop, places));
+}
+
+/** The view's targets: a chosen place stands where it is, not at a stop near it (#720). */
+function fitTargets(route: RouteResult | null, line: BusLineDetail | null, fromStop: StopDetail | null, toStop: StopDetail | null, places: MapPlace[]): FitTargets {
+  return {
+    route, line,
+    from: places.find((place) => place.end === "from") ?? fromStop,
+    to: places.find((place) => place.end === "to") ?? toStop,
+  };
 }
 
 /**
@@ -339,7 +342,7 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
  * flip side of that contract is that a React re-render must not mutate those
  * layers while Leaflet is mid-animation either; see the redraw effect.
  */
-export default function BusMap({ stops, fromStop, toStop, route, line, userLocation, onStopClick, isVisible, onMiss, bikeParking = null, places = NO_PLACES }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, onStopClick, isVisible, onMiss, bikeParking = null, places = NO_PLACES }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -351,8 +354,8 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
   missRef.current = onMiss;
   const stopsRef = useRef(stops);
   stopsRef.current = stops;
-  const fitRef = useRef<FitTargets>({ route, line, fromStop, toStop });
-  fitRef.current = { route, line, fromStop, toStop };
+  const fitRef = useRef<FitTargets>(fitTargets(route, line, fromStop, toStop, places));
+  fitRef.current = fitTargets(route, line, fromStop, toStop, places);
 
   // Init once (guarded + cleaned up so StrictMode's double-mount is safe).
   useEffect(() => {
@@ -458,7 +461,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       detach();
       drawFeatures({
         map, cluster, overlay,
-        stops, fromStop, toStop, route, line, userLocation, bikeParking, places,
+        stops, fromStop, toStop, route, line, bikeParking, places,
         onStopClick: (stop) => clickRef.current(stop),
       });
     };
@@ -484,7 +487,7 @@ export default function BusMap({ stops, fromStop, toStop, route, line, userLocat
       drawn = true;
       detach();
     };
-  }, [stops, fromStop, toStop, route, line, userLocation, bikeParking, places]);
+  }, [stops, fromStop, toStop, route, line, bikeParking, places]);
 
   return <div ref={containerRef} className="h-full w-full" role="region" aria-label="Bakı dayanacaqları və marşrut xəritəsi" />;
 }

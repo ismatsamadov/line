@@ -72,12 +72,12 @@ export function searchBuses(buses: BusLite[], query: string): BusLite[] {
 // Do not silently call a stop across town "nearby". Shared with map snapping.
 export const NEARBY_STOP_RADIUS_KM = 0.6;
 
-export function nearestStop(stops: StopDetail[], lat: number, lng: number) {
+export function nearestStop(stops: StopDetail[], lat: number, lng: number, radiusKm = NEARBY_STOP_RADIUS_KM) {
   let stop: StopDetail | null = null;
   let distance = Infinity;
   for (const candidate of stops) {
     const d = haversine(lat, lng, candidate.latitude, candidate.longitude);
     if (d < distance) { stop = candidate; distance = d; }
   }
-  return stop && distance <= NEARBY_STOP_RADIUS_KM ? { stop, distance } : null;
+  return stop && distance <= radiusKm ? { stop, distance } : null;
 }

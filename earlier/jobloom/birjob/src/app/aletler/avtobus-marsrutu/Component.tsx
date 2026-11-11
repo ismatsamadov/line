@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Bus, ArrowDownUp, LocateFixed, Search, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin, Info, RotateCcw, Footprints, ChevronRight } from "lucide-react";
+import { Bus, ArrowDownUp, LocateFixed, Search, Map as MapIcon, ListOrdered, Hand, Route, ArrowRight, MapPin, Info, RotateCcw, ChevronRight } from "lucide-react";
 import SupportCTA from "@/components/SupportCTA";
 import type { StopDetail, RouteResult, BusLite, BusLineDetail } from "@/lib/busroute/types";
 import type { JourneyBikeParking } from "@/lib/busroute/bike";
 import type { PlaceMatch } from "@/lib/busroute/places";
+import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
+import { isBakuCoordinate } from "@/lib/busroute/geo";
 import JourneyView from "./JourneyView";
 import Picker, { type PickerItem } from "./Picker";
 import { nearestStop, searchBuses, suggestEnds } from "./search";
@@ -20,13 +22,16 @@ const BusMap = dynamic(() => import("./BusMap"), {
 });
 
 /**
- * A named place chosen as the start or the destination (#720). Until a journey can start
- * and end at a point, the stop nearest it stands for it, within 600 m, exactly as for the
- * location button; `stopDistance` is the walk to that stop in km, which is not counted.
+ * A named place, or the person's location (id HERE), chosen as the start or the
+ * destination (#720). The journey is asked for from or to the point itself, and the
+ * server walks it to whichever stops near it make the journey cheapest, counting the walk.
  */
-interface ChosenPlace { id: string; name: string; label: string; latitude: number; longitude: number; stopDistance: number }
+interface ChosenPlace { id: string; name: string; label: string; latitude: number; longitude: number }
 type Point = { latitude: number; longitude: number };
 type EndItem = PickerItem & { stop?: StopDetail; place?: PlaceMatch };
+
+const HERE = "here";
+const HERE_NAME = "Sizin yeriniz";
 
 const metres = (km: number) => Math.round(km * 1000);
 const stopDetail = (stop: StopDetail) => stop.code ? `Dayanacaq · Kod: ${stop.code}` : "Avtobus dayanacağı";
@@ -37,15 +42,20 @@ const stopName = (stop: StopDetail) => stop.name.trim() || (stop.code ? `kodu ${
  *  line is cut at the end, and the stop's name matters least. */
 const stopNote = (stop: StopDetail, km: number) => `dayanacağa ${metres(km)} m: ${stopName(stop)}`;
 
-/** A place in the list: the other name that found it, its kind, and the stop it would
- *  start or end at, so a chain's branches can be told apart. */
+/** A place in the list: the other name that found it, its kind, and the stop nearest it
+ *  within a journey's walk, so a chain's branches can be told apart. */
 function placeDetail(place: PlaceMatch, stops: StopDetail[]): string {
-  const near = nearestStop(stops, place.latitude, place.longitude);
-  const stop = near ? stopNote(near.stop, near.distance) : "600 m-də dayanacaq yoxdur";
+  const near = nearestStop(stops, place.latitude, place.longitude, ACCESS_RADIUS_KM);
+  const stop = near ? stopNote(near.stop, near.distance) : `${metres(ACCESS_RADIUS_KM)} m-də dayanacaq yoxdur`;
   return [place.alias && `«${place.alias}»`, place.label, stop].filter(Boolean).join(" · ");
 }
 
-/** A start or destination: a stop, or a named place that stands for its nearest stop. */
+/** The point sent for a chosen place, or the stop's id (POST /api/avtobus/find). */
+const journeyEnd = (side: "from" | "to", place: ChosenPlace | null, stop: StopDetail | null) => place
+  ? { [side]: { latitude: place.latitude, longitude: place.longitude, name: place.name } }
+  : { [`${side}StopId`]: stop?.id };
+
+/** A start or destination: a stop, a named place, or the person's location. */
 function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace, active, onActivate, loading, near }: {
   label: string; stops: StopDetail[]; selected: StopDetail | null; place: ChosenPlace | null;
   onSelectStop: (stop: StopDetail | null) => void; onSelectPlace: (place: PlaceMatch) => void;
@@ -57,8 +67,8 @@ function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace,
     ? { key: `s${found.stop.id}`, name: found.stop.name, detail: stopDetail(found.stop), kind: "stop", stop: found.stop }
     : { key: `p${found.place.id}`, name: found.place.name, detail: placeDetail(found.place, stops), kind: "place", place: found.place }),
   [stops, places.places]);
-  const shown: PickerItem | null = selected && place
-    ? { key: `p${place.id}`, name: place.name, detail: `${place.label} · ${stopNote(selected, place.stopDistance)}`, kind: "place" }
+  const shown: PickerItem | null = place
+    ? { key: `p${place.id}`, name: place.name, detail: place.label, kind: place.id === HERE ? "here" : "place" }
     : selected ? { key: `s${selected.id}`, name: selected.name, detail: stopDetail(selected), kind: "stop" } : null;
   // Wherever places are listed, their data is credited (ODbL); a failed search says so.
   const footer = places.degraded
@@ -165,11 +175,11 @@ export default function Component() {
   const [stops, setStops] = useState<StopDetail[]>([]);
   const [stopsLoading, setStopsLoading] = useState(true);
   const [stopsError, setStopsError] = useState<string | null>(null);
-  const [locationNote, setLocationNote] = useState<string | null>(null);
   const locationReqRef = useRef(0);
   const [fromStop, setFromStop] = useState<StopDetail | null>(null);
   const [toStop, setToStop] = useState<StopDetail | null>(null);
-  // The named places behind fromStop and toStop, when one was chosen (#720).
+  // A named place or the person's location chosen instead of a stop (#720): an end is
+  // one or the other, never both.
   const [fromPlace, setFromPlace] = useState<ChosenPlace | null>(null);
   const [toPlace, setToPlace] = useState<ChosenPlace | null>(null);
   const [route, setRoute] = useState<RouteResult | null>(null);
@@ -178,7 +188,6 @@ export default function Component() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const routeReqRef = useRef(0);
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [locating, setLocating] = useState(false);
   // Which field a map tap fills next ("from" first). Drives the pick-mode banner.
   const [pickTarget, setPickTarget] = useState<PickTarget>("from");
@@ -243,20 +252,20 @@ export default function Component() {
   useEffect(() => { void loadStops(); }, [loadStops]);
 
   const handleFind = useCallback(async () => {
-    if (!fromStop || !toStop) return;
-    if (fromStop.id === toStop.id) {
-      setError(fromPlace || toPlace
-        ? `Başlanğıc və təyinat eyni dayanacağa düşür: «${stopName(fromStop)}». Aradakı məsafə qısadır, piyada getmək olar.`
-        : "Başlanğıc və təyinat eynidir. Başqa təyinat dayanacağı seçin.");
+    if (!(fromStop || fromPlace) || !(toStop || toPlace)) return;
+    if (fromPlace && toPlace ? fromPlace.id === toPlace.id : !fromPlace && !toPlace && fromStop?.id === toStop?.id) {
+      setError("Başlanğıc və təyinat eynidir. Başqa təyinat seçin.");
       return;
     }
     const requestId = ++routeReqRef.current;
     setLoading(true); setError(null); setRoute(null); setBikeParking(null);
     try {
+      // A place or the person's location goes as its point, and the journey's walks from
+      // it and to it are counted (#720).
       const res = await fetch("/api/avtobus/find", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fromStopId: fromStop.id, toStopId: toStop.id }),
+        body: JSON.stringify({ ...journeyEnd("from", fromPlace, fromStop), ...journeyEnd("to", toPlace, toStop) }),
       });
       const data = await res.json();
       if (requestId !== routeReqRef.current) return;
@@ -274,45 +283,38 @@ export default function Component() {
   // Set a stop from the search dropdown, then advance the active target so the
   // next map tap / search naturally fills the OTHER field.
   const selectFrom = useCallback((s: StopDetail | null) => {
-    clearRoute(); setLocationNote(null); setUserLocation(null); setFromPlace(null); setFromStop(s); if (s) setPickTarget("to");
+    clearRoute(); setFromPlace(null); setFromStop(s); if (s) setPickTarget("to");
   }, [clearRoute]);
   const selectTo = useCallback((s: StopDetail | null) => {
     clearRoute(); setToPlace(null); setToStop(s); if (s) setPickTarget("from");
   }, [clearRoute]);
 
-  // A named place stands for the stop nearest it, the way the location button's point
-  // does (handleLocate): within 600 m, and the walk to it is not counted (#720).
-  const choosePlace = useCallback((end: PickTarget, place: PlaceMatch) => {
-    const nearest = nearestStop(stops, place.latitude, place.longitude);
-    if (!nearest) {
-      setError(`«${place.name}» yaxınlığında 600 metrədək dayanacaq tapılmadı. Yaxındakı dayanacağı adla və ya xəritədən seçin.`);
-      return;
-    }
-    const chosen: ChosenPlace = {
-      id: place.id, name: place.name, label: place.label, latitude: place.latitude, longitude: place.longitude,
-      stopDistance: nearest.distance,
-    };
-    if (end === "from") { selectFrom(nearest.stop); setFromPlace(chosen); }
-    else { selectTo(nearest.stop); setToPlace(chosen); }
-  }, [stops, selectFrom, selectTo]);
+  // A named place, or the person's location, is an end of its own: the journey walks
+  // from it or to it, to whichever stops suit the journey (#720).
+  const choosePlace = useCallback((end: PickTarget, place: ChosenPlace) => {
+    clearRoute();
+    if (end === "from") { setFromStop(null); setFromPlace(place); setPickTarget("to"); }
+    else { setToStop(null); setToPlace(place); setPickTarget("from"); }
+  }, [clearRoute]);
+  const choosePlaceMatch = useCallback((end: PickTarget, { id, name, label, latitude, longitude }: PlaceMatch) => {
+    choosePlace(end, { id, name, label, latitude, longitude });
+  }, [choosePlace]);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation) { setError("Brauzeriniz məkanı dəstəkləmir. Dayanacağı adla və ya xəritədən seçin."); return; }
     const requestId = ++locationReqRef.current;
-    setLocating(true); setError(null); setLocationNote(null);
+    setLocating(true); setError(null);
     navigator.geolocation.getCurrentPosition(
       pos => {
         if (requestId !== locationReqRef.current) return;
-        const { latitude: lat, longitude: lng } = pos.coords;
-        const nearest = nearestStop(stops, lat, lng);
+        const { latitude, longitude, accuracy } = pos.coords;
         setLocating(false);
-        if (!nearest) {
-          setError("600 metr yaxınlıqda dayanacaq tapılmadı. Bakıdakı dayanacağı adla və ya xəritədən seçin.");
+        // The planner routes only inside the bus network's area, as the server checks too.
+        if (!isBakuCoordinate(latitude, longitude)) {
+          setError("Olduğunuz yer Bakı və ətrafının avtobus şəbəkəsindən kənardadır. Başlanğıcı adla və ya xəritədən seçin.");
           return;
         }
-        selectFrom(nearest.stop);
-        setUserLocation({ lat, lng });
-        setLocationNote(`Seçilən dayanacaq təxminən ${Math.round(nearest.distance * 1000)} m məsafədədir. Ora piyada yol və vaxt marşrut hesabına daxil deyil.`);
+        choosePlace("from", { id: HERE, name: HERE_NAME, label: `Məkan dəqiqliyi ±${Math.round(accuracy)} m`, latitude, longitude });
       },
       failure => {
         if (requestId !== locationReqRef.current) return;
@@ -321,10 +323,10 @@ export default function Component() {
       },
       { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
     );
-  }, [stops, selectFrom]);
+  }, [choosePlace]);
 
   const handleSwap = useCallback(() => {
-    clearRoute(); setLocationNote(null); setUserLocation(null);
+    clearRoute();
     setFromStop(toStop); setToStop(fromStop); setFromPlace(toPlace); setToPlace(fromPlace);
   }, [fromStop, toStop, fromPlace, toPlace, clearRoute]);
 
@@ -333,7 +335,7 @@ export default function Component() {
   const handleMapClick = useCallback((stop: StopDetail) => {
     setMapNotice(null); clearRoute();
     if (pickTarget === "from") {
-      setLocationNote(null); setUserLocation(null); setFromPlace(null);
+      setFromPlace(null);
       setFromStop(stop);
       setPickTarget(toStop ? "from" : "to");
     } else {
@@ -344,24 +346,17 @@ export default function Component() {
   }, [pickTarget, toStop, clearRoute]);
 
   // Each picker's places put the ones nearer the journey's other end first (#720).
-  const fromPoint = useMemo((): Point | null => userLocation ? { latitude: userLocation.lat, longitude: userLocation.lng }
-    : fromPlace ?? fromStop, [userLocation, fromPlace, fromStop]);
+  const fromPoint = useMemo((): Point | null => fromPlace ?? fromStop, [fromPlace, fromStop]);
   const toPoint = useMemo((): Point | null => toPlace ?? toStop, [toPlace, toStop]);
-  // The chosen places on the map, each with the stop that stands for it.
-  const mapPlaces = useMemo((): MapPlace[] => [
-    ...(fromPlace && fromStop ? [{ end: "from" as const, name: fromPlace.name, latitude: fromPlace.latitude, longitude: fromPlace.longitude, stop: fromStop }] : []),
-    ...(toPlace && toStop ? [{ end: "to" as const, name: toPlace.name, latitude: toPlace.latitude, longitude: toPlace.longitude, stop: toStop }] : []),
-  ], [fromPlace, fromStop, toPlace, toStop]);
-  const placeNotes = [
-    fromPlace && fromStop && `«${fromPlace.name}» üçün ən yaxın dayanacaq «${stopName(fromStop)}» seçildi, təxminən ${metres(fromPlace.stopDistance)} m. Ora piyada yol və vaxt marşrut hesabına daxil deyil.`,
-    toPlace && toStop && `«${toPlace.name}» üçün ən yaxın dayanacaq «${stopName(toStop)}» seçildi, təxminən ${metres(toPlace.stopDistance)} m. Oradan piyada yol və vaxt marşrut hesabına daxil deyil.`,
-  ].filter((note): note is string => !!note);
+  // The chosen places, and the person's location, on the map.
+  const mapPlaces = useMemo((): MapPlace[] => ([["from", fromPlace], ["to", toPlace]] as const).flatMap(([end, place]) => place
+    ? [{ end, name: place.name, latitude: place.latitude, longitude: place.longitude, here: place.id === HERE }] : []), [fromPlace, toPlace]);
 
   // Start once per selection/mode change. Result/loading changes are not
   // dependencies, so failures cannot trigger automatic retry loops.
   useEffect(() => {
-    if (fromStop && toStop && mode === "route") void handleFind();
-  }, [fromStop, toStop, mode, handleFind]);
+    if ((fromStop || fromPlace) && (toStop || toPlace) && mode === "route") void handleFind();
+  }, [fromStop, toStop, fromPlace, toPlace, mode, handleFind]);
 
   // ── Line-viewer handlers ──────────────────────────────────────────────────
   const [lineDirection, setLineDirection] = useState(1);
@@ -465,32 +460,30 @@ export default function Component() {
                 className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-orange-200 bg-orange-50 py-2.5 text-sm font-semibold text-orange-800 transition hover:bg-orange-100 disabled:opacity-50"
               >
                 <LocateFixed className="h-4 w-4" />
-                {locating ? "Məkan tapılır…" : "Yaxınımdakı dayanacaqdan başla"}
+                {locating ? "Məkan tapılır…" : "Olduğum yerdən başla"}
               </button>
 
               <EndPicker label="Haradan" loading={stopsLoading || !!stopsError} stops={stops} selected={fromStop} place={fromPlace} near={toPoint}
-                onSelectStop={selectFrom} onSelectPlace={place => choosePlace("from", place)} active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
+                onSelectStop={selectFrom} onSelectPlace={place => choosePlaceMatch("from", place)} active={pickTarget === "from"} onActivate={() => setPickTarget("from")} />
 
               <div className="-my-1 flex justify-end">
-                <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" disabled={!fromStop && !toStop} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-40">
+                <button onClick={handleSwap} title="Dayanacaqları dəyiş" aria-label="Dayanacaqları dəyiş" disabled={!fromStop && !toStop && !fromPlace && !toPlace} className="flex min-h-11 items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium text-gray-600 transition hover:bg-gray-50 disabled:opacity-40">
                   <ArrowDownUp className="h-4 w-4" /> Yerləri dəyiş
                 </button>
               </div>
 
               <EndPicker label="Hara" loading={stopsLoading || !!stopsError} stops={stops} selected={toStop} place={toPlace} near={fromPoint}
-                onSelectStop={selectTo} onSelectPlace={place => choosePlace("to", place)} active={pickTarget === "to"} onActivate={() => setPickTarget("to")} />
+                onSelectStop={selectTo} onSelectPlace={place => choosePlaceMatch("to", place)} active={pickTarget === "to"} onActivate={() => setPickTarget("to")} />
 
               <button
                 onClick={handleFind}
-                disabled={!fromStop || !toStop || loading}
+                disabled={!(fromStop || fromPlace) || !(toStop || toPlace) || loading}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-orange-600 py-3 text-sm font-bold text-white shadow-sm transition hover:bg-orange-700 disabled:opacity-50"
               >
                 {loading ? <><span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" /> Marşrut axtarılır…</>
                          : <><Bus className="h-4 w-4" /> {route ? "Yenidən hesabla" : "Marşrutu tap"}</>}
               </button>
 
-              {locationNote && <p role="status" className="flex gap-2 rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-gray-600"><Footprints className="mt-0.5 h-4 w-4 shrink-0" />{locationNote}</p>}
-              {placeNotes.length > 0 && <div role="status" className="flex gap-2 rounded-xl bg-gray-50 p-3 text-xs leading-relaxed text-gray-600"><Footprints className="mt-0.5 h-4 w-4 shrink-0" /><div className="space-y-1">{placeNotes.map(note => <p key={note}>{note}</p>)}</div></div>}
               {error && (
                 <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-700">
                   {error}
@@ -629,7 +622,6 @@ export default function Component() {
               toStop={mode === "line" ? null : toStop}
               route={mode === "line" ? null : route}
               line={mode === "line" ? line : null}
-              userLocation={mode === "line" ? null : userLocation}
               places={mode === "line" ? undefined : mapPlaces}
               onStopClick={mode === "line" ? () => {} : handleMapClick}
               isVisible={mobileTab === "map"}
