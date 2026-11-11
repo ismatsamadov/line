@@ -235,6 +235,17 @@ ALIASES = {
     "w163717459": (["Aeroport", "Hava limanı", "Airport", "Аэропорт"],
                    "Baku's one passenger airport is the airport: the places around it are mapped as "
                    "VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport"),
+    "w479865023": (["BDU", "БГУ"], "Bakı Dövlət Universiteti's own abbreviation (bsu.edu.az) and its Russian one"),
+    "r3983666": (["ADNSU", "ASOIU", "Neft Akademiyası"],
+                 "the university's abbreviations in Azerbaijani and English (asoiu.edu.az), and its name "
+                 "until 2015, Azərbaycan Dövlət Neft Akademiyası"),
+    "w32720577": (["Qafqaz Universiteti", "BMU"],
+                  "Qafqaz University's campus in Xırdalan became Bakı Mühəndislik Universiteti in 2016 "
+                  "(beu.edu.az), and BMU is its abbreviation"),
+    "w340060268": (["Alov Qüllələri", "Пламенные башни"], "the towers' Azerbaijani and Russian names"),
+    "r19380164": (["Heydar Aliyev Center", "Heydar Aliyev Centre"],
+                  "the centre's own English name (heydaraliyevcenter.az); OpenStreetMap's is "
+                  "\"Center of Heydar Aliev\""),
 }
 # Word starts a person reads every name and other name for at each refresh, as fold()
 # writes them (no diacritics, й as и): insults, profanity, crime and politics, in English,
@@ -338,8 +349,8 @@ def category(t):
         return "museum"
     if amenity in ("theatre", "cinema", "concert_hall"):
         return "theatre"
-    if amenity in ("arts_centre", "community_centre", "library", "events_venue", "conference_centre",
-                   "exhibition_centre"):
+    if amenity in ("arts_centre", "community_centre", "library", "events_venue", "events_centre",
+                   "conference_centre", "exhibition_centre"):
         return "culture"
     if amenity == "place_of_worship" or building in ("mosque", "church", "cathedral", "synagogue"):
         return "worship"

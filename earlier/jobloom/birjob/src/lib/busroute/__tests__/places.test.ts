@@ -150,10 +150,10 @@ describe('places.json (#720)', () => {
       metro: 27, rail: 54, bus_station: 15, airport: 8, port: 10, mall: 145, market: 62, supermarket: 1032,
       shop: 1849, restaurant: 1558, cafe: 1142, hotel: 423, university: 78, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
-      office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 210, sport: 221, fun: 66,
+      office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
       worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_633);
+    expect(data.places).toHaveLength(12_634);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });
@@ -235,6 +235,13 @@ describe('searchPlaces (#720)', () => {
     expect(first('qiz qalasi')).toMatchObject({ name: 'Qız Qalası', category: 'sight' });
     expect(first('mərdəkan')).toMatchObject({ name: 'Mərdəkan', category: 'settlement' });
     expect(searchPlaces(real, "mcdonald's")).toHaveLength(8);
+    // Names OpenStreetMap lacks, from ALIASES in the build script, and Baku Crystal Hall,
+    // tagged amenity=events_centre.
+    for (const [query, id] of [['bdu', 'w479865023'], ['бгу', 'w479865023'], ['adnsu', 'r3983666'],
+      ['neft akademiyası', 'r3983666'], ['qafqaz universiteti', 'w32720577'], ['alov qüllələri', 'w340060268'],
+      ['flame towers', 'w340060268'], ['heydar aliyev center', 'r19380164'], ['crystal hall', 'w249204041']]) {
+      expect(first(query), query).toMatchObject({ id });
+    }
     // The airport is the first answer for the words people use for it, and sits by a stop
     // a bus serves: Beynəlxalq Hava Limanı Terminal 1 (AYNA code 1001585), where the H1
     // starts. At its outline's centre, on the airfield, the nearest stop was 1,027 m away.

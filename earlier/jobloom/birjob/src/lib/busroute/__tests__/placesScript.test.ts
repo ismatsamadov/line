@@ -124,6 +124,11 @@ print(json.dumps(result))`);
     });
   });
 
+  it('counts Baku Crystal Hall\'s amenity=events_centre as an events venue', () => {
+    expect(python('print(json.dumps([b.category(t) for t in data]))',
+      [{ amenity: 'events_centre' }, { amenity: 'events_venue' }])).toEqual(['culture', 'culture']);
+  });
+
   it('flags for a person the names with an insult, a curse or a political word, and not the ministries', () => {
     const names = ['Heydar Aliyev mafia boss grave', 'Хуйня', 'Qəhbə', 'Corrupt regime',
       'Daxili İşlər Nazirliyi', 'Hugo Boss', 'Художественный музей', 'Воронеж', 'Gənclik Mall'];
