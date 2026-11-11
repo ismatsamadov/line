@@ -85,13 +85,20 @@ One walk may occur before the first ride, between rides, and after the last ride
 There is no overall walking budget across a journey with several rides.
 
 The state includes whether a walking arrival has already boarded a bus, so an
-origin walk cannot suppress an otherwise valid bus-and-walk arrival. A ride's
-state is the edge it arrived by, since one edge reaches each position of a ride,
-and a walk's state is a number made of its stop and that flag. Until #721 both
-were strings built and hashed for every edge tried, most of a search's time.
-Queue entries whose label has been replaced are skipped. The unused, incorrect Yen
-alternative-path implementation and its unused optimization modes were removed;
-the endpoint exposes one complete itinerary.
+origin walk cannot suppress an otherwise valid bus-and-walk arrival. Every state
+is a number: a walk's is made of its stop and that flag, and a ride's names the
+position it arrived at, by its edge's kind, ride and `toSequence`. Until #721 both
+were strings built and hashed for every edge tried, most of a search's time. Now
+`graph.ts` keeps each ride edge's number on the edge once the graph is built
+(`numberRidePositions`), as a property a copy does not take, and an edge without
+one, a copy or one built elsewhere, is numbered from its own fields. Keying a ride
+by its edge object was as fast, but only while `getEdges` returned the graph's own
+objects: through a graph that copied its edges no ride state was ever met twice,
+and 1343 → 3642 ran the process out of memory in review. So `getEdges` may hand
+back copies, and a ride edge's kind, ride and `toSequence` must name one leg
+(`RoutingGraph` in `routing.ts`). Queue entries whose label has been replaced are
+skipped. The unused, incorrect Yen alternative-path implementation and its unused
+optimization modes were removed; the endpoint exposes one complete itinerary.
 
 ## Graph and data
 
@@ -416,11 +423,12 @@ for its endpoints, including the return direction.
 
 Tests cover the boarding penalty below, at and above its threshold, tie-breaks,
 origin and interchange walks, the walking limit, directions, loops, unreachable
-stops, the length-shared leg times, initialization concurrency/retry and API
-input/error handling. An independent round-by-boardings oracle checks 900 trips
-over generated small networks, choosing the round with the lowest minutes plus
-penalties. The spatial grid is checked against exhaustive haversine pairs, at
-Baku's latitude and at the network's northern edge.
+stops, the length-shared leg times, a graph that hands back copies of its edges,
+initialization concurrency/retry and API input/error handling. An independent
+round-by-boardings oracle checks 900 trips over generated small networks, choosing
+the round with the lowest minutes plus penalties. The spatial grid is checked
+against exhaustive haversine pairs, at Baku's latitude and at the network's
+northern edge.
 
 `routingOracle.test.ts` adds 900 generated trips checked against a separate
 boarding-round cost oracle. It expands complete contiguous ride stretches in each
@@ -480,7 +488,11 @@ settled went from 6,240 to 7,217 at the median and from 14,102 to 14,373 at the
 95th percentile, with 16,590 walking edges instead of 10,264; 1343 → 3642 settles
 13,537 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
 keyed by edge, the new search returned the same journey as with strings for all
-200 pairs.
+200 pairs. Keyed by number, as now, it returns the same response as keyed by edge
+for all 200 and for the review's 1,500 pairs (seed 20261111), at the same speed:
+6.6 ms at the median and 13.1 at the 95th percentile on those 1,500, against 6.6
+and 13.3 in the same run. Through a graph that hands back copies of its edges it
+settles the same labels and returns the same journeys.
 
 **How.** A scratch PostgreSQL was loaded from route_efficiency's `data/ayna.db`
 (the same 3,456 served stops, 208 buses and 11,786 stop rows as production, stop

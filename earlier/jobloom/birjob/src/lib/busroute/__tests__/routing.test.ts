@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOARDING_PENALTY_MIN, findRoute } from '../routing';
+import { BOARDING_PENALTY_MIN, findRoute, numberRidePositions } from '../routing';
 import { WALK_RADIUS_KM, WALK_SPEED_KMH } from '../geo';
 import type { GraphEdge } from '../types';
 import { graph, RED, ride, train, walk } from './fixtures';
@@ -134,6 +134,48 @@ describe('journey choice: minutes plus a boarding penalty (#664, #721)', () => {
     const route = findRoute(g, 1, 4)!;
     expect(route.segments[0].stops[0].id).toBe(1);
     expect(route.segments.at(-1)!.stops.at(-1)!.id).toBe(4);
+  });
+
+  it('knows a ride by its position, not its edge object, so a graph may hand back copies (#721)', () => {
+    // As a wrapper that adds or decorates edges might: fresh copies on every call. Keyed
+    // by the edge object, a ride never met its earlier state again; 1343 → 3642 ran out
+    // of memory that way. Each network is searched as built, then with its edges
+    // numbered as graph.ts numbers its own, which a copy goes without.
+    let seed = 721;
+    const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
+    for (let network = 0; network < 20; network++) {
+      const edges: Record<number, GraphEdge[]> = {};
+      for (let line = 1; line <= 6; line++) {
+        const stops = Array.from({ length: 4 + random(4) }, () => 1 + random(8));
+        stops.slice(1).forEach((to, seq) => (edges[stops[seq]] ??= []).push(ride(to, line, 1 + random(20), 1, seq)));
+      }
+      for (let id = 1; id <= 8; id++) (edges[id] ??= []).push(walk(id % 8 + 1));
+      const own = graph(edges, [1, 2, 3, 4, 5, 6, 7, 8]);
+      let settled = 0;
+      const counted = (copies: boolean) => ({
+        getStopInfo: own.getStopInfo,
+        getEdges: (id: number) => { settled++; return copies ? own.getEdges(id).map(e => ({ ...e })) : own.getEdges(id); },
+      });
+      // A state is settled once at most: a ride's position, a stop walked to before or
+      // after boarding, or the start; findRoute reads the origin's edges once more.
+      const states = Object.values(edges).flat().filter(e => e.kind !== 'walk').length + 2 * 8 + 1;
+      const unnumbered = new Map<string, ReturnType<typeof findRoute>>();
+      for (const numbered of [false, true]) {
+        if (numbered) Object.values(edges).forEach(numberRidePositions);
+        for (let from = 1; from <= 8; from++) for (let to = 1; to <= 8; to++) {
+          if (from === to) continue;
+          settled = 0;
+          const expected = findRoute(counted(false), from, to);
+          const byOwnEdges = settled;
+          settled = 0;
+          expect(findRoute(counted(true), from, to)).toEqual(expected);
+          expect(settled).toBe(byOwnEdges);
+          expect(settled).toBeLessThanOrEqual(states + 1);
+          if (numbered) expect(expected).toEqual(unnumbered.get(`${from}:${to}`));
+          else unnumbered.set(`${from}:${to}`, expected);
+        }
+      }
+    }
   });
 
   it('agrees with independent boarding rounds across generated networks', () => agreesWithRounds(664, () => ride));

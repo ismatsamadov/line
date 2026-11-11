@@ -26,15 +26,44 @@ import { joinLegs } from "./shape";
 /** Minutes a boarding costs on top of the movement time it brings (#721). */
 export const BOARDING_PENALTY_MIN = 15;
 
+/**
+ * What the search reads of a graph. getEdges may hand back the graph's own edge
+ * objects or copies of them, as a wrapper that adds or decorates edges may: the
+ * search knows a ride's position by its edge's kind, rideId and toSequence, never by
+ * the object, and those three must name one leg of one ride. A graph whose edges are
+ * numbered once built (numberRidePositions, as graph.ts does) is searched fastest.
+ */
 type RoutingGraph = Pick<TransitGraph, "getEdges" | "getStopInfo">;
 type Cost = readonly [cost: number, boardings: number, walkingKm: number, distanceKm: number, minutes: number];
-// A ride's state is the edge it arrived by: one edge reaches each position of a
-// ride. A walk's state is its stop and whether the journey has boarded yet, as a
-// number. Building and hashing a string for every edge tried was most of a search's
-// time (#721).
-type StateKey = GraphEdge | number;
+// Every state is a number. A walk's is its stop and whether the journey has boarded
+// yet. A ride's is the position it arrived at, numbered by its edge's kind, rideId and
+// toSequence. Building and hashing that name for every edge tried was most of a
+// search's time, so the graph keeps each of its own edges' numbers on the edge, where
+// a copy does not take it (#721). Keyed by the edge object instead, a graph that
+// copied its edges never pruned a ride, and 1343 → 3642 ran out of memory.
+type StateKey = number;
+type RideEdge = Exclude<GraphEdge, { kind: "walk" }>;
 const walkedTo = (stopId: number, boarded: boolean) => stopId * 4 + (boarded ? 1 : 2);
 const startAt = (stopId: number) => stopId * 4 + 3;
+const positions = new Map<string, number>();
+function rodeTo(edge: RideEdge): StateKey {
+  const name = `${edge.kind}:${edge.rideId}:${edge.toSequence}`;
+  let position = positions.get(name);
+  // Multiples of 4, which no walk's number is.
+  if (position === undefined) positions.set(name, (position = positions.size * 4));
+  return position;
+}
+const POSITION = Symbol("ride position");
+type Numbered = RideEdge & { readonly [POSITION]?: StateKey };
+
+/**
+ * Keeps each ride edge's state number on the edge, for a graph that is built once and
+ * searched many times. The property is not enumerable, so a spread or Object.assign
+ * copy goes without it and is numbered by its own fields, even when they changed.
+ */
+export function numberRidePositions(edges: Iterable<GraphEdge>): void {
+  for (const edge of edges) if (edge.kind !== "walk") Object.defineProperty(edge, POSITION, { value: rodeTo(edge) });
+}
 interface Label {
   key: StateKey;
   stopId: number;
@@ -166,7 +195,7 @@ function cheapest(graph: RoutingGraph, starts: readonly Label[], target: number)
         current.cost[2] + (walking ? edge.distance : 0), current.cost[3] + edge.distance,
         current.cost[4] + edge.time,
       ];
-      const key = edge.kind === "walk" ? walkedTo(edge.toStopId, cost[1] > 0) : edge;
+      const key = edge.kind === "walk" ? walkedTo(edge.toStopId, cost[1] > 0) : (edge as Numbered)[POSITION] ?? rodeTo(edge);
       const previous = best.get(key);
       if (previous && compare(previous.cost, cost) <= 0) continue;
       const next: Label = { key, stopId: edge.toStopId, cost, previous: current, edge, boarded };

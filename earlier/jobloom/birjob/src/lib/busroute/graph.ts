@@ -12,6 +12,7 @@ import { computeWalkingEdges } from "./walking";
 import { collapseRepeatedSequence } from "./sequence";
 import { legPaths } from "./shape";
 import { metroNetwork } from "./metro";
+import { numberRidePositions } from "./routing";
 
 export class TransitGraph {
   private adjacency: Map<number, GraphEdge[]> = new Map();
@@ -170,6 +171,8 @@ export class TransitGraph {
     }
 
     const metroEdges = this.addMetro();
+    // Each ride leg's number in the search, kept on the edge (routing.ts).
+    for (const edges of this.adjacency.values()) numberRidePositions(edges);
 
     this.built = true;
     const totalEdges = Array.from(this.adjacency.values()).reduce((s, e) => s + e.length, 0);
