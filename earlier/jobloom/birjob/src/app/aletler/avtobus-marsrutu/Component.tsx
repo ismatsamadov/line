@@ -42,10 +42,14 @@ const stopName = (stop: StopDetail) => stop.name.trim() || (stop.code ? `kodu ${
  *  line is cut at the end, and the stop's name matters least. */
 const stopNote = (stop: StopDetail, km: number) => `dayanacağa ${metres(km)} m: ${stopName(stop)}`;
 
+/** The stop nearest a point within a journey's walk from it (ACCESS_RADIUS_KM), among
+ *  the stops with a name: the snapshot's 385 nameless stops are the ones no bus serves,
+ *  which the planner never walks a place to either (#720). */
+const servedStopNear = (named: StopDetail[], point: Point) => nearestStop(named, point.latitude, point.longitude, ACCESS_RADIUS_KM);
+
 /** A place in the list: the other name that found it, its kind, and the stop nearest it
  *  within a journey's walk, so a chain's branches can be told apart. */
-function placeDetail(place: PlaceMatch, stops: StopDetail[]): string {
-  const near = nearestStop(stops, place.latitude, place.longitude, ACCESS_RADIUS_KM);
+function placeDetail(place: PlaceMatch, near: ReturnType<typeof servedStopNear>): string {
   const stop = near ? stopNote(near.stop, near.distance) : `${metres(ACCESS_RADIUS_KM)} m-də dayanacaq yoxdur`;
   return [place.alias && `«${place.alias}»`, place.label, stop].filter(Boolean).join(" · ");
 }
@@ -63,10 +67,15 @@ function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace,
 }) {
   const [query, setQuery] = useState("");
   const places = usePlaceSearch(query, near);
-  const search = useCallback((q: string) => suggestEnds(stops, q, places.places).map((found): EndItem => found.kind === "stop"
-    ? { key: `s${found.stop.id}`, name: found.stop.name, detail: stopDetail(found.stop), kind: "stop", stop: found.stop }
-    : { key: `p${found.place.id}`, name: found.place.name, detail: placeDetail(found.place, stops), kind: "place", place: found.place }),
-  [stops, places.places]);
+  const named = useMemo(() => stops.filter(stop => stop.name.trim()), [stops]);
+  const search = useCallback((q: string) => {
+    // A place with no stop within a journey's walk can only be walked to, so it is listed
+    // after every place a journey can reach, and says why.
+    const nearby = new Map(places.places.map(place => [place.id, servedStopNear(named, place)]));
+    return suggestEnds(stops, q, places.places, place => !!nearby.get(place.id)).map((found): EndItem => found.kind === "stop"
+      ? { key: `s${found.stop.id}`, name: found.stop.name, detail: stopDetail(found.stop), kind: "stop", stop: found.stop }
+      : { key: `p${found.place.id}`, name: found.place.name, detail: placeDetail(found.place, nearby.get(found.place.id) ?? null), kind: "place", place: found.place });
+  }, [stops, named, places.places]);
   const shown: PickerItem | null = place
     ? { key: `p${place.id}`, name: place.name, detail: place.label, kind: place.id === HERE ? "here" : "place" }
     : selected ? { key: `s${selected.id}`, name: selected.name, detail: stopDetail(selected), kind: "stop" } : null;

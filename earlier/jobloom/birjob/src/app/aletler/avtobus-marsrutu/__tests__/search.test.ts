@@ -100,6 +100,12 @@ describe("stops and places in one list (#720)", () => {
     expect(neriman.map(s => s.kind === "place" && s.place.id)).toEqual(["n7", "n6"]);
   });
 
+  it("lists a place no journey can reach after every other row", () => {
+    const at = (id: string, name: string, rank: number): PlaceMatch => ({ id, name, category: "mall", label: "Ticarət mərkəzi", latitude: 40.4, longitude: 49.85, rank });
+    const merged = suggestEnds([stop(1, "Gənclik m/st")], "gənclik", [at("w1", "Gənclik", 0), at("w2", "Gənclik Plaza", 1)], place => place.id !== "w1");
+    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["s1", "w2", "w1"]);
+  });
+
   it("keeps the rows shown for a query in place and adds later ones below them", () => {
     const row = (key: string) => ({ key });
     const first = keepShownRows(null, "gənclik", [row("s1"), row("s2")]);

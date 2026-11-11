@@ -46,19 +46,22 @@ export const EVERYDAY_PLACES: ReadonlySet<string> = new Set([
  * station or a mall whose name starts with it; typing "gənclik" listed two cafés above
  * Gənclik m/st. A place's looser matches count with a stop's loosest. Among equal
  * matches a stop comes first, then a place of another kind, then an everyday one, each
- * in its own order. An empty query offers the transport hubs, as before places.
+ * in its own order. A place no journey can reach (`reachable`) comes after all of them.
+ * An empty query offers the transport hubs, as before places.
  */
-export function suggestEnds(stops: StopDetail[], query: string, places: PlaceMatch[]): EndSuggestion[] {
+export function suggestEnds(stops: StopDetail[], query: string, places: PlaceMatch[],
+  reachable: (place: PlaceMatch) => boolean = () => true): EndSuggestion[] {
   if (!normalizeSearch(query)) return searchStops(stops, query).map(stop => ({ kind: "stop", stop, rank: 0 }));
   const everyday = (found: EndSuggestion) => found.kind === "place" && EVERYDAY_PLACES.has(found.place.category);
   const order = (found: EndSuggestion) => found.kind === "stop" ? 0 : everyday(found) ? 2 : 1;
+  const dead = (found: EndSuggestion) => Number(found.kind === "place" && !reachable(found.place));
   const found: EndSuggestion[] = [
     ...rankStops(stops, query).map(({ stop, rank }): EndSuggestion => ({ kind: "stop", stop, rank })),
     ...places.map((place): EndSuggestion => ({
       kind: "place", place, rank: Math.min(place.rank + (EVERYDAY_PLACES.has(place.category) ? 1 : 0), 2),
     })),
   ];
-  return found.sort((a, b) => a.rank - b.rank || order(a) - order(b));
+  return found.sort((a, b) => dead(a) - dead(b) || a.rank - b.rank || order(a) - order(b));
 }
 
 /** The rows a picker has shown for one query, in the order shown. */
