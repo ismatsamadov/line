@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { statSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import placesJson from '../places.json';
@@ -92,6 +92,14 @@ describe('places.json (#720)', () => {
     }
     const koroglu = metro.find(([, name]) => name === 'Koroğlu')!;
     expect(koroglu[6]).toContain('Məşədi Əzizbəyov'); // its old name, still searched
+  });
+
+  it('is dated on the planner page as the file dates it', () => {
+    // The page tells riders how old the places are; a refresh must move both.
+    const MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'];
+    const [year, month, day] = placesJson.source.snapshot.slice(0, 10).split('-').map(Number);
+    const page = readFileSync(fileURLToPath(new URL('../../../app/aletler/avtobus-marsrutu/page.tsx', import.meta.url)), 'utf8');
+    expect(page).toContain(`const PLACES_DATE = '${day} ${MONTHS[month - 1]} ${year}-`);
   });
 
   it('holds what OpenStreetMap had on 11 November 2026', () => {

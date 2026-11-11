@@ -11,10 +11,14 @@ import { buildFaqPage } from '@/lib/ld/faqPage';
 import Component from './Component';
 import { WALK_RADIUS_KM } from '@/lib/busroute/geo';
 import { BOARDING_PENALTY_MIN } from '@/lib/busroute/routing';
+import { NEARBY_STOP_RADIUS_KM } from './search';
 
 const tool = getToolBySlug('avtobus-marsrutu')!;
 const PAGE_URL = `https://www.birjob.com/aletler/${tool.slug}`;
 const WALK_METERS = Math.round(WALK_RADIUS_KM * 1000);
+const NEARBY_METERS = Math.round(NEARBY_STOP_RADIUS_KM * 1000);
+// The OpenStreetMap snapshot the place search reads (#720): places.json's source.snapshot.
+const PLACES_DATE = '11 noyabr 2026-cı il';
 // The open study of the bus network (#694), linked by its DOI, never its repository: that
 // URL carries a name (#449).
 const STUDY_URL = 'https://doi.org/10.5281/zenodo.23604370';
@@ -32,6 +36,7 @@ const FAQ = [
   { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — bu, yalnız təxmini hərəkət vaxtıdır. Avtobusun və qatarın gözlənilməsi, cədvəl və tıxaclar nəzərə alınmır. Avtobus xəttinin ümumi müddəti dayanacaqlar arasındakı hissələrə uzunluqlarına görə bölünür, yəni avtobusun xətt boyu eyni sürətlə getdiyi qəbul edilir; metro qatarının stansiyalar arası vaxtı Bakı Metropoliteninin öz marşrut planlayıcısındandır, stansiyada eskalatorla və keçidlərdə keçən vaxt isə daxil deyil; piyada vaxtı təxmini məsafədən hesablanır. Bu alət dəqiq gəliş saatı vermir.' },
   { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'Avtobuslar AYNA açıq nəqliyyat məlumatlarından götürülmüş istinad bazasındandır və avtomatik yenilənmir. Şəhərdə avtobus xətləri dəyişmiş ola bilər. Metro məlumatı (qatar xidmətləri, vaxtlar və stansiya çıxışları) Bakı Metropoliteninin saytından və opendata.az-dan, stansiyaların yeri və xətlərin izi isə OpenStreetMap-dandır (© OpenStreetMap iştirakçıları); 25 oktyabr 2026-cı il vəziyyətini göstərir. O gün 28 May ilə Nizami arasında qatarlar işləmirdi və bu hissədə metronun ekspres avtobusları işləyirdi; Əhmədli ilə Həzi Aslanov arasında isə ayrıca məkik qatar işləyirdi. Səfərdən əvvəl cari marşrutu rəsmi mənbələrdən yoxlayın.' },
   { q: 'Niyə bəzən piyada keçid təklif olunur?', a: `Təyinat dayanacağı düz xətt üzrə ${WALK_METERS} metrədək məsafədədirsə, qısa piyada variantı göstərilir. Digər səfərlərdə başlanğıcda, sonda və minmələr arasında ən çox ${WALK_METERS} metrlik piyada keçid mümkündür; metro stansiyasına qədər məsafə stansiyanın ən yaxın çıxışına qədər ölçülür. Ardıcıl piyada keçidlər birləşdirilmir. Məsafə düz xətt üzrə təxmindir; real piyada yolunu və keçid imkanını xəritədə yoxlayın.` },
+  { q: 'Ticarət mərkəzi, restoran və ya universitet adı ilə axtarmaq olarmı?', a: `Bəli. Başlanğıc və ya təyinat sahəsinə yerin adını yazın: ticarət mərkəzləri, bazarlar, restoranlar və kafelər, universitetlər, məktəblər, xəstəxanalar, otellər, parklar, dövlət qurumları, metro stansiyaları, qəsəbə və kəndlər axtarılır, rus və ingilis adları ilə də. Siyahıda hər yerin növü və ona ən yaxın dayanacaq göstərilir. Yeri seçdikdə alət ona ən yaxın dayanacağı (${NEARBY_METERS} metrədək) götürür və marşrutu oradan hesablayır; yerlə dayanacaq arasındakı piyada yol hələ vaxta daxil deyil. Məkan məlumatı OpenStreetMap-dandır (© OpenStreetMap iştirakçıları), ${PLACES_DATE} vəziyyətini göstərir və avtomatik yenilənmir. Küçə və ev nömrəsi ilə axtarış hələ yoxdur.` },
   { q: 'Velosiped zolaqları və parkinqləri göstərilirmi?', a: `Bəli. Xəritədə AYNA-nın velosiped zolaqları yaşıl nöqtələrlə çəkilir; xəritəni yaxınlaşdırdıqda velosiped parkinq məntəqələri də görünür. Xəritənin küncündəki «Velosiped zolaqları» seçimi ilə onları gizlədə bilərsiniz. Marşrutun ilk minmə və son düşmə yerinə ${WALK_METERS} metrədək məsafədə parkinq varsa, nəticədə onun kodu və düz xətt üzrə təxmini məsafəsi göstərilir: dayanacağa velosipedlə gəlib onu orada saxlaya bilərsiniz. Alət velosipedlə marşrut hesablamır və velosiped icarəsi haqqında məlumat vermir, çünki bu açıq məlumat yalnız zolaqların və parkinqlərin yerini göstərir. Məlumat opendata.az portalındandır: zolaqlar 24 sentyabr 2026-cı il, parkinq məntəqələri isə 4 may 2026-cı il tarixli fayllardandır.` },
 ];
 
@@ -57,7 +62,7 @@ export default async function Page() {
         <header className="mb-5 sm:mb-7">
           <div className="mb-2 flex items-center gap-2 text-xs font-semibold text-orange-700"><Bus aria-hidden="true" className="h-4 w-4" />Bakı · Avtobus və metro</div>
           <h1 className="text-2xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">Bakı avtobus marşrutu planlayıcısı</h1>
-          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">Haradan hara gedirsiniz? Dayanacaqları seçin, avtobus və metro ilə ən əlverişli yolu xəritədə görün. Pulsuz və qeydiyyatsız.</p>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 sm:text-base">Haradan hara gedirsiniz? Dayanacağı və ya yerin adını (ticarət mərkəzi, universitet, xəstəxana) seçin, avtobus və metro ilə ən əlverişli yolu xəritədə görün. Pulsuz və qeydiyyatsız.</p>
         </header>
 
         <Component />
@@ -66,8 +71,8 @@ export default async function Page() {
           <h2 id="planner-help" className="text-xl font-bold text-gray-900">Marşrutu necə tapmaq olar?</h2>
           <ol className="mt-4 grid gap-3 sm:grid-cols-3">
             {[
-              ['Başlanğıcı seçin', 'Dayanacağın adını və ya kodunu yazın, xəritədə seçin, yaxud yaxınınızdakı dayanacağı tapın.'],
-              ['Təyinatı seçin', 'Getmək istədiyiniz dayanacağı seçin. Alət avtobus və metronu birlikdə nəzərə alır.'],
+              ['Başlanğıcı seçin', 'Dayanacağın və ya yerin (ticarət mərkəzi, restoran, universitet) adını yazın, xəritədə seçin, yaxud yaxınınızdakı dayanacağı tapın.'],
+              ['Təyinatı seçin', 'Getmək istədiyiniz dayanacağı və ya yeri seçin. Alət avtobus və metronu birlikdə nəzərə alır.'],
               ['Yolunuzu izləyin', 'Harada minəcəyinizi, neçə dayanacaq gedəcəyinizi və harada dəyişəcəyinizi addım-addım görün.'],
             ].map(([title, text], index) => (
               <li key={title} className="rounded-xl border border-gray-200 bg-white p-4">
@@ -90,8 +95,9 @@ export default async function Page() {
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Bu alət canlı gəliş saatı göstərmir. Vaxta gözləmə, cədvəl, tıxac və metro daxilində keçidlər daxil deyil. Avtobus və piyada məsafələri düz xətt üzrə, metro məsafələri xətt boyunca hesablanır.</p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Avtobuslar <a href="https://ayna.gov.az/az" className="font-medium text-orange-700 underline underline-offset-2">AYNA</a> istinad bazasından, metro xidmətləri <a href="https://metro.gov.az/" className="font-medium text-orange-700 underline underline-offset-2">Bakı Metropoliteni</a> və opendata.az-dan götürülüb. Metro məlumatı 25 oktyabr 2026-cı il vəziyyətinə uyğundur. Bazalar avtomatik yenilənmir; səfərdən əvvəl cari xidməti yoxlayın.</p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Bakı avtobus şəbəkəsinin səmərəliliyi eyni AYNA xəritə məlumatı ilə <a href={STUDY_URL} className="font-medium text-orange-700 underline underline-offset-2">açıq tədqiqatda</a> ölçülüb; tədqiqatın kodu və məlumatları hər kəs üçün açıqdır.</p>
+            <p className="mt-2 text-sm leading-relaxed text-gray-600">Axtarışdakı məkanlar (ticarət mərkəzləri, restoranlar, universitetlər, xəstəxanalar və s.) OpenStreetMap-dandır və {PLACES_DATE} vəziyyətini göstərir. Məkan seçdikdə ona ən yaxın dayanacaq götürülür; dayanacağa qədər piyada yol hələ hesablanmır.</p>
             <p className="mt-2 text-sm leading-relaxed text-gray-600">Velosiped zolaqları (24 sentyabr 2026-cı il) və parkinq məntəqələri (4 may 2026-cı il) AYNA-nın <a href="https://opendata.az/@azerbaycan-yerustu-neqliyyat-agentliyi" className="font-medium text-orange-700 underline underline-offset-2">opendata.az</a> portalındakı açıq məlumatlarındandır. Alət velosipedlə marşrut hesablamır.</p>
-            <p className="mt-2 text-xs text-gray-500">Metro xəritə məlumatı: <a href="https://www.openstreetmap.org/copyright" className="underline underline-offset-2">© OpenStreetMap iştirakçıları, ODbL</a>.</p>
+            <p className="mt-2 text-xs text-gray-500">Metro və məkan məlumatı: <a href="https://www.openstreetmap.org/copyright" className="underline underline-offset-2">© OpenStreetMap iştirakçıları, ODbL</a>.</p>
           </div>
         </section>
 
