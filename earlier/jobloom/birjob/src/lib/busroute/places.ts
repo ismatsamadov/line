@@ -39,7 +39,8 @@ export interface Place {
 
 export interface PlaceMatch extends Place {
   /** 0 the name itself, 1 the start of it, 2 the start of each of its words, 3 looser:
-   *  a word found inside it, or the category's name ("gənclik metro"). */
+   *  a word found inside it, or the category's name ("gənclik metro"). A station, an
+   *  airport or a mall counts a step better from 2 down (HUBS). */
   rank: number;
   /** The other name that matched, when the one shown did not ("Ganjlik Mall"). */
   alias?: string;
@@ -56,6 +57,11 @@ const WEIGHT: Record<string, number> = {
   kindergarten: 3, post_office: 3, bank: 3, office: 3, shop: 3,
 };
 const NOTABLE = 2;
+// Where journeys most often start and end, and few of each: a match on one counts a step
+// better, though never as the name itself. Strictly by match, "nerimanov" listed eight
+// courts, offices and a park whose names start with Nərimanov, and not the station
+// Nəriman Nərimanov, whose second word it is.
+const HUBS: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
 export const PLACE_SEARCH_LIMIT = 8;
 
 interface Entry {
@@ -109,7 +115,8 @@ function rankLoosely(queryWords: string[], name: string, words: string[], labelW
 
 /**
  * The best places for what a person typed: exact names, then names that start with it,
- * then names whose words start with its words in any order, then looser matches. Among
+ * then names whose words start with its words in any order, then looser matches, with a
+ * station, an airport or a mall a step up from its words' match (HUBS). Among
  * equal matches a match on the shown name comes before one on another name, then the
  * category's weight, then, given `near`, the nearer place: 91 supermarkets are named
  * "Bravo", and the one near the other end of the journey is the likelier one. A query
@@ -135,6 +142,7 @@ export function searchPlaces(
       if (which < 0) continue;
       rank = 3;
     }
+    if (rank > 1 && HUBS.has(entry.place.category)) rank--;
     const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
     found.push({ entry, rank, which, distance });
   }

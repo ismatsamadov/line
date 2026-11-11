@@ -181,12 +181,24 @@ describe('searchPlaces (#720)', () => {
     const found = searchPlaces(index, 'gənclik');
     expect(found.map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['w2', 1], ['n3', 2]]);
     expect(found[0]).toEqual({ id: 'n1', name: 'Gənclik', category: 'metro', label: 'Metro stansiyası', latitude: 40.4, longitude: 49.851, rank: 0 });
-    expect(searchPlaces(index, 'mall gənc').map((p) => [p.id, p.rank])).toEqual([['w2', 2]]);
+    expect(searchPlaces(index, 'mall gənc').map((p) => [p.id, p.rank])).toEqual([['w2', 1]]); // 2, a mall a step up
     // The category's name counts too, below every match on the name.
-    expect(searchPlaces(index, 'gənclik metro').map((p) => [p.id, p.rank])).toEqual([['n1', 3]]);
+    expect(searchPlaces(index, 'gənclik metro').map((p) => [p.id, p.rank])).toEqual([['n1', 2]]); // 3, a station a step up
     expect(searchPlaces(index, 'sarayi').map((p) => [p.id, p.rank])).toEqual([['n7', 2]]);
     expect(searchPlaces(index, 'vanşahlar').map((p) => [p.id, p.rank])).toEqual([['n7', 3]]);
     expect(ids('ahl')).toEqual([]); // under four letters, a word must start a word
+  });
+
+  it('lets a station, an airport or a mall a step up from its words\' match, never to the name itself', () => {
+    // "nerimanov" is the station's second word; eight places whose names start with it
+    // filled the list, and the station was not in it.
+    const offices = ['Parkı', 'Məhkəməsi', 'Bələdiyyəsi', 'Prokurorluğu', 'Polis İdarəsi', 'İcra Şöbəsi', 'Mədəniyyət Evi', 'Kitabxanası']
+      .map((what, i) => row(`n${20 + i}`, `Nərimanov ${what}`, 'sight'));
+    const hub = buildPlaceIndex({ labels, places: [...offices, row('n9', 'Nəriman Nərimanov', 'metro', 40.4, 49.87, 1)] });
+    expect(searchPlaces(hub, 'nerimanov')[0]).toMatchObject({ id: 'n9', rank: 1 });
+    expect(searchPlaces(hub, 'nəriman nərimanov')[0]).toMatchObject({ id: 'n9', rank: 0 });
+    // A mall that starts with what was typed stays below the place that is named it.
+    expect(searchPlaces(index, 'gənclik').map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['w2', 1], ['n3', 2]]);
   });
 
   it('folds Azerbaijani letters for a Latin keyboard and finds the other names', () => {
@@ -226,6 +238,14 @@ describe('searchPlaces (#720)', () => {
     expect(await getPlaceIndex()).toBe(real); // built once
     const first = (query: string) => searchPlaces(real, query)[0];
     expect(first('gənclik mall')).toMatchObject({ name: 'Gənclik Mall', label: 'Ticarət mərkəzi', rank: 0 });
+    // A metro station among the places whose names start with its words (HUBS in places.ts).
+    for (const query of ['nerimanov', 'narimanov', 'nərimanov']) {
+      expect(searchPlaces(real, query).slice(0, 3).map((p) => p.name), query).toContain('Nəriman Nərimanov');
+    }
+    expect(first('nerimanov')).toMatchObject({ name: 'Nəriman Nərimanov', category: 'metro' });
+    expect(first('28 mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
+    expect(first('hazi aslanov')).toMatchObject({ name: 'Həzi Aslanov', category: 'metro' });
+    expect(first('гянджлик')).toMatchObject({ name: 'Gənclik Mall', alias: 'Гянджлик Мол' });
     expect(first('28 may')).toMatchObject({ name: '28 May', category: 'metro' });
     expect(first('nizami')).toMatchObject({ name: 'Nizami', category: 'metro' });
     expect(first('ganjlik')).toMatchObject({ name: 'Gənclik', category: 'metro', alias: 'Ganjlik' });
