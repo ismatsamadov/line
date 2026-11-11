@@ -3,6 +3,7 @@ import type { PlaceMatch } from "@/lib/busroute/places";
 import { haversine } from "@/lib/busroute/geo";
 import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { normalizeSearch } from "@/lib/busroute/searchText";
+import { HUBS, matchesLoosely, ownWords, rankCompact, rankName, stepUp } from "@/lib/busroute/placeMatch";
 
 // The folding the place search on the server uses too (#720).
 export { normalizeSearch };
@@ -40,29 +41,34 @@ export const EVERYDAY_PLACES: ReadonlySet<string> = new Set([
   "supermarket", "restaurant", "school", "worship", "residential", "cafe", "kindergarten", "post_office", "bank", "office", "shop",
 ]);
 
-/** Where journeys most often start and end, few of each: places.ts's HUBS. Such a place
- *  comes before a stop that matches as well (#720). */
-export const HUB_PLACES: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
+/** Where journeys most often start and end, few of each: the place search's HUBS. Such a
+ *  place comes before a stop that matches as well (#720). */
+export const HUB_PLACES: ReadonlySet<string> = HUBS;
 
 /**
- * How well an earlier answer's place matches a newer query, on the stops' scale (rank():
- * 0 its name or other name itself, 1 the start of one, 2 every word in them, a hub's 2
- * counting as 1 as on the server), then 3 for a looser match: every word in its names and
- * kind, or the query without its spaces in a name without its ("28ma" in 28 Mall).
- * Infinity when it no longer matches. The search answers each query with its own ranks;
- * this ranks the places carried over while it is asked (usePlaceSearch).
+ * How well an earlier answer's place matches a newer query, ranked as the place search
+ * ranks it (placeMatch.ts): 0 its name or the other name it has itself, 1 the start of
+ * one, 2 each word the start of one of its words, a hub's 2 counting as 1, 3 a looser
+ * match. Infinity when it no longer matches. The search answers each query with its own
+ * ranks; this ranks the places carried over while it is asked (usePlaceSearch). The
+ * server tries a query without its spaces ("28ma" for 28 Mall) only when no place matches
+ * it with them; a carried place is tried so whenever it does not itself.
  */
 export function placeRank(query: string, place: Pick<PlaceMatch, "name" | "alias" | "label" | "category">): number {
   const q = normalizeSearch(query);
-  const names = [place.name, place.alias ?? ""].map(normalizeSearch).filter(Boolean);
-  const matched = rank(q, place.name, place.alias ?? "");
-  if (matched < Infinity) return matched === 2 && HUB_PLACES.has(place.category) ? 1 : matched;
-  if (q.split(" ").every(word => `${names.join(" ")} ${normalizeSearch(place.label)}`.includes(word))) return 3;
-  const compact = q.replaceAll(" ", "");
-  const joined = names.map(name => name.replaceAll(" ", ""));
-  if (joined.includes(compact)) return 0;
-  if (joined.some(name => name.startsWith(compact))) return 1;
-  return compact.length >= 4 && joined.some(name => name.includes(compact)) ? 3 : Infinity;
+  const queryWords = q.split(" ");
+  const shown = [place.name, ...(place.alias ? [place.alias] : [])];
+  const names = shown.map(normalizeSearch);
+  const words = names.map(name => name.split(" "));
+  let matched = Infinity, which = 0;
+  for (let i = 0; i < names.length && matched > 0; i++) {
+    const r = rankName(q, queryWords, names[i], words[i]);
+    if (r < matched) { matched = r; which = i; }
+  }
+  if (matched < Infinity) return stepUp(matched, place.category, queryWords, ownWords(shown[which]));
+  const labelWords = normalizeSearch(place.label).split(" ");
+  if (names.some((name, i) => matchesLoosely(queryWords, name, words[i], labelWords))) return 3;
+  return Math.min(...names.map(name => rankCompact(q.replaceAll(" ", ""), name.replaceAll(" ", ""))));
 }
 
 /**

@@ -15,6 +15,7 @@ import "server-only";
 import { z } from "zod";
 import { haversine } from "./geo";
 import { normalizeSearch } from "./searchText";
+import { matchesLoosely, ownWords, rankCompact, rankName, stepUp } from "./placeMatch";
 
 /** [id, name, category, latitude, longitude, notable, other names], as the file's
  *  "fields" say. The id is OpenStreetMap's: n, w or r and the number. */
@@ -40,7 +41,7 @@ export interface Place {
 export interface PlaceMatch extends Place {
   /** 0 the name itself, 1 the start of it, 2 the start of each of its words, 3 looser:
    *  a word found inside it, or the category's name ("gənclik metro"). A station's, an
-   *  airport's or a mall's 2 counts as 1 (HUBS). */
+   *  airport's or a mall's 2 counts as 1 (placeMatch.ts's HUBS). */
   rank: number;
   /** The other name that matched, when the one shown did not ("Ganjlik Mall"). */
   alias?: string;
@@ -57,14 +58,6 @@ const WEIGHT: Record<string, number> = {
   kindergarten: 3, post_office: 3, bank: 3, office: 3, shop: 3,
 };
 const NOTABLE = 2;
-// Where journeys most often start and end, and few of each: a name whose words start with
-// the query's counts as one that starts with it. Strictly by match, "nerimanov" listed
-// eight courts, offices and a park whose names start with Nərimanov, and not the station
-// Nəriman Nərimanov, whose second word it is. A looser match does not step up: "vağzal"
-// inside "Avtovağzal" is no reason to list the bus station above the sea terminal. Nor
-// does a match on the district the mappers add after " / ": "8 km" is not a mall's name
-// for "Lotos Ticarət Mərkəzi / 8-ci km".
-const HUBS: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
 export const PLACE_SEARCH_LIMIT = 8;
 
 interface Entry {
@@ -101,40 +94,18 @@ export function buildPlaceIndex(raw: unknown): PlaceIndex {
       others, names, words: names.map((n) => n.split(" ")), labelWords,
       haystack: `${names.join(" ")} ${labelWords.join(" ")}`,
       compact: names.map((n) => n.replaceAll(" ", "")),
-      ownWords: [name, ...others].map((n) => normalizeSearch(n.split(" / ")[0]).split(" ")),
+      ownWords: [name, ...others].map(ownWords),
       weight: (WEIGHT[category] ?? 0) + (notable ? NOTABLE : 0),
     };
   });
   return { entries };
 }
 
-/** How well one folded name matches the folded query: 0 to 2 as PlaceMatch.rank says. */
-function rankName(query: string, queryWords: string[], name: string, words: string[]): number {
-  if (name === query) return 0;
-  if (name.startsWith(query)) return 1;
-  return queryWords.every((q) => words.some((w) => w.startsWith(q))) ? 2 : Infinity;
-}
-
-/** The looser match: each query word starts a word of the name or of the category, or,
- *  four letters or more, sits anywhere in the name. */
-function rankLoosely(queryWords: string[], name: string, words: string[], labelWords: string[]): boolean {
-  return queryWords.every((q) => words.some((w) => w.startsWith(q)) || labelWords.some((w) => w.startsWith(q))
-    || (q.length >= 4 && name.includes(q)));
-}
-
-/** How well a name with its spaces taken out matches the query taken so: as the name
- *  itself, its start, or, four letters or more, somewhere in it. */
-function rankCompact(query: string, name: string): number {
-  if (name === query) return 0;
-  if (name.startsWith(query)) return 1;
-  return query.length >= 4 && name.includes(query) ? 3 : Infinity;
-}
-
 /**
  * The best places for what a person typed: exact names, then names that start with it,
  * then names whose words start with its words in any order, then looser matches, a
  * station, an airport or a mall whose words start with them counting as starting with it
- * (HUBS). A query that matches nothing is tried again without its spaces against names
+ * (placeMatch.ts). A query that matches nothing is tried again without its spaces against names
  * without theirs, so that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
  * equal matches a match on the shown name comes before one on another name, then the
  * category's weight, then the better match before that step, then, given `near`, the
@@ -150,9 +121,7 @@ export function searchPlaces(
   const queryWords = q.split(" ");
   const found: Array<{ entry: Entry; rank: number; matched: number; which: number; distance: number }> = [];
   const add = (entry: Entry, matched: number, which: number) => {
-    const own = entry.ownWords[which];
-    const rank = matched === 2 && HUBS.has(entry.place.category)
-      && queryWords.every((q) => own.some((w) => w.startsWith(q))) ? 1 : matched;
+    const rank = stepUp(matched, entry.place.category, queryWords, entry.ownWords[which]);
     const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
     found.push({ entry, rank, matched, which, distance });
   };
@@ -164,7 +133,7 @@ export function searchPlaces(
       if (r < rank) { rank = r; which = i; }
     }
     if (rank === Infinity) {
-      which = entry.names.findIndex((name, i) => rankLoosely(queryWords, name, entry.words[i], entry.labelWords));
+      which = entry.names.findIndex((name, i) => matchesLoosely(queryWords, name, entry.words[i], entry.labelWords));
       if (which < 0) continue;
       rank = 3;
     }

@@ -126,7 +126,7 @@ describe("stops and places in one list (#720)", () => {
     expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["metro", "rail", "airport", "bus_station", "mall", "s1", "university"]);
   });
 
-  it("ranks a place carried over for a longer query as a stop would be ranked", () => {
+  it("ranks a place carried over for a longer query as the place search ranks it", () => {
     const at = (name: string, category = "metro", alias?: string) => ({ name, category, label: "Metro stansiyası", ...(alias ? { alias } : {}) });
     expect(placeRank("gənclik", at("Gənclik"))).toBe(0);
     expect(placeRank("gənc", at("Gənclik"))).toBe(1);
@@ -138,6 +138,11 @@ describe("stops and places in one list (#720)", () => {
     expect(placeRank("genclik metro", at("Gənclik"))).toBe(3);
     expect(placeRank("28ma", at("28 Mall", "mall"))).toBe(1);
     expect(placeRank("bravo", at("Gənclik"))).toBe(Infinity);
+    // A word found inside a name is a looser match, a hub's too; so is a hub's match on
+    // the district after its name's " / ".
+    expect(placeRank("vağzal", at("Avtovağzal"))).toBe(3);
+    expect(placeRank("8 km", at("Lotos Ticarət Mərkəzi / 8-ci km", "mall"))).toBe(2);
+    expect(placeRank("lotos", at("Lotos Ticarət Mərkəzi / 8-ci km", "mall"))).toBe(1);
   });
 
   it("names everyday kinds that places.json has", () => {
@@ -193,6 +198,21 @@ describe("a station or a mall at the top of the list it is typed for (#720)", ()
   };
   const rows = (query: string, places: PlaceMatch[]) => suggestEnds(STOPS[query], query, places)
     .map(found => found.kind === "stop" ? { key: `s${found.stop.id}`, name: found.stop.name } : { key: `p${found.place.id}`, name: `${found.place.name} (${found.place.category})` });
+
+  it("ranks every place carried over as the search ranks it, for each prefix of what people type", () => {
+    const typed = ["gənclik mall", "koroğlu", "nəriman nərimanov", "avtovağzal", "28 mall", "28mall", "parkbulvar", "8 km",
+      "lotos", "vağzal", "sədərək", "həzi aslanov", "гянджлик", "bravo", "nizami küçəsi", "içərişəhər", "dəniz vağzalı",
+      "port baku", "elmlər akademiyası", "ganjlik"];
+    let compared = 0;
+    for (const name of typed) for (let n = 2; n <= name.length; n++) {
+      const query = name.slice(0, n);
+      for (const place of searchPlaces(index, query)) {
+        expect(placeRank(query, place), `${query}: ${place.name}${place.alias ? ` «${place.alias}»` : ""}`).toBe(place.rank);
+        compared++;
+      }
+    }
+    expect(compared).toBeGreaterThan(1000);
+  });
 
   it.each([["gənclik", "gənc", "Gənclik (metro)"], ["koroglu", "koro", "Koroğlu (metro)"],
     ["nerimanov", "nərim", "Nəriman Nərimanov (metro)"], ["avtovağzal", "avtov", "Avtovağzal (metro)"]])(
