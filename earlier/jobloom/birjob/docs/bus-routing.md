@@ -41,8 +41,9 @@ boarding, so a destination within a walk is always reached on foot.
 Until #721 the ranking was lexicographic, boardings first (#664): an available
 one-bus journey beat every two-bus journey, however much faster the two were. It
 passed over journeys such as 2147 → 2734, two buses in 67.2 minutes where a bus,
-the red line and a bus take 24.8; in 20 of 196 sampled trips one more boarding
-saved 20 minutes or more (times as in [Graph and data](#graph-and-data)). A finite
+the red line and a bus take 24.8; in 22 of 196 sampled trips the fastest journey
+with one more boarding than the fewest was 20 minutes or more faster (times as in
+[Graph and data](#graph-and-data)). A finite
 penalty cannot promise one bus over two for every journey length, which is why
 #664 refused one; #721 gives that promise up where it costs a quarter of an hour
 or more. Choosing by cost is the same as taking the fastest journey for each
@@ -55,9 +56,9 @@ more boardings than the fewest possible:
 
 | Penalty | Trips | Extra boardings | Minutes saved: median, least |
 | --- | --- | --- | --- |
-| 10 min | 75 | 69 × 1, 6 × 2 | 17.0, 10.2 |
-| **15 min** | **48** | 46 × 1, 2 × 2 | 19.9, 15.0 |
-| 20 min | 23 | 22 × 1, 1 × 2 | 29.3, 22.1 |
+| 10 min | 74 | 69 × 1, 5 × 2 | 16.8, 10.1 |
+| **15 min** | **46** | 44 × 1, 2 × 2 | 19.7, 15.4 |
+| 20 min | 22 | 21 × 1, 1 × 2 | 30.2, 24.7 |
 
 Fifteen keeps the fewest boardings in three trips of four and gives them up only
 for a saving that is clear against estimates this rough. It is one constant in
@@ -503,19 +504,21 @@ skipping and early return are sound. The wrong journey came from the model: the
 walk limit, the equal shares and the rule.
 
 **Measured on 200 random pairs** (seed 721; 196 routable before and after), each
-change on its own with the others as before:
+change on its own with the others as before. Times shared by length include the
+rule for a misplaced stop ([Graph and data](#graph-and-data)), which moves 4 of
+these answers.
 
 - times shared by length: 116 answers change, none in its number of boardings;
-- 400 m walks: 44 change, 20 of them to one boarding fewer;
-- the cost rule: 48 change, all to more boardings (46 by one, 2 by two), each
-  saving at least 15 minutes and 19.9 at the median.
+- 400 m walks: 44 change, 20 of them to fewer boardings (19 by one, one by two);
+- the cost rule: 46 change, all to more boardings (44 by one, 2 by two), each
+  saving at least 15.4 minutes and 19.7 at the median.
 
-All together 147 of 196 answers change. Timing old and new journeys alike, by
-length: 13 need fewer boardings (12 one fewer, one two fewer; 234 m more walking at
-the median), 93 keep their count and save 3.3 minutes at the median (6.3 on
-average), and 41 add boardings and save 26.3 minutes at the median (31.2 on
-average, never under 15). Boardings over the 196 trips go from 522 to 551 and
-average walking from 266 to 283 m. The time shown rises by 3.3 minutes at the
+All together 146 of 196 answers change. Timing old and new journeys alike, by
+length: 14 need fewer boardings (13 one fewer, one two fewer; 235 m more walking at
+the median), 92 keep their count and save 3.1 minutes at the median (6.1 on
+average), and 40 add boardings and save 26.4 minutes at the median (31.5 on
+average, never under 15). Boardings over the 196 trips go from 522 to 549 and
+average walking from 266 to 283 m. The time shown rises by 3.1 minutes at the
 median: equal shares had let the search find legs faster than their line.
 
 **Search cost**, old and new in one run on those pairs (the old search on the old
@@ -523,7 +526,7 @@ model): 7.0 ms at the median instead of 13.8, and 13.4 ms at the 95th percentile
 instead of 29.3; another run gave 7.9 and 15.1 against 13.8 and 31.4. Labels
 settled went from 6,240 to 7,217 at the median and from 14,102 to 14,373 at the
 95th percentile, with 16,590 walking edges instead of 10,264; 1343 → 3642 settles
-13,537 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
+13,532 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
 keyed by edge, the new search returned the same journey as with strings for all
 200 pairs. Keyed by number, as now, it returns the same response as keyed by edge
 for all 200 and for the review's 1,500 pairs (seed 20261111), at the same speed:
