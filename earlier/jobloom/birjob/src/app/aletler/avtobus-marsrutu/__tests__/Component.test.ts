@@ -83,6 +83,19 @@ describe('the planner (#720)', () => {
     expect(bodies.at(-1)).toEqual({ from: { latitude: 40.39989, longitude: 49.85283, name: 'Gənclik Mall' }, to: { latitude: 40.3753, longitude: 49.8331, name: 'Kitabxana' } });
   });
 
+  it('keeps map taps on the start once a destination place is chosen', async () => {
+    const p = planner();
+    await p.render();
+    p.end('Hara').onSelectPlace(library);
+    await p.render();
+    p.map().onStopClick(STOPS[0]);
+    await p.render();
+    // The second tap changes the start again; the destination stays the place.
+    p.map().onStopClick(STOPS[1]);
+    await p.render();
+    expect(bodies.at(-1)).toEqual({ fromStopId: 2, to: { latitude: 40.3753, longitude: 49.8331, name: 'Kitabxana' } });
+  });
+
   it('tells the place search where the person is only to about 1 km', async () => {
     const p = planner();
     await p.render();

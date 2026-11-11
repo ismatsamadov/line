@@ -351,13 +351,14 @@ export default function Component() {
     if (pickTarget === "from") {
       setFromPlace(null);
       setFromStop(stop);
-      setPickTarget(toStop ? "from" : "to");
+      // A destination already chosen, a stop or a place, keeps the next tap on the start.
+      setPickTarget(toStop || toPlace ? "from" : "to");
     } else {
       setToPlace(null);
       setToStop(stop);
       setPickTarget("from");
     }
-  }, [pickTarget, toStop, clearRoute]);
+  }, [pickTarget, toStop, toPlace, clearRoute]);
 
   // Each picker's places put the ones nearer the journey's other end first (#720). The
   // search sends that point in its address, which caches, logs and error reports keep, so
