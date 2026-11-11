@@ -780,7 +780,12 @@ checked in headless Chrome at 390 × 844 and 1440 × 1000 against `next dev` on 
 database: place to place, the location to a place, the walk the whole way, the four
 queries above, the place search's `near=` for the location (two decimals), and two map
 taps after choosing a destination place, which changed the start both times; no console
-error and no sideways scrolling.
+error and no sideways scrolling. At 390 × 844 on 12 November: Kids Akademi to Azərsun
+Holdinq Anbarı in Sumqayıt is the walk, 34 minutes, over two buses taking 106; the
+location refused at ±1.5 km is asked for again with high accuracy and no cached fix, and
+used at ±30 m; and "gənclik mall" typed a key every 120 ms, with every request 300 ms
+slower as on a phone network, says "Axtarılır…" for its second and third letters only,
+then lists the stops and places at every key, Gənclik the station first for "gənclik".
 
 ## API and UI
 
