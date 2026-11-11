@@ -328,6 +328,13 @@ export default function Component() {
           setError("Olduğunuz yer Bakı və ətrafının avtobus şəbəkəsindən kənardadır. Başlanğıcı adla və ya xəritədən seçin.");
           return;
         }
+        // A position from Wi-Fi or the network can be kilometres out. Less sure than the
+        // walk a journey takes to its first stop, it could start the journey at the wrong
+        // stops while timing their walks to the minute, so it is not used.
+        if (!(accuracy <= ACCESS_RADIUS_KM * 1000)) {
+          setError(`Brauzer yerinizi yalnız təxminən ±${(accuracy / 1000).toFixed(1)} km dəqiqliklə verdi; bu, yaxındakı dayanacağı seçmək üçün azdır. GPS-i yandırıb yenidən cəhd edin, ya da başlanğıcı adla və ya xəritədən seçin.`);
+          return;
+        }
         choosePlace("from", { id: HERE, name: HERE_NAME, label: `Məkan dəqiqliyi ±${Math.round(accuracy)} m`, latitude, longitude });
       },
       failure => {

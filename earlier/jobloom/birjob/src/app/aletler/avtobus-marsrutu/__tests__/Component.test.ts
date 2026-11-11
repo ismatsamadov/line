@@ -109,4 +109,14 @@ describe('the planner (#720)', () => {
     await p.render();
     expect(bodies.at(-1)).toMatchObject({ from: { latitude: 40.377134, longitude: 49.854137, name: 'Sizin yeriniz' } });
   });
+
+  it('does not start from a location less sure than the walk to a first stop', async () => {
+    position = { ...position, accuracy: 1500 };
+    const p = planner();
+    await p.render();
+    p.button('Olduğum yerdən başla').onClick();
+    await p.render();
+    expect(p.end('Haradan').place).toBeNull();
+    expect(p.alert()).toContain('±1.5 km dəqiqliklə');
+  });
 });
