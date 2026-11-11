@@ -85,12 +85,23 @@ export class TransitGraph {
       // A list stored twice over must not ride from its terminus back to its start.
       const ordered = collapseRepeatedSequence(stops, (s) => s.stop_id);
 
-      // Per-segment time = route duration spread evenly across hops. The
-      // upstream API has no per-leg timings — deterministic, good enough for
-      // ranking, NOT a live ETA.
-      const segmentCount = Math.max(ordered.length - 1, 1);
+      // A leg's time is the line's duration shared out by the legs' straight-line
+      // length (#721). AYNA's duration is its route length at one speed (1.66
+      // minutes a kilometre on the median line, never above 1.67), so the source
+      // itself has a bus keep a steady pace. Shared out equally per leg instead, a
+      // 6.5 km leg of 553 took 2.65 minutes (147 km/h), 497 short legs were slower
+      // than walking, and the search chose buses for those artifacts. The upstream
+      // API has no per-leg timings — deterministic, good enough for ranking, NOT a
+      // live ETA.
       const duration = Number.isFinite(bus.duration_minuts) && bus.duration_minuts > 0 ? bus.duration_minuts : 30;
-      const segmentTime = duration / segmentCount;
+      const lengths = ordered.slice(1).map((toStop, i) => {
+        const from = this.stopInfo.get(ordered[i].stop_id), to = this.stopInfo.get(toStop.stop_id);
+        return from && to ? haversine(from.latitude, from.longitude, to.latitude, to.longitude) : null;
+      });
+      const measured = lengths.reduce<number>((sum, length) => sum + (length ?? 0), 0);
+      // A line whose legs have no length at all (one stop listed over and over)
+      // has nothing to share by, and keeps equal shares.
+      const legTime = (length: number) => measured > 0 ? duration * length / measured : duration / Math.max(lengths.length, 1);
 
       // The road for each leg, from the bus's recorded lines matched to these stops
       // (shape.ts). It only draws the ride: routing never reads it.
@@ -104,14 +115,9 @@ export class TransitGraph {
       for (let i = 0; i < ordered.length - 1; i++) {
         const fromStop = ordered[i];
         const toStop = ordered[i + 1];
-        const fromCoords = this.stopInfo.get(fromStop.stop_id);
-        const toCoords = this.stopInfo.get(toStop.stop_id);
-        if (!fromCoords || !toCoords) continue;
-
-        const distance = haversine(
-          fromCoords.latitude, fromCoords.longitude,
-          toCoords.latitude, toCoords.longitude
-        );
+        // A stop without valid coordinates breaks its legs; nothing bridges it.
+        const distance = lengths[i];
+        if (distance === null) continue;
 
         const edge: GraphEdge = {
           kind: "bus",
@@ -124,7 +130,7 @@ export class TransitGraph {
           busId: bus.id,
           busNumber: bus.number,
           distance,
-          time: segmentTime,
+          time: legTime(distance),
           fromStopName: fromStop.stop_name,
           toStopName: toStop.stop_name,
           ...(legs[i] ? { path: legs[i] } : {}),

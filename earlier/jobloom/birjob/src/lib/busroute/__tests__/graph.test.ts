@@ -43,8 +43,27 @@ describe('transit graph', () => {
     const rides = (id: number) => g.getEdges(id).filter(e => e.kind === 'bus');
     expect(rides(3)).toEqual([]);
     // The line's 30 minutes spread over one copy's two legs, not five.
-    expect(rides(1)).toEqual([expect.objectContaining({ toStopId: 2, fromSequence: 0, toSequence: 1, headsign: 'Stop 3', time: 15 })]);
-    expect(rides(2)).toEqual([expect.objectContaining({ toStopId: 3, fromSequence: 1, toSequence: 2, time: 15 })]);
+    expect(rides(1)).toEqual([expect.objectContaining({ toStopId: 2, fromSequence: 0, toSequence: 1, headsign: 'Stop 3', time: expect.closeTo(15, 9) })]);
+    expect(rides(2)).toEqual([expect.objectContaining({ toStopId: 3, fromSequence: 1, toSequence: 2, time: expect.closeTo(15, 9) })]);
+  });
+
+  it("shares a line's duration by the length of its legs, not equally (#721)", async () => {
+    // Stops 1, 2 and 4 sit on 40.01, 40.02 and 40.04 N: a leg of 1.1 km, then one of 2.2 km.
+    db.queryStopDetails.mockResolvedValue([stop(1), stop(2), stop(4)]);
+    db.queryBusStops.mockResolvedValue([busStop(10, 1, 0), busStop(10, 2, 1), busStop(10, 4, 2)]);
+    const g = await (await import('../graph')).getGraph();
+    const leg = (id: number) => g.getEdges(id).find(e => e.kind === 'bus')!;
+    expect(leg(1).time).toBeCloseTo(10, 9);
+    expect(leg(2).time).toBeCloseTo(20, 9);
+    // The bus keeps one pace: the minutes follow the kilometres.
+    expect(leg(1).time / leg(1).distance).toBeCloseTo(leg(2).time / leg(2).distance, 9);
+  });
+
+  it('keeps equal shares for a line whose stops all stand in one place', async () => {
+    db.queryStopDetails.mockResolvedValue([stop(1, 40.01), stop(2, 40.01), stop(3, 40.01)]);
+    const g = await (await import('../graph')).getGraph();
+    expect(g.getEdges(1).find(e => e.kind === 'bus')).toMatchObject({ distance: 0, time: 15 });
+    expect(g.getEdges(2).find(e => e.kind === 'bus')).toMatchObject({ distance: 0, time: 15 });
   });
 
   it('gives each leg its stretch of the recorded line (#685)', async () => {

@@ -97,8 +97,25 @@ instead of creating a shortcut through it. This protects searches and maps; it
 does not repair the underlying rows or replace the read-only data audit above.
 
 The graph uses haversine distance between stops. A bus line's stored duration is
-spread evenly over its legs; missing/nonpositive duration falls back to 30
-minutes for the whole line. Neither figure is road geometry or a live estimate.
+shared out over its legs by their straight-line length (#721); a missing or
+nonpositive duration falls back to 30 minutes for the whole line. AYNA's
+duration is its route length at one speed: 1.66 minutes a kilometre on the median
+line and never above 1.67, where the route length covers both directions (its
+median ratio to the two recorded lines' lengths is 0.99). Spread over one
+direction, as here, that is about 18 km/h along the road and 16 km/h in a straight
+line, a usual pace for a city bus with its stops.
+
+Until #721 the duration went to the legs in equal shares, so a leg's speed
+depended on how far apart its stops were: 2.2 km/h at the 1st percentile of the
+11,355 legs, 72.6 at the 99th, and 147 km/h for the 6.5 km leg of 553 in 2.65
+minutes; 497 legs were slower than walking. The search rode buses for those
+artifacts. #721's journey took 525 for 5.6 km in 10.3 minutes (33 km/h, twice its
+line's pace) to catch 503 at Xırdalan rather than where it starts, at Avtovağzal.
+Shared by length, each leg keeps its line's pace: 10.6 to 21.9 km/h for 98% of
+legs and 32.5 at most (line 517). The model still knows no dwell time, traffic or
+faster highway stretches, and a leg whose road loops far beyond the straight line
+between its stops (40 legs over 1 km, [Road shapes](#road-shapes)) is still
+timed by the straight line. Neither figure is road geometry or a live estimate.
 `totalTime` contains movement only, with no invented wait or transfer penalty.
 `totalStops` counts stop and metro-station visits, merging an adjacent shared
 transfer stop once while preserving repeated visits around loops and distinct
