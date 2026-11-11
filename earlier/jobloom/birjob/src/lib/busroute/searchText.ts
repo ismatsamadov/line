@@ -7,11 +7,14 @@
 /**
  * Let a phone's Latin keyboard find Azerbaijani names, including dotted İ. AYNA's stop
  * names also type the Cyrillic ә for ə (216 of them, "Kotal qәs."), so it folds the same.
- * Cyrillic stays, for the places' Russian names.
+ * Cyrillic stays, for the places' Russian names. The code writes its letters as escapes,
+ * so that a look-alike cannot hide among them: ə (U+0259) and the Cyrillic ә (U+04D9),
+ * the dotless ı (U+0131), the marks NFD takes off a letter (U+0300 to U+036F) and the
+ * Cyrillic а to я (U+0430 to U+044F).
  */
 export function normalizeSearch(value: string): string {
   return value.toLocaleLowerCase("az")
-    .replace(/[əә]/g, "e").replace(/ı/g, "i")
-    .normalize("NFD").replace(/[̀-ͯ]/g, "")
-    .replace(/[^a-z0-9а-я]+/g, " ").trim();
+    .replace(/[\u0259\u04d9]/g, "e").replace(/\u0131/g, "i")
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9\u0430-\u044f]+/g, " ").trim();
 }
