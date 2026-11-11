@@ -31,7 +31,7 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
       <div className="border-b border-gray-100 p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-bold text-gray-900">{walkOnly ? "Piyada gedə bilərsiniz" : "Marşrutunuz hazırdır"}</h2>
-          <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-800">{walkOnly ? "Qısa məsafə" : "Tövsiyə olunan"}</span>
+          <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-800">{walkOnly ? "Piyada" : "Tövsiyə olunan"}</span>
         </div>
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-3xl font-extrabold tracking-tight text-gray-900">≈ {movementMinutes(route.totalTime)}</span>
