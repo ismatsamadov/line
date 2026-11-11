@@ -207,6 +207,8 @@ CORRECTIONS = [
      "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
     ("w630137385", "*", "Корупс № 1", None,
      "the first of a university's numbered buildings, misspelt; NUMBERED leaves out Корпус № 2 to 5"),
+    ("w630137386", "*", "Зал ручных игр", None,
+     "a hall among those numbered buildings (\"hall of ball games\"), mapped as a university"),
     # A word in two alphabets cannot be typed on either keyboard (mixed() names them).
     ("n4481359889", "name", "Araя Market / Babək", "Araz Market / Babək",
      "typed in the Russian keyboard layout, where я is z; its website is arazmarket.az"),

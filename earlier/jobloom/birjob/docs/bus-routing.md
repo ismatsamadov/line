@@ -449,7 +449,7 @@ section together. The file is re-included in `.gitignore`, as metro.json is, and
 The start and destination pickers offer named places beside the stops: malls, markets,
 restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
 government offices, embassies, banks, sights, metro stations, settlements and more,
-12,634 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+12,633 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
 mərkəzi"). A journey from or to a place walks from it to a stop or station near it and
 from one to it, counted in the time and distance and drawn on the map
 ([Routing from a place](#routing-from-a-place-720)).
@@ -521,27 +521,28 @@ name with a word from `REVIEW` (insults, profanity, crime and politics, in Engli
 Azerbaijani and Russian) for a person to read: four on 11 November, none of them
 vandalism (the café Mafiya's three names and the anti-corruption directorate's English
 name). The review that found the grave's name read all 12,658 places and found no other.
-Nine corrections more: the first of a university's numbered buildings, misspelt "Корупс №
-1" (the rule above leaves out the other four), and eight names typed partly in the other
-alphabet, which neither keyboard finds: "Araя Market" is Araz Market (я is z in the
-Russian keyboard layout), "Leon Palaсу" Leon Palace and "8-сш ль" 8-ci km the same way,
-and a Latin K, T, D or e stands in a Russian word. The build names every word in both
-alphabets, to be corrected so, and `places.test.ts` fails on one. Two places that quote
-the film The Diamond Arm ("Цигель Цигель", "Аптека") are not jokes: they mark where it
-was filmed in İçərişəhər, which the Old City's tours visit, and stay. `ALIASES` adds the
-names people search a well-known place by that OpenStreetMap does not have, each with
-where the name is used: the airport is also "Aeroport", "Hava limanı", "Airport" and
-"Аэропорт", which in Baku mean no other (OpenStreetMap names the places around it VIP
-terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport). Before
-them "aeroport" listed a clinic first, and "airport" the Aeroekspress stop in town. The
-others: "BDU" and "БГУ" for Bakı Dövlət Universiteti; "ADNSU", "ASOIU" and "Neft
-Akademiyası", its name until 2015, for the oil university; "Qafqaz Universiteti", whose
-Xırdalan campus became Bakı Mühəndislik Universiteti in 2016, and "BMU"; "Alov Qüllələri"
-and "Пламенные башни" for Flame Towers; and "Heydar Aliyev Center", the centre's own
-English name, where OpenStreetMap has "Center of Heydar Aliev". None of them found its
-place before. Seven metro stations' OpenStreetMap nodes have no Russian name, and get the
-names they go by in Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар
-Джаббарлы, Ходжасан): "гянджлик" found Gənclik Mall, not the station.
+Ten corrections more: the first of a university's numbered buildings, misspelt "Корупс №
+1" (the rule above leaves out the other four), and a hall among them, "Зал ручных игр",
+mapped as a university; and eight names typed partly in the other alphabet, which neither
+keyboard finds: "Araя Market" is Araz Market (я is z in the Russian keyboard layout),
+"Leon Palaсу" Leon Palace and "8-сш ль" 8-ci km the same way, and a Latin K, T, D or e
+stands in a Russian word. The build names every word in both alphabets, to be corrected
+so, and `places.test.ts` fails on one. Two places that quote the film The Diamond Arm
+("Цигель Цигель", "Аптека") are not jokes: they mark where it was filmed in İçərişəhər,
+which the Old City's tours visit, and stay. `ALIASES` adds the names people search a
+well-known place by that OpenStreetMap does not have, each with where the name is used:
+the airport is also "Aeroport", "Hava limanı", "Airport" and "Аэропорт", which in Baku
+mean no other (OpenStreetMap names the places around it VIP terminal Aeroport, Şeraton
+Aeroport, Aeroport Poliklinikası and ABB Aeroport). Before them "aeroport" listed a
+clinic first, and "airport" the Aeroekspress stop in town. The others: "BDU" and "БГУ"
+for Bakı Dövlət Universiteti; "ADNSU", "ASOIU" and "Neft Akademiyası", its name until
+2015, for the oil university; "Qafqaz Universiteti", whose Xırdalan campus became Bakı
+Mühəndislik Universiteti in 2016, and "BMU"; "Alov Qüllələri" and "Пламенные башни" for
+Flame Towers; and "Heydar Aliyev Center", the centre's own English name, where
+OpenStreetMap has "Center of Heydar Aliev". None of them found its place before. Seven
+metro stations' OpenStreetMap nodes have no Russian name, and get the names they go by in
+Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар Джаббарлы, Ходжасан):
+"гянджлик" found Gənclik Mall, not the station.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
@@ -549,7 +550,7 @@ fast-food places, 1,198 government offices, 1,142 cafés, 1,032 supermarkets, 63
 468 residential complexes, 445 offices, 423 hotels, 398 hospitals, 388 kindergartens, 388
 sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 216 parks, 211
 cultural centres and libraries, 199 places of worship, 161 areas, 145 malls, 133
-settlements, 123 colleges, 78 universities, 66 embassies, 66 theatres and cinemas, 66
+settlements, 123 colleges, 77 universities, 66 embassies, 66 theatres and cinemas, 66
 amusement places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27 metro
 stations, 15 bus stations, 10 ports, 8 airport features and 4 squares. `places.test.ts`
 pins each count, the snapshot date, the header and the shape.

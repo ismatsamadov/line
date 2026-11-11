@@ -78,6 +78,7 @@ describe('places.json (#720)', () => {
   it('leaves out country houses mapped as guest houses, and the misspelt first of the numbered buildings', () => {
     expect(data.places.filter(([, name, category]) => category === 'hotel' && /дача/i.test(name))).toEqual([]);
     expect(data.places.some(([id]) => id === 'w630137385')).toBe(false); // "Корупс № 1"
+    expect(data.places.some(([id]) => id === 'w630137386')).toBe(false); // "Зал ручных игр", a hall among them
   });
 
   it('writes no word in both alphabets, which neither keyboard can type (CORRECTIONS in the build script)', () => {
@@ -150,12 +151,12 @@ describe('places.json (#720)', () => {
     for (const [, , category] of data.places) counts[category]++;
     expect(counts).toEqual({
       metro: 27, rail: 54, bus_station: 15, airport: 8, port: 10, mall: 145, market: 62, supermarket: 1032,
-      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 423, university: 78, college: 123, school: 634,
+      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 423, university: 77, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
       office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
       worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_634);
+    expect(data.places).toHaveLength(12_633);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });
