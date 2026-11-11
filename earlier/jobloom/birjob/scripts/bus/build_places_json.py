@@ -246,6 +246,15 @@ ALIASES = {
     "r19380164": (["Heydar Aliyev Center", "Heydar Aliyev Centre"],
                   "the centre's own English name (heydaraliyevcenter.az); OpenStreetMap's is "
                   "\"Center of Heydar Aliev\""),
+    # The metro stations whose OpenStreetMap node has no Russian name, by Bakı Metropoliteni's
+    # Russian names for them (metro.gov.az).
+    "n1930089762": (["20 Января"], "the Russian name of the station 20 Yanvar"),
+    "n5188836356": (["28 Мая"], "the Russian name of the station 28 May"),
+    "n6010348738": (["8 Ноября"], "the Russian name of the station 8 Noyabr"),
+    "n4168101319": (["Автовокзал"], "the Russian name of the station Avtovağzal"),
+    "n2295524457": (["Джафар Джаббарлы"], "the Russian name of the station Cəfər Cabbarlı"),
+    "n11622641264": (["Гянджлик"], "the Russian name of the station Gənclik"),
+    "n14255299687": (["Ходжасан"], "the Russian name of the station Xocəsən"),
 }
 # Word starts a person reads every name and other name for at each refresh, as fold()
 # writes them (no diacritics, й as и): insults, profanity, crime and politics, in English,
@@ -463,9 +472,8 @@ def correct(elements):
     return out, [c for c in CORRECTIONS if c not in applied]
 
 
-def place_and_name(places, elements, bounds):
-    """Move the places PLACED_AT names to the feature inside them, and add ALIASES; return
-    the ids ALIASES names that no place has."""
+def place_at(places, elements, bounds):
+    """Move the places PLACED_AT names to the feature inside them."""
     by_id = {p["id"]: p for p in places}
     where = {e["type"][0] + str(e["id"]): point(e) for e in elements}
     for place_id, (inside, _) in PLACED_AT.items():
@@ -476,7 +484,11 @@ def place_and_name(places, elements, bounds):
         if not (b["minlat"] <= lat <= b["maxlat"] and b["minlon"] <= lon <= b["maxlon"]):
             sys.exit(f"PLACED_AT: {inside} is not inside {place_id}'s outline")
         by_id[place_id]["point"] = where[inside]
-    missing = []
+
+
+def add_aliases(places):
+    """Add ALIASES to the places; return the ids it names that no place has."""
+    by_id, missing = {p["id"]: p for p in places}, []
     for place_id, (extra, _) in ALIASES.items():
         place = by_id.get(place_id)
         if place is None:
@@ -624,8 +636,9 @@ def build(path):
             continue
         places.append({"id": e["type"][0] + str(e["id"]), "name": shown, "category": cat, "point": point(e),
                        "notable": notable(t), "aliases": others})
-    missing = place_and_name(places, elements, bounds)
+    place_at(places, elements, bounds)
     places = dedupe(places) + metro_places(elements)
+    missing = add_aliases(places)
     order = list(LABELS)
     places.sort(key=lambda p: (order.index(p["category"]), fold(p["name"]), p["id"]))
 

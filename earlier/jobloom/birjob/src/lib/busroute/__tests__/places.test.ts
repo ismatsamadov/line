@@ -131,6 +131,8 @@ describe('places.json (#720)', () => {
     }
     const koroglu = metro.find(([, name]) => name === 'Koroğlu')!;
     expect(koroglu[6]).toContain('Məşədi Əzizbəyov'); // its old name, still searched
+    // Each has a Russian name: seven stations' come from ALIASES in the build script.
+    for (const [, name, , , , , aliases] of metro) expect(aliases.some((a) => /\p{Script=Cyrillic}/u.test(a)), name).toBe(true);
   });
 
   it('is dated on the planner page as the file dates it', () => {
@@ -245,7 +247,9 @@ describe('searchPlaces (#720)', () => {
     expect(first('nerimanov')).toMatchObject({ name: 'Nəriman Nərimanov', category: 'metro' });
     expect(first('28 mall')).toMatchObject({ name: '28 Mall', category: 'mall', rank: 0 });
     expect(first('hazi aslanov')).toMatchObject({ name: 'Həzi Aslanov', category: 'metro' });
-    expect(first('гянджлик')).toMatchObject({ name: 'Gənclik Mall', alias: 'Гянджлик Мол' });
+    expect(searchPlaces(real, 'гянджлик').slice(0, 2)).toMatchObject([
+      { name: 'Gənclik', category: 'metro', alias: 'Гянджлик' }, { name: 'Gənclik Mall', alias: 'Гянджлик Мол' },
+    ]);
     expect(first('28 may')).toMatchObject({ name: '28 May', category: 'metro' });
     expect(first('nizami')).toMatchObject({ name: 'Nizami', category: 'metro' });
     expect(first('ganjlik')).toMatchObject({ name: 'Gənclik', category: 'metro', alias: 'Ganjlik' });

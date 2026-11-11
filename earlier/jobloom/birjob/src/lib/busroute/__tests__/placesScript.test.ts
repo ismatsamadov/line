@@ -82,11 +82,12 @@ b.ALIASES.clear(); b.ALIASES.update({"w1": (["Aeroport", "Airport", "Big Field"]
 bounds = {"w1": {"minlat": 40.0, "minlon": 50.0, "maxlat": 40.1, "maxlon": 50.1}}
 places = [{"id": "w1", "name": "Big Field", "category": "airport", "point": (40.05, 50.05), "aliases": ["Airport"]}]
 elements = [{"type": "way", "id": 2, "center": {"lat": 40.01, "lon": 50.02}, "tags": {}}]
-missing = b.place_and_name(places, elements, bounds)
+b.place_at(places, elements, bounds)
+missing = b.add_aliases(places)
 result = {"place": places[0], "missing": missing}
 elements[0]["center"] = {"lat": 40.2, "lon": 50.02}
 try:
-    b.place_and_name(places, elements, bounds)
+    b.place_at(places, elements, bounds)
 except SystemExit as stop:
     result["outside"] = str(stop)
 print(json.dumps(result))`);
