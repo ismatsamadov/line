@@ -51,11 +51,12 @@ Standard library only. What it decides, so that the planner does not have to:
   because it reaches into the area, is left out and named.
 - What a person decided after reading the data is in CORRECTIONS, each with its reason: a
   tag's value replaced or left out, or a whole feature left out. A correction holds the
-  value as mapped and stops applying once OpenStreetMap changes it; the build names it.
+  value as mapped, and the build stops once OpenStreetMap no longer has it: a vandalism
+  fix must not stop applying unseen. A person reads the feature and updates the entry.
 - Every name and other name with a word from REVIEW (insults, profanity, crime, politics)
   is printed at each build for a person to read; vandalism goes into CORRECTIONS.
 - ALIASES adds other names people search a well-known place by that OpenStreetMap does
-  not have, each with where the name is used.
+  not have, each with where the name is used. The build stops if one's feature is gone.
 
 ODbL 4.6: places.json is a derived database. This script, its query and the snapshot's
 date (recorded in the file) are how it is produced; docs/bus-routing.md says so.
@@ -199,7 +200,8 @@ NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az",
              "official_name", "official_name:az", "brand", "brand:az")
 # What a person decided after reading the data: (feature, tag, the value as mapped, the
 # value used instead or None to leave it out, why). The tag "*" leaves out the whole
-# feature, and its value is the feature's name.
+# feature, and its value is the feature's name. The build stops on a correction whose
+# value OpenStreetMap no longer has, or whose feature it no longer has.
 CORRECTIONS = [
     ("n3755614407", "name:en", "Heydar Aliyev mafia boss grave", None,
      "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
@@ -229,8 +231,7 @@ PLACED_AT = {
                                  "the H1 bus starts"),
 }
 # Other names people search a well-known place by that OpenStreetMap does not have:
-# (the names, where they are used). One whose feature is missing from the answer is named
-# by the build, to be removed.
+# (the names, where they are used). The build stops if a feature named here is missing.
 ALIASES = {
     "w163717459": (["Aeroport", "Hava limanı", "Airport", "Аэропорт"],
                    "Baku's one passenger airport is the airport: the places around it are mapped as "
@@ -610,6 +611,9 @@ def build(path):
     # bounding box alone (QUERY's last output).
     features = [e for e in answer["elements"] if "tags" in e]
     elements, stale = correct(features)
+    if stale:
+        sys.exit("CORRECTIONS whose value OpenStreetMap no longer has, to read and update or remove: "
+                 + "; ".join(f"{c[0]} {c[1]} {c[2]!r}" for c in stale))
     bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
 
     places, plain_names, dachas, outside = [], Counter(), [], []
@@ -639,6 +643,8 @@ def build(path):
     place_at(places, elements, bounds)
     places = dedupe(places) + metro_places(elements)
     missing = add_aliases(places)
+    if missing:
+        sys.exit(f"ALIASES for features the answer does not have, to update or remove: {', '.join(missing)}")
     order = list(LABELS)
     places.sort(key=lambda p: (order.index(p["category"]), fold(p["name"]), p["id"]))
 
@@ -676,9 +682,7 @@ def build(path):
                    key=lambda item: -item[0])
     large = [f"{p['name']} ({p['category']}, {d:.1f} km)" for d, p in large if d > LARGE_KM]
     print(f"  {len(large)} outlines over {LARGE_KM:g} km across, each at its centre: {', '.join(large)}")
-    print(f"  {len(CORRECTIONS) - len(stale)} corrections applied; no longer applying, to be removed: "
-          f"{', '.join(f'{c[0]} {c[1]}' for c in stale) or 'none'}; ALIASES of a missing feature: "
-          f"{', '.join(missing) or 'none'}")
+    print(f"  {len(CORRECTIONS)} corrections applied, other names added to {len(ALIASES)} places (ALIASES)")
     review = to_review(places)
     print(f"  {len(review)} names to read for vandalism (REVIEW): {', '.join(review)}")
     slips = [f"{n} ({p['id']})" for p in places for n in [p["name"], *p["aliases"]] if mixed(n)]

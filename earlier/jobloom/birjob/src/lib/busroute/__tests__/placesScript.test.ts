@@ -64,6 +64,49 @@ print(json.dumps({"tags": [e["tags"] for e in out], "stale": [c[0] for c in stal
     });
   });
 
+  it('stops the build, writing nothing, on a correction or added names that no longer apply', () => {
+    // A synthetic answer the build can run through: the planner's 27 metro stations, as
+    // OpenStreetMap names them, and one memorial whose English name a mapper has fixed.
+    const result = python(`
+import contextlib, io, shutil, tempfile
+from pathlib import Path
+tmp = Path(tempfile.mkdtemp())
+b.OUT = tmp / "places.json"
+stations = json.loads(b.METRO.read_text(encoding="utf-8"))["stations"]
+elements = [{"type": "node", "id": 100 + i, "lat": s["latitude"], "lon": s["longitude"],
+             "tags": {"name": s["name"].removesuffix("-2"), "railway": "station", "station": "subway"}}
+            for i, s in enumerate(stations)]
+elements.append({"type": "node", "id": 1, "lat": 40.36, "lon": 49.82,
+                 "tags": {"name": "Memorial", "name:en": "Fixed since", "historic": "memorial"}})
+answer = tmp / "answer.json"
+answer.write_text(json.dumps({"osm3s": {"timestamp_osm_base": "2026-11-12T00:00:00Z"}, "elements": elements}))
+b.PLACED_AT.clear()
+def run(corrections, aliases):
+    b.CORRECTIONS[:] = corrections
+    b.ALIASES.clear(); b.ALIASES.update(aliases)
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            b.build(str(answer))
+        stopped = None
+    except SystemExit as stop:
+        stopped = str(stop)
+    written = b.OUT.exists()
+    b.OUT.unlink(missing_ok=True)
+    return {"stopped": stopped, "written": written}
+result = {
+    "stale": run([("n1", "name:en", "Bad words", None, "vandalism")], {}),
+    "missing": run([], {"n2": (["Other"], "a feature the answer does not have")}),
+    "fine": run([("n1", "name:en", "Fixed since", None, "test")], {"n1": (["Other"], "test")}),
+}
+shutil.rmtree(tmp)
+print(json.dumps(result))`) as Record<string, { stopped: string | null; written: boolean }>;
+    expect(result.stale.written).toBe(false);
+    expect(result.stale.stopped).toMatch(/^CORRECTIONS whose value OpenStreetMap no longer has.*n1 name:en 'Bad words'/);
+    expect(result.missing.written).toBe(false);
+    expect(result.missing.stopped).toMatch(/^ALIASES for features the answer does not have.*n2/);
+    expect(result.fine).toEqual({ stopped: null, written: true });
+  });
+
   it('gives every correction a feature, a tag, the value it corrects and a reason', () => {
     const corrections = python('print(json.dumps(b.CORRECTIONS))') as Array<[string, string, string, string | null, string]>;
     expect(corrections.length).toBeGreaterThan(0);

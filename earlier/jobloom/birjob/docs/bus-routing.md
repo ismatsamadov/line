@@ -511,12 +511,14 @@ at.
 **Corrections.** What a person decided after reading the data is `CORRECTIONS` in the
 script: a feature, a tag, the value as mapped, the value used instead or none, and why;
 the tag `*` leaves out the whole feature. A correction applies only while OpenStreetMap
-still has that value, so once a mapper fixes it the correction stops applying and the
-build names it, to be removed. The first is an English name a vandal gave Heydar Aliyev's
-grave in the Alley of Honour, which the picker showed as the other name that matched
-"aliyev"; the grave keeps its own name and its Russian one. Every build also prints each
-name and other name with a word from `REVIEW` (insults, profanity, crime and politics, in
-English, Azerbaijani and Russian) for a person to read: four on 11 November, none of them
+still has that value, and the build stops, naming it, once it has not, so that a
+vandalism fix cannot stop applying unseen: a person reads the feature as it is now and
+updates or removes the entry. It stops the same way for an `ALIASES` or `PLACED_AT`
+feature that is gone. The first is an English name a vandal gave Heydar Aliyev's grave in
+the Alley of Honour, which the picker showed as the other name that matched "aliyev"; the
+grave keeps its own name and its Russian one. Every build also prints each name and other
+name with a word from `REVIEW` (insults, profanity, crime and politics, in English,
+Azerbaijani and Russian) for a person to read: four on 11 November, none of them
 vandalism (the café Mafiya's three names and the anti-corruption directorate's English
 name). The review that found the grave's name read all 12,658 places and found no other.
 Nine corrections more: the first of a university's numbered buildings, misspelt "Корупс №
@@ -619,8 +621,8 @@ has no other address data. The FAQ says so.
 seconds on 11 November; keep the answer outside the repository), then
 `python3 scripts/bus/build_places_json.py places-overpass.json`. The header's "read" is
 the day of the database Overpass answered from. Read the names the build prints for
-review and the corrections it says no longer apply, and change `CORRECTIONS` to suit.
-`places.test.ts` fails on
+review, and if it stops on a correction or an added name that no longer applies, look at
+the feature in OpenStreetMap and update or remove the entry. `places.test.ts` fails on
 its counts and snapshot date, and the page's `PLACES_DATE` must move with the snapshot (a
 test compares them): update the counts, this section and the date together. The file is
 re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops
