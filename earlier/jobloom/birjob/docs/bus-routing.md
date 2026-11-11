@@ -14,7 +14,7 @@ flowchart LR
   C --> D[Shared graph initialization]
   D --> E[PostgreSQL bus reference tables]
   D --> M[metro.json]
-  D --> F[Minimum-boardings search]
+  D --> F[Cheapest-journey search]
   F --> G[Bus, metro and walking instructions]
   G --> K[bike.json: racks beside the journey]
 ```
@@ -22,31 +22,61 @@ flowchart LR
 ## Ranking
 
 A destination directly connected by a walking edge of at most 400 m gets an
-explicit walking-only result. Other trips are ranked lexicographically:
+explicit walking-only result. Every other journey costs its estimated movement
+time, walking included, plus `BOARDING_PENALTY_MIN` (15 minutes) for each
+boarding, and the cheapest wins (#721). Ties go to:
 
-1. Number of boardings.
-2. Estimated movement time, including walking.
-3. Walking distance.
-4. Total estimated distance.
+1. Fewer boardings.
+2. Less walking.
+3. Less total estimated distance.
 
-This implements #664's requested preference: an available one-bus itinerary wins
-over every two-bus itinerary, even when the latter has a shorter estimated time.
-It does not promise the fastest journey. Increasing a finite transfer penalty
-would not enforce this preference for arbitrary journey lengths.
+The 15 minutes stand for what the movement time leaves out: the wait for each
+vehicle, which nothing published can estimate (no timetable or headway, #693),
+and the change itself. A journey with one more boarding therefore wins only when
+it is at least 15 minutes faster, and #664's promise holds where the difference
+is small: one bus still beats two buses, or a bus and a train, that save less
+than a quarter of an hour. The longest walk takes 5.3 minutes, less than one
+boarding, so a destination within a walk is always reached on foot.
+
+Until #721 the ranking was lexicographic, boardings first (#664): an available
+one-bus journey beat every two-bus journey, however much faster the two were. It
+passed over journeys such as 2147 → 2734, two buses in 67.2 minutes where a bus,
+the red line and a bus take 24.8; in 20 of 196 sampled trips one more boarding
+saved 20 minutes or more (times as in [Graph and data](#graph-and-data)). A finite
+penalty cannot promise one bus over two for every journey length, which is why
+#664 refused one; #721 gives that promise up where it costs a quarter of an hour
+or more. Choosing by cost is the same as taking the fastest journey for each
+number of boardings, the Pareto front of boardings and minutes, and keeping the
+one with the lowest minutes plus penalty; one search finds it without listing the
+front.
+
+How much the penalty decides, on those 196 trips, counting the journeys that take
+more boardings than the fewest possible:
+
+| Penalty | Trips | Extra boardings | Minutes saved: median, least |
+| --- | --- | --- | --- |
+| 10 min | 75 | 69 × 1, 6 × 2 | 17.0, 10.2 |
+| **15 min** | **48** | 46 × 1, 2 × 2 | 19.9, 15.0 |
+| 20 min | 23 | 22 × 1, 1 × 2 | 29.3, 22.1 |
+
+Fifteen keeps the fewest boardings in three trips of four and gives them up only
+for a saving that is clear against estimates this rough. It is one constant in
+`routing.ts`; where to set it is the owner's call.
 
 A metro ride is a ride like a bus ride (#689): boarding a train, changing trains
-and boarding the metro's express bus each count as one boarding. One bus still
-beats a bus and a train, however much faster the second is; among journeys with as
-many boardings, the faster wins, and that is where the metro comes in. See
-[Metro](#metro-689) for what the rule costs.
+and boarding the metro's express bus each count as one boarding and pay the same
+penalty. The faster train wins among journeys with as many boardings, and a bus
+and a train beat one bus when they save more than a boarding.
 
 `src/lib/busroute/routing.ts` runs one Dijkstra search with a priority queue of
-immutable labels. A label records the arrival stop and the last edge. Continuing
-a ride requires the same `(bus, direction)` identity **and** the next consecutive
-route position. Changing direction, reboarding after a walk, or boarding at a
-later occurrence of a repeated stop starts another ride. Reconstruction splits
-instructions at those same boarding boundaries, so ranking and displayed
-transfer counts agree. Transfer count is `max(boardings - 1, 0)`.
+immutable labels, compared on cost, then boardings, walking and distance. A
+label records the arrival stop and the last edge. Continuing a ride requires the
+same `(bus, direction)` identity **and** the next consecutive route position.
+Changing direction, reboarding after a walk, or boarding at a later occurrence of
+a repeated stop starts another ride. Reconstruction splits instructions at those
+same boarding boundaries, so ranking and displayed transfer counts agree.
+Transfer count is `max(boardings - 1, 0)`. The search takes its starting labels
+with their own costs; the endpoint passes one, at the chosen stop.
 
 Walking edges cannot follow other walking edges. Because the graph includes all
 nearby stop pairs, any permitted straight-line walk within the radius already
@@ -116,7 +146,8 @@ legs and 32.5 at most (line 517). The model still knows no dwell time, traffic o
 faster highway stretches, and a leg whose road loops far beyond the straight line
 between its stops (40 legs over 1 km, [Road shapes](#road-shapes)) is still
 timed by the straight line. Neither figure is road geometry or a live estimate.
-`totalTime` contains movement only, with no invented wait or transfer penalty.
+`totalTime` contains movement only; the boarding penalty decides the choice and
+is not added to the time shown.
 `totalStops` counts stop and metro-station visits, merging an adjacent shared
 transfer stop once while preserving repeated visits around loops and distinct
 walking-transfer endpoints.
@@ -265,7 +296,8 @@ Həzi Aslanov m/st → Sahil m/st stays on bus 20, because the metro would need 
 change at Əhmədli. What #664's rule costs: in 320 of 590 random trips a journey
 with one more boarding would be at least 10 minutes faster (22 on average, waits
 not counted), but 262 of those exist by bus alone, so this is the rule's trade-off
-and not the metro's; 135 of them use the metro.
+and not the metro's; 135 of them use the metro. These figures predate #721, which
+replaced that rule and the equal shares of a line's time ([Ranking](#ranking)).
 
 **Refreshing.** In route_efficiency, `python3 data/metro_scraper.py` and
 `python3 data/build_metro.py`; then here
@@ -301,8 +333,8 @@ parking; only the MPV layer is named for bicycles.
 
 **Why nothing routes by bicycle.** A cycle leg needs a bicycle where the journey starts,
 which the data cannot say, and a road network for cycling, which the planner does not
-have. It would also undo #664's ranking: a leg on a bicycle is no boarding, so riding all
-the way would beat every bus. The planner keeps its stop-to-stop journeys and adds what
+have. It would also undo the ranking: a leg on a bicycle pays no boarding, so riding all
+the way would win most trips. The planner keeps its stop-to-stop journeys and adds what
 the data supports: where to leave the bicycle.
 
 **Beside a journey** (`journeyBikeParking` in `bike.ts`, called by
@@ -379,18 +411,23 @@ for its endpoints, including the return direction.
 
 ## Automated verification
 
-Tests cover direct-bus preference, minimum transfers, tie-breaks, origin and
-interchange walks, the walking limit, directions, loops, unreachable stops,
-initialization concurrency/retry and API input/error handling. An independent
-round-by-boardings oracle checks 900 trips over generated small networks. The
-spatial grid is checked against exhaustive haversine pairs.
+Tests cover the boarding penalty below, at and above its threshold, tie-breaks,
+origin and interchange walks, the walking limit, directions, loops, unreachable
+stops, the length-shared leg times, initialization concurrency/retry and API
+input/error handling. An independent round-by-boardings oracle checks 900 trips
+over generated small networks, choosing the round with the lowest minutes plus
+penalties. The spatial grid is checked against exhaustive haversine pairs, at
+Baku's latitude and at the network's northern edge.
 
 `routingOracle.test.ts` adds 900 generated trips checked against a separate
 boarding-round cost oracle. It expands complete contiguous ride stretches in each
 round and allows one walk between rounds, rather than reproducing the production
-edge/state Dijkstra. Its mixed bus/metro networks include loops, origin walks,
-interchanges and destination walks. It checks every ranking objective, transfer
-counts, segment continuity and the absence of consecutive walking segments.
+edge/state Dijkstra, and then chooses among the rounds by cost. Its mixed bus/metro
+networks include loops, origin walks, interchanges and destination walks. It checks
+every ranking objective, transfer counts, segment continuity and the absence of
+consecutive walking segments. Both oracles assert that more than ten of their trips
+take more boardings than the fewest, so the penalty is exercised and not only the
+boarding count.
 
 ## Verification on 2026-10-26
 

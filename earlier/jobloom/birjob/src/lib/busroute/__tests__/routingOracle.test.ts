@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { findRoute } from '../routing';
+import { BOARDING_PENALTY_MIN, findRoute } from '../routing';
 import type { GraphEdge } from '../types';
 import { graph, ride, train, walk } from './fixtures';
 
@@ -13,8 +13,10 @@ function keep(best: Map<number, Cost>, id: number, cost: Cost) {
 
 /** A different model from the production edge/state Dijkstra: in round n, board
  * any line once, ride any contiguous stretch, then optionally walk once. Every
- * round adds exactly one boarding, so its first reachable destination is minimal.
- * Compare all three secondary costs inside each round, including origin walks. */
+ * round adds exactly one boarding, so round n holds the best journey with n
+ * boardings, compared on all three costs, including origin walks. The journey to
+ * choose is the round with the lowest minutes plus n boarding penalties (#721),
+ * the earliest on a tie. */
 function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to: number) {
   const withWalk = (arrivals: Map<number, Cost>) => {
     const result = new Map(arrivals);
@@ -25,7 +27,11 @@ function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to
   };
   let previous = withWalk(new Map([[from, [0, 0, 0] as Cost]]));
   if (previous.has(to)) return { boardings: 0, cost: previous.get(to)! };
-  for (let boardings = 1; boardings <= 6; boardings++) {
+  const seen = new Set(previous.keys());
+  let best: { boardings: number; cost: Cost } | null = null;
+  const score = (journey: { boardings: number; cost: Cost }) => journey.cost[0] + journey.boardings * BOARDING_PENALTY_MIN;
+  // A journey with n boardings costs at least n penalties, so later rounds cannot win.
+  for (let boardings = 1; !best || boardings * BOARDING_PENALTY_MIN <= score(best); boardings++) {
     const arrivals = new Map<number, Cost>();
     for (const line of lines) for (let i = 0; i < line.legs.length; i++) {
       const start = previous.get(line.stops[i]);
@@ -38,20 +44,40 @@ function rounds(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to
       }
     }
     previous = withWalk(arrivals);
-    if (previous.has(to)) return { boardings, cost: previous.get(to)! };
+    // A round that reaches no stop the earlier rounds missed never will.
+    if (!best && [...previous.keys()].every(id => seen.has(id))) break;
+    for (const id of previous.keys()) seen.add(id);
+    const arrival = previous.get(to);
+    if (arrival && (!best || score({ boardings, cost: arrival }) < score(best))) best = { boardings, cost: arrival };
   }
-  return null;
+  return best;
+}
+
+/** The fewest boardings that reach `to` at all: rounds without costs. */
+function fewestBoardings(lines: Line[], walks: Map<number, GraphEdge[]>, from: number, to: number) {
+  const onFoot = (stops: Set<number>) => new Set([...stops, ...[...stops].flatMap(id => (walks.get(id) ?? []).map(e => e.toStopId))]);
+  let reached = onFoot(new Set([from]));
+  for (let boardings = 1; ; boardings++) {
+    const next = new Set<number>();
+    for (const line of lines) line.stops.forEach((stop, i) => {
+      if (reached.has(stop)) for (const id of line.stops.slice(i + 1)) next.add(id);
+    });
+    const after = onFoot(next);
+    if (after.has(to)) return boardings;
+    if ([...after].every(id => reached.has(id))) return null;
+    reached = new Set([...reached, ...after]);
+  }
 }
 
 describe('routing against an independent boarding-round cost oracle', () => {
   it('agrees on boardings, movement time, walking and distance with loops, buses, metro and walking interchanges', () => {
-    let seed = 20261026;
+    let seed = 20261026, chosenMoreThanFewest = 0;
     const random = (n: number) => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed % n; };
     for (let network = 0; network < 30; network++) {
       const edges: Record<number, GraphEdge[]> = {};
       const lines = Array.from({ length: 4 }, (_, i): Line => {
         const stops = Array.from({ length: 3 + random(3) }, () => 1 + random(6));
-        const legs = stops.slice(1).map((to, sequence) => (i % 2 ? train : ride)(to, i + 1, 1 + random(10), 1 + random(5), sequence));
+        const legs = stops.slice(1).map((to, sequence) => (i % 2 ? train : ride)(to, i + 1, 1 + random(30), 1 + random(5), sequence));
         legs.forEach((leg, sequence) => (edges[stops[sequence]] ??= []).push(leg));
         return { stops, legs };
       });
@@ -87,7 +113,10 @@ describe('routing against an independent boarding-round cost oracle', () => {
           expect(actual.segments[i - 1].stops.at(-1)!.id, context).toBe(actual.segments[i].stops[0].id);
           expect(actual.segments[i].mode === 'walk' && actual.segments[i - 1].mode === 'walk', context).toBe(false);
         }
+        if (boardings > fewestBoardings(lines, walks, from, to)!) chosenMoreThanFewest++;
       }
     }
+    // The generated trips exercise the penalty, not only the fewest boardings.
+    expect(chosenMoreThanFewest).toBeGreaterThan(10);
   });
 });

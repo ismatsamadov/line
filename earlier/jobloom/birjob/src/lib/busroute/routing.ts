@@ -1,13 +1,21 @@
 /**
- * Minimum-boardings routing (#664). Labels compare lexicographically:
- * boardings, estimated movement time, walking distance, total distance.
- * A finite transfer penalty cannot guarantee that one bus beats two.
+ * Journey choice (#721). A journey costs its estimated movement time plus
+ * BOARDING_PENALTY_MIN for every boarding, and the cheapest wins; then fewer
+ * boardings, less walking and less distance. Movement time leaves out every wait,
+ * and no timetable or headway is published to estimate one, so the penalty stands
+ * for the wait and the change: a journey with one more boarding wins only when it
+ * is at least that much faster, and one bus still beats two that save less (#664).
+ *
+ * #664 put boardings first whatever the time. The journeys it passed over could be
+ * far faster: two buses in 67 minutes over three boardings in 25. Choosing by cost
+ * is the same as taking the fastest journey for each number of boardings and
+ * keeping the one with the lowest minutes plus penalty, done in one search.
  *
  * A ride continues only along consecutive positions of the same direction.
  * A metro ride is a ride like any other (#689): boarding a train or the metro's
  * express bus counts once, as boarding a bus does, and so does changing trains.
- * One walking edge (at most 300 m) is allowed between rides or at either end;
- * walking edges cannot chain into an unbounded shortcut. A directly walkable
+ * One walking edge (at most WALK_RADIUS_KM) is allowed between rides or at either
+ * end; walking edges cannot chain into an unbounded shortcut. A directly walkable
  * destination is returned as a separate short walking journey.
  */
 import type { TransitGraph } from "./graph";
@@ -15,8 +23,11 @@ import type { GraphEdge, LatLng, RouteResult, RouteSegment } from "./types";
 import { WALK_RADIUS_KM } from "./geo";
 import { joinLegs } from "./shape";
 
+/** Minutes a boarding costs on top of the movement time it brings (#721). */
+export const BOARDING_PENALTY_MIN = 15;
+
 type RoutingGraph = Pick<TransitGraph, "getEdges" | "getStopInfo">;
-type Cost = readonly [boardings: number, minutes: number, walkingKm: number, distanceKm: number];
+type Cost = readonly [cost: number, boardings: number, walkingKm: number, distanceKm: number, minutes: number];
 interface Label {
   key: string;
   stopId: number;
@@ -107,32 +118,33 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
   return {
     segments,
     totalDistance: Math.round(destination.cost[3] * 100) / 100,
-    totalTime: Math.round(destination.cost[1] * 10) / 10,
-    totalTransfers: Math.max(0, destination.cost[0] - 1),
+    totalTime: Math.round(destination.cost[4] * 10) / 10,
+    totalTransfers: Math.max(0, destination.cost[1] - 1),
     totalStops,
   };
 }
 
-export function findRoute(graph: RoutingGraph, source: number, target: number): RouteResult | null {
-  if (source === target || !graph.getStopInfo(source) || !graph.getStopInfo(target)) return null;
-  const start: Label = { key: `${source}:start`, stopId: source, cost: [0, 0, 0, 0], previous: null, edge: null, boarded: false };
-  const best = new Map<string, Label>([[start.key, start]]);
+/**
+ * The cheapest journey from any of the starting labels to `target` that boards
+ * at least once. Starting labels carry their own cost, so a search could also
+ * begin with several walks to nearby stops.
+ */
+function cheapest(graph: RoutingGraph, starts: readonly Label[], target: number): Label | null {
+  const best = new Map<string, Label>();
   const queue = new PriorityQueue();
-  queue.push(start);
-
-  // This short walking option never comes from a chain of transfer edges.
-  const walk = graph.getEdges(source).find(e => e.kind === "walk" && e.toStopId === target && e.distance <= WALK_RADIUS_KM);
-  if (walk) return reconstruct(graph, {
-    key: `${target}:walk`, stopId: target, previous: start, edge: walk, boarded: false,
-    cost: [0, walk.time, walk.distance, walk.distance],
-  });
+  for (const start of starts) {
+    const previous = best.get(start.key);
+    if (previous && compare(previous.cost, start.cost) <= 0) continue;
+    best.set(start.key, start);
+    queue.push(start);
+  }
 
   let current: Label | undefined;
   while ((current = queue.pop())) {
     // Queue entries hold immutable labels; an improved label makes the old
     // entry stale, even if it was enqueued before the improvement.
     if (best.get(current.key) !== current) continue;
-    if (current.stopId === target && current.cost[0] > 0) return reconstruct(graph, current);
+    if (current.stopId === target && current.cost[1] > 0) return current;
 
     for (const edge of graph.getEdges(current.stopId)) {
       const walking = edge.kind === "walk";
@@ -142,11 +154,13 @@ export function findRoute(graph: RoutingGraph, source: number, target: number): 
         && last.rideId === edge.rideId && last.toSequence === edge.fromSequence;
       const boarded = !walking && !continuesRide;
       const cost: Cost = [
-        current.cost[0] + Number(boarded), current.cost[1] + edge.time,
+        current.cost[0] + edge.time + (boarded ? BOARDING_PENALTY_MIN : 0),
+        current.cost[1] + Number(boarded),
         current.cost[2] + (walking ? edge.distance : 0), current.cost[3] + edge.distance,
+        current.cost[4] + edge.time,
       ];
       const key = edge.kind === "walk"
-        ? `${edge.toStopId}:walk:${cost[0] > 0 ? "boarded" : "start"}`
+        ? `${edge.toStopId}:walk:${cost[1] > 0 ? "boarded" : "start"}`
         : `${edge.toStopId}:${edge.kind}:${edge.rideId}:${edge.toSequence}`;
       const previous = best.get(key);
       if (previous && compare(previous.cost, cost) <= 0) continue;
@@ -156,4 +170,20 @@ export function findRoute(graph: RoutingGraph, source: number, target: number): 
     }
   }
   return null;
+}
+
+export function findRoute(graph: RoutingGraph, source: number, target: number): RouteResult | null {
+  if (source === target || !graph.getStopInfo(source) || !graph.getStopInfo(target)) return null;
+  const start: Label = { key: `${source}:start`, stopId: source, cost: [0, 0, 0, 0, 0], previous: null, edge: null, boarded: false };
+
+  // This short walking option never comes from a chain of transfer edges. It costs
+  // less than any boarding, so it is the cheapest journey whenever it exists.
+  const walk = graph.getEdges(source).find(e => e.kind === "walk" && e.toStopId === target && e.distance <= WALK_RADIUS_KM);
+  if (walk) return reconstruct(graph, {
+    key: `${target}:walk`, stopId: target, previous: start, edge: walk, boarded: false,
+    cost: [walk.time, 0, walk.distance, walk.distance, walk.time],
+  });
+
+  const destination = cheapest(graph, [start], target);
+  return destination && reconstruct(graph, destination);
 }

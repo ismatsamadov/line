@@ -10,6 +10,7 @@ import { buildWebApplication } from '@/lib/ld/webApplication';
 import { buildFaqPage } from '@/lib/ld/faqPage';
 import Component from './Component';
 import { WALK_RADIUS_KM } from '@/lib/busroute/geo';
+import { BOARDING_PENALTY_MIN } from '@/lib/busroute/routing';
 
 const tool = getToolBySlug('avtobus-marsrutu')!;
 const PAGE_URL = `https://www.birjob.com/aletler/${tool.slug}`;
@@ -26,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 const FAQ = [
-  { q: 'Bu alət necə işləyir?', a: 'Başlanğıc və təyinat dayanacağını seçirsiniz. Alət avtobus və metro ilə ən az minmə tələb edən marşrutu seçir: metro qatarına minmək də avtobusa minmək kimi bir minmə sayılır. Eyni sayda minmə olan variantlar arasında təxmini hərəkət vaxtı, sonra piyada məsafəsi müqayisə olunur. Bir avtobusla getmək mümkündürsə, daha sürətli olsa belə iki minməli variant (məsələn, avtobus və metro) onu əvəz etmir.' },
+  { q: 'Bu alət necə işləyir?', a: `Başlanğıc və təyinat dayanacağını seçirsiniz. Alət avtobus və metro ilə mümkün yolları müqayisə edir: hər birinin təxmini hərəkət vaxtına hər minmə üçün ${BOARDING_PENALTY_MIN} dəqiqə əlavə edir və cəmi ən az olanı seçir. Bu ${BOARDING_PENALTY_MIN} dəqiqə gözləmə və dəyişmə vaxtını əvəz edir, çünki nəqliyyatın nə vaxt gələcəyi məlum deyil. Metro qatarına minmək də avtobusa minmək kimi bir minmə sayılır. Beləliklə, bir minmə çox olan variant yalnız ən azı ${BOARDING_PENALTY_MIN} dəqiqə daha sürətli olduqda seçilir; fərq bundan azdırsa, bir avtobus iki minməli variantdan (məsələn, avtobus və metrodan) üstün tutulur. Cəm bərabər olduqda daha az minmə, sonra daha qısa piyada yol seçilir.` },
   { q: 'Konkret bir avtobusun bütün marşrutunu necə görə bilərəm?', a: '«Xətti göstər» rejiminə keçin və avtobus nömrəsini seçin (məsələn 88). Həmin xəttin bütün marşrutu — başlanğıc dayanacağından son dayanacağa qədər — xəritədə göstərilir, keçdiyi bütün dayanacaqların ardıcıl siyahısı, ümumi uzunluğu və təxmini vaxtı ilə birlikdə. İki istiqamətli xətlərdə «Gediş» və «Qayıdış» arasında keçə bilərsiniz.' },
   { q: 'Vaxt dəqiqdirmi?', a: 'Xeyr — bu, yalnız təxmini hərəkət vaxtıdır. Avtobusun və qatarın gözlənilməsi, cədvəl və tıxaclar nəzərə alınmır. Avtobus xəttinin ümumi müddəti dayanacaqlar arasındakı hissələrə uzunluqlarına görə bölünür, yəni avtobusun xətt boyu eyni sürətlə getdiyi qəbul edilir; metro qatarının stansiyalar arası vaxtı Bakı Metropoliteninin öz marşrut planlayıcısındandır, stansiyada eskalatorla və keçidlərdə keçən vaxt isə daxil deyil; piyada vaxtı təxmini məsafədən hesablanır. Bu alət dəqiq gəliş saatı vermir.' },
   { q: 'Məlumat haradandır və nə qədər təzədir?', a: 'Avtobuslar AYNA açıq nəqliyyat məlumatlarından götürülmüş istinad bazasındandır və avtomatik yenilənmir. Şəhərdə avtobus xətləri dəyişmiş ola bilər. Metro məlumatı (qatar xidmətləri, vaxtlar və stansiya çıxışları) Bakı Metropoliteninin saytından və opendata.az-dan, stansiyaların yeri və xətlərin izi isə OpenStreetMap-dandır (© OpenStreetMap iştirakçıları); 25 oktyabr 2026-cı il vəziyyətini göstərir. O gün 28 May ilə Nizami arasında qatarlar işləmirdi və bu hissədə metronun ekspres avtobusları işləyirdi; Əhmədli ilə Həzi Aslanov arasında isə ayrıca məkik qatar işləyirdi. Səfərdən əvvəl cari marşrutu rəsmi mənbələrdən yoxlayın.' },
