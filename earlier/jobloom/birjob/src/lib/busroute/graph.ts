@@ -110,7 +110,7 @@ export class TransitGraph {
       const lines = [...busLines.filter(([k]) => k === key), ...busLines.filter(([k]) => k !== key)].map(([, line]) => line);
       const legs = lines.length ? legPaths(points, lines) : [];
 
-      const { shares, measured } = shareLengths(points, lengths, legs);
+      const measured = measuredLength(points, lengths, legs);
       // A line whose legs have no length at all (one stop listed over and over)
       // has nothing to share by, and keeps equal shares.
       const legTime = (length: number) => measured > 0 ? duration * length / measured : duration / Math.max(lengths.length, 1);
@@ -119,7 +119,7 @@ export class TransitGraph {
         const fromStop = ordered[i];
         const toStop = ordered[i + 1];
         // A stop without valid coordinates breaks its legs; no edge bridges it.
-        const distance = shares[i];
+        const distance = lengths[i];
         if (distance === null) continue;
 
         const edge: GraphEdge = {
@@ -211,25 +211,26 @@ const MISPLACED_RATIO = 3;
 const MISPLACED_KM = 1;
 
 /**
- * What each leg of a ride counts for when the line's duration is shared out by length
- * (#721), and their total: its straight-line length, except where the data puts a stop
- * in the wrong place. One such stop would otherwise set the pace of its whole line:
- * 537's second direction ran 19% fast because two of its legs ran 4.7 km out of the way.
+ * The length a ride's duration is shared over, its legs' straight lines (#721), except
+ * where the data puts a stop in the wrong place. One such stop would otherwise set the
+ * pace of its whole line: 537's second direction ran 19% fast because two of its legs
+ * ran 4.7 km out of the way.
  *
  * A run of stops without coordinates breaks its legs, but the bus still covers that
  * stretch, so it counts as the straight line between the stops either side.
  *
  * A stop that sticks out of its ride while the recorded line passes it by, though it
- * runs on through the legs beyond, is taken to be misplaced: its two legs share the
- * straight line between the stops either side, in proportion to their lengths, for
- * their time and their distance alike. On the snapshot that is stop 3841 of 537, 1.1
- * km from both its lines, and 536's row "28 May küçəsi 222", which points at stop
- * 3095, C.Cavadov küç. 72A, elsewhere on the route. The buses that do go out of their
- * way to a stop, as 145 does to Binəqədi Gənclər Şəhərciyi, have it on their recorded
- * line and keep their legs.
+ * runs on through the legs beyond, is taken to be misplaced: its two legs count as the
+ * straight line between the stops either side. Only the total changes. The stop stays
+ * where it is stored, with its walks, so its legs keep their lengths and take their
+ * time at the line's pace: reaching it costs the way there, never a jump. On the
+ * snapshot that is stop 3841 of 537, 1.1 km from both its lines, and 536's row "28 May
+ * küçəsi 222", which points at stop 3095, C.Cavadov küç. 72A, elsewhere on the route.
+ * The buses that do go out of their way to a stop, as 145 does to Binəqədi Gənclər
+ * Şəhərciyi, have it on their recorded line, and their legs count in full.
  */
-function shareLengths(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>) {
-  const shares = [...lengths];
+function measuredLength(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>): number {
+  let measured = lengths.reduce<number>((sum, length) => sum + (length ?? 0), 0);
   for (let k = 1; k < lengths.length; k++) {
     const into = lengths[k - 1], out = lengths[k];
     if (into === null || out === null || legs[k - 1] || legs[k]) continue;
@@ -238,22 +239,20 @@ function shareLengths(points: Array<LatLng | undefined>, lengths: Array<number |
     const before = points[k - 1]!, after = points[k + 1]!;
     const direct = haversine(before[0], before[1], after[0], after[1]);
     if (into + out <= MISPLACED_RATIO * direct || into + out - direct <= MISPLACED_KM) continue;
-    shares[k - 1] = direct * into / (into + out);
-    shares[k] = direct * out / (into + out);
+    measured -= into + out - direct;
   }
-  let measured = shares.reduce<number>((sum, share) => sum + (share ?? 0), 0);
   let last = -1;
   points.forEach((point, i) => {
     if (!point) return;
     if (last >= 0 && i - last > 1) measured += haversine(points[last]![0], points[last]![1], point[0], point[1]);
     last = i;
   });
-  return { shares, measured };
+  return measured;
 }
 
 /**
  * The recorded route lines, or none. They draw rides along the road and tell a
- * misplaced stop (shareLengths), so a failed read logs and leaves every ride straight
+ * misplaced stop (measuredLength), so a failed read logs and leaves every ride straight
  * between its stops, timed as stored, instead of failing the graph and, with it,
  * every search.
  */

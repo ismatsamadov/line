@@ -56,8 +56,8 @@ more boardings than the fewest possible:
 
 | Penalty | Trips | Extra boardings | Minutes saved: median, least |
 | --- | --- | --- | --- |
-| 10 min | 74 | 69 × 1, 5 × 2 | 16.8, 10.1 |
-| **15 min** | **46** | 44 × 1, 2 × 2 | 19.7, 15.4 |
+| 10 min | 76 | 71 × 1, 5 × 2 | 16.8, 10.1 |
+| **15 min** | **48** | 46 × 1, 2 × 2 | 19.3, 15.4 |
 | 20 min | 22 | 21 × 1, 1 × 2 | 30.2, 24.7 |
 
 Fifteen keeps the fewest boardings in three trips of four and gives them up only
@@ -165,20 +165,26 @@ transfer stop once while preserving repeated visits around loops and distinct
 walking-transfer endpoints.
 
 Shared by length, one stop in the wrong place sets the pace of its whole line, so
-two cases count differently (`shareLengths` in `graph.ts`, #721). A run of stops
+two cases count differently (`measuredLength` in `graph.ts`, #721). A run of stops
 without coordinates breaks its legs, but the bus still covers that stretch: it
 counts as the straight line between the stops either side, and the rest of the
 line keeps its pace (in a synthetic line of ten stops, one missing had made the
 others 29% slower). And a stop is taken to be misplaced when its two legs run more
 than three times the straight line between its neighbours, and over a kilometre
 longer, while the recorded line ([Road shapes](#road-shapes)) passes it by but
-runs on through the legs beyond: its two legs then share that straight line, for
-their time and their distance alike. This is the only use routing makes of the
-recorded lines, and without them it changes nothing. Sixteen stops on the snapshot
-stick out that far. Fourteen lie on their line, where the bus does go out of its
-way (145 to Binəqədi Gənclər Şəhərciyi, 3.6 km of legs for 1.1 between its
-neighbours), and keep their legs. The other two are suspected errors in the data.
-The right coordinates are unknown, so no migration corrects them:
+runs on through the legs beyond: its two legs then count as that straight line in
+the length the line's time is shared over, so the rest of the line keeps its pace.
+The legs themselves keep their stored lengths and take their time at that pace,
+because the stop stays where it is stored, with its walks: boarding or alighting
+there costs the way to where it stands. Shared as the straight line instead, as
+during the review, the stop was a jump (536 from 3077 to 3095, stored 2.72 km apart,
+in 1.5 minutes), and a spur out to such a stop and back would have cost nothing.
+This is the only use routing makes of the recorded lines, and without them it
+changes nothing. Sixteen stops on the snapshot stick out that far. Fourteen lie on
+their line, where the bus does go out of its way (145 to Binəqədi Gənclər
+Şəhərciyi, 3.6 km of legs for 1.1 between its neighbours), and count in full. The
+other two are suspected errors in the data. The right coordinates are unknown, so
+no migration corrects them:
 
 - **Stop 3841**, Zabrat-Kürdəxanı şosesi, 18, the second stop of 537's second
   direction, is stored at 40.520541, 49.950679, 1.1 km from both of 537's
@@ -192,12 +198,13 @@ The right coordinates are unknown, so no migration corrects them:
   536's route, but not between those neighbours. Its legs ran 4.73 km for 0.71,
   took 14.6 of 88 minutes, and left the other 32 legs 14% fast.
 
-The rule changes the time of 62 legs, all in those two directions, and the
-distance of the four through the two stops. Both directions now run at their
-lines' pace, 17.3 and 16.7 km/h in a straight line, through the stop as well. Of
-the review's 1,500 random pairs (seed 20261111) 34 answers change, and 4 of the
-200 below, each on 536 or 537: some journeys now board 537 at its first stop or
-536 at its second instead of going round the detour, and others take another bus.
+The rule changes the time of 62 legs, all in those two directions, and no
+distance. Both directions now run at their lines' pace, 17.3 and 16.7 km/h in a
+straight line, and so do the misplaced stops' legs: a ride to such a stop, from it
+or through it takes the way its stored place makes, 10.6 minutes for 537's 3.06 km
+from 1635 to 3841. Of the review's 1,500 random pairs (seed 20261111) 28 answers
+change, and 4 of the 200 below, each on 536 or 537: 19 of the 28 keep their
+journey at its line's true pace, and 9 take another.
 
 `walking.ts` builds bidirectional connections of at most `WALK_RADIUS_KM` from
 the same coordinates. That limit is 400 m, about five minutes on foot and the
@@ -247,10 +254,11 @@ Bus edges carry their leg's road, and a journey's ride joins them
 (`RouteSegment.path`). The line viewer matches its stops to the bus's lines the same
 way, so it no longer draws a broken line as stored; its coordinates are empty when
 nothing fits, and the map then joins the stops. Distances and times do not change:
-they still come from straight lines between stops, as the page says, apart from the
-legs of a stop the line passes by ([Graph and data](#graph-and-data)). If the lines
-fail to load, the graph builds without them and every ride is drawn straight until
-the process restarts: the graph is built once, and only a console error says so.
+they still come from straight lines between stops, as the page says; the lines only
+set the pace of a line with a misplaced stop ([Graph and data](#graph-and-data)).
+If the lines fail to load, the graph builds without them and every ride is drawn
+straight until the process restarts: the graph is built once, and only a console
+error says so.
 The line viewer also catches a failure reading its optional road geometry: it
 returns the ordered stops with empty coordinates, allowing the map to join those
 stops. A geometry-table failure therefore does not hide an otherwise usable line.
@@ -511,15 +519,15 @@ these answers.
 
 - times shared by length: 116 answers change, none in its number of boardings;
 - 400 m walks: 44 change, 20 of them to fewer boardings (19 by one, one by two);
-- the cost rule: 46 change, all to more boardings (44 by one, 2 by two), each
-  saving at least 15.4 minutes and 19.7 at the median.
+- the cost rule: 48 change, all to more boardings (46 by one, 2 by two), each
+  saving at least 15.4 minutes and 19.3 at the median.
 
-All together 146 of 196 answers change. Timing old and new journeys alike, by
-length: 14 need fewer boardings (13 one fewer, one two fewer; 235 m more walking at
-the median), 92 keep their count and save 3.1 minutes at the median (6.1 on
-average), and 40 add boardings and save 26.4 minutes at the median (31.5 on
-average, never under 15). Boardings over the 196 trips go from 522 to 549 and
-average walking from 266 to 283 m. The time shown rises by 3.1 minutes at the
+All together 147 of 196 answers change. Timing old and new journeys alike, by
+length: 13 need fewer boardings (12 one fewer, one two fewer; 234 m more walking at
+the median), 93 keep their count and save 3.3 minutes at the median (6.1 on
+average), and 41 add boardings and save 26.3 minutes at the median (31.1 on
+average, never under 15). Boardings over the 196 trips go from 522 to 551 and
+average walking from 266 to 282 m. The time shown rises by 3.1 minutes at the
 median: equal shares had let the search find legs faster than their line.
 
 **Search cost**, old and new in one run on those pairs (the old search on the old
@@ -527,7 +535,7 @@ model): 7.0 ms at the median instead of 13.8, and 13.4 ms at the 95th percentile
 instead of 29.3; another run gave 7.9 and 15.1 against 13.8 and 31.4. Labels
 settled went from 6,240 to 7,217 at the median and from 14,102 to 14,373 at the
 95th percentile, with 16,590 walking edges instead of 10,264; 1343 → 3642 settles
-13,532 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
+13,531 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
 keyed by edge, the new search returned the same journey as with strings for all
 200 pairs. Keyed by number, as now, it returns the same response as keyed by edge
 for all 200 and for the review's 1,500 pairs (seed 20261111), at the same speed:

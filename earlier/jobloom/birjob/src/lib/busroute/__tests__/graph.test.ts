@@ -95,15 +95,28 @@ describe('transit graph', () => {
 
     it('counts as the straight line between its neighbours when the recorded line passes it by', async () => {
       const leg = await built(road);
-      // 30 minutes for 0.56 + 1.11 + 0.56 km, the misplaced stop's legs sharing the 1.11.
+      // The line's 30 minutes cover 0.56 + 1.11 + 0.56 km, as if stop 3 stood on the road.
       const pace = 30 / (km(1, 2) + km(2, 4) + km(4, 5));
       expect(leg(1).time).toBeCloseTo(pace * km(1, 2), 9);
       expect(leg(4).time).toBeCloseTo(pace * km(4, 5), 9);
-      expect(leg(2).time + leg(3).time).toBeCloseTo(pace * km(2, 4), 9);
-      expect(leg(2).time / leg(3).time).toBeCloseTo(km(2, 3) / km(3, 4), 9);
-      // Their distances share it alike, so neither leg runs at 120 km/h.
-      expect(leg(2).distance + leg(3).distance).toBeCloseTo(km(2, 4), 9);
-      expect(leg(2).time / leg(2).distance).toBeCloseTo(pace, 9);
+      // The stop stays where it is stored, with its walks, so its legs keep their
+      // lengths and take the way there at that pace: boarding or alighting at it is
+      // never a jump of 2 km for the price of 0.5.
+      expect(leg(2)).toMatchObject({ distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(leg(3)).toMatchObject({ distance: expect.closeTo(km(3, 4), 9), time: expect.closeTo(pace * km(3, 4), 9) });
+    });
+
+    it('keeps a spur out to it and back at its stored length, never at the nothing between its ends', async () => {
+      db.queryStopDetails.mockResolvedValue(stops);
+      db.queryBusStops.mockResolvedValue([1, 2, 3, 2, 4].map((s, i) => busStop(10, s, i)));
+      db.queryRouteShapes.mockResolvedValue(new Map([['10:1', road]]));
+      const g = await (await import('../graph')).getGraph();
+      const leg = (id: number, sequence: number) => g.getEdges(id).find(e => e.kind === 'bus' && e.fromSequence === sequence)!;
+      // From 2 out to 3 and back to 2 is no way at all in a straight line.
+      const pace = 30 / (km(1, 2) + km(2, 4));
+      expect(leg(2, 1)).toMatchObject({ toStopId: 3, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(leg(3, 2)).toMatchObject({ toStopId: 2, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(leg(2, 3).time).toBeCloseTo(pace * km(2, 4), 9);
     });
 
     it('keeps its legs when the recorded line goes out to it, or when there is no line to tell', async () => {
