@@ -452,33 +452,39 @@ storing it and showing Places results on a map that is not Google's, and the pla
 draws OpenStreetMap tiles with Leaflet. The places are OpenStreetMap's, © OpenStreetMap
 contributors, under the Open Database Licence (ODbL) 1.0. `scripts/bus/build_places_json.py`
 sends one query to the Overpass API (overpass-api.de, with a User-Agent naming the
-planner; on a 429, 502 or 504 it waits, for Retry-After when given, and tries at most
-twice more) for every named feature in the network's area that carries one of the tags a
-destination does: amenity, shop, office, tourism, leisure, healthcare, historic, building,
-railway and public-transport stations, aerodromes, place, beaches, retail, commercial and
-residential land, towers, lighthouses and piers. The area is the extent of AYNA's stops
-and about 2 km around it, 39.92–40.66 N and 49.37–50.39 E, inside the envelope
-`isBakuCoordinate` accepts. The answer is saved as it came and the build reads the saved
-file, so a build can be re-run on the same snapshot.
+planner; on a 429, 502 or 504 it waits, for Retry-After when given, in seconds or as a
+date, and tries at most twice more) for every named feature in the network's area that
+carries one of the tags a destination does: amenity, shop, office, tourism, leisure,
+healthcare, historic, building, railway and public-transport stations, aerodromes, place,
+beaches, retail, commercial and residential land, towers, lighthouses and piers. The area
+is the extent of AYNA's stops and about 2 km around it, 39.92–40.66 N and 49.37–50.39 E,
+inside the envelope `isBakuCoordinate` accepts. The query asks for OpenStreetMap as it was
+at the snapshot's second (`[date:"2026-11-11T06:09:21Z"]`, the script's `SNAPSHOT`), and
+Overpass keeps past states, so the same query fetches the same features whenever it is
+sent. The first answer was not kept; the one fetched again on 11 November at 12:47 UTC
+rebuilt all 12,658 places byte for byte. The answer is saved as it came and the build
+reads the saved file, so a build can be re-run on the same snapshot.
 
-**What the script keeps.** The snapshot of 11 November 2026 (OpenStreetMap data of
-06:09 UTC) had 21,770 features, 5.2 MB. A feature becomes a place when `category()` gives
-it one of the 36 categories (the first test that matches wins, so a hospital that is also
-a building is a hospital); parking, fuel, pharmacies, car repair, corner shops, industry
-and named buildings with no other tag get none. A place's name is `name:az`, else `name`.
-`name`, `name:ru`, `name:en`, `alt_name`, `old_name`, `short_name`, `official_name` and
-`brand`, with their `:az` and `:ru` forms, are searched as its other names, so "Ganjlik
-Mall" and "Гянджлик" find Gənclik. 672 features were left out because their name only
-says what they are ("Kafe", "Market", "Məscid", "Uşaq bağçası") or has no letters, which
-no list could tell apart, and one, Yaşma Bağları, because its centre is outside the area.
-Two features of one category and one name mapped twice, a mall's point and its outline or
-a town's point and its boundary, are one place when they lie within 300 m (1 km for
-parks, beaches and residential complexes, 1.5 km for areas and 5 km for settlements); the
-point is kept before the outline and takes the other's names. The 27 metro stations are
-`metro.json`'s, at its coordinates and with its names, plus the names of the
-OpenStreetMap station each one matches (Koroğlu is still found as Məşədi Əzizbəyov). A
-way or a relation sits at the centre Overpass gives it, the middle of its bounding box,
-to five decimals.
+**What the script keeps.** The snapshot of 11 November 2026 (OpenStreetMap data of 06:09
+UTC) had 21,770 features, 5.9 MB with their bounding boxes. A feature becomes a place
+when `category()` gives it one of the 36 categories (the first test that matches wins, so
+a hospital that is also a building is a hospital); parking, fuel, pharmacies, car repair,
+corner shops, industry and named buildings with no other tag get none. A place's name is
+`name:az`, else `name`. `name`, `name:ru`, `name:en`, `alt_name`, `old_name`,
+`short_name`, `official_name` and `brand`, with their `:az` and `:ru` forms, are searched
+as its other names, so "Ganjlik Mall" and "Гянджлик" find Gənclik. 672 features were left
+out because their name only says what they are ("Kafe", "Market", "Məscid", "Uşaq
+bağçası") or has no letters, which no list could tell apart, and one, Yaşma Bağları,
+because its centre is outside the area. Two features of one category and one name mapped
+twice, a mall's point and its outline or a town's point and its boundary, are one place
+when they lie within 300 m (1 km for parks, beaches and residential complexes, 1.5 km for
+areas and 5 km for settlements); the point is kept before the outline and takes the
+other's names. The 27 metro stations are `metro.json`'s, at its coordinates and with its
+names, plus the names of the OpenStreetMap station each one matches (Koroğlu is still
+found as Məşədi Əzizbəyov). A way or a relation sits at the centre Overpass gives it, the
+middle of its bounding box, to five decimals. The query asks for the bounding boxes too,
+and the build names every outline over 2 km across that is not a settlement or an area
+(15), so that a person can check its centre is somewhere one can go.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,559 restaurants and
@@ -539,9 +545,11 @@ had 8,552 features with both a street and a house number in the whole area (an O
 count, 11:45 UTC), too few for a city of Baku's size to promise a result, and the planner
 has no other address data. The FAQ says so.
 
-**Refreshing.** `python3 scripts/bus/build_places_json.py --fetch places-overpass.json`
-(one query, a few minutes; keep the answer outside the repository), then
-`python3 scripts/bus/build_places_json.py places-overpass.json`. `places.test.ts` fails on
+**Refreshing.** Move `SNAPSHOT` in the script to a recent minute, then
+`python3 scripts/bus/build_places_json.py --fetch places-overpass.json` (one query, 79
+seconds on 11 November; keep the answer outside the repository), then
+`python3 scripts/bus/build_places_json.py places-overpass.json`. The header's "read" is
+the day of the database Overpass answered from. `places.test.ts` fails on
 its counts and snapshot date, and the page's `PLACES_DATE` must move with the snapshot (a
 test compares them): update the counts, this section and the date together. The file is
 re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops

@@ -29,8 +29,10 @@ describe('places.json (#720)', () => {
     expect(source.license).toMatch(/^Open Database License \(ODbL\) 1\.0$/);
     expect(source.copyright).toBe('https://www.openstreetmap.org/copyright');
     expect(source.snapshot).toBe('2026-11-11T06:09:21Z');
+    expect(source.read >= source.snapshot.slice(0, 10)).toBe(true);
     expect(source.api).toBe('https://overpass-api.de/api/interpreter');
-    expect(source.query).toMatch(/^\[out:json\]\[timeout:300\]\[bbox:39\.92,49\.37,40\.66,50\.39\];/);
+    // Pinned to the snapshot, so the same query fetches the same features again.
+    expect(source.query).toMatch(/^\[out:json\]\[timeout:900\]\[bbox:39\.92,49\.37,40\.66,50\.39\]\[date:"2026-11-11T06:09:21Z"\];/);
     expect(source.answer_sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(source.script).toBe('scripts/bus/build_places_json.py');
     expect(placesJson.fields).toEqual(['id', 'name', 'category', 'latitude', 'longitude', 'notable', 'aliases']);

@@ -8,12 +8,15 @@ The places are OpenStreetMap's (© OpenStreetMap contributors, under the Open Da
 Licence 1.0). Google's place data was ruled out: its terms forbid storing it and showing
 it on a map that is not Google's, and the planner draws OpenStreetMap tiles with Leaflet.
 One Overpass API query (QUERY below) asks for every named feature in the bus network's
-area that carries one of the tags a destination does; this script decides which of them
-the planner offers. Two steps, so the snapshot is kept as it came and the build can be
-re-run on it:
+area that carries one of the tags a destination does, as OpenStreetMap had it at SNAPSHOT;
+this script decides which of them the planner offers. Overpass serves past states, so the
+query gives the same features whenever it is sent, and a lost answer can be fetched again.
+Two steps, so the answer is kept as it came and the build can be re-run on it:
 
     python3 scripts/bus/build_places_json.py --fetch places-overpass.json
     python3 scripts/bus/build_places_json.py places-overpass.json
+
+A refresh moves SNAPSHOT to a recent minute first.
 
 Standard library only. What it decides, so that the planner does not have to:
 
@@ -33,7 +36,9 @@ Standard library only. What it decides, so that the planner does not have to:
   station OpenStreetMap has and metro.json has not (a depot, a station being built) is
   left out.
 - A way or a relation is placed at its centre as Overpass gives it, the middle of its
-  bounding box. Coordinates keep five decimals (about 1 m).
+  bounding box. Coordinates keep five decimals (about 1 m). The centre of an outline over
+  LARGE_KM across can be nowhere one can go, so the build names each one for a person to
+  check; the bounding boxes come in the query's last output.
 - Two features of one category with the same name (as the search folds it) within
   DUPLICATE_KM of each other are one place: the POI node of a mall and its building, the
   node of a town and its boundary. A node is kept before an outline, whose centre can
@@ -46,6 +51,7 @@ ODbL 4.6: places.json is a derived database. This script, its query and the snap
 date (recorded in the file) are how it is produced; docs/bus-routing.md says so.
 """
 
+import email.utils
 import hashlib
 import json
 import math
@@ -57,7 +63,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from collections import Counter
-from datetime import date
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
@@ -69,7 +75,11 @@ USER_AGENT = "birjob-bus-planner/1.0 (+https://www.birjob.com/aletler/avtobus-ma
 # and about 2 km around it, inside the envelope isBakuCoordinate (geo.ts) accepts. South,
 # west, north, east, the order Overpass takes.
 BBOX = (39.92, 49.37, 40.66, 50.39)
-QUERY = f"""[out:json][timeout:300][bbox:{BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]}];
+# The moment of OpenStreetMap the places are: the query asks for the data as it was then
+# ([date:]), and places.json records it.
+SNAPSHOT = "2026-11-11T06:09:21Z"
+TIMEOUT_S = 900
+QUERY = f"""[out:json][timeout:{TIMEOUT_S}][bbox:{BBOX[0]},{BBOX[1]},{BBOX[2]},{BBOX[3]}][date:"{SNAPSHOT}"];
 (
   nwr[name][amenity];
   nwr[name][shop];
@@ -91,6 +101,7 @@ node.found;
 out qt;
 (way.found; relation.found;);
 out tags center qt;
+out ids bb qt;
 """
 EARTH_RADIUS_KM = 6371.0
 
@@ -166,6 +177,9 @@ KEEP_PLAIN_NAMES = {"metro", "rail", "settlement", "area"}
 # Larger features are mapped as a node and an outline further apart.
 DUPLICATE_KM = {"settlement": 5.0, "area": 1.5, "residential": 1.0, "park": 1.0, "beach": 1.0}
 DUPLICATE_KM_DEFAULT = 0.3
+# An outline this long across (its bounding box's diagonal) is named by the build: an
+# airfield's centre, for one, is in the middle of its runways.
+LARGE_KM = 2.0
 NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az", "alt_name:ru",
              "old_name", "old_name:az", "old_name:ru", "short_name", "short_name:az",
              "official_name", "official_name:az", "brand", "brand:az")
@@ -380,6 +394,21 @@ def dedupe(places):
     return out
 
 
+def retry_after(value, attempt):
+    """How many seconds to wait before trying again: Retry-After's, in seconds or as an
+    HTTP date, else two minutes more for each attempt made."""
+    value = (value or "").strip()
+    if value.isdigit():
+        return int(value) or 120 * attempt
+    try:
+        when = email.utils.parsedate_to_datetime(value)
+    except (TypeError, ValueError, IndexError):
+        return 120 * attempt
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return max(1, math.ceil((when - datetime.now(timezone.utc)).total_seconds()))
+
+
 def fetch(path):
     """Send QUERY to Overpass once and save the answer as it came. A 429 (too many
     requests), 502 (all workers busy, as overpass-api.de answered on 2026-11-11) or 504
@@ -388,13 +417,13 @@ def fetch(path):
     for attempt in range(1, 4):
         request = urllib.request.Request(API, data=body, headers={"User-Agent": USER_AGENT})
         try:
-            with urllib.request.urlopen(request, timeout=420) as response:
+            with urllib.request.urlopen(request, timeout=TIMEOUT_S + 120) as response:
                 raw = response.read()
             break
         except urllib.error.HTTPError as error:
             if error.code not in (429, 502, 504) or attempt == 3:
                 raise
-            wait = int(error.headers.get("Retry-After") or 0) or 120 * attempt
+            wait = retry_after(error.headers.get("Retry-After"), attempt)
             print(f"Overpass answered {error.code}; trying again in {wait} s", file=sys.stderr)
             time.sleep(wait)
     answer = json.loads(raw)
@@ -402,8 +431,8 @@ def fetch(path):
     if "error" in remark.lower():
         sys.exit(f"Overpass did not finish the query: {remark}")
     Path(path).write_bytes(raw)
-    print(f"saved {len(answer['elements'])} elements ({len(raw) / 1e6:.1f} MB), "
-          f"OpenStreetMap data of {answer['osm3s']['timestamp_osm_base']}, to {path}")
+    print(f"saved {len(answer['elements'])} elements ({len(raw) / 1e6:.1f} MB), OpenStreetMap data of "
+          f"{SNAPSHOT} read from a database of {answer['osm3s']['timestamp_osm_base']}, to {path}")
 
 
 def build(path):
@@ -411,7 +440,14 @@ def build(path):
     answer = json.loads(raw)
     if "error" in answer.get("remark", "").lower():
         sys.exit(f"{path}: Overpass did not finish the query: {answer['remark']}")
-    elements = answer["elements"]
+    # When Overpass read it: a database older than SNAPSHOT cannot have answered for it.
+    read = answer["osm3s"]["timestamp_osm_base"]
+    if read < SNAPSHOT:
+        sys.exit(f"{path}: read from a database of {read}, before the snapshot ({SNAPSHOT})")
+    # The ways and relations come twice: with their tags and centre, then with their
+    # bounding box alone (QUERY's last output).
+    elements = [e for e in answer["elements"] if "tags" in e]
+    bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
 
     places, plain_names, outside = [], Counter(), []
     for e in elements:
@@ -442,8 +478,8 @@ def build(path):
         "data": "© OpenStreetMap contributors",
         "license": "Open Database License (ODbL) 1.0",
         "copyright": "https://www.openstreetmap.org/copyright",
-        "snapshot": answer["osm3s"]["timestamp_osm_base"],
-        "read": date.today().isoformat(),
+        "snapshot": SNAPSHOT,
+        "read": read[:10],
         "api": API,
         "query": QUERY,
         "answer_sha256": hashlib.sha256(raw).hexdigest(),
@@ -464,6 +500,12 @@ def build(path):
           f"{len(elements)} features of {source['snapshot']}; left out {sum(plain_names.values())} "
           f"with a plain name and {len(outside)} centred outside the area ({', '.join(outside)})")
     print("  " + ", ".join(f"{cat} {counts[cat]}" for cat in LABELS))
+    # Settlements and areas are regions, whose centre is as good a point as any.
+    large = sorted(((km((b["minlat"], b["minlon"]), (b["maxlat"], b["maxlon"])), p) for p in places
+                    if (b := bounds.get(p["id"])) and p["category"] not in ("metro", "settlement", "area")),
+                   key=lambda item: -item[0])
+    large = [f"{p['name']} ({p['category']}, {d:.1f} km)" for d, p in large if d > LARGE_KM]
+    print(f"  {len(large)} outlines over {LARGE_KM:g} km across, each at its centre: {', '.join(large)}")
 
 
 def main(argv):
