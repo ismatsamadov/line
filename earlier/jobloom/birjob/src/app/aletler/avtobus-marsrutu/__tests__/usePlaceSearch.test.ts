@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 import * as ts from 'typescript';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PlaceMatch } from '@/lib/busroute/places';
-import type { PlaceSearch } from '../usePlaceSearch';
+import { HOLD_MS, type PlaceSearch } from '../usePlaceSearch';
 import * as search from '../search';
 
 const FILE = fileURLToPath(new URL('../usePlaceSearch.ts', import.meta.url));
@@ -104,15 +104,15 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 describe('usePlaceSearch (#720)', () => {
   it('asks nothing under two letters, and once typing pauses', async () => {
     const render = mountHook();
-    expect(render('g')).toEqual({ places: [], pending: false, degraded: false });
+    expect(render('g')).toEqual({ places: [], pending: false, degraded: false, holding: false });
     await settle(1000);
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(render('Gənclik')).toEqual({ places: [], pending: true, degraded: false });
+    expect(render('Gənclik')).toEqual({ places: [], pending: true, degraded: false, holding: true });
     await settle(249);
     expect(fetchMock).not.toHaveBeenCalled();
     await settle(1);
     expect(asked()).toEqual(['/api/avtobus/places?q=genclik']);
-    expect(render('Gənclik')).toEqual({ places: GENCLIK, pending: false, degraded: false });
+    expect(render('Gənclik')).toEqual({ places: GENCLIK, pending: false, degraded: false, holding: false });
   });
 
   it('keeps each answer for the session, and sends the other end of the journey', async () => {
@@ -131,9 +131,31 @@ describe('usePlaceSearch (#720)', () => {
     const render = mountHook();
     render('gənclik'); await settle(); render('gənclik');
     // "Gənclik" (the metro) has no word starting "ma"; the mall stays until its answer comes.
-    expect(render('gənclik ma')).toEqual({ places: [GENCLIK[1]], pending: true, degraded: false });
-    // Another query entirely shows none of them.
-    expect(render('bravo')).toEqual({ places: [], pending: true, degraded: false });
+    expect(render('gənclik ma')).toEqual({ places: [GENCLIK[1]], pending: true, degraded: false, holding: false });
+    // Another query entirely shows none of them, and its list waits for its own.
+    expect(render('bravo')).toEqual({ places: [], pending: true, degraded: false, holding: true });
+  });
+
+  it('ranks the places it carries over for the longer query, as the stops are ranked', async () => {
+    answers.set('gen', async () => ({ places: GENCLIK }));
+    const render = mountHook();
+    render('gən'); await settle(); render('gən');
+    // Both started "gən"; "gənclik" is the station's whole name and the start of the mall's.
+    expect(render('gənclik').places.map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['w2', 1]]);
+    // A query typed without its space still carries 28 Mall.
+    answers.set('28', async () => ({ places: [place('w5', '28 Mall')] }));
+    render('28'); await settle(); render('28');
+    expect(render('28ma').places.map((p) => [p.id, p.rank])).toEqual([['w5', 1]]);
+  });
+
+  it("holds a new query's list for its places, at most until HOLD_MS after the keystroke", async () => {
+    answers.set('koroglu', () => new Promise(() => {}));
+    const render = mountHook();
+    expect(render('koroğlu').holding).toBe(true);
+    await settle(HOLD_MS - 1);
+    expect(render('koroğlu').holding).toBe(true);
+    await settle(1);
+    expect(render('koroğlu')).toEqual({ places: [], pending: true, degraded: false, holding: false });
   });
 
   it('drops an answer for a query that has since changed', async () => {
@@ -142,13 +164,13 @@ describe('usePlaceSearch (#720)', () => {
     const render = mountHook();
     render('nizami');
     await settle();
-    expect(render('nizami k')).toEqual({ places: [], pending: true, degraded: false });
+    expect(render('nizami k')).toEqual({ places: [], pending: true, degraded: false, holding: true });
     // Kept, it would show as a match carried over until the new answer comes.
     late({ places: [place('w9', 'Nizami Kinoteatrı', 'Teatr və kino')] });
     await settle(0);
-    expect(render('nizami k')).toEqual({ places: [], pending: true, degraded: false });
+    expect(render('nizami k')).toEqual({ places: [], pending: true, degraded: false, holding: true });
     await settle();
-    expect(render('nizami k')).toEqual({ places: [], pending: false, degraded: false });
+    expect(render('nizami k')).toEqual({ places: [], pending: false, degraded: false, holding: false });
     // It was right for its own query: going back to that one asks nothing.
     expect(render('nizami').places).toMatchObject([{ id: 'w9' }]);
     expect(asked().filter((url) => url.endsWith('q=nizami'))).toHaveLength(1);
@@ -158,12 +180,12 @@ describe('usePlaceSearch (#720)', () => {
     answers.set('bravo', async () => { throw new TypeError('Failed to fetch'); });
     const render = mountHook();
     render('bravo'); await settle();
-    expect(render('bravo')).toEqual({ places: [], pending: false, degraded: true });
+    expect(render('bravo')).toEqual({ places: [], pending: false, degraded: true, holding: false });
     answers.set('bravo', async () => ({ places: [], degraded: true }));
     render('bravoo'); await settle(); render('bravoo');
     render('bravo'); await settle();
     expect(asked().filter((url) => url.endsWith('q=bravo'))).toHaveLength(2); // not kept
-    expect(render('bravo')).toEqual({ places: [], pending: false, degraded: true });
+    expect(render('bravo')).toEqual({ places: [], pending: false, degraded: true, holding: false });
   });
 
   it('sends at most the 100 characters the route accepts', async () => {

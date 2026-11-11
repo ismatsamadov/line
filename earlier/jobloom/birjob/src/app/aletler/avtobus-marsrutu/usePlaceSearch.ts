@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { PlaceMatch } from "@/lib/busroute/places";
-import { normalizeSearch } from "./search";
+import { normalizeSearch, placeRank } from "./search";
 
 // Wait for a pause in typing before asking: a request per keystroke would be mostly
 // thrown away.
 const DEBOUNCE_MS = 250;
+// How long a new query's list waits for its places, from the keystroke, when no earlier
+// answer has any for it: the pause above and then 300 ms for the answer.
+export const HOLD_MS = DEBOUNCE_MS + 300;
 
 interface Answer {
   key: string;
@@ -15,17 +18,16 @@ interface Answer {
 
 export interface PlaceSearch {
   /** The places for what is typed, or, while those load, the last answer's places that
-   *  still match it, so the list does not empty and refill on every keystroke. */
+   *  still match it, ranked for it, so the list does not empty and refill on every
+   *  keystroke. */
   places: PlaceMatch[];
   pending: boolean;
   /** The search failed or answered degraded: the picker says places are missing. */
   degraded: boolean;
-}
-
-/** Whether a place from an earlier answer still matches every word of the query. */
-function stillMatches(place: PlaceMatch, words: string[]): boolean {
-  const text = normalizeSearch(`${place.name} ${place.alias ?? ""} ${place.label}`);
-  return words.every(word => text.includes(word));
+  /** The places for what is typed are on their way and nothing earlier stands in for
+   *  them: the list waits for them, up to HOLD_MS, so that they are ranked into it rather
+   *  than added under the rows it showed first (#720). */
+  holding: boolean;
 }
 
 /**
@@ -41,6 +43,14 @@ export function usePlaceSearch(query: string, near: { latitude: number; longitud
   const key = `${q}|${nearParam}`;
   const cache = useRef<Map<string, Answer>>(new Map());
   const [answer, setAnswer] = useState<Answer | null>(null);
+  // The query whose list stopped waiting for its places.
+  const [released, setReleased] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (q.length < 2) return;
+    const hold = window.setTimeout(() => setReleased(key), HOLD_MS);
+    return () => window.clearTimeout(hold);
+  }, [key, q]);
 
   useEffect(() => {
     if (q.length < 2) return;
@@ -68,11 +78,13 @@ export function usePlaceSearch(query: string, near: { latitude: number; longitud
   }, [key, q, nearParam]);
 
   return useMemo((): PlaceSearch => {
-    if (q.length < 2) return { places: [], pending: false, degraded: false };
-    if (answer?.key === key) return { places: answer.places, pending: false, degraded: answer.degraded };
-    const words = q.split(" ");
+    if (q.length < 2) return { places: [], pending: false, degraded: false, holding: false };
+    if (answer?.key === key) return { places: answer.places, pending: false, degraded: answer.degraded, holding: false };
+    // An earlier answer's places that still match, ranked for this query as the stops
+    // are: carried over with their old ranks, the station Gənclik stayed a mere start of
+    // "gən" when "gənclik" was its whole name.
     const carried = answer && !answer.degraded && q.startsWith(answer.query)
-      ? answer.places.filter(place => stillMatches(place, words)) : [];
-    return { places: carried, pending: true, degraded: false };
-  }, [q, key, answer]);
+      ? answer.places.map(place => ({ ...place, rank: placeRank(q, place) })).filter(place => place.rank < Infinity) : [];
+    return { places: carried, pending: true, degraded: false, holding: carried.length === 0 && released !== key };
+  }, [q, key, answer, released]);
 }

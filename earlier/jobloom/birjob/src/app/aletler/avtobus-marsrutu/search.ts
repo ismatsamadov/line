@@ -39,21 +39,48 @@ export const EVERYDAY_PLACES: ReadonlySet<string> = new Set([
   "supermarket", "restaurant", "school", "worship", "residential", "cafe", "kindergarten", "post_office", "bank", "office", "shop",
 ]);
 
+/** Where journeys most often start and end, few of each: places.ts's HUBS. Such a place
+ *  comes before a stop that matches as well (#720). */
+export const HUB_PLACES: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
+
+/**
+ * How well an earlier answer's place matches a newer query, on the stops' scale (rank():
+ * 0 its name or other name itself, 1 the start of one, 2 every word in them, a hub's 2
+ * counting as 1 as on the server), then 3 for a looser match: every word in its names and
+ * kind, or the query without its spaces in a name without its ("28ma" in 28 Mall).
+ * Infinity when it no longer matches. The search answers each query with its own ranks;
+ * this ranks the places carried over while it is asked (usePlaceSearch).
+ */
+export function placeRank(query: string, place: Pick<PlaceMatch, "name" | "alias" | "label" | "category">): number {
+  const q = normalizeSearch(query);
+  const names = [place.name, place.alias ?? ""].map(normalizeSearch).filter(Boolean);
+  const matched = rank(q, place.name, place.alias ?? "");
+  if (matched < Infinity) return matched === 2 && HUB_PLACES.has(place.category) ? 1 : matched;
+  if (q.split(" ").every(word => `${names.join(" ")} ${normalizeSearch(place.label)}`.includes(word))) return 3;
+  const compact = q.replaceAll(" ", "");
+  const joined = names.map(name => name.replaceAll(" ", ""));
+  if (joined.includes(compact)) return 0;
+  if (joined.some(name => name.startsWith(compact))) return 1;
+  return compact.length >= 4 && joined.some(name => name.includes(compact)) ? 3 : Infinity;
+}
+
 /**
  * A start or destination picker's list (#720): the stops and the places that match, the
  * better matches first whichever they are. A place of an everyday kind ranks one step
  * below its match, so a café named exactly what was typed comes after a stop, a metro
  * station or a mall whose name starts with it; typing "gənclik" listed two cafés above
  * Gənclik m/st. A place's looser matches count with a stop's loosest. Among equal
- * matches a stop comes first, then a place of another kind, then an everyday one, each
- * in its own order. A place no journey can reach (`reachable`) comes after all of them.
- * An empty query offers the transport hubs, as before places.
+ * matches a station, an airport, a bus station or a mall comes first (HUB_PLACES), then
+ * a stop, then a place of another kind, then an everyday one, each in its own order. A
+ * place no journey can reach (`reachable`) comes after all of them. An empty query
+ * offers the transport hubs, as before places.
  */
 export function suggestEnds(stops: StopDetail[], query: string, places: PlaceMatch[],
   reachable: (place: PlaceMatch) => boolean = () => true): EndSuggestion[] {
   if (!normalizeSearch(query)) return searchStops(stops, query).map(stop => ({ kind: "stop", stop, rank: 0 }));
   const everyday = (found: EndSuggestion) => found.kind === "place" && EVERYDAY_PLACES.has(found.place.category);
-  const order = (found: EndSuggestion) => found.kind === "stop" ? 0 : everyday(found) ? 2 : 1;
+  const order = (found: EndSuggestion) => found.kind === "stop" ? 0
+    : HUB_PLACES.has(found.place.category) ? -1 : everyday(found) ? 2 : 1;
   const dead = (found: EndSuggestion) => Number(found.kind === "place" && !reachable(found.place));
   const found: EndSuggestion[] = [
     ...rankStops(stops, query).map(({ stop, rank }): EndSuggestion => ({ kind: "stop", stop, rank })),

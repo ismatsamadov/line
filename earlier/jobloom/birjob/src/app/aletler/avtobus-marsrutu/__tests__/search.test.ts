@@ -3,7 +3,8 @@ import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { EVERYDAY_PLACES, keepShownRows, nearestStop, normalizeSearch, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { buildPlaceIndex, searchPlaces } from "@/lib/busroute/places";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
   id, name, code, latitude: 40.4, longitude: 49.85, is_transport_hub: hub,
@@ -64,8 +65,8 @@ describe("phone-friendly transit search", () => {
 });
 
 describe("stops and places in one list (#720)", () => {
-  const place = (id: string, name: string, rank: number, label = "Ticarət mərkəzi"): PlaceMatch => ({
-    id, name, category: "mall", label, latitude: 40.4, longitude: 49.85, rank,
+  const place = (id: string, name: string, rank: number, label = "Universitet"): PlaceMatch => ({
+    id, name, category: "university", label, latitude: 40.4, longitude: 49.85, rank,
   });
   const stops = [stop(1, "Gənclik m/st", "1001"), stop(2, "Gənclik", "1002"), stop(3, "Yeni Gənclik"), stop(4, "Hub", "", true)];
 
@@ -83,7 +84,7 @@ describe("stops and places in one list (#720)", () => {
     expect(merged.at(-1)?.rank).toBe(2);
   });
 
-  it("puts a stop, a metro station or a mall that starts with the query above a café of that very name", () => {
+  it("puts a station, a mall or a stop that starts with the query above a café of that very name", () => {
     const at = (id: string, name: string, rank: number, category: string, label: string): PlaceMatch => ({
       id, name, category, label, latitude: 40.4, longitude: 49.85, rank,
     });
@@ -94,14 +95,14 @@ describe("stops and places in one list (#720)", () => {
       at("n5", "Gənclik Market", 1, "supermarket", "Supermarket"),
     ];
     const merged = suggestEnds([stop(1, "Gənclik m/st", "1001")], "gənclik", places);
-    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["n1", "s1", "w4", "n2", "n3", "n5"]);
+    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["n1", "w4", "s1", "n2", "n3", "n5"]);
     // A metro station's name that starts with the query beats a café's that is it.
     const neriman = suggestEnds([], "nəriman", [at("n6", "Nəriman", 0, "cafe", "Kafe"), at("n7", "Nəriman Nərimanov", 1, "metro", "Metro stansiyası")]);
     expect(neriman.map(s => s.kind === "place" && s.place.id)).toEqual(["n7", "n6"]);
   });
 
   it("lists a place no journey can reach after every other row", () => {
-    const at = (id: string, name: string, rank: number): PlaceMatch => ({ id, name, category: "mall", label: "Ticarət mərkəzi", latitude: 40.4, longitude: 49.85, rank });
+    const at = (id: string, name: string, rank: number): PlaceMatch => ({ id, name, category: "hotel", label: "Otel", latitude: 40.4, longitude: 49.85, rank });
     const merged = suggestEnds([stop(1, "Gənclik m/st")], "gənclik", [at("w1", "Gənclik", 0), at("w2", "Gənclik Plaza", 1)], place => place.id !== "w1");
     expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["s1", "w2", "w1"]);
   });
@@ -119,9 +120,29 @@ describe("stops and places in one list (#720)", () => {
     expect(keepShownRows(answered, "gənclik m", [row("p1"), row("s2")]).rows.map(r => r.key)).toEqual(["p1", "s2"]);
   });
 
+  it("puts a station, an airport, a bus station or a mall before a stop that matches as well", () => {
+    const at = (id: string, category: string): PlaceMatch => ({ id, name: "Gənclik X", category, label: "", latitude: 40.4, longitude: 49.85, rank: 1 });
+    const merged = suggestEnds([stop(1, "Gənclik m/st")], "gənclik", ["metro", "rail", "airport", "bus_station", "mall", "university"].map(c => at(c, c)));
+    expect(merged.map(s => s.kind === "stop" ? `s${s.stop.id}` : s.place.id)).toEqual(["metro", "rail", "airport", "bus_station", "mall", "s1", "university"]);
+  });
+
+  it("ranks a place carried over for a longer query as a stop would be ranked", () => {
+    const at = (name: string, category = "metro", alias?: string) => ({ name, category, label: "Metro stansiyası", ...(alias ? { alias } : {}) });
+    expect(placeRank("gənclik", at("Gənclik"))).toBe(0);
+    expect(placeRank("gənc", at("Gənclik"))).toBe(1);
+    // Every word in it: a station's counts as a start, as on the server.
+    expect(placeRank("nerimanov", at("Nəriman Nərimanov"))).toBe(1);
+    expect(placeRank("nerimanov", at("Nəriman Nərimanov", "university"))).toBe(2);
+    expect(placeRank("ganjlik", at("Gənclik", "metro", "Ganjlik"))).toBe(0);
+    // Its kind, and a query typed without its spaces, still find it, loosely.
+    expect(placeRank("genclik metro", at("Gənclik"))).toBe(3);
+    expect(placeRank("28ma", at("28 Mall", "mall"))).toBe(1);
+    expect(placeRank("bravo", at("Gənclik"))).toBe(Infinity);
+  });
+
   it("names everyday kinds that places.json has", () => {
     const { labels } = JSON.parse(readFileSync(fileURLToPath(new URL("../../../../lib/busroute/places.json", import.meta.url)), "utf8"));
-    for (const category of EVERYDAY_PLACES) expect(labels, category).toHaveProperty(category);
+    for (const category of [...EVERYDAY_PLACES, ...HUB_PLACES]) expect(labels, category).toHaveProperty(category);
     expect(EVERYDAY_PLACES.has("metro") || EVERYDAY_PLACES.has("mall")).toBe(false);
   });
 
@@ -145,4 +166,31 @@ describe("nearby stop selection", () => {
     // Within a wider radius when asked: a place's nearest stop is named up to 1 km (#720).
     expect(nearestStop([stop(1, "Bakı")], 40.406, 49.85, 1)?.stop.id).toBe(1);
   });
+});
+
+describe("a station or a mall at the top of the list it is typed for (#720)", () => {
+  // The planner's real places, and the AYNA stops whose names hold these words.
+  const index = buildPlaceIndex(JSON.parse(readFileSync(fileURLToPath(new URL("../../../../lib/busroute/places.json", import.meta.url)), "utf8")));
+  const named = (names: string[]) => names.map((name, i) => stop(100 + i, name));
+  const STOPS: Record<string, StopDetail[]> = {
+    "gənclik": named(["Gənclik küç. 120", "Gənclik küç. 13", "Gənclik küç. 14", "Gənclik küç. 200", "Gənclik küç. 45", "Gənclik küç. 60",
+      "Gənclik m/st", "Gənclik metro stansiyası", "Gənclik Nəqliyyat Mübadilə Məntəqəsi", "Gənclik parkı"]),
+    "koroglu": named(["Koroğlu NMM", "Koroğlu Nəqliyyat Mübadilə Mərkəzi", "Koroğlu küç.", "Koroğlu küç. 101C", "Koroğlu küç. 123"]),
+    "nerimanov": named(["Nərimanov Rayon Məhkəməsi", "Nərimanov Rayon Prokurorluğu", "Nəriman Nərimanov m/st", "M.Nərimanov küç."]),
+    "avtovağzal": named(["Avtovağzal m/st", "Bakı Beynəlxalq Avtovağzal Kompleksi", "Sumqayıt Avtovağzalı"]),
+  };
+  const rows = (query: string, places: PlaceMatch[]) => suggestEnds(STOPS[query], query, places)
+    .map(found => found.kind === "stop" ? { key: `s${found.stop.id}`, name: found.stop.name } : { key: `p${found.place.id}`, name: `${found.place.name} (${found.place.category})` });
+
+  it.each([["gənclik", "gənc", "Gənclik (metro)"], ["koroglu", "koro", "Koroğlu (metro)"],
+    ["nerimanov", "nərim", "Nəriman Nərimanov (metro)"], ["avtovağzal", "avtov", "Avtovağzal (metro)"]])(
+    "lists the station first for %j, whether its places arrive with the list or were carried over", (query, prefix, first) => {
+      // The list waited for the places (usePlaceSearch's holding), so they are ranked in.
+      const waited = keepShownRows(keepShownRows(null, query, []), query, rows(query, searchPlaces(index, query)));
+      expect(waited.rows[0].name, JSON.stringify(waited.rows.slice(0, 5))).toBe(first);
+      // Typed on from a shorter query, its places are carried over and ranked for this one.
+      const carried = searchPlaces(index, prefix).map(place => ({ ...place, rank: placeRank(query, place) })).filter(place => place.rank < Infinity);
+      const atOnce = keepShownRows(null, query, rows(query, carried));
+      expect(atOnce.rows[0].name, JSON.stringify(atOnce.rows.slice(0, 5))).toBe(first);
+    });
 });

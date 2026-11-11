@@ -69,14 +69,18 @@ function EndPicker({ label, stops, selected, place, onSelectStop, onSelectPlace,
   const [query, setQuery] = useState("");
   const places = usePlaceSearch(query, near);
   const named = useMemo(() => stops.filter(stop => stop.name.trim()), [stops]);
-  const search = useCallback((q: string) => {
+  const search = useCallback((q: string): EndItem[] => {
+    // A new query's list waits, briefly, for its places (usePlaceSearch's holding): shown
+    // first, the stops could not move for them afterwards, and "gənclik" listed its
+    // station thirteenth, under the streets named after it.
+    if (places.holding) return [];
     // A place with no stop within a journey's walk can only be walked to, so it is listed
     // after every place a journey can reach, and says why.
     const nearby = new Map(places.places.map(place => [place.id, servedStopNear(named, place)]));
     return suggestEnds(stops, q, places.places, place => !!nearby.get(place.id)).map((found): EndItem => found.kind === "stop"
       ? { key: `s${found.stop.id}`, name: found.stop.name, detail: stopDetail(found.stop), kind: "stop", stop: found.stop }
       : { key: `p${found.place.id}`, name: found.place.name, detail: placeDetail(found.place, nearby.get(found.place.id) ?? null), kind: "place", place: found.place });
-  }, [stops, named, places.places]);
+  }, [stops, named, places.places, places.holding]);
   const shown: PickerItem | null = place
     ? { key: `p${place.id}`, name: place.name, detail: place.label, kind: place.id === HERE ? "here" : "place" }
     : selected ? { key: `s${selected.id}`, name: selected.name, detail: stopDetail(selected), kind: "stop" } : null;
