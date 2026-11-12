@@ -17,11 +17,12 @@ const request = (body: unknown) => new NextRequest('https://www.birjob.com/api/a
 });
 beforeEach(() => {
   vi.clearAllMocks();
-  getGraph.mockResolvedValue(graph({ 1: [ride(3, 10, 100), ride(2, 20)], 2: [ride(3, 30)] }));
+  // One bus of 10 minutes, or two of 1 minute each: 10 + 15 against 2 + 2 × 15.
+  getGraph.mockResolvedValue(graph({ 1: [ride(3, 10, 10), ride(2, 20)], 2: [ride(3, 30)] }));
 });
 
 describe('POST /api/avtobus/find', () => {
-  it('returns the minimum-boardings itinerary through the real routing engine', async () => {
+  it('returns the chosen itinerary through the real routing engine', async () => {
     const res = await POST(request({ fromStopId: 1, toStopId: 3 }));
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -30,6 +31,14 @@ describe('POST /api/avtobus/find', () => {
     expect(body.route.totalTransfers).toBe(0);
     expect(body.route.segments).toHaveLength(1);
     expect(body.route.segments[0]).toMatchObject({ busId: 10, direction: 1, headsign: 'Terminus 10/1' });
+  });
+
+  it('returns two buses where they save more than a boarding over one (#721)', async () => {
+    // One bus of 100 minutes, which #664 returned, against two of 1 minute each.
+    getGraph.mockResolvedValueOnce(graph({ 1: [ride(3, 10, 100), ride(2, 20)], 2: [ride(3, 30)] }));
+    const { route } = await (await POST(request({ fromStopId: 1, toStopId: 3 }))).json();
+    expect(route.segments.map((s: { busId: number }) => s.busId)).toEqual([20, 30]);
+    expect(route).toMatchObject({ totalTransfers: 1, totalTime: 2 });
   });
 
   it.each([{}, null, [], { fromStopId: '1', toStopId: 3 }, { fromStopId: -1, toStopId: 3 },

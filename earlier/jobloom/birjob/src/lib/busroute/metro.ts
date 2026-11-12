@@ -15,11 +15,11 @@
  * A ride's time is the trains' running time. Like every bus wait, the wait for a
  * train and the minutes inside a station (escalators, passages) are not counted. A
  * walk to a station is measured from the stop to the station's nearest exit, and is
- * held to the same 300 m as any other walk.
+ * held to the same limit as any other walk (WALK_RADIUS_KM).
  */
 import { z } from "zod";
 import metroJson from "./metro.json";
-import { haversine, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
+import { haversine, MIN_KM_PER_DEGREE_LAT, MIN_KM_PER_DEGREE_LON, WALK_RADIUS_KM, WALK_SPEED_KMH } from "./geo";
 import type { GraphEdge, LatLng, StopDetail } from "./types";
 import { METRO_RIDE_BUS_ID, METRO_STATION_ID_BASE, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER } from "./types";
 
@@ -43,10 +43,9 @@ export interface MetroNetwork {
   edges: Array<{ from: number; edge: GraphEdge }>;
 }
 
-// A degree of latitude is 111 km and, at Baku's latitude, one of longitude 85 km, so
-// these margins hold every point within 300 m of an exit. Only the stops inside a
-// station's box are measured.
-const LAT_MARGIN = 0.003, LON_MARGIN = 0.004;
+// These margins hold every point within a walk of an exit, anywhere in the network's
+// area. Only the stops inside a station's box are measured.
+const LAT_MARGIN = WALK_RADIUS_KM / MIN_KM_PER_DEGREE_LAT, LON_MARGIN = WALK_RADIUS_KM / MIN_KM_PER_DEGREE_LON;
 
 /** The metro's stations and edges, joined to the bus network's stops by walks. */
 export function metroNetwork(busStops: StopDetail[], raw: unknown = metroJson): MetroNetwork {

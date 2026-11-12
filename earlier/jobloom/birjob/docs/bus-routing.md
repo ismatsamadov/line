@@ -14,39 +14,72 @@ flowchart LR
   C --> D[Shared graph initialization]
   D --> E[PostgreSQL bus reference tables]
   D --> M[metro.json]
-  D --> F[Minimum-boardings search]
+  D --> F[Cheapest-journey search]
   F --> G[Bus, metro and walking instructions]
   G --> K[bike.json: racks beside the journey]
 ```
 
 ## Ranking
 
-A destination directly connected by a walking edge of at most 300 m gets an
-explicit walking-only result. Other trips are ranked lexicographically:
+A destination directly connected by a walking edge of at most 400 m gets an
+explicit walking-only result. Every other journey costs its estimated movement
+time, walking included, plus `BOARDING_PENALTY_MIN` (15 minutes) for each
+boarding, and the cheapest wins (#721). Ties go to:
 
-1. Number of boardings.
-2. Estimated movement time, including walking.
-3. Walking distance.
-4. Total estimated distance.
+1. Fewer boardings.
+2. Less walking.
+3. Less total estimated distance.
 
-This implements #664's requested preference: an available one-bus itinerary wins
-over every two-bus itinerary, even when the latter has a shorter estimated time.
-It does not promise the fastest journey. Increasing a finite transfer penalty
-would not enforce this preference for arbitrary journey lengths.
+The 15 minutes stand for what the movement time leaves out: the wait for each
+vehicle, which nothing published can estimate (no timetable or headway, #693),
+and the change itself. A journey with one more boarding therefore wins only when
+it is at least 15 minutes faster, and #664's promise holds where the difference
+is small: one bus still beats two buses, or a bus and a train, that save less
+than a quarter of an hour. The longest walk takes 5.3 minutes, less than one
+boarding, so a destination within a walk is always reached on foot.
+
+Until #721 the ranking was lexicographic, boardings first (#664): an available
+one-bus journey beat every two-bus journey, however much faster the two were. It
+passed over journeys such as 2147 → 2734, two buses in 67.2 minutes where a bus,
+the red line and a bus take 24.8; in 22 of 196 sampled trips the fastest journey
+with one more boarding than the fewest was 20 minutes or more faster (times as in
+[Graph and data](#graph-and-data)). A finite
+penalty cannot promise one bus over two for every journey length, which is why
+#664 refused one; #721 gives that promise up where it costs a quarter of an hour
+or more. Choosing by cost is the same as taking the fastest journey for each
+number of boardings, the Pareto front of boardings and minutes, and keeping the
+one with the lowest minutes plus penalty; one search finds it without listing the
+front.
+
+How much the penalty decides, on those 196 trips, counting the journeys that take
+more boardings than the fewest possible:
+
+| Penalty | Trips | Extra boardings | Minutes saved: median, least |
+| --- | --- | --- | --- |
+| 10 min | 74 | 69 × 1, 5 × 2 | 16.8, 10.1 |
+| **15 min** | **46** | 44 × 1, 2 × 2 | 19.7, 15.4 |
+| 20 min | 22 | 21 × 1, 1 × 2 | 30.2, 24.7 |
+
+Fifteen keeps the fewest boardings in three trips of four and gives them up only
+for a saving that is clear against estimates this rough. It is one constant in
+`routing.ts`; where to set it is the owner's call.
 
 A metro ride is a ride like a bus ride (#689): boarding a train, changing trains
-and boarding the metro's express bus each count as one boarding. One bus still
-beats a bus and a train, however much faster the second is; among journeys with as
-many boardings, the faster wins, and that is where the metro comes in. See
-[Metro](#metro-689) for what the rule costs.
+and boarding the metro's express bus each count as one boarding and pay the same
+penalty. The faster train wins among journeys with as many boardings, and a bus
+and a train beat one bus when they save more than a boarding.
 
 `src/lib/busroute/routing.ts` runs one Dijkstra search with a priority queue of
-immutable labels. A label records the arrival stop and the last edge. Continuing
-a ride requires the same `(bus, direction)` identity **and** the next consecutive
-route position. Changing direction, reboarding after a walk, or boarding at a
-later occurrence of a repeated stop starts another ride. Reconstruction splits
-instructions at those same boarding boundaries, so ranking and displayed
-transfer counts agree. Transfer count is `max(boardings - 1, 0)`.
+immutable labels, compared on cost, then boardings, walking and distance. A
+label records the arrival stop and the last edge. Continuing a ride requires the
+same `(bus, direction)` identity **and** a leg from the route position the last
+one reached, to the next position or, past a misplaced stop, the one after it
+([Graph and data](#graph-and-data)). Changing direction, reboarding after a walk,
+or boarding at a later occurrence of a repeated stop starts another ride.
+Reconstruction splits instructions at those same boarding boundaries, so ranking
+and displayed transfer counts agree.
+Transfer count is `max(boardings - 1, 0)`. The search takes its starting labels
+with their own costs; the endpoint passes one, at the chosen stop.
 
 Walking edges cannot follow other walking edges. Because the graph includes all
 nearby stop pairs, any permitted straight-line walk within the radius already
@@ -55,10 +88,23 @@ One walk may occur before the first ride, between rides, and after the last ride
 There is no overall walking budget across a journey with several rides.
 
 The state includes whether a walking arrival has already boarded a bus, so an
-origin walk cannot suppress an otherwise valid bus-and-walk arrival. Queue
-entries whose label has been replaced are skipped. The unused, incorrect Yen
-alternative-path implementation and its unused optimization modes were removed;
-the endpoint exposes one complete itinerary.
+origin walk cannot suppress an otherwise valid bus-and-walk arrival. Every state
+is a number: a walk's is made of its stop and that flag, and a ride's names the
+position it arrived at, by its edge's kind, ride and `toSequence`. Until #721 both
+were strings built and hashed for every edge tried, most of a search's time. Now
+`graph.ts` keeps each ride edge's number on the edge once the graph is built
+(`numberRidePositions`), as a property a copy does not take, and an edge without
+one, a copy or one built elsewhere, is numbered from its own fields. Keying a ride
+by its edge object was as fast, but only while `getEdges` returned the graph's own
+objects: through a graph that copied its edges no ride state was ever met twice,
+and 1343 → 3642 ran the process out of memory in review. So `getEdges` may hand
+back copies, and a ride edge's kind, ride and `toSequence` must name one position
+of one ride, at one stop (`RoutingGraph` in `routing.ts`). Two legs can arrive at
+one position: the leg past a misplaced stop arrives where the leg on from that
+stop does, and the search keeps the cheaper. Queue entries whose label has been
+replaced are skipped. The unused, incorrect Yen alternative-path implementation and
+its unused optimization modes were removed; the endpoint exposes one complete
+itinerary.
 
 ## Graph and data
 
@@ -66,7 +112,8 @@ the endpoint exposes one complete itinerary.
 direction, travel order is cumulative `total_distance`, then `bus_stop_id` and
 `id` as stable tie-breaks. This agrees with the line viewer. Repeated stops stay
 in the graph with distinct positions so a ride cannot jump across a loop. A
-missing stop breaks its adjacent legs; it is not skipped to invent a shortcut.
+missing stop breaks its adjacent legs; it is not skipped to invent a shortcut,
+though its stretch still counts for the line's time (below).
 
 The snapshot stores 120A's stops twice in each direction (bus_id 160: 30 rows for
 15 stops and 28 for 14, every row at `total_distance` 23.4), so travel order puts
@@ -97,17 +144,96 @@ instead of creating a shortcut through it. This protects searches and maps; it
 does not repair the underlying rows or replace the read-only data audit above.
 
 The graph uses haversine distance between stops. A bus line's stored duration is
-spread evenly over its legs; missing/nonpositive duration falls back to 30
-minutes for the whole line. Neither figure is road geometry or a live estimate.
-`totalTime` contains movement only, with no invented wait or transfer penalty.
+shared out over its legs by their straight-line length (#721); a missing or
+nonpositive duration falls back to 30 minutes for the whole line. AYNA's
+duration is its route length at one speed: 1.66 minutes a kilometre on the median
+line and never above 1.67, where the route length covers both directions (its
+median ratio to the two recorded lines' lengths is 0.99). Spread over one
+direction, as here, that is about 18 km/h along the road and 16 km/h in a straight
+line, a usual pace for a city bus with its stops.
+
+Until #721 the duration went to the legs in equal shares, so a leg's speed
+depended on how far apart its stops were: 2.2 km/h at the 1st percentile of the
+11,355 legs, 72.6 at the 99th, and 147 km/h for the 6.5 km leg of 553 in 2.65
+minutes; 497 legs were slower than walking. The search rode buses for those
+artifacts. #721's journey took 525 for 5.6 km in 10.3 minutes (33 km/h, twice its
+line's pace) to catch 503 at Xırdalan rather than where it starts, at Avtovağzal.
+Shared by length, each leg keeps its line's pace: 10.6 to 21.9 km/h for 98% of
+legs and 32.5 at most (line 517). The model still knows no dwell time, traffic or
+faster highway stretches, and a leg whose road loops far beyond the straight line
+between its stops (40 legs over 1 km, [Road shapes](#road-shapes)) is still
+timed by the straight line. Neither figure is road geometry or a live estimate.
+`totalTime` contains movement only; the boarding penalty decides the choice and
+is not added to the time shown.
 `totalStops` counts stop and metro-station visits, merging an adjacent shared
 transfer stop once while preserving repeated visits around loops and distinct
 walking-transfer endpoints.
 
+Shared by length, one stop in the wrong place sets the pace of its whole line, so
+two cases count differently (`measuredLength` in `graph.ts`, #721). A run of stops
+without coordinates breaks its legs, but the bus still covers that stretch: it
+counts as the straight line between the stops either side, and the rest of the
+line keeps its pace (in a synthetic line of ten stops, one missing had made the
+others 29% slower). And a stop is taken to be misplaced when its two legs run more
+than three times the straight line between its neighbours, and over a kilometre
+longer, while the recorded line ([Road shapes](#road-shapes)) passes it by but
+runs on through the legs beyond: its two legs then count as that straight line in
+the length the line's time is shared over, so the rest of the line keeps its pace.
+A ride that stays on past the stop takes one more leg (`misplacedStops`), from the
+stop before it to the stop after, as long as that straight line and timed at that
+pace. It reaches the stop after at the same route position as the leg from the
+stop itself, so the search keeps the cheaper of the two, and a journey through it
+still lists the stop among those it passes, as the line does, but draws the ride
+straight past it. The stop's own legs keep their stored lengths and take their
+time at that pace, because the stop stays where it is stored, with its walks:
+boarding or alighting there costs the way to where it stands. Shared as the
+straight line instead, as early in the review, the stop was a jump (536 from 3077
+to 3095, stored 2.72 km apart, in 1.5 minutes), and a spur out to such a stop and
+back would have cost nothing. Kept at their stored lengths with no leg past, as
+later in the review, they made every ride through the stop pay a detour the bus
+does not make, and no answer among 1,500 random pairs rode 536 or 537 through
+either stop.
+This is the only use routing makes of the recorded lines, and without them it
+changes nothing. Sixteen stops on the snapshot stick out that far. Fourteen lie on
+their line, where the bus does go out of its way (145 to Binəqədi Gənclər
+Şəhərciyi, 3.6 km of legs for 1.1 between its neighbours), and count in full. The
+other two are suspected errors in the data. The right coordinates are unknown, so
+no migration corrects them:
+
+- **Stop 3841**, Zabrat-Kürdəxanı şosesi, 18, the second stop of 537's second
+  direction, is stored at 40.520541, 49.950679, 1.1 km from both of 537's
+  recorded lines while the stops either side lie on them. The stop beside the
+  terminus in the other direction, 3840 (Zabrat-Kürdəxanı şosesi, 19), is stored
+  2.8 km south at the same longitude. 3841's legs ran 5.43 km where its
+  neighbours are 0.78 apart, took 15.3 of the direction's 70 minutes, and left the
+  other 26 legs 19% fast.
+- **Stop 3095**: 536's second direction lists "28 May küçəsi 222" as stop 3095,
+  whose own record is C.Cavadov küç. 72A, at 40.529394, 49.849165: a point on
+  536's route, but not between those neighbours. Its legs ran 4.73 km for 0.71,
+  took 14.6 of 88 minutes, and left the other 32 legs 14% fast.
+
+The rule changes the time of 62 legs, all in those two directions, and no
+distance, and adds the two legs past. Both directions now run at their lines' pace,
+17.3 and 16.7 km/h in a straight line, and so do the misplaced stops' legs: a ride
+to or from such a stop takes the way its stored place makes, 10.6 minutes for 537's
+3.06 km from 1635 to 3841, and a ride through it the straight line, 2.7 minutes
+from 1635 to 1421 where the stored legs take 18.9 (536 from 3077 to 3079: 2.6
+against 17.0). End to end the two directions take AYNA's 70 and 88 minutes, where
+the stored legs made them 86.2 and 102.5. Of the review's 1,500 random pairs (seed
+20261111) 32 answers change against times shared by length alone, and 4 of the 200
+below, each on 536 or 537: 8 of the 32 keep their journey at its line's true pace,
+and 24 take another, 17 of them through a misplaced stop.
+
 `walking.ts` builds bidirectional connections of at most `WALK_RADIUS_KM` from
-the same coordinates. A spatial grid covers nearby Baku stops without an all-pairs
-scan. Connections do not depend on input order or bus membership; even two stops
-served by the same line can need a walk because their directions differ. The
+the same coordinates. That limit is 400 m, about five minutes on foot and the
+distance a bus stop is usually taken to serve; it was 300 m until #721, which left
+Azərbaycan Hava Yolları QSC (stop 1343) without the 28 May hub (stop 105) 355 m
+away, so its trip to Sumqayıt took three buses where two go through Avtovağzal. A
+spatial grid covers nearby Baku stops without an all-pairs scan; its cells, and
+the boxes the metro searches around a station's exits, are sized from the limit
+for the narrowest degree of longitude in the network's area. Connections do not
+depend on input order or bus membership; even two stops served by the same line
+can need a walk because their directions differ. The
 graph no longer reads legacy `bus_walking_edges`, whose generation omitted useful
 pairs. That table kept its rows until the owner had it dropped on 2026-10-25 (#688,
 `prisma/migrations/2026-10-25_drop_retired_data.sql`); every other reference table
@@ -146,9 +272,12 @@ Bus edges carry their leg's road, and a journey's ride joins them
 (`RouteSegment.path`). The line viewer matches its stops to the bus's lines the same
 way, so it no longer draws a broken line as stored; its coordinates are empty when
 nothing fits, and the map then joins the stops. Distances and times do not change:
-they still come from straight lines between stops, as the page says. If the lines
-fail to load, the graph builds without them and every ride is drawn straight until
-the process restarts: the graph is built once, and only a console error says so.
+they still come from straight lines between stops, as the page says; the lines only
+tell a misplaced stop, which sets its line's pace by the straight line past it and
+is ridden past that way ([Graph and data](#graph-and-data)).
+If the lines fail to load, the graph builds without them and every ride is drawn
+straight until the process restarts: the graph is built once, and only a console
+error says so.
 The line viewer also catches a failure reading its optional road geometry: it
 returns the ordered stops with empty coordinates, allowing the map to join those
 stops. A geometry-table failure therefore does not hide an otherwise usable line.
@@ -207,14 +336,15 @@ AYNA's stop ids end at 3,841, and the graph leaves the metro out rather than let
 stop id into that range. The stop picker does not offer stations, so journeys still
 start and end at bus stops. A ride's legs are `metro` edges with the ride's
 identity and consecutive positions, which the search continues exactly like a bus
-direction. A stop within 300 m of a station's nearest exit gets a walk to and from
-the station, measured to that exit and drawn by it (stop, exit, station); the
-minutes inside the station, escalators and passages, are not counted. The two
-pairs of stations within 300 m of each other are the interchanges, 28 May and Cəfər
-Cabbarlı (35 m) and Memar Əcəmi and Memar Əcəmi-2 (129 m), and are joined by
-walks. A walk still cannot follow a walk, so a walk to one station cannot go on to
-the next on foot. Bakmil's only exit has no bus stop within 300 m (the nearest is
-0.7 km away), so no journey uses Bakmil. If the metro cannot be built the graph is
+direction. A stop within a walk (400 m) of a station's nearest exit gets a walk to
+and from the station, measured to that exit and drawn by it (stop, exit, station);
+the minutes inside the station, escalators and passages, are not counted. The two
+pairs of stations within a walk of each other are the interchanges, 28 May and
+Cəfər Cabbarlı (35 m) and Memar Əcəmi and Memar Əcəmi-2 (129 m), and are joined by
+walks; the next closest pair is 812 m apart. A walk still cannot follow a walk, so
+a walk to one station cannot go on to the next on foot. Bakmil's only exit has no
+bus stop within a walk (the nearest is 0.7 km away), so no journey uses Bakmil.
+If the metro cannot be built the graph is
 built without it and the console says so, as with the road shapes.
 
 **Shown.** A segment has a `mode` (`bus`, `metro` or `walk`); a metro train or the
@@ -241,7 +371,8 @@ Həzi Aslanov m/st → Sahil m/st stays on bus 20, because the metro would need 
 change at Əhmədli. What #664's rule costs: in 320 of 590 random trips a journey
 with one more boarding would be at least 10 minutes faster (22 on average, waits
 not counted), but 262 of those exist by bus alone, so this is the rule's trade-off
-and not the metro's; 135 of them use the metro.
+and not the metro's; 135 of them use the metro. These figures predate #721, which
+replaced that rule and the equal shares of a line's time ([Ranking](#ranking)).
 
 **Refreshing.** In route_efficiency, `python3 data/metro_scraper.py` and
 `python3 data/build_metro.py`; then here
@@ -277,13 +408,13 @@ parking; only the MPV layer is named for bicycles.
 
 **Why nothing routes by bicycle.** A cycle leg needs a bicycle where the journey starts,
 which the data cannot say, and a road network for cycling, which the planner does not
-have. It would also undo #664's ranking: a leg on a bicycle is no boarding, so riding all
-the way would beat every bus. The planner keeps its stop-to-stop journeys and adds what
+have. It would also undo the ranking: a leg on a bicycle pays no boarding, so riding all
+the way would win most trips. The planner keeps its stop-to-stop journeys and adds what
 the data supports: where to leave the bicycle.
 
 **Beside a journey** (`journeyBikeParking` in `bike.ts`, called by
 `POST /api/avtobus/find`). The rack nearest the first ride's first stop or station, and
-the one nearest the last ride's last, each within the planner's 300 m walk. A walk before
+the one nearest the last ride's last, each within the planner's walk (400 m). A walk before
 the first ride or after the last is not counted, since the bicycle takes its place, and a
 journey on foot gets none. The response carries them as `bikeParking`: `boarding` and
 `alighting`, either of them null, or null altogether. If they cannot be worked out, the
@@ -336,7 +467,7 @@ Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
 bus-list failures have retry controls rather than looking like an empty network.
 
 GPS and empty-map taps choose a stop only within 600 m. That selection radius is
-separate from the routing graph's 300 m walking-transfer limit. The GPS selection
+separate from the routing graph's 400 m walking-transfer limit. The GPS selection
 shows the approximate distance to its stop and says that this access walk is not
 included in the itinerary's movement time. A location callback is invalidated by
 later selections or a mode change, so delayed GPS cannot replace a newer origin.
@@ -355,18 +486,90 @@ for its endpoints, including the return direction.
 
 ## Automated verification
 
-Tests cover direct-bus preference, minimum transfers, tie-breaks, origin and
-interchange walks, the walking limit, directions, loops, unreachable stops,
-initialization concurrency/retry and API input/error handling. An independent
-round-by-boardings oracle checks 900 trips over generated small networks. The
-spatial grid is checked against exhaustive haversine pairs.
+Tests cover the boarding penalty below, at and above its threshold, tie-breaks,
+origin and interchange walks, the walking limit, directions, loops, unreachable
+stops, the length-shared leg times with a missing or a misplaced stop, a ride past a
+misplaced stop and how its journey lists and draws it, a graph that hands back
+copies of its edges, initialization concurrency/retry and API
+input/error handling. An independent round-by-boardings oracle checks 900 trips over
+generated small networks, choosing the round with the lowest minutes plus
+penalties. The spatial grid is checked against exhaustive haversine pairs, at Baku's
+latitude and at the network's northern edge, and its cell sizes against the
+shortest degrees in the network's area.
 
 `routingOracle.test.ts` adds 900 generated trips checked against a separate
 boarding-round cost oracle. It expands complete contiguous ride stretches in each
 round and allows one walk between rounds, rather than reproducing the production
-edge/state Dijkstra. Its mixed bus/metro networks include loops, origin walks,
-interchanges and destination walks. It checks every ranking objective, transfer
-counts, segment continuity and the absence of consecutive walking segments.
+edge/state Dijkstra, and then chooses among the rounds by cost. Its mixed bus/metro
+networks include loops, origin walks, interchanges and destination walks. It checks
+every ranking objective, transfer counts, segment continuity and the absence of
+consecutive walking segments. Both oracles assert that more than ten of their trips
+take more boardings than the fewest, so the penalty is exercised and not only the
+boarding count.
+
+## Verification for #721 (2026-11-11)
+
+The owner's request was `{fromStopId: 1343, toStopId: 3642}`: Azərbaycan Hava
+Yolları QSC in central Baku to Nizami Gəncəvi adına uşaq kitabxanası in Sumqayıt,
+24.8 km apart. Only 503, in its second direction, stops within 400 m of the
+library, so every journey ends on it; the question is where to board it.
+
+- **Before:** walk 261 m, 61 for 19 stops, 525 for 7 stops to Xırdalan
+  Qəbirstanlığı, then 503 for 28 stops: three boardings, 94.6 minutes as then
+  estimated. The 300 m walk ruled out the 28 May hub 355 m away, and equal time
+  shares made 525 twice as fast as its line, so the journey caught 503 at Xırdalan.
+- **Times shared by length alone:** 61, a walk to 8 Noyabr, the purple line to
+  Avtovağzal, a walk, then 503 from Avtovağzal m/st: three boardings, 104.4 minutes.
+- **After (400 m walks as well):** walk 379 m to 28 May m/st (stop 1711), bus 2 for
+  16 stops to Biləcəri dairəsi, walk 248 m to Avtovağzal m/st, then 503 for 35
+  stops: two boardings, 112.8 minutes. Timed the same way, the old journey takes
+  109.7 minutes, so the new one costs 142.8 against its 154.7. The cost rule does
+  not change this answer; the fewest boardings are also the cheapest here.
+
+No defect was found in the search itself. On 196 routable random pairs the old
+search returned exactly the fewest-boardings journey that an independent search
+over boardings and minutes found: its state keys, ride continuation, stale-entry
+skipping and early return are sound. The wrong journey came from the model: the
+walk limit, the equal shares and the rule.
+
+**Measured on 200 random pairs** (seed 721; 196 routable before and after), each
+change on top of the ones listed before it, so a count depends on that order. Times
+shared by length include the rule for a misplaced stop
+([Graph and data](#graph-and-data)), which moves 4 of these answers.
+
+- times shared by length: 116 answers change, none in its number of boardings;
+- 400 m walks, on top of those times: 44 change, 20 of them to fewer boardings (19
+  by one, one by two);
+- the cost rule, on top of both: 46 change, all to more boardings (44 by one, 2 by
+  two), each saving at least 15.4 minutes and 19.7 at the median.
+
+All together 146 of 196 answers change. Timing old and new journeys alike, by
+length: 14 need fewer boardings (13 one fewer, one two fewer; 235 m more walking at
+the median), 92 keep their count and save 3.1 minutes at the median (6.1 on
+average), and 40 add boardings and save 26.4 minutes at the median (31.5 on
+average, never under 15). Boardings over the 196 trips go from 522 to 549 and
+average walking from 266 to 283 m. The time shown rises by 3.1 minutes at the
+median: equal shares had let the search find legs faster than their line.
+
+**Search cost**, old and new in one run on those pairs (the old search on the old
+model): 7.0 ms at the median instead of 13.8, and 13.4 ms at the 95th percentile
+instead of 29.3; another run gave 7.9 and 15.1 against 13.8 and 31.4. Labels
+settled went from 6,240 to 7,217 at the median and from 14,102 to 14,373 at the
+95th percentile, with 16,590 walking edges instead of 10,264; 1343 → 3642 settles
+13,532 instead of 12,657. The time went to string keys (see [Ranking](#ranking));
+keyed by edge, the new search returned the same journey as with strings for all
+200 pairs. Keyed by number, as now, it returns the same response as keyed by edge
+for all 200 and for the review's 1,500 pairs (seed 20261111), at the same speed:
+6.6 ms at the median and 13.1 at the 95th percentile on those 1,500, against 6.6
+and 13.3 in the same run. Through a graph that hands back copies of its edges it
+settles the same labels and returns the same journeys.
+
+**How.** A scratch PostgreSQL was loaded from route_efficiency's `data/ayna.db`
+(the same 3,456 served stops, 208 buses and 11,786 stop rows as production, stop
+order from its `seq`) and read by the real `graph.ts` through Prisma. Running the
+old search on the new graph, with equal shares restored and walks over 300 m left
+out, reproduced all 200 old answers. The harness and the database stay outside the
+repository; nothing was read from or written to production.
 
 ## Verification on 2026-10-26
 

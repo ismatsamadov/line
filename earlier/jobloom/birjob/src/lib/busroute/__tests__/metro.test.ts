@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import metroJson from '../metro.json';
 import { MetroData, metroNetwork } from '../metro';
-import { haversine } from '../geo';
+import { haversine, WALK_RADIUS_KM } from '../geo';
 import type { LatLng } from '../types';
 import { isMetroStation, METRO_STATION_ID_BASE } from '../types';
 import { stop } from './fixtures';
@@ -119,14 +119,16 @@ describe('metroNetwork (#689)', () => {
     ]);
   });
 
-  it("walks from a stop to a station up to 300 m from the stop's nearest exit, and draws the walk by it", () => {
+  it("walks from a stop to a station within a walk (400 m) of the stop's nearest exit, and draws the walk by it", () => {
     // Xocəsən has one exit, 83 m from the station's point.
     const xocesen = data.stations.find((s) => s.name === 'Xocəsən')!;
     const [exit] = xocesen.exits;
     const near = stop(1, exit[0] + 0.0009, exit[1]);           // 100 m north of the exit
-    const far = stop(2, exit[0] + 0.0029, exit[1]);            // 322 m north of it
-    const east = stop(3, xocesen.latitude, xocesen.longitude + 0.0033); // 280 m from the point, 357 m from the exit
-    expect(km([east.latitude, east.longitude], [xocesen.latitude, xocesen.longitude])).toBeLessThan(0.3);
+    const far = stop(2, exit[0] + 0.0039, exit[1]);            // 434 m north of it
+    const east = stop(3, xocesen.latitude, xocesen.longitude + 0.0045); // 381 m from the point, 458 m from the exit
+    expect(WALK_RADIUS_KM).toBe(0.4);
+    expect(km([east.latitude, east.longitude], [xocesen.latitude, xocesen.longitude])).toBeLessThan(WALK_RADIUS_KM);
+    expect(km([far.latitude, far.longitude], exit)).toBeGreaterThan(WALK_RADIUS_KM);
     const network = metroNetwork([near, far, east]);
     const station = network.stations.find((s) => s.name === 'Xocəsən')!;
     const walks = network.edges.filter((e) => e.edge.kind === 'walk' && !(isMetroStation(e.from) && isMetroStation(e.edge.toStopId)));

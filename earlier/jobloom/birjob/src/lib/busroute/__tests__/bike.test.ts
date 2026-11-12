@@ -70,7 +70,7 @@ describe('nearestBikeParking (#692)', () => {
     expect(east.name).toBe('A');
     expect(east.distance).toBeCloseTo(haversine(40.4, 49.853, 40.4, 49.85), 9);
     expect(east.distance).toBeLessThan(WALK_RADIUS_KM);
-    expect(nearestBikeParking(40.397, 49.85, racks)).toBeNull(); // 334 m south of A
+    expect(nearestBikeParking(40.3963, 49.85, racks)).toBeNull(); // 411 m south of A, beyond a 400 m walk
     expect(nearestBikeParking(40.4, 49.85, [])).toBeNull();
   });
 
