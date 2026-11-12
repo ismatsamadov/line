@@ -84,46 +84,82 @@ describe('transit graph', () => {
     // legs run 4.15 km where the road runs 1.11 km.
     const stops = [stop(1, 40.005), stop(2, 40.01), stop(3, 40.015, 49.0235), stop(4, 40.02), stop(5, 40.025)];
     const road: [number, number][] = [[40.005, 49], [40.01, 49], [40.015, 49], [40.02, 49], [40.025, 49]];
-    const built = async (line?: [number, number][]) => {
+    const built = async (line?: [number, number][], order = [1, 2, 3, 4, 5]) => {
       db.queryStopDetails.mockResolvedValue(stops);
-      db.queryBusStops.mockResolvedValue([1, 2, 3, 4, 5].map((s, i) => busStop(10, s, i)));
+      db.queryBusStops.mockResolvedValue(order.map((s, i) => busStop(10, s, i)));
       db.queryRouteShapes.mockResolvedValue(new Map(line ? [['10:1', line]] : []));
-      const g = await (await import('../graph')).getGraph();
-      return (id: number) => g.getEdges(id).find(e => e.kind === 'bus')!;
+      return (await import('../graph')).getGraph();
     };
+    // A stop's stored leg on, never the leg past a misplaced stop.
+    const stored = (g: Awaited<ReturnType<typeof built>>, id: number, sequence?: number) =>
+      g.getEdges(id).find(e => e.kind === 'bus' && !e.passes && (sequence === undefined || e.fromSequence === sequence))!;
+    const past = (g: Awaited<ReturnType<typeof built>>, id: number) => g.getEdges(id).find(e => e.kind === 'bus' && e.passes);
     const km = (a: number, b: number) => haversine(stops[a - 1].latitude, stops[a - 1].longitude, stops[b - 1].latitude, stops[b - 1].longitude);
+    // The line's 30 minutes cover 0.56 + 1.11 + 0.56 km, as if stop 3 stood on the road.
+    const pace = 30 / (km(1, 2) + km(2, 4) + km(4, 5));
 
     it('counts as the straight line between its neighbours when the recorded line passes it by', async () => {
-      const leg = await built(road);
-      // The line's 30 minutes cover 0.56 + 1.11 + 0.56 km, as if stop 3 stood on the road.
-      const pace = 30 / (km(1, 2) + km(2, 4) + km(4, 5));
-      expect(leg(1).time).toBeCloseTo(pace * km(1, 2), 9);
-      expect(leg(4).time).toBeCloseTo(pace * km(4, 5), 9);
+      const g = await built(road);
+      expect(stored(g, 1).time).toBeCloseTo(pace * km(1, 2), 9);
+      expect(stored(g, 4).time).toBeCloseTo(pace * km(4, 5), 9);
       // The stop stays where it is stored, with its walks, so its legs keep their
       // lengths and take the way there at that pace: boarding or alighting at it is
       // never a jump of 2 km for the price of 0.5.
-      expect(leg(2)).toMatchObject({ distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
-      expect(leg(3)).toMatchObject({ distance: expect.closeTo(km(3, 4), 9), time: expect.closeTo(pace * km(3, 4), 9) });
+      expect(stored(g, 2)).toMatchObject({ distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(stored(g, 3)).toMatchObject({ distance: expect.closeTo(km(3, 4), 9), time: expect.closeTo(pace * km(3, 4), 9) });
     });
 
-    it('keeps a spur out to it and back at its stored length, never at the nothing between its ends', async () => {
-      db.queryStopDetails.mockResolvedValue(stops);
-      db.queryBusStops.mockResolvedValue([1, 2, 3, 2, 4].map((s, i) => busStop(10, s, i)));
-      db.queryRouteShapes.mockResolvedValue(new Map([['10:1', road]]));
-      const g = await (await import('../graph')).getGraph();
-      const leg = (id: number, sequence: number) => g.getEdges(id).find(e => e.kind === 'bus' && e.fromSequence === sequence)!;
+    it('is ridden past by the straight line between its neighbours, at the same pace', async () => {
+      const g = await built(road);
+      // One more leg, 2 to 4, at the position the leg from 3 reaches: a ride that stays
+      // on does not pay the 4.15 km out to where stop 3 is stored and back.
+      expect(past(g, 2)).toMatchObject({
+        kind: 'bus', rideId: '10:1', fromSequence: 1, toSequence: 3, toStopId: 4, passes: { id: 3, name: 'Stop 3' },
+        distance: expect.closeTo(km(2, 4), 9), time: expect.closeTo(pace * km(2, 4), 9),
+        path: [[40.01, 49], [40.02, 49]],
+      });
+      expect(g.getEdges(1).concat(g.getEdges(3), g.getEdges(4)).some(e => e.kind === 'bus' && e.passes)).toBe(false);
+    });
+
+    it('takes the line its own duration end to end, and still charges the way to the stop', async () => {
+      const g = await built(road);
+      const { findRoute } = await import('../routing');
+      const through = findRoute(g, 1, 5)!;
+      expect(through.segments).toHaveLength(1);
+      expect(through.segments[0].time).toBeCloseTo(30, 9);
+      expect(through.segments[0].distance).toBeCloseTo(km(1, 2) + km(2, 4) + km(4, 5), 9);
+      // The ride still names the stop it passes, as the line lists it, and counts it,
+      // but is drawn straight past it, not out to where it is stored.
+      expect(through.segments[0].stops.map(s => s.id)).toEqual([1, 2, 3, 4, 5]);
+      expect(through.totalStops).toBe(5);
+      expect(through.segments[0].path).toEqual([[40.005, 49], [40.01, 49], [40.02, 49], [40.025, 49]]);
+      // Boarding or alighting at it costs its stored leg, more than the whole line.
+      expect(findRoute(g, 3, 5)!.segments[0].time).toBeCloseTo(pace * (km(3, 4) + km(4, 5)), 9);
+      expect(findRoute(g, 1, 3)!.segments[0].time).toBeCloseTo(pace * (km(1, 2) + km(2, 3)), 9);
+      expect(findRoute(g, 1, 3)!.segments[0].time).toBeGreaterThan(30);
+    });
+
+    it('keeps a spur out to it and back at its stored length; only a ride past it takes the nothing between its ends', async () => {
+      const g = await built(road, [1, 2, 3, 2, 4]);
       // From 2 out to 3 and back to 2 is no way at all in a straight line.
       const pace = 30 / (km(1, 2) + km(2, 4));
-      expect(leg(2, 1)).toMatchObject({ toStopId: 3, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
-      expect(leg(3, 2)).toMatchObject({ toStopId: 2, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
-      expect(leg(2, 3).time).toBeCloseTo(pace * km(2, 4), 9);
+      expect(stored(g, 2, 1)).toMatchObject({ toStopId: 3, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(stored(g, 3, 2)).toMatchObject({ toStopId: 2, distance: expect.closeTo(km(2, 3), 9), time: expect.closeTo(pace * km(2, 3), 9) });
+      expect(stored(g, 2, 3).time).toBeCloseTo(pace * km(2, 4), 9);
+      expect(past(g, 2)).toMatchObject({ fromSequence: 1, toSequence: 3, toStopId: 2, distance: 0, time: 0, passes: { id: 3 } });
+      const { findRoute } = await import('../routing');
+      expect(findRoute(g, 1, 3)!.segments[0].time).toBeCloseTo(pace * (km(1, 2) + km(2, 3)), 9);
     });
 
     it('keeps its legs when the recorded line goes out to it, or when there is no line to tell', async () => {
       const byLength = 30 / (km(1, 2) + km(2, 3) + km(3, 4) + km(4, 5));
-      expect((await built([road[0], road[1], [40.015, 49.0235], road[3], road[4]]))(1).time).toBeCloseTo(byLength * km(1, 2), 9);
+      const onLine = await built([road[0], road[1], [40.015, 49.0235], road[3], road[4]]);
+      expect(stored(onLine, 1).time).toBeCloseTo(byLength * km(1, 2), 9);
+      expect(past(onLine, 2)).toBeUndefined();
       vi.resetModules();
-      expect((await built())(1).time).toBeCloseTo(byLength * km(1, 2), 9);
+      const noLine = await built();
+      expect(stored(noLine, 1).time).toBeCloseTo(byLength * km(1, 2), 9);
+      expect(past(noLine, 2)).toBeUndefined();
     });
   });
 

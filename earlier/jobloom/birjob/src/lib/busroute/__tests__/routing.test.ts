@@ -130,6 +130,32 @@ describe('journey choice: minutes plus a boarding penalty (#664, #721)', () => {
     expect(findRoute(g, 1, 1)).toBeNull();
   });
 
+  it('rides past a misplaced stop by the leg past it, still lists it, and charges the way to it (#721)', () => {
+    // Line 10 lists 1, 2, 3, 4, 5, but stop 3 is stored 1.7 km east of the others, so
+    // graph.ts adds a leg from 2 to 4 that reaches the position the leg from 3 does.
+    const pastLeg = { ...ride(4, 10, 1, 1, 1), toSequence: 3, passes: { id: 3, name: 'As the line lists it' }, path: [[40.02, 49], [40.04, 49]] } as GraphEdge;
+    const edges = { 1: [ride(2, 10, 1, 1, 0)], 2: [ride(3, 10, 5, 5, 1), pastLeg], 3: [ride(4, 10, 5, 5, 2)], 4: [ride(5, 10, 1, 1, 3)] };
+    const placed = graph(edges);
+    const g = { ...placed, getStopInfo: (id: number) => id === 3 ? { ...placed.getStopInfo(3)!, longitude: 49.02 } : placed.getStopInfo(id) };
+    const check = (g: Parameters<typeof findRoute>[0]) => {
+      const through = findRoute(g, 1, 5)!;
+      expect(through).toMatchObject({ totalTime: 3, totalDistance: 3, totalTransfers: 0, totalStops: 5 });
+      expect(through.segments.map(s => s.stops.map(p => p.id))).toEqual([[1, 2, 3, 4, 5]]);
+      expect(through.segments[0].stops[2]).toEqual({ id: 3, name: 'As the line lists it', latitude: 40.03, longitude: 49.02 });
+      // Drawn by the legs it rides, straight past the stop, not out to it and back.
+      expect(through.segments[0].path).toEqual([[40.01, 49], [40.02, 49], [40.04, 49], [40.05, 49]]);
+      // Boarding or alighting at the stop takes its own legs.
+      expect(findRoute(g, 3, 5)).toMatchObject({ totalTime: 6, segments: [{ stops: [{ id: 3 }, { id: 4 }, { id: 5 }] }] });
+      expect(findRoute(g, 1, 3)).toMatchObject({ totalTime: 6, segments: [{ stops: [{ id: 1 }, { id: 2 }, { id: 3 }] }] });
+      // A ride of the leg past alone is still drawn past the stop.
+      expect(findRoute(g, 2, 4)!.segments[0]).toMatchObject({ time: 1, stops: [{ id: 2 }, { id: 3 }, { id: 4 }], path: [[40.02, 49], [40.04, 49]] });
+    };
+    check(g);
+    check({ ...g, getEdges: (id: number) => g.getEdges(id).map(e => ({ ...e })) });
+    Object.values(edges).forEach(numberRidePositions);
+    check(g);
+  });
+
   it('keeps the complete origin and destination when multiple routes branch midway', () => {
     const g = graph({ 1: [ride(2, 10)], 2: [ride(4, 10, 1, 1, 1), ride(3, 20)], 3: [ride(4, 20, 1, 1, 1)] });
     const route = findRoute(g, 1, 4)!;
