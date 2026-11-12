@@ -837,7 +837,7 @@ was not followed by a new run. The table of stops near a place was worked out ag
 for the 12,590 from the same stops (that database's tables as CSV, and `metro.json`),
 served as `access.ts` serves them; for the 12,634 it gives the first table's numbers
 exactly. The numbers come out as here only with the route lines loaded: #721's
-`measuredLength` reads them to tell a misplaced stop, which changes some rides' times.
+`misplacedStops` reads them to tell a misplaced stop, which changes some rides' times.
 The harness is a vitest file outside the repository: it builds the graph
 with `getGraph()`, draws place pairs with the tests' linear congruential generator from
 seed 720, answers each with `findJourney` and with `findRoute` between the places'
