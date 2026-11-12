@@ -104,6 +104,76 @@ describe('POST /api/avtobus/find', () => {
     } finally { log.mockRestore(); }
   });
 
+  // Stop k of the fixture stands at 40 + k/100° N on 49° E: these points are 55 m from
+  // stops 1 and 3, 2.3 km apart, further than a walk the whole way (#720).
+  const mall = { latitude: 40.0095, longitude: 49, name: 'Gənclik Mall' };
+  const library = { latitude: 40.0305, longitude: 49, name: 'Kitabxana' };
+
+  it('routes from a place to a place, counting the walks to and from them (#720)', async () => {
+    const res = await POST(request({ from: mall, to: library }));
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.from).toEqual(mall);
+    expect(body.to).toEqual(library);
+    const { route } = body;
+    expect(route.segments.map((s: { mode: string }) => s.mode)).toEqual(['walk', 'bus', 'walk']);
+    expect(route.segments[0].stops).toEqual([
+      { id: -1, name: 'Gənclik Mall', latitude: 40.0095, longitude: 49 }, expect.objectContaining({ id: 1 }),
+    ]);
+    expect(route.segments[2].stops.at(-1)).toEqual({ id: -2, name: 'Kitabxana', latitude: 40.0305, longitude: 49 });
+    // 56 m each way, timed on its streets (1.3 times the straight line at 4.5 km/h), and
+    // the 10-minute bus.
+    expect(route.segments[0].distance).toBeCloseTo(0.0556, 3);
+    expect(route.segments[0].time).toBeCloseTo(0.964, 3);
+    expect(route).toMatchObject({ totalTime: 11.9, totalDistance: 1.11, totalTransfers: 0 });
+  });
+
+  it('routes between a stop and a place either way, and names a nameless point (#720)', async () => {
+    const toPlace = await (await POST(request({ fromStopId: 1, to: library }))).json();
+    expect(toPlace.from).toEqual({ id: 1, name: 'Stop 1' });
+    expect(toPlace.route.segments.map((s: { stops: Array<{ id: number }> }) => s.stops.map(p => p.id))).toEqual([[1, 3], [3, -2]]);
+    const fromHere = await (await POST(request({ from: { latitude: 40.0095, longitude: 49 }, toStopId: 3 }))).json();
+    expect(fromHere.from).toEqual({ name: 'Başlanğıc nöqtəsi', latitude: 40.0095, longitude: 49 });
+    expect(fromHere.route.segments[0].stops[0]).toMatchObject({ id: -1, name: 'Başlanğıc nöqtəsi' });
+  });
+
+  it('walks the whole way between two places a short walk apart (#720)', async () => {
+    const { route, bikeParking } = await (await POST(request({ from: mall, to: { ...library, latitude: 40.0155 } }))).json();
+    expect(route.segments).toHaveLength(1);
+    expect(route.segments[0]).toMatchObject({ mode: 'walk', distance: expect.closeTo(0.667, 3) });
+    expect(route.segments[0].stops.map((s: { id: number }) => s.id)).toEqual([-1, -2]);
+    expect(bikeParking).toBeNull();
+  });
+
+  it.each([
+    { from: { latitude: '40.01', longitude: 49 }, toStopId: 3 },
+    { from: { latitude: 41.6, longitude: 49 }, toStopId: 3 },
+    { from: { latitude: 40.01, longitude: 51.2 }, toStopId: 3 },
+    { from: { latitude: 40.01, longitude: 49 }, fromStopId: 1, toStopId: 3 },
+    { toStopId: 3 },
+    { from: { latitude: 40.01, longitude: 49, name: 'x'.repeat(201) }, toStopId: 3 },
+    { from: { latitude: 40.01, longitude: 49, name: '   ' }, toStopId: 3 },
+    { from: { latitude: 40.01, longitude: 49 }, to: { latitude: 40.01, longitude: 49 } },
+  ])('rejects a malformed or out-of-area point before loading any graph: %j', async body => {
+    const res = await POST(request(body));
+    expect(res.status).toBe(400);
+    expect(typeof (await res.json()).error).toBe('string');
+    expect(getGraph).not.toHaveBeenCalled();
+  });
+
+  it('says which place has no stop within a walk, by its name (#720)', async () => {
+    const res = await POST(request({ from: { latitude: 40.2, longitude: 49, name: 'Uzaq bağ' }, toStopId: 3 }));
+    expect(res.status).toBe(404);
+    expect((await res.json()).error).toMatch(/^«Uzaq bağ» yaxınlığında 1000 metrədək dayanacaq/);
+  });
+
+  it('says when no journey joins two places (#720)', async () => {
+    getGraph.mockResolvedValueOnce(graph({ 1: [ride(2, 10)], 4: [ride(3, 20)] }));
+    const res = await POST(request({ from: mall, to: library }));
+    expect(res.status).toBe(404);
+    expect((await res.json()).error).toBe('Bu yerlər arasında marşrut tapılmadı');
+  });
+
   it('returns an actionable error instead of throwing a database exception', async () => {
     getGraph.mockRejectedValueOnce(new Error('database unavailable'));
     const log = vi.spyOn(console, 'error').mockImplementation(() => {});

@@ -6,7 +6,9 @@ const stop = (id: number, latitude: number, longitude: number): StopDetail => ({
   id, code: '', name: `Stop ${id}`, latitude, longitude, is_transport_hub: false,
 });
 const fakeMap = () => ({ fitBounds: vi.fn(), setView: vi.fn() });
-const none: FitTargets = { route: null, line: null, fromStop: null, toStop: null };
+const none: FitTargets = { route: null, line: null, from: null, to: null };
+// Room above the ends for their labels (#720).
+const ENDS = { paddingTopLeft: [50, 110], paddingBottomRight: [50, 40] };
 
 describe('sizedFromZero', () => {
   it('is true only for the resize that gives a 0×0 map its first size (#685)', () => {
@@ -27,9 +29,9 @@ describe('fitFeatures', () => {
         { stops: [stop(2, 40.41, 49.81), stop(3, 40.45, 49.90)] },
       ],
     } as unknown as RouteResult;
-    fitFeatures(map, { ...none, route, fromStop: stop(1, 40.40, 49.80), toStop: stop(3, 40.45, 49.90) });
+    fitFeatures(map, { ...none, route, from: stop(1, 40.40, 49.80), to: stop(3, 40.45, 49.90) });
     expect(map.fitBounds).toHaveBeenCalledWith(
-      [[40.40, 49.80], [40.41, 49.81], [40.41, 49.81], [40.45, 49.90]], { padding: [50, 50] });
+      [[40.40, 49.80], [40.41, 49.81], [40.41, 49.81], [40.45, 49.90]], ENDS);
     expect(map.setView).not.toHaveBeenCalled();
   });
 
@@ -39,7 +41,7 @@ describe('fitFeatures', () => {
       segments: [{ stops: [stop(1, 40.40, 49.80), stop(2, 40.41, 49.80)], path: [[40.40, 49.80], [40.405, 49.83], [40.41, 49.80]] }],
     } as unknown as RouteResult;
     fitFeatures(map, { ...none, route });
-    expect(map.fitBounds).toHaveBeenCalledWith([[40.40, 49.80], [40.405, 49.83], [40.41, 49.80]], { padding: [50, 50] });
+    expect(map.fitBounds).toHaveBeenCalledWith([[40.40, 49.80], [40.405, 49.83], [40.41, 49.80]], ENDS);
   });
 
   it('fits a line to its road shape, or to its stops when it has none', () => {
@@ -53,14 +55,35 @@ describe('fitFeatures', () => {
     expect(bare.fitBounds).toHaveBeenCalledWith([[40, 49], [41, 50]], { padding: [50, 50] });
   });
 
-  it('fits both chosen stops before a route arrives, and centres on a single one', () => {
+  it('fits both chosen ends before a route arrives, and centres on a single one', () => {
     const both = fakeMap();
-    fitFeatures(both, { ...none, fromStop: stop(1, 40.4, 49.8), toStop: stop(2, 40.5, 49.9) });
-    expect(both.fitBounds).toHaveBeenCalledWith([[40.4, 49.8], [40.5, 49.9]], { padding: [60, 60] });
+    fitFeatures(both, { ...none, from: stop(1, 40.4, 49.8), to: stop(2, 40.5, 49.9) });
+    expect(both.fitBounds).toHaveBeenCalledWith([[40.4, 49.8], [40.5, 49.9]], ENDS);
 
     const one = fakeMap();
-    fitFeatures(one, { ...none, fromStop: stop(1, 40.4, 49.8) });
+    fitFeatures(one, { ...none, from: stop(1, 40.4, 49.8) });
     expect(one.setView).toHaveBeenCalledWith([40.4, 49.8], 15);
+  });
+
+  it('frames a chosen place itself, and the walks from and to places on a route (#720)', () => {
+    // A place, not the stop nearest it, is the end the view takes in.
+    const mall = { latitude: 40.401, longitude: 49.851 };
+    const before = fakeMap();
+    fitFeatures(before, { ...none, from: mall, to: stop(2, 40.5, 49.9) });
+    expect(before.fitBounds).toHaveBeenCalledWith([[40.401, 49.851], [40.5, 49.9]], ENDS);
+
+    const after = fakeMap();
+    const route = {
+      segments: [
+        { mode: 'walk', stops: [{ id: -1, ...mall }, stop(2, 40.405, 49.855)] },
+        { mode: 'bus', stops: [stop(2, 40.405, 49.855), stop(3, 40.45, 49.90)] },
+        { mode: 'walk', stops: [stop(3, 40.45, 49.90), { id: -2, latitude: 40.452, longitude: 49.91 }] },
+      ],
+    } as unknown as RouteResult;
+    fitFeatures(after, { ...none, route, from: mall });
+    const [coords] = after.fitBounds.mock.calls[0];
+    expect(coords).toContainEqual([40.401, 49.851]);
+    expect(coords).toContainEqual([40.452, 49.91]);
   });
 
   it('leaves the view alone with nothing chosen', () => {

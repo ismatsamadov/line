@@ -15,7 +15,8 @@ describe('walking connections', () => {
     const edges = computeWalkingEdges([stop(1, 40.00399, 49.00499), stop(2, 40.00401, 49.00501), stop(3, 40.02)]);
     expect(keys(edges)).toEqual(['1:2', '2:1']);
     expect(edges[0].distance_km).toBeGreaterThan(0);
-    expect(edges[0].time_min).toBeCloseTo(edges[0].distance_km / 4.5 * 60);
+    // Timed on its streets, 1.3 times the straight line at 4.5 km/h (#720).
+    expect(edges[0].time_min).toBeCloseTo(edges[0].distance_km * 1.3 / 4.5 * 60);
   });
 
   // The cells are sized for the shortest degrees in the network's area, so a pair within

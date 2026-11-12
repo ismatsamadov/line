@@ -1,4 +1,4 @@
-import type { Bus, BusStop, GraphEdge, StopDetail } from '../types';
+import type { Bus, BusStop, GraphEdge, LatLng, StopDetail } from '../types';
 
 export const stop = (id: number, latitude = 40 + id * 0.01, longitude = 49): StopDetail => ({
   id, name: `Stop ${id}`, code: String(id), latitude, longitude, is_transport_hub: false,
@@ -26,10 +26,16 @@ export const train = (to: number, ride: number, time = 1, distance = 1, sequence
   rideId: `metro:${ride}`, fromSequence: sequence, toSequence: sequence + 1,
   headsign: `Terminus metro:${ride}`, fromStopName: '', toStopName: '',
 });
-export function graph(edges: Record<number, GraphEdge[]>, stopIds?: number[]) {
+/** A graph of these edges; a stop stands where `at` puts it, or on 49° E (stop()), and a
+ *  metro station has the `exits` given. */
+export function graph(edges: Record<number, GraphEdge[]>, stopIds?: number[],
+  { at = {}, exits = {} }: { at?: Record<number, LatLng>; exits?: Record<number, LatLng[]> } = {}) {
   const ids = new Set(stopIds ?? Object.entries(edges).flatMap(([id, rows]) => [Number(id), ...rows.map(e => e.toStopId)]));
+  const info = (id: number) => !ids.has(id) ? undefined : at[id] ? stop(id, ...at[id]) : stop(id);
   return {
-    getStopInfo: (id: number) => ids.has(id) ? stop(id) : undefined,
+    getStopInfo: info,
     getEdges: (id: number) => edges[id] ?? [],
+    getAllStops: () => [...ids].map(id => info(id)!),
+    getStationExits: (id: number): LatLng[] | undefined => exits[id],
   };
 }

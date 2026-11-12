@@ -30,6 +30,17 @@ export function haversine(
 // Sumqayıt took three buses where two go through Avtovağzal.
 export const WALK_RADIUS_KM = 0.4;
 export const WALK_SPEED_KMH = 4.5; // average walking speed
+// The streets a walk takes are longer than its straight line. On OpenStreetMap's
+// walking network in Baku the way on foot was 1.29 times the straight line at the
+// median for walks of up to 400 m between stops, and 1.37 to 1.40 for the longer walks
+// from and to a place and for the walk the whole way (measured 2026-11-11, #720); the
+// open-data study of the network assumes 1.3. Every walk's minutes are reckoned on its
+// straight line times this; the distances shown, and the limits a search walks within
+// (WALK_RADIUS_KM, access.ts, routing.ts), stay straight lines.
+export const WALK_DETOUR = 1.3;
+
+/** Minutes on foot for a straight-line distance in km, its streets reckoned in. */
+export const walkMinutes = (km: number) => ((km * WALK_DETOUR) / WALK_SPEED_KMH) * 60;
 
 // The shortest a degree of latitude and of longitude gets inside the envelope below
 // (up to 41.5° N). Spatial searches size their cells and boxes with them, so any

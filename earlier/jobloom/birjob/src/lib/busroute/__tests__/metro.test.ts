@@ -134,7 +134,7 @@ describe('metroNetwork (#689)', () => {
     const walks = network.edges.filter((e) => e.edge.kind === 'walk' && !(isMetroStation(e.from) && isMetroStation(e.edge.toStopId)));
     expect(walks.map((e) => [e.from, e.edge.toStopId])).toEqual([[1, station.id], [station.id, 1]]);
     expect(walks[0].edge.distance).toBeCloseTo(0.1, 2);
-    expect(walks[0].edge.time).toBeCloseTo((walks[0].edge.distance / 4.5) * 60);
+    expect(walks[0].edge.time).toBeCloseTo((walks[0].edge.distance * 1.3 / 4.5) * 60);
     expect(walks[0].edge).toMatchObject({ path: [[near.latitude, near.longitude], exit, [station.latitude, station.longitude]] });
     expect(walks[1].edge).toMatchObject({ path: [[station.latitude, station.longitude], exit, [near.latitude, near.longitude]] });
   });
