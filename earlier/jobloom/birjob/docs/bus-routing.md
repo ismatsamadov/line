@@ -685,19 +685,21 @@ reaches (at the destination), the nearest first, at most `ACCESS_STOP_LIMIT`, 64
 no bus serves is never one; the snapshot's 385 such stops have no name either. The
 location button and, before this, a place used the nearest stop within 600 m, and the
 journey could walk on from it, 400 m more; within 1 km every such start is one walk, so
-no journey it could give is lost. Measured over the 12,634 places `places.json` had at
-the time:
+no journey it could give is lost. Over the 12,603 places of `places.json` (worked out
+again after the review of 12 November; of the 12,634 it had when this was first
+measured, 483 had none within 1 km):
 
 | Radius | Places with no stop or station that close | Stops at a place: median, 90th pct., most |
 | --- | --- | --- |
-| 400 m | 1,839 (14.6%) | 5, 10, 20 |
-| 600 m | 1,148 (9.1%) | 9, 19, 33 |
-| 800 m | 714 (5.7%) | 15, 32, 50 |
-| **1 km** | **483 (3.8%)** | **22, 46, 63** |
+| 400 m | 1,830 (14.5%) | 5, 10, 20 |
+| 600 m | 1,141 (9.1%) | 9, 19, 33 |
+| 800 m | 709 (5.6%) | 15, 32, 50 |
+| **1 km** | **479 (3.8%)** | **22, 46, 63** |
 
-On 1,000 random pairs of places, against standing each place for its nearest stop
-within 600 m among all 3,841 stops of the stop list, as the page did, with the walks to
-those stops added to that journey's minutes:
+On 1,000 random pairs of the 12,634 places `places.json` had before that review (not
+measured again since), against standing each place for its nearest stop within 600 m
+among all 3,841 stops of the stop list, as the page did, with the walks to those stops
+added to that journey's minutes:
 
 | Radius | Journeys | Cost saved, median and mean | Costlier than the nearest stop | Walking per journey, median |
 | --- | --- | --- | --- | --- |
@@ -798,7 +800,12 @@ browser gave the same rough fix back.
 below (route_efficiency's `data/ayna.db`: 3,841 stops, 3,456 of them served, 208 buses
 and 11,786 stop rows) and its buses' route lines (109,147 points), through the real
 `graph.ts`, with the `places.json` of 11 November 2026 before a games hall left it
-(12,634 places). The numbers come out as here only with the route lines loaded: #721's
+(12,634 places). Every place-pair number in this section is of those places: the review
+of 12 November, which left out 30 places and labelled 274 others offices, was not
+followed by a new run. The table of stops near a place was worked out again for the
+12,603 from the same stops (that database's tables as CSV, and `metro.json`), served as
+`access.ts` serves them; for the 12,634 it gives the first table's numbers exactly.
+The numbers come out as here only with the route lines loaded: #721's
 `measuredLength` reads them to tell a misplaced stop, which changes some rides' times.
 The harness is a vitest file outside the repository: it builds the graph
 with `getGraph()`, draws place pairs with the tests' linear congruential generator from
