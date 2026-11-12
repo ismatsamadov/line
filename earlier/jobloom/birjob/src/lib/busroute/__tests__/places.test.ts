@@ -76,7 +76,7 @@ describe('places.json (#720)', () => {
     expect(names.has('bina mtk') && names.has('ev goradil')).toBe(true);
   });
 
-  it('leaves out homes and flats, a test record, warehouses, depots, an air base and a university\'s halls', () => {
+  it('leaves out homes and flats, a test record and a joke, warehouses, depots, an air base and halls', () => {
     // Nobody else travels to someone's home (private_home() in the build script).
     const words = (name: string) => normalizeSearch(name).split(' ');
     for (const [id, name] of data.places.filter(([, , category]) => category === 'hotel')) {
@@ -92,6 +92,9 @@ describe('places.json (#720)', () => {
       malls: ['n12531251832', 'w1061503217', 'w1061503218', 'w1380647101'],
       // Two bus depots, the Kala air base and a former aero club.
       hubs: ['n6298433289', 'n3537386606', 'w190520030', 'n1042023274'],
+      // Zağulba's government dachas mapped as a park, a joke mapped as a beach, a workshop and a
+      // seller of building materials mapped as lodging, and Ələt's railway depot (CORRECTIONS).
+      read: ['w271432344', 'n13167237146', 'n4385807595', 'n6734213785', 'n11339217853'],
       // "Корупс № 1", misspelt, and "Зал ручных игр", a hall among the numbered buildings.
       halls: ['w630137385', 'w630137386'],
     };
@@ -177,13 +180,13 @@ describe('places.json (#720)', () => {
     const counts = Object.fromEntries(Object.keys(data.labels).map((c) => [c, 0]));
     for (const [, , category] of data.places) counts[category]++;
     expect(counts).toEqual({
-      metro: 27, rail: 54, bus_station: 13, airport: 6, port: 10, mall: 141, market: 62, supermarket: 1032,
-      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 410, university: 77, college: 123, school: 634,
+      metro: 27, rail: 53, bus_station: 13, airport: 6, port: 11, mall: 141, market: 62, supermarket: 1032,
+      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 407, university: 77, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 924, embassy: 66, post_office: 256, bank: 242,
-      office: 718, park: 208, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
-      worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
+      office: 718, park: 207, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
+      worship: 199, beach: 59, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_603);
+    expect(data.places).toHaveLength(12_598);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });
@@ -331,6 +334,9 @@ describe('searchPlaces (#720)', () => {
     // stood above as a bus station, and "random" no test record ("random market").
     expect(searchPlaces(real, 'baku bus').slice(0, 2).map((p) => p.id)).toEqual(['n11813198969', 'n12305008200']);
     expect(searchPlaces(real, 'random')).toEqual([]);
+    // Baku's sea terminal, which OpenStreetMap maps as a hotel too, is a port (CORRECTIONS).
+    expect(searchPlaces(real, 'dəniz vağzalı').slice(0, 2).map((p) => [p.id, p.category]))
+      .toEqual([['n4483965589', 'port'], ['w25402557', 'port']]);
     // Terminal 2, which OpenStreetMap misspells "Termianl 2" (ALIASES in the build script).
     expect(first('terminal 2')).toMatchObject({ id: 'r19352764', category: 'airport', alias: 'Terminal 2', rank: 0 });
     // An apostrophe joins its word: "papa johns" found none of the six before.

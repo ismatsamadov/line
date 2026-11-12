@@ -43,6 +43,8 @@ describe('build_places_json.py (#720)', () => {
   });
 
   it('applies a correction while OpenStreetMap has the value it corrects, and names it once it has not', () => {
+    // A correction of no value adds a tag while the feature has none (the sea terminal's
+    // amenity=ferry_terminal), and is named once OpenStreetMap has one.
     const result = python(`
 b.CORRECTIONS[:] = [
     ("n1", "name:en", "Bad words", None, "vandalism"),
@@ -50,17 +52,22 @@ b.CORRECTIONS[:] = [
     ("n3", "*", "A joke", None, "not a place"),
     ("n4", "name:en", "Fixed since", None, "vandalism"),
     ("w5", "name", "Gone", None, "a feature OpenStreetMap no longer has"),
+    ("n6", "amenity", None, "ferry_terminal", "a tag it lacks"),
+    ("n7", "amenity", None, "ferry_terminal", "a tag a mapper has given it since"),
 ]
 out, stale = b.correct([
     {"type": "node", "id": 1, "tags": {"name": "Good", "name:en": "Bad words"}},
     {"type": "node", "id": 2, "tags": {"name": "Old Nmae"}},
     {"type": "node", "id": 3, "tags": {"name": "A joke"}},
     {"type": "node", "id": 4, "tags": {"name": "Good", "name:en": "Good"}},
+    {"type": "node", "id": 6, "tags": {"name": "Port"}},
+    {"type": "node", "id": 7, "tags": {"name": "Port", "amenity": "ferry_terminal"}},
 ])
 print(json.dumps({"tags": [e["tags"] for e in out], "stale": [c[0] for c in stale]}))`);
     expect(result).toEqual({
-      tags: [{ name: 'Good' }, { name: 'Old Name' }, { name: 'Good', 'name:en': 'Good' }],
-      stale: ['n4', 'w5'],
+      tags: [{ name: 'Good' }, { name: 'Old Name' }, { name: 'Good', 'name:en': 'Good' },
+        { name: 'Port', amenity: 'ferry_terminal' }, { name: 'Port', amenity: 'ferry_terminal' }],
+      stale: ['n4', 'w5', 'n7'],
     });
   });
 
@@ -107,13 +114,14 @@ print(json.dumps(result))`) as Record<string, { stopped: string | null; written:
     expect(result.fine).toEqual({ stopped: null, written: true });
   });
 
-  it('gives every correction a feature, a tag, the value it corrects and a reason', () => {
-    const corrections = python('print(json.dumps(b.CORRECTIONS))') as Array<[string, string, string, string | null, string]>;
+  it('gives every correction a feature, a tag, the value it corrects (or none, for a tag it adds) and a reason', () => {
+    const corrections = python('print(json.dumps(b.CORRECTIONS))') as Array<[string, string, string | null, string | null, string]>;
     expect(corrections.length).toBeGreaterThan(0);
     for (const [id, tag, value, use, why] of corrections) {
       expect(id).toMatch(/^[nwr][1-9]\d*$/);
       expect(tag === '*' || /^[a-z_:]+$/.test(tag), `${id} ${tag}`).toBe(true);
-      expect(value.length, id).toBeGreaterThan(0);
+      // No value: the correction adds the tag, so it names the value to add.
+      expect(value === null ? tag !== '*' && use !== null && use.length > 0 : value.length > 0, id).toBe(true);
       expect(use === null || (use.length > 0 && use !== value), id).toBe(true);
       expect(why.length, id).toBeGreaterThan(10);
     }

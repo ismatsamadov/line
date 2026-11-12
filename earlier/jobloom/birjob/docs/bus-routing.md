@@ -449,7 +449,7 @@ section together. The file is re-included in `.gitignore`, as metro.json is, and
 The start and destination pickers offer named places beside the stops: malls, markets,
 restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
 government offices, embassies, banks, sights, metro stations, settlements and more,
-12,603 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+12,598 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
 mərkəzi"). A journey from or to a place walks from it to a stop or station near it and
 from one to it, counted in the time and distance and drawn on the map
 ([Routing from a place](#routing-from-a-place-720)).
@@ -515,14 +515,14 @@ metro stations are `metro.json`'s, at its coordinates and with its names, plus t
 of the OpenStreetMap station each one matches (Koroğlu is still found as Məşədi
 Əzizbəyov). A way or a relation sits at the centre Overpass gives it, the middle of its
 bounding box, to five decimals. The query asks for the bounding boxes too, and the build
-names every outline over 2 km across that is not a settlement or an area (13), so that a
+names every outline over 2 km across that is not a settlement or an area (12), so that a
 person can check its centre is somewhere one can go. The airport's was not: its outline
 is 4 by 6 km, and its centre, on the airfield, was 1,027 m from the nearest stop, so the
 place people choose for "aeroport" could not be reached. `PLACED_AT` puts it at Terminal
 1, its international terminal, 150 m from the stop where the H1 bus starts; the build
 stops if either goes missing or the terminal leaves the airport's bounding box. The
 airport keeps its own place, under the names people type, and Terminal 1 its own. No
-other airport, port or beach without a stop within 600 m is that case: 10 are mapped as
+other airport, port or beach without a stop within 600 m is that case: 9 are mapped as
 points, and the outlines' whole bounding boxes are over 500 m from a served stop (the
 beach clubs of the north shore lie that far below the coast road), save two IDEA public
 beaches on the north shore, strips of 820 and 930 m whose bounding boxes come within 340
@@ -531,8 +531,9 @@ military air base with no public entrance, was the other, and is no longer a pla
 
 **Corrections.** What a person decided after reading the data is `CORRECTIONS` in the
 script: a feature, a tag, the value as mapped, the value used instead or none, and why;
-the tag `*` leaves out the whole feature. A correction applies only while OpenStreetMap
-still has that value, and the build stops, naming it, once it has not, so that a
+the tag `*` leaves out the whole feature, and a value as mapped of none adds a tag the
+feature does not have. A correction applies only while OpenStreetMap still has that
+value, or still has no such tag, and the build stops, naming it, once that changes, so a
 vandalism fix cannot stop applying unseen: a person reads the feature as it is now and
 updates or removes the entry. It stops the same way for an `ALIASES` or `PLACED_AT`
 feature that is gone. The first is an English name a vandal gave Heydar Aliyev's grave in
@@ -553,7 +554,14 @@ record, "random market" (its street and house number "random", its postcode 1234
 phone 789789789), which "random" and "market" listed first as a mall; two warehouses
 mapped as malls, a trade centre's and a supermarket chain's depots; and five private
 gardens and homes mapped as parks or a garden, which no rule tells by their names, each
-left without that tag. Two places that quote the film The Diamond Arm
+left without that tag. Seven more on reading the rest of what that review named: Zağulba's
+government dachas, a closed estate mapped as a park; a joke mapped as a beach, 19 km
+from any stop ("my angel, I love you", house number 123); a company's workshop and a
+seller of building materials mapped as lodging, which nothing else in their tags gives a
+category; and Ələt's new railway depot mapped as a station (the halt named Depo is a
+passenger stop, and stays): each left without that tag. Baku's sea terminal, mapped as a
+hotel 32 m from its outline, loses that tag and gets the ferry terminal's, so it is a
+port, as the outline is. Two places that quote the film The Diamond Arm
 ("Цигель Цигель", "Аптека") are not jokes: they mark where it was filmed in İçərişəhər,
 which the Old City's tours visit, and stay. `ALIASES` adds the names people search a
 well-known place by that OpenStreetMap does not have, each with where the name is used:
@@ -575,12 +583,12 @@ Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Авто�
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
 fast-food places, 1,142 cafés, 1,032 supermarkets, 924 government offices, 718 offices,
-634 schools, 468 residential complexes, 410 hotels, 398 hospitals, 388 kindergartens, 388
+634 schools, 468 residential complexes, 407 hotels, 398 hospitals, 388 kindergartens, 388
 sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 211 cultural centres
-and libraries, 208 parks, 199 places of worship, 161 areas, 141 malls, 133 settlements,
+and libraries, 207 parks, 199 places of worship, 161 areas, 141 malls, 133 settlements,
 123 colleges, 77 universities, 66 embassies, 66 theatres and cinemas, 66 amusement
-places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27 metro stations, 13
-bus stations, 10 ports, 6 airport features and 4 squares. `places.test.ts` pins each
+places, 62 markets, 59 beaches, 58 museums, 53 railway stations, 27 metro stations, 13
+bus stations, 11 ports, 6 airport features and 4 squares. `places.test.ts` pins each
 count, the snapshot date, the header and the shape.
 
 **ODbL.** `places.json` is a derived database. Its header records the credit, the
@@ -685,16 +693,16 @@ reaches (at the destination), the nearest first, at most `ACCESS_STOP_LIMIT`, 64
 no bus serves is never one; the snapshot's 385 such stops have no name either. The
 location button and, before this, a place used the nearest stop within 600 m, and the
 journey could walk on from it, 400 m more; within 1 km every such start is one walk, so
-no journey it could give is lost. Over the 12,603 places of `places.json` (worked out
+no journey it could give is lost. Over the 12,598 places of `places.json` (worked out
 again after the review of 12 November; of the 12,634 it had when this was first
 measured, 483 had none within 1 km):
 
 | Radius | Places with no stop or station that close | Stops at a place: median, 90th pct., most |
 | --- | --- | --- |
-| 400 m | 1,830 (14.5%) | 5, 10, 20 |
-| 600 m | 1,141 (9.1%) | 9, 19, 33 |
-| 800 m | 709 (5.6%) | 15, 32, 50 |
-| **1 km** | **479 (3.8%)** | **22, 46, 63** |
+| 400 m | 1,828 (14.5%) | 5, 10, 20 |
+| 600 m | 1,140 (9.0%) | 9, 19, 33 |
+| 800 m | 708 (5.6%) | 15, 32, 50 |
+| **1 km** | **478 (3.8%)** | **22, 46, 63** |
 
 On 1,000 random pairs of the 12,634 places `places.json` had before that review (not
 measured again since), against standing each place for its nearest stop within 600 m
@@ -801,11 +809,11 @@ below (route_efficiency's `data/ayna.db`: 3,841 stops, 3,456 of them served, 208
 and 11,786 stop rows) and its buses' route lines (109,147 points), through the real
 `graph.ts`, with the `places.json` of 11 November 2026 before a games hall left it
 (12,634 places). Every place-pair number in this section is of those places: the review
-of 12 November, which left out 30 places and labelled 274 others offices, was not
-followed by a new run. The table of stops near a place was worked out again for the
-12,603 from the same stops (that database's tables as CSV, and `metro.json`), served as
-`access.ts` serves them; for the 12,634 it gives the first table's numbers exactly.
-The numbers come out as here only with the route lines loaded: #721's
+of 12 November, which left out 35 places and made 274 others offices and one a port,
+was not followed by a new run. The table of stops near a place was worked out again
+for the 12,598 from the same stops (that database's tables as CSV, and `metro.json`),
+served as `access.ts` serves them; for the 12,634 it gives the first table's numbers
+exactly. The numbers come out as here only with the route lines loaded: #721's
 `measuredLength` reads them to tell a misplaced stop, which changes some rides' times.
 The harness is a vitest file outside the repository: it builds the graph
 with `getGraph()`, draws place pairs with the tests' linear congruential generator from

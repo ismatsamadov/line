@@ -53,9 +53,10 @@ Standard library only. What it decides, so that the planner does not have to:
 - A way or a relation centred outside the network's area (BBOX), which Overpass returns
   because it reaches into the area, is left out and named.
 - What a person decided after reading the data is in CORRECTIONS, each with its reason: a
-  tag's value replaced or left out, or a whole feature left out. A correction holds the
-  value as mapped, and the build stops once OpenStreetMap no longer has it: a vandalism
-  fix must not stop applying unseen. A person reads the feature and updates the entry.
+  tag's value replaced, added or left out, or a whole feature left out. A correction holds
+  the value as mapped (none, for a tag it adds), and the build stops once OpenStreetMap no
+  longer has it: a vandalism fix must not stop applying unseen. A person reads the
+  feature and updates the entry.
 - Every name and other name with a word from REVIEW (insults, profanity, crime, politics)
   is printed at each build for a person to read; vandalism goes into CORRECTIONS.
 - ALIASES adds other names people search a well-known place by that OpenStreetMap does
@@ -231,8 +232,10 @@ NAME_TAGS = ("name", "name:az", "name:ru", "name:en", "alt_name", "alt_name:az",
              "official_name", "official_name:az", "brand", "brand:az")
 # What a person decided after reading the data: (feature, tag, the value as mapped, the
 # value used instead or None to leave it out, why). The tag "*" leaves out the whole
-# feature, and its value is the feature's name. The build stops on a correction whose
-# value OpenStreetMap no longer has, or whose feature it no longer has.
+# feature, and its value is the feature's name. The value as mapped is None for a tag the
+# feature does not have, which the correction adds. The build stops on a correction whose
+# value OpenStreetMap no longer has (or, for one that adds a tag, once it has the tag), or
+# whose feature it no longer has.
 CORRECTIONS = [
     ("n3755614407", "name:en", "Heydar Aliyev mafia boss grave", None,
      "vandalism: the English name of Heydar Aliyev's grave, in the Alley of Honour, insults him"),
@@ -268,6 +271,18 @@ CORRECTIONS = [
     ("n13438559652", "leisure", "park", None,
      "a private place (operator:type=private) named after the account that mapped it"),
     ("n13766712519", "leisure", "park", None, "a family's garden, named after a person"),
+    ("w271432344", "leisure", "park", None, "Zağulba's government dachas, a closed estate of 1.4 by 1.9 km"),
+    ("n13167237146", "natural", "beach", None,
+     "a joke: its name is \"my angel, I love you\", its house number 123, and it is 19 km from any stop"),
+    # Mapped as lodging, and nothing else in their tags gives them a category.
+    ("n4385807595", "tourism", "guest_house", None, "a company's workshop (\"iş sexi\"), not lodging"),
+    ("n6734213785", "tourism", "hotel", None, "a seller of building materials and iron, as its name says"),
+    ("n11339217853", "railway", "station", None,
+     "Ələt's new railway depot, where no passenger boards; the halt named Depo is a passenger stop"),
+    # Baku's sea terminal (name:en Sea Port Baku), 32 m from its outline and mapped as a
+    # hotel: a port, as the outline is.
+    ("n4483965589", "tourism", "hotel", None, "the sea terminal is no hotel"),
+    ("n4483965589", "amenity", None, "ferry_terminal", "the sea terminal is a ferry terminal"),
 ]
 # Outlines placed at a feature inside them rather than at their centre: (the feature it
 # is placed at, why). The build stops if either is missing from the answer, or the one is
