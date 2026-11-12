@@ -24,8 +24,9 @@ Standard library only. What it decides, so that the planner does not have to:
   by category(), where the first test that matches wins: a hospital that is also a
   building is a hospital. Features of no category (parking, fuel, pharmacies, car repair,
   corner shops, industry, named buildings with no other tag) are left out, and so are a
-  bus depot mapped as a bus station and an airfield no passenger flies from. A works or a
-  company mapped as a government office or a town hall is an office (works()).
+  bus depot mapped as a bus station, a depot or a warehouse mapped as a mall, a market or
+  a supermarket, and an airfield no passenger flies from. A works or a company mapped as a
+  government office or a town hall is an office (works()).
 - Its name is name:az where there is one, else name; the other names it is searched by
   are name, name:ru, name:en, alt_name, old_name, short_name, official_name, brand and
   their :az and :ru forms. The mappers' "Name \\ Place" convention is written
@@ -219,6 +220,12 @@ WORKS = re.compile(r"(?:^| )(?:zavod\w*|fabri[kc]\w*|kombinat\w*|deyirman\w*|fac
 # transport yard's "Avtonəqliyyat Təsərrüfatı"): where buses are kept, not boarded.
 DEPOT = re.compile(r"(?:^| )(?:depo\w*|депо|depot\w*|avtobaza\w*|автобаз\w*|avtopark\w*|автопарк\w*|qaraj\w*|"
                    r"garage\w*|гараж\w*|avtoneqliyyat\w*)(?: |$)")
+# A chain's or a company's depot or warehouse mapped as a mall, a market or a supermarket,
+# by the depot's or the warehouse's word after another of its own name ("Bravo Depo Ambar",
+# "Oba Market DEPO"): where goods are kept, not sold. As the first word it is a store's
+# name (Depo Univermaq), and a shop named so often sells from its warehouse ("İlk İnşaat
+# Anbarı", building materials), so neither counts.
+WAREHOUSE = re.compile(r" (?:depo\w*|депо|depot\w*|anbar\w*|ambar\w*|склад\w*|warehouse\w*)(?: |$)")
 # Categories whose names are proper names however plain they look ("Avtovağzal" station).
 KEEP_PLAIN_NAMES = {"metro", "rail", "settlement", "area"}
 # Larger features are mapped as a node and an outline further apart.
@@ -259,9 +266,6 @@ CORRECTIONS = [
     ("n2629778353", "name:ru", "Tехнический Колледж", "Технический Колледж", "a Latin T for the Cyrillic Т"),
     ("n12531251832", "*", "random market", None,
      "a test record: its street and house number are \"random\", its postcode 1234 and its phone 789789789"),
-    ("w1061503217", "*", "Azqranata Ticarət Mərkəzi Depo", None,
-     "a trade centre's depot, a warehouse, mapped as a mall"),
-    ("w1061503218", "*", "Bazarstore MMC Depo", None, "a supermarket chain's depot, a warehouse, mapped as a mall"),
     # Private gardens and homes mapped as parks or a garden, which private_home() cannot
     # tell by their names: without that tag, no category takes them.
     ("w1074314421", "leisure", "park", None, "a villa's plot of 54 by 114 m in the Novxanı dachas"),
@@ -279,10 +283,8 @@ CORRECTIONS = [
     ("n6734213785", "tourism", "hotel", None, "a seller of building materials and iron, as its name says"),
     ("n11339217853", "railway", "station", None,
      "Ələt's new railway depot, where no passenger boards; the halt named Depo is a passenger stop"),
-    # Baku's sea terminal (name:en Sea Port Baku), 32 m from its outline and mapped as a
-    # hotel: a port, as the outline is.
-    ("n4483965589", "tourism", "hotel", None, "the sea terminal is no hotel"),
-    ("n4483965589", "amenity", None, "ferry_terminal", "the sea terminal is a ferry terminal"),
+    ("n4483965589", "tourism", "hotel", None,
+     "Baku's sea terminal, mapped as a hotel 32 m from its outline (w25402557), the port, which takes its names"),
 ]
 # Outlines placed at a feature inside them rather than at their centre: (the feature it
 # is placed at, why). The build stops if either is missing from the answer, or the one is
@@ -298,6 +300,8 @@ ALIASES = {
     "w163717459": (["Aeroport", "Hava limanı", "Airport", "Аэропорт"],
                    "Baku's one passenger airport is the airport: the places around it are mapped as "
                    "VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport"),
+    "w25402557": (["Dəniz Vağzalı", "Sea Port Baku"],
+                  "the sea terminal's names on a node 32 m away, mapped as a hotel and left out (CORRECTIONS)"),
     "r19352764": (["Terminal 2"], "OpenStreetMap misspells the airport's second terminal \"Termianl 2\""),
     "w479865023": (["BDU", "БГУ"], "Bakı Dövlət Universiteti's own abbreviation (bsu.edu.az) and its Russian one"),
     "r3983666": (["ADNSU", "ASOIU", "Neft Akademiyası"],
@@ -412,6 +416,9 @@ def category(t):
         return None if platform or any(DEPOT.search(n) for n in own_names(t)) else "bus_station"
     if station:
         return "rail"
+    if ((shop in ("mall", "department_store", "supermarket") or t.get("landuse") == "retail"
+         or amenity == "marketplace") and any(WAREHOUSE.search(n) for n in own_names(t))):
+        return None
     if shop in ("mall", "department_store") or t.get("landuse") == "retail":
         return "mall"
     if amenity == "marketplace":

@@ -449,7 +449,7 @@ section together. The file is re-included in `.gitignore`, as metro.json is, and
 The start and destination pickers offer named places beside the stops: malls, markets,
 restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
 government offices, embassies, banks, sights, metro stations, settlements and more,
-12,598 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+12,590 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
 mərkəzi"). A journey from or to a place walks from it to a stop or station near it and
 from one to it, counted in the time and distance and drawn on the map
 ([Routing from a place](#routing-from-a-place-720)).
@@ -480,12 +480,16 @@ corner shops, industry and named buildings with no other tag get none. Nor does 
 depot mapped as a bus station, by a depot's word in its name (Baku Bus Depo, which "baku
 bus" listed above the Central Bus Station, and the prison service's motor yard), or an
 airfield no passenger flies from, military or abandoned (Qala Aerodromu, the Kala air
-base, and a former aero club), which ranked as airports. A works or a company that
-mappers tagged `office=government` or `amenity=townhall` is an office ("Ofis"), as every
-company's office is, not a state body ("Dövlət qurumu"): `works()` tells it by
-`industrial=*`, `landuse=industrial`, `man_made=works`, `power=*` or an industrial
-building, by a shop tag or another kind of office beside the town hall, or by a
-factory's, a mill's or a company's word in its own name (Zavodu, Fabriki, MMC, Ltd,
+base, and a former aero club), which ranked as airports. Nor does a chain's or a
+company's depot or warehouse mapped as a mall, a market or a supermarket, by a depot's or
+a warehouse's word after another of its own name (Bravo Depo Ambar, Oba Market DEPO,
+Gəncə Şərab - DEPO): nine of them. A store named Depo (Depo Univermaq) stays, and so do
+the shops, where a warehouse often sells (İlk İnşaat Anbarı, building materials). A works
+or a company that mappers tagged `office=government` or `amenity=townhall` is an office
+("Ofis"), as every company's office is, not a state body ("Dövlət qurumu"): `works()`
+tells it by `industrial=*`, `landuse=industrial`, `man_made=works`, `power=*` or an
+industrial building, by a shop tag or another kind of office beside the town hall, or by
+a factory's, a mill's or a company's word in its own name (Zavodu, Fabriki, MMC, Ltd,
 Şirkəti, Group), unless `government=*` says which government office it is. That is 274
 places, from Afsan Plastik Qablar Zavodu, a town hall with a shop tag, to the oil
 refinery and the state-owned companies' offices (Azərişıq ASC); people commute to them,
@@ -549,19 +553,18 @@ mapped as a university; and eight names typed partly in the other alphabet, whic
 keyboard finds: "Araя Market" is Araz Market (я is z in the Russian keyboard layout),
 "Leon Palaсу" Leon Palace and "8-сш ль" 8-ci km the same way, and a Latin K, T, D or e
 stands in a Russian word. The build names every word in both alphabets, to be corrected
-so, and `places.test.ts` fails on one. Eight more after a review on 12 November: a test
+so, and `places.test.ts` fails on one. Six more after a review on 12 November: a test
 record, "random market" (its street and house number "random", its postcode 1234, its
-phone 789789789), which "random" and "market" listed first as a mall; two warehouses
-mapped as malls, a trade centre's and a supermarket chain's depots; and five private
+phone 789789789), which "random" and "market" listed first as a mall, and five private
 gardens and homes mapped as parks or a garden, which no rule tells by their names, each
-left without that tag. Seven more on reading the rest of what that review named: Zağulba's
+left without that tag. Six more on reading the rest of what that review named: Zağulba's
 government dachas, a closed estate mapped as a park; a joke mapped as a beach, 19 km
 from any stop ("my angel, I love you", house number 123); a company's workshop and a
 seller of building materials mapped as lodging, which nothing else in their tags gives a
 category; and Ələt's new railway depot mapped as a station (the halt named Depo is a
-passenger stop, and stays): each left without that tag. Baku's sea terminal, mapped as a
-hotel 32 m from its outline, loses that tag and gets the ferry terminal's, so it is a
-port, as the outline is. Two places that quote the film The Diamond Arm
+passenger stop, and stays): each left without that tag, and so is a node that maps Baku's
+sea terminal as a hotel 32 m from its outline, the port, which takes its names. Two
+places that quote the film The Diamond Arm
 ("Цигель Цигель", "Аптека") are not jokes: they mark where it was filmed in İçərişəhər,
 which the Old City's tours visit, and stay. `ALIASES` adds the names people search a
 well-known place by that OpenStreetMap does not have, each with where the name is used:
@@ -575,20 +578,21 @@ Mühəndislik Universiteti in 2016, and "BMU"; "Alov Qüllələri" and "Плам
 Flame Towers; "Heydar Aliyev Center", the centre's own English name, where
 OpenStreetMap has "Center of Heydar Aliev"; and "Terminal 2" for the airport's second
 terminal, which OpenStreetMap names "Termianl 2", misspelt, so that "terminal 2" found
-only Şah Dəniz 2 Terminal. None of them found its place before. Seven
+only Şah Dəniz 2 Terminal. None of them found its place before. The sea terminal's
+outline takes "Dəniz Vağzalı" and "Sea Port Baku" from that node, mapped as a hotel. Seven
 metro stations' OpenStreetMap nodes have no Russian name, and get the names they go by in
 Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар Джаббарлы, Ходжасан):
 "гянджлик" found Gənclik Mall, not the station.
 
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
-fast-food places, 1,142 cafés, 1,032 supermarkets, 924 government offices, 718 offices,
+fast-food places, 1,142 cafés, 1,028 supermarkets, 924 government offices, 718 offices,
 634 schools, 468 residential complexes, 407 hotels, 398 hospitals, 388 kindergartens, 388
 sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 211 cultural centres
-and libraries, 207 parks, 199 places of worship, 161 areas, 141 malls, 133 settlements,
+and libraries, 207 parks, 199 places of worship, 161 areas, 140 malls, 133 settlements,
 123 colleges, 77 universities, 66 embassies, 66 theatres and cinemas, 66 amusement
-places, 62 markets, 59 beaches, 58 museums, 53 railway stations, 27 metro stations, 13
-bus stations, 11 ports, 6 airport features and 4 squares. `places.test.ts` pins each
+places, 60 markets, 59 beaches, 58 museums, 53 railway stations, 27 metro stations, 13
+bus stations, 10 ports, 6 airport features and 4 squares. `places.test.ts` pins each
 count, the snapshot date, the header and the shape.
 
 **ODbL.** `places.json` is a derived database. Its header records the credit, the
@@ -693,14 +697,14 @@ reaches (at the destination), the nearest first, at most `ACCESS_STOP_LIMIT`, 64
 no bus serves is never one; the snapshot's 385 such stops have no name either. The
 location button and, before this, a place used the nearest stop within 600 m, and the
 journey could walk on from it, 400 m more; within 1 km every such start is one walk, so
-no journey it could give is lost. Over the 12,598 places of `places.json` (worked out
+no journey it could give is lost. Over the 12,590 places of `places.json` (worked out
 again after the review of 12 November; of the 12,634 it had when this was first
 measured, 483 had none within 1 km):
 
 | Radius | Places with no stop or station that close | Stops at a place: median, 90th pct., most |
 | --- | --- | --- |
-| 400 m | 1,828 (14.5%) | 5, 10, 20 |
-| 600 m | 1,140 (9.0%) | 9, 19, 33 |
+| 400 m | 1,825 (14.5%) | 5, 10, 20 |
+| 600 m | 1,139 (9.0%) | 9, 19, 33 |
 | 800 m | 708 (5.6%) | 15, 32, 50 |
 | **1 km** | **478 (3.8%)** | **22, 46, 63** |
 
@@ -809,9 +813,9 @@ below (route_efficiency's `data/ayna.db`: 3,841 stops, 3,456 of them served, 208
 and 11,786 stop rows) and its buses' route lines (109,147 points), through the real
 `graph.ts`, with the `places.json` of 11 November 2026 before a games hall left it
 (12,634 places). Every place-pair number in this section is of those places: the review
-of 12 November, which left out 35 places and made 274 others offices and one a port,
+of 12 November, which left out 43 places and made 274 others offices,
 was not followed by a new run. The table of stops near a place was worked out again
-for the 12,598 from the same stops (that database's tables as CSV, and `metro.json`),
+for the 12,590 from the same stops (that database's tables as CSV, and `metro.json`),
 served as `access.ts` serves them; for the 12,634 it gives the first table's numbers
 exactly. The numbers come out as here only with the route lines loaded: #721's
 `measuredLength` reads them to tell a misplaced stop, which changes some rides' times.
@@ -824,11 +828,12 @@ database: place to place, the location to a place, the walk the whole way, the f
 queries above, the place search's `near=` for the location (two decimals), and two map
 taps after choosing a destination place, which changed the start both times; no console
 error and no sideways scrolling. At 390 × 844 on 12 November: Kids Akademi to Azərsun
-Holdinq Anbarı in Sumqayıt is the walk, 34 minutes, over two buses taking 106; the
-location refused at ±1.5 km is asked for again with high accuracy and no cached fix, and
-used at ±30 m; and "gənclik mall" typed a key every 120 ms, with every request 300 ms
-slower as on a phone network, says "Axtarılır…" for its second and third letters only,
-then lists the stops and places at every key, Gənclik the station first for "gənclik".
+Holdinq Anbarı in Sumqayıt (a warehouse, left out since) is the walk, 34 minutes, over
+two buses taking 106; the location refused at ±1.5 km is asked for again with high
+accuracy and no cached fix, and used at ±30 m; and "gənclik mall" typed a key every 120
+ms, with every request 300 ms slower as on a phone network, says "Axtarılır…" for its
+second and third letters only, then lists the stops and places at every key, Gənclik the
+station first for "gənclik".
 
 ## API and UI
 

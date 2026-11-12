@@ -233,7 +233,7 @@ print(json.dumps(result))`);
       .toEqual(cases.map(([, category]) => category));
   });
 
-  it('offers no bus depot as a bus station, and no airfield no passenger flies from as an airport', () => {
+  it('offers no depot as a bus station, a mall, a market or a supermarket, and no closed airfield as an airport', () => {
     const cases: Array<[Record<string, string>, string | null]> = [
       [{ name: 'Baku Bus Depo', amenity: 'bus_station', bus: 'yes', public_transport: 'station' }, null],
       [{ name: 'Penitensiar Xidmətin Avtonəqliyyat Təsərrüfatı', amenity: 'bus_station' }, null],
@@ -246,6 +246,15 @@ print(json.dumps(result))`);
       [{ name: 'Бывший аэроклуб', aeroway: 'aerodrome', 'abandoned:aeroway': 'aerodrome' }, null],
       [{ name: 'Zabrat Aeroportu', aeroway: 'aerodrome' }, 'airport'],
       [{ name: 'Termianl 2', aeroway: 'terminal' }, 'airport'],
+      // A chain's or a company's depot or warehouse, its word after another of the name.
+      [{ name: 'Bravo Depo Ambar', amenity: 'marketplace', website: 'https://bravosupermarket.az/' }, null],
+      [{ name: 'Oba Market DEPO', shop: 'supermarket' }, null],
+      [{ name: 'Gəncə Şərab - DEPO \\ Keşlə', shop: 'mall' }, null],
+      [{ name: 'Azərsun Holdinq Anbarı', shop: 'supermarket' }, null],
+      [{ name: 'Depo Univermaq', shop: 'department_store' }, 'mall'], // a store named Depo
+      [{ name: 'Lotos Ticarət Mərkəzi \\ Depo', shop: 'mall' }, 'mall'], // the district after " \ "
+      [{ name: 'İlk İnşaat Anbarı', shop: 'doityourself' }, 'shop'], // a shop sells from its warehouse
+      [{ name: 'Depo Cafe', amenity: 'cafe' }, 'cafe'],
     ];
     expect(python('print(json.dumps([b.category(t) for t in data]))', cases.map(([t]) => t)))
       .toEqual(cases.map(([, category]) => category));
