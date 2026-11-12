@@ -322,6 +322,8 @@ describe('searchPlaces (#720)', () => {
     // stood above as a bus station, and "random" no test record ("random market").
     expect(searchPlaces(real, 'baku bus').slice(0, 2).map((p) => p.id)).toEqual(['n11813198969', 'n12305008200']);
     expect(searchPlaces(real, 'random')).toEqual([]);
+    // Terminal 2, which OpenStreetMap misspells "Termianl 2" (ALIASES in the build script).
+    expect(first('terminal 2')).toMatchObject({ id: 'r19352764', category: 'airport', alias: 'Terminal 2', rank: 0 });
     // An apostrophe joins its word: "papa johns" found none of the six before.
     expect(searchPlaces(real, 'papa johns').map((p) => p.alias ?? p.name)).toEqual(Array(6).fill("Papa John's"));
     expect(searchPlaces(real, 'mcdonalds').map((p) => p.name)).toEqual(Array(8).fill("McDonald's"));

@@ -277,6 +277,7 @@ ALIASES = {
     "w163717459": (["Aeroport", "Hava limanı", "Airport", "Аэропорт"],
                    "Baku's one passenger airport is the airport: the places around it are mapped as "
                    "VIP terminal Aeroport, Şeraton Aeroport, Aeroport Poliklinikası and ABB Aeroport"),
+    "r19352764": (["Terminal 2"], "OpenStreetMap misspells the airport's second terminal \"Termianl 2\""),
     "w479865023": (["BDU", "БГУ"], "Bakı Dövlət Universiteti's own abbreviation (bsu.edu.az) and its Russian one"),
     "r3983666": (["ADNSU", "ASOIU", "Neft Akademiyası"],
                  "the university's abbreviations in Azerbaijani and English (asoiu.edu.az), and its name "

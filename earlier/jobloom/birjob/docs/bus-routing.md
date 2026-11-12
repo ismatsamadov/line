@@ -556,8 +556,10 @@ clinic first, and "airport" the Aeroekspress stop in town. The others: "BDU" and
 for Bakı Dövlət Universiteti; "ADNSU", "ASOIU" and "Neft Akademiyası", its name until
 2015, for the oil university; "Qafqaz Universiteti", whose Xırdalan campus became Bakı
 Mühəndislik Universiteti in 2016, and "BMU"; "Alov Qüllələri" and "Пламенные башни" for
-Flame Towers; and "Heydar Aliyev Center", the centre's own English name, where
-OpenStreetMap has "Center of Heydar Aliev". None of them found its place before. Seven
+Flame Towers; "Heydar Aliyev Center", the centre's own English name, where
+OpenStreetMap has "Center of Heydar Aliev"; and "Terminal 2" for the airport's second
+terminal, which OpenStreetMap names "Termianl 2", misspelt, so that "terminal 2" found
+only Şah Dəniz 2 Terminal. None of them found its place before. Seven
 metro stations' OpenStreetMap nodes have no Russian name, and get the names they go by in
 Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар Джаббарлы, Ходжасан):
 "гянджлик" found Gənclik Mall, not the station.

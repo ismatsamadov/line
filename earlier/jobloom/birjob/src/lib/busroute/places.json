@@ -99,7 +99,7 @@
   ["w1119938104","Sumqayıt Avtovağzalı","bus_station",40.58611,49.66369,0,[]],
   ["w163717459","Heydər Əliyev Beynəlxalq Aeroportu","airport",40.4659,50.05224,1,["Heydər Əliyev Beynəlxalq Aeroportu (GYD)","Международный Аэропорт Баку им. Гейдара Алиева (GYD)","Heydar Aliyev International Airport","Heydər Əliyev adına beynəlxalq aeroportu","Aeroport","Hava limanı","Airport","Аэропорт"]],
   ["n1042023275","Səngəçal Aerodromu","airport",40.13179,49.46147,0,[]],
-  ["r19352764","Termianl 2","airport",40.46276,50.04949,0,[]],
+  ["r19352764","Termianl 2","airport",40.46276,50.04949,0,["Terminal 2"]],
   ["w372129341","Terminal 1 - Beynəlxalq terminal","airport",40.4659,50.05224,0,["Terminal 1 - International terminal"]],
   ["w442772646","VIP terminal Aeroport","airport",40.46356,50.05415,0,["ВИП терминал","VIP terminal"]],
   ["w164470458","Zabrat Aeroportu","airport",40.49509,49.97477,1,[]],
