@@ -513,14 +513,15 @@ skipping and early return are sound. The wrong journey came from the model: the
 walk limit, the equal shares and the rule.
 
 **Measured on 200 random pairs** (seed 721; 196 routable before and after), each
-change on its own with the others as before. Times shared by length include the
-rule for a misplaced stop ([Graph and data](#graph-and-data)), which moves 4 of
-these answers.
+change on top of the ones listed before it, so a count depends on that order. Times
+shared by length include the rule for a misplaced stop
+([Graph and data](#graph-and-data)), which moves 4 of these answers.
 
 - times shared by length: 116 answers change, none in its number of boardings;
-- 400 m walks: 44 change, 20 of them to fewer boardings (19 by one, one by two);
-- the cost rule: 48 change, all to more boardings (46 by one, 2 by two), each
-  saving at least 15.4 minutes and 19.3 at the median.
+- 400 m walks, on top of those times: 44 change, 20 of them to fewer boardings (19
+  by one, one by two);
+- the cost rule, on top of both: 48 change, all to more boardings (46 by one, 2 by
+  two), each saving at least 15.4 minutes and 19.3 at the median.
 
 All together 147 of 196 answers change. Timing old and new journeys alike, by
 length: 13 need fewer boardings (12 one fewer, one two fewer; 234 m more walking at
