@@ -449,7 +449,7 @@ section together. The file is re-included in `.gitignore`, as metro.json is, and
 The start and destination pickers offer named places beside the stops: malls, markets,
 restaurants and cafés, universities and schools, hospitals and clinics, hotels, parks,
 government offices, embassies, banks, sights, metro stations, settlements and more,
-12,633 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
+12,611 of them in 36 categories, each shown with its category in Azerbaijani ("Ticarət
 mərkəzi"). A journey from or to a place walks from it to a stop or station near it and
 from one to it, counted in the time and distance and drawn on the map
 ([Routing from a place](#routing-from-a-place-720)).
@@ -483,30 +483,38 @@ place's name is `name:az`, else `name`. `name`, `name:ru`, `name:en`, `alt_name`
 are searched as its other names, so "Ganjlik Mall" and "Гянджлик" find Gənclik. 693
 features were left out because their name only says what they are ("Kafe", "Market",
 "Məscid", "Uşaq bağçası", "Шашлычная"), is a building's number ("Bina 1", "Корпус № 2",
-"ev 111a") or has no letters, which no list could tell apart; three guest houses named a
-dacha ("дача друга рашида", a friend's dacha), which are someone's country house; and
-one, Yaşma Bağları, because its centre is outside the area. Two features of one category
-and one name mapped twice, a mall's point and its outline or a town's point and its
-boundary, are one place when they lie within 300 m (1 km for parks, beaches and
-residential complexes, 1.5 km for areas and 5 km for settlements); the point is kept
-before the outline and takes the other's names. The 27 metro stations are `metro.json`'s,
-at its coordinates and with its names, plus the names of the OpenStreetMap station each
-one matches (Koroğlu is still found as Məşədi Əzizbəyov). A way or a relation sits at the
-centre Overpass gives it, the middle of its bounding box, to five decimals. The query
-asks for the bounding boxes too, and the build names every outline over 2 km across that
-is not a settlement or an area (14), so that a person can check its centre is somewhere
-one can go. The airport's was not: its outline is 4 by 6 km, and its centre, on the
-airfield, was 1,027 m from the nearest stop, so the place people choose for "aeroport"
-could not be reached. `PLACED_AT` puts it at Terminal 1, its international terminal, 150
-m from the stop where the H1 bus starts; the build stops if either goes missing or the
-terminal leaves the airport's bounding box. The airport keeps its own place, under the
-names people type, and Terminal 1 its own. No other airport, port or beach without a stop
-within 600 m is that case: 11 are mapped as points, and the outlines' whole bounding
-boxes are over 500 m from a served stop (the beach clubs of the north shore lie that far
-below the coast road), save Qala Aerodromu, a military air base with no public entrance,
-and two IDEA public beaches on the north shore, strips of 820 and 930 m whose bounding
-boxes come within 340 and 520 m of a stop, with nothing mapped inside them to place them
-at.
+"ev 111a") or has no letters, which no list could tell apart; 20 because they are
+someone's home or flat, which nobody else travels to (`private_home()`, and the build
+names each one): three guest houses named a dacha ("дача друга рашида", a friend's
+dacha), nine guest houses and motels named a person's home ("Vahid ev", "Mustafa
+müəllimin evi", "Amir's home": the home's word after one or two others, with no lodging's
+word in any name and no tag a business has), three lodgings named a flat to let
+("Kirayə", "Kirayə Mənzil İraq"), two named by a flat's number (an office at "…8-mertebe
+376-menzil", a guest house whose Russian name is "28 квартира дом 25") and three
+residences' fenced grounds mapped as parks (President's Residence, Residence Bilgah,
+İqamətgah); and one, Yaşma Bağları, because its centre is outside the area. A guest house
+named so with a website or a phone stays, as do the guest houses named "Qonaq Evi" and
+"Ev Goradil", the home's word first. Two features of one category and one name mapped
+twice, a mall's point and its outline or a town's point and its boundary, are one place
+when they lie within 300 m (1 km for parks, beaches and residential complexes, 1.5 km for
+areas and 5 km for settlements); the point is kept before the outline and takes the
+other's names. The 27 metro stations are `metro.json`'s, at its coordinates and with its
+names, plus the names of the OpenStreetMap station each one matches (Koroğlu is still
+found as Məşədi Əzizbəyov). A way or a relation sits at the centre Overpass gives it, the
+middle of its bounding box, to five decimals. The query asks for the bounding boxes too,
+and the build names every outline over 2 km across that is not a settlement or an area
+(14), so that a person can check its centre is somewhere one can go. The airport's was
+not: its outline is 4 by 6 km, and its centre, on the airfield, was 1,027 m from the
+nearest stop, so the place people choose for "aeroport" could not be reached. `PLACED_AT`
+puts it at Terminal 1, its international terminal, 150 m from the stop where the H1 bus
+starts; the build stops if either goes missing or the terminal leaves the airport's
+bounding box. The airport keeps its own place, under the names people type, and Terminal
+1 its own. No other airport, port or beach without a stop within 600 m is that case: 11
+are mapped as points, and the outlines' whole bounding boxes are over 500 m from a served
+stop (the beach clubs of the north shore lie that far below the coast road), save Qala
+Aerodromu, a military air base with no public entrance, and two IDEA public beaches on
+the north shore, strips of 820 and 930 m whose bounding boxes come within 340 and 520 m
+of a stop, with nothing mapped inside them to place them at.
 
 **Corrections.** What a person decided after reading the data is `CORRECTIONS` in the
 script: a feature, a tag, the value as mapped, the value used instead or none, and why;
@@ -527,7 +535,9 @@ mapped as a university; and eight names typed partly in the other alphabet, whic
 keyboard finds: "Araя Market" is Araz Market (я is z in the Russian keyboard layout),
 "Leon Palaсу" Leon Palace and "8-сш ль" 8-ci km the same way, and a Latin K, T, D or e
 stands in a Russian word. The build names every word in both alphabets, to be corrected
-so, and `places.test.ts` fails on one. Two places that quote the film The Diamond Arm
+so, and `places.test.ts` fails on one. Five more after a review on 12 November: private
+gardens and homes mapped as parks or a garden, which no rule tells by their names, each
+left without that tag. Two places that quote the film The Diamond Arm
 ("Цигель Цигель", "Аптека") are not jokes: they mark where it was filmed in İçərişəhər,
 which the Old City's tours visit, and stay. `ALIASES` adds the names people search a
 well-known place by that OpenStreetMap does not have, each with where the name is used:
@@ -547,13 +557,13 @@ Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Авто�
 The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
 fast-food places, 1,198 government offices, 1,142 cafés, 1,032 supermarkets, 634 schools,
-468 residential complexes, 445 offices, 423 hotels, 398 hospitals, 388 kindergartens, 388
-sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 216 parks, 211
-cultural centres and libraries, 199 places of worship, 161 areas, 145 malls, 133
-settlements, 123 colleges, 77 universities, 66 embassies, 66 theatres and cinemas, 66
-amusement places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27 metro
-stations, 15 bus stations, 10 ports, 8 airport features and 4 squares. `places.test.ts`
-pins each count, the snapshot date, the header and the shape.
+468 residential complexes, 444 offices, 410 hotels, 398 hospitals, 388 kindergartens, 388
+sights, 256 post offices, 242 banks, 230 clinics, 221 sports venues, 211 cultural centres
+and libraries, 208 parks, 199 places of worship, 161 areas, 145 malls, 133 settlements,
+123 colleges, 77 universities, 66 embassies, 66 theatres and cinemas, 66 amusement
+places, 62 markets, 60 beaches, 58 museums, 54 railway stations, 27 metro stations, 15
+bus stations, 10 ports, 8 airport features and 4 squares. `places.test.ts` pins each
+count, the snapshot date, the header and the shape.
 
 **ODbL.** `places.json` is a derived database. Its header records the credit, the
 licence, the snapshot's timestamp, the day it was read, the query and the SHA-256 of the

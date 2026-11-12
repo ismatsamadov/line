@@ -75,10 +75,23 @@ describe('places.json (#720)', () => {
     expect(names.has('bina mtk') && names.has('ev goradil')).toBe(true);
   });
 
-  it('leaves out country houses mapped as guest houses, and the misspelt first of the numbered buildings', () => {
-    expect(data.places.filter(([, name, category]) => category === 'hotel' && /дача/i.test(name))).toEqual([]);
-    expect(data.places.some(([id]) => id === 'w630137385')).toBe(false); // "Корупс № 1"
-    expect(data.places.some(([id]) => id === 'w630137386')).toBe(false); // "Зал ручных игр", a hall among them
+  it('leaves out homes and flats, and a university\'s halls', () => {
+    // Nobody else travels to someone's home (private_home() in the build script).
+    const words = (name: string) => normalizeSearch(name).split(' ');
+    for (const [id, name] of data.places.filter(([, , category]) => category === 'hotel')) {
+      expect(words(name).some((w) => /^(дача|kiraye|menzil|квартир|аренд)/.test(w)), `${id} ${name}`).toBe(false);
+    }
+    const gone = {
+      homes: ['n7571399915', 'n4561490989', 'n4382074890', 'n4418022294', 'n8666038717', 'n5745778521', 'n4808013523',
+        'n4718575490', 'n5907518385', 'n4405275389', 'n5457461522', 'n4686325491', 'n4715173391', 'n11266851070'],
+      // A residence's fenced grounds, and private gardens and a villa (CORRECTIONS), mapped as parks.
+      parks: ['w299663211', 'w277291238', 'w314140186', 'w1074314421', 'w433838315', 'n12950186425', 'n13438559652',
+        'n13766712519'],
+      // "Корупс № 1", misspelt, and "Зал ручных игр", a hall among the numbered buildings.
+      halls: ['w630137385', 'w630137386'],
+    };
+    const ids = new Set(data.places.map(([id]) => id));
+    for (const id of Object.values(gone).flat()) expect(ids.has(id), id).toBe(false);
   });
 
   it('writes no word in both alphabets, which neither keyboard can type (CORRECTIONS in the build script)', () => {
@@ -151,12 +164,12 @@ describe('places.json (#720)', () => {
     for (const [, , category] of data.places) counts[category]++;
     expect(counts).toEqual({
       metro: 27, rail: 54, bus_station: 15, airport: 8, port: 10, mall: 145, market: 62, supermarket: 1032,
-      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 423, university: 77, college: 123, school: 634,
+      shop: 1849, restaurant: 1558, cafe: 1142, hotel: 410, university: 77, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
-      office: 445, park: 216, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
+      office: 444, park: 208, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
       worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_633);
+    expect(data.places).toHaveLength(12_611);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });

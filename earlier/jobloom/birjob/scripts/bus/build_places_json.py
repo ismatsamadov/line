@@ -31,8 +31,9 @@ Standard library only. What it decides, so that the planner does not have to:
 - A name that only says what the place is ("Kafe", "Market", "Məscid", "Uşaq bağçası")
   is left out, and so is a building's number ("Bina 1", "Корпус № 2") and a name with no
   letters ("1941-1945"): none can be told apart from the next one in a list. Stations and
-  settlements keep theirs. A guest house named a dacha is someone's country house, and is
-  left out too.
+  settlements keep theirs. Someone's home or flat is left out too (private_home()): a
+  guest house named a dacha or a person's home, a lodging named a flat to let, a flat's
+  number, and a residence's fenced grounds mapped as a park. The build names each one.
 - The metro is the planner's own: the 27 stations of metro.json, with its names and
   coordinates, and the other names of the OpenStreetMap station each one matches. A
   station OpenStreetMap has and metro.json has not (a depot, a station being built) is
@@ -187,6 +188,24 @@ GENERIC = {
 # A building's word and its number, or the word alone ("Bina 1", "Корпус № 2", "ev 111a"),
 # as fold() writes it.
 NUMBERED = re.compile(r"^(?:bina|blok|block|korpus|building|корпус|блок|дом|здание|ev)(?: \d+[a-z]?)?$")
+# Someone's home or flat, which nobody else travels to (private_home()), by its names as
+# fold() writes them. A flat's number, in any place's name ("...8-mertebe 376-menzil",
+# "28 квартира дом 25"):
+FLAT = re.compile(r"(?:^| )(?:\d+[a-z]? (?:menzil|квартира)|(?:menzil|квартира) \d+)(?: |$)")
+# A lodging named for a flat or a let ("Kirayə", "Kirayə Mənzil", "аренда квартиры"):
+LET = re.compile(r"(?:^| )(?:kiraye\w*|icare\w*|menzil\w*|kvartir\w*|квартир\w*|аренд\w*|сда[её]\w*|"
+                 r"посуточ\w*)(?: |$)")
+# A lodging named a person's home, the home's word after one or two others ("Vahid ev",
+# "Mustafa müəllimin evi", "Amir's home", "Saray evim", my home in Saray), when none of its
+# names is a lodging's and it has no tag a business has:
+HOME = re.compile(r"^(?:\S+ ){1,2}(?:ev|evi|evim|home)$")
+LODGING = re.compile(r"(?:^| )(?:hotel\w*|otel\w*|hostel\w*|motel\w*|inn|guest\w*|qonaq|suites?|apart\w*|villa\w*|"
+                     r"resort|istirahet|sanatori\w*|yataqxana\w*|kottec\w*|cottage\w*|отел\w*|гостини\w*|гостев\w*|"
+                     r"хостел\w*|мотел\w*)(?: |$)")
+BUSINESS = {"website", "url", "phone", "mobile", "email", "fax", "opening_hours", "stars", "rooms", "beds", "brand",
+            "operator", "facebook", "instagram"}  # and contact:* and payment:*
+# A residence's fenced grounds mapped as a park ("President's Residence", "İqamətgah"):
+RESIDENCE = re.compile(r"(?:^| )(?:residence|rezidens\w*|iqametgah\w*|резиденц\w*)(?: |$)")
 # Categories whose names are proper names however plain they look ("Avtovağzal" station).
 KEEP_PLAIN_NAMES = {"metro", "rail", "settlement", "area"}
 # Larger features are mapped as a node and an outline further apart.
@@ -223,6 +242,15 @@ CORRECTIONS = [
      "the Cyrillic э for ə"),
     ("n13785626480", "name:ru", "Kнижное кафе", "Книжное кафе", "a Latin K for the Cyrillic К"),
     ("n2629778353", "name:ru", "Tехнический Колледж", "Технический Колледж", "a Latin T for the Cyrillic Т"),
+    # Private gardens and homes mapped as parks or a garden, which private_home() cannot
+    # tell by their names: without that tag, no category takes them.
+    ("w1074314421", "leisure", "park", None, "a villa's plot of 54 by 114 m in the Novxanı dachas"),
+    ("w433838315", "leisure", "garden", None, "a garden of 26 by 42 m in the Novxanı dachas, named after its owner"),
+    ("n12950186425", "leisure", "park", None,
+     "someone's home: its house number is its owner's house, and its name Russian for at home"),
+    ("n13438559652", "leisure", "park", None,
+     "a private place (operator:type=private) named after the account that mapped it"),
+    ("n13766712519", "leisure", "park", None, "a family's garden, named after a person"),
 ]
 # Outlines placed at a feature inside them rather than at their centre: (the feature it
 # is placed at, why). The build stops if either is missing from the answer, or the one is
@@ -424,10 +452,22 @@ def plain(name):
             or sum(c.isalpha() for c in name) < 2 or "atm" in words)
 
 
-def dacha(category, name):
-    """Whether a place is someone's country house mapped as a guest house ("дача друга
-    рашида", a friend's dacha)."""
-    return category == "hotel" and "дача" in fold(name).split()
+def private_home(category, t, names):
+    """Whether a place of `category` with tags `t` and `names` (the shown one and the
+    others) is someone's home or flat, which nobody else travels to: a flat's number in a
+    name (FLAT); a lodging named a dacha ("дача друга рашида", a friend's dacha), a flat or
+    a let (LET), or a person's home (HOME) when none of its names is a lodging's and it has
+    no tag a business has (a website, a phone, opening hours, stars, rooms); or a
+    residence's fenced grounds mapped as a park (RESIDENCE)."""
+    folded = [fold(n) for n in names]
+    if any(FLAT.search(f) for f in folded):
+        return True
+    if category == "hotel":
+        if any("дача" in f.split() or LET.search(f) for f in folded):
+            return True
+        business = any(k in BUSINESS or k.startswith(("contact:", "payment:")) for k in t)
+        return any(HOME.match(f) for f in folded) and not any(LODGING.search(f) for f in folded) and not business
+    return category == "park" and t.get("barrier") in ("fence", "wall") and any(RESIDENCE.search(f) for f in folded)
 
 
 def mixed(name):
@@ -618,7 +658,7 @@ def build(path):
                  + "; ".join(f"{c[0]} {c[1]} {c[2]!r}" for c in stale))
     bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
 
-    places, plain_names, dachas, outside = [], Counter(), [], []
+    places, plain_names, homes, outside = [], Counter(), [], []
     for e in elements:
         t = e.get("tags", {})
         cat = category(t) if t.get("name") else None
@@ -631,8 +671,8 @@ def build(path):
         if cat not in KEEP_PLAIN_NAMES and plain(shown):
             plain_names[fold(shown)] += 1
             continue
-        if dacha(cat, shown):
-            dachas.append(shown)
+        if private_home(cat, t, [shown, *others]):
+            homes.append(f"{shown} ({cat} {e['type'][0]}{e['id']})")
             continue
         if not any(c.isalpha() for c in shown):
             continue
@@ -674,9 +714,10 @@ def build(path):
     counts = Counter(p["category"] for p in places)
     print(f"wrote {OUT}: {len(places)} places ({OUT.stat().st_size / 1e6:.2f} MB) from "
           f"{len(features)} features of {source['snapshot']}; left out {sum(plain_names.values())} "
-          f"with a plain name, {len(dachas)} dachas mapped as guest houses and {len(outside)} centred "
-          f"outside the area ({', '.join(outside)})")
+          f"with a plain name and {len(outside)} centred outside the area ({', '.join(outside)})")
     print("  " + ", ".join(f"{cat} {counts[cat]}" for cat in LABELS))
+    print(f"  {len(homes)} homes and flats left out, to read for a place people go to (private_home()): "
+          f"{', '.join(homes)}")
     # Settlements and areas are regions, whose centre is as good a point as any.
     large = sorted(((km((b["minlat"], b["minlon"]), (b["maxlat"], b["maxlon"])), p) for p in places
                     if (b := bounds.get(p["id"])) and p["id"] not in PLACED_AT

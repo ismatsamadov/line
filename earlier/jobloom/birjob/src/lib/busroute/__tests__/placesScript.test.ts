@@ -156,17 +156,47 @@ print(json.dumps(result))`);
     }
   });
 
-  it('leaves out a building\'s number and a dacha mapped as a guest house, not a name with more to it', () => {
+  it('leaves out a building\'s number, not a name with more to it', () => {
     const result = python(`print(json.dumps({
     "plain": [b.plain(n) for n in data],
-    "dacha": [b.dacha("hotel", "дача друга рашида"), b.dacha("hotel", "Dacha Resort"), b.dacha("restaurant", "Дача")],
     "mixed": [b.mixed("Araя Market"), b.mixed("Gənclik Mall / Гянджлик"), b.mixed("8km Детский Сад")]}))`,
     ['Bina 1', 'ev 111a', 'Корпус № 2', 'Дом', 'Bina', 'Bina MTK', 'Ev Goradil', 'Дом Книги', 'Мужской салон', 'Kafe']);
     expect(result).toEqual({
       plain: [true, true, true, true, true, false, false, false, true, true],
-      dacha: [true, false, false],
       mixed: [['Araя'], [], []],
     });
+  });
+
+  it('leaves out someone\'s home or flat, and not a guest house, a house museum or a housing office', () => {
+    // [category, tags, the shown name and the others, left out]
+    const cases: Array<[string, Record<string, string>, string[], boolean]> = [
+      ['hotel', { tourism: 'guest_house' }, ['дача друга рашида'], true], // a friend's dacha
+      ['hotel', { tourism: 'guest_house' }, ['Rəşad ev'], true], // a person's home
+      ['hotel', { tourism: 'guest_house' }, ['Elçin müəllimin evi'], true],
+      ['hotel', { tourism: 'guest_house', 'addr:street': 'Nizami küç.' }, ["Leyla's home"], true],
+      ['hotel', { tourism: 'motel' }, ['Mərdəkan evim'], true], // my home in Mərdəkan
+      ['hotel', { tourism: 'guest_house', phone: '+994501234567' }, ['Kirayə'], true], // to let, whatever its contacts
+      ['hotel', { tourism: 'motel' }, ['Kirayə Mənzil'], true], // a flat to let
+      ['hotel', { tourism: 'guest_house' }, ['12 ev 5', '12 квартира дом 5'], true], // a flat's number, in Russian
+      ['office', { office: 'ngo' }, ['Abc, bina-4, 8-mertebe 376-menzil'], true], // an office at a flat
+      ['park', { leisure: 'park', barrier: 'fence' }, ["President's Residence"], true],
+      ['park', { leisure: 'park', barrier: 'fence' }, ['İqamətgah'], true],
+      ['hotel', { tourism: 'guest_house' }, ['Dacha Resort'], false],
+      ['restaurant', { amenity: 'restaurant' }, ['Дача'], false],
+      ['hotel', { tourism: 'guest_house', website: 'https://example.az' }, ["Leyla's home"], false], // a business
+      ['hotel', { tourism: 'guest_house', 'contact:phone': '+994501234567' }, ['Rəşad ev'], false],
+      ['hotel', { tourism: 'guest_house' }, ['Rəşad ev', 'Rashad Guest House'], false], // says it is a guest house
+      ['hotel', { tourism: 'guest_house' }, ['Bilgəh Qonaq Evi'], false],
+      ['hotel', { tourism: 'guest_house' }, ['Ev Goradil'], false], // the home's word first: a name
+      ['hotel', { tourism: 'hotel' }, ['Baku Bay House'], false],
+      ['museum', { tourism: 'museum' }, ['Niyazinin ev-muzeyi', 'Музей-квартира им.Ниязи'], false],
+      ['government', { office: 'government' }, ['Xətai Rayon Mənzil Kommunal Təsərrüfat Birliyi'], false],
+      ['restaurant', { amenity: 'restaurant' }, ['5-mərtəbə'], false],
+      ['park', { leisure: 'park' }, ['Residence Park'], false], // no fence
+      ['residential', { landuse: 'residential' }, ['Gulustan Residence'], false],
+    ];
+    expect(python('print(json.dumps([b.private_home(c, t, n) for c, t, n in data]))', cases.map(([c, t, n]) => [c, t, n])))
+      .toEqual(cases.map(([, , , out]) => out));
   });
 
   it('counts Baku Crystal Hall\'s amenity=events_centre as an events venue', () => {
