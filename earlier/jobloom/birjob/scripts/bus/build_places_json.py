@@ -23,7 +23,8 @@ Standard library only. What it decides, so that the planner does not have to:
 - A place is a named feature of one of the categories in LABELS, worked out from its tags
   by category(), where the first test that matches wins: a hospital that is also a
   building is a hospital. Features of no category (parking, fuel, pharmacies, car repair,
-  corner shops, industry, named buildings with no other tag) are left out.
+  corner shops, industry, named buildings with no other tag) are left out, and so are a
+  bus depot mapped as a bus station and an airfield no passenger flies from.
 - Its name is name:az where there is one, else name; the other names it is searched by
   are name, name:ru, name:en, alt_name, old_name, short_name, official_name, brand and
   their :az and :ru forms. The mappers' "Name \\ Place" convention is written
@@ -180,6 +181,7 @@ GENERIC = {
     "mebel salonu", "mekteb", "mescid", "minimarket", "mini market", "musiqi mektebi",
     "notarius", "otel", "park", "parkinq", "poct", "polis", "polis bolmesi",
     "polis menteqesi", "polis sobesi", "poliklinika", "prayer room", "qadin geyimi",
+    "qeyri yasayis saheleri", "qeyri yasayis sahesi",
     "qonaq evi", "restaurant", "restoran", "stadion", "supermarket", "tecili tibbi yardim",
     "ticaret merkezi", "ticaret sirasi", "tibb menteqesi", "tikinti mallari",
     "tikinti materiallari", "trenajor", "tualet", "universitet", "usaq bagcasi",
@@ -206,6 +208,10 @@ BUSINESS = {"website", "url", "phone", "mobile", "email", "fax", "opening_hours"
             "operator", "facebook", "instagram"}  # and contact:* and payment:*
 # A residence's fenced grounds mapped as a park ("President's Residence", "İqamətgah"):
 RESIDENCE = re.compile(r"(?:^| )(?:residence|rezidens\w*|iqametgah\w*|резиденц\w*)(?: |$)")
+# A bus depot mapped as a bus station, by a word of its own name ("Baku Bus Depo", a motor
+# transport yard's "Avtonəqliyyat Təsərrüfatı"): where buses are kept, not boarded.
+DEPOT = re.compile(r"(?:^| )(?:depo\w*|депо|depot\w*|avtobaza\w*|автобаз\w*|avtopark\w*|автопарк\w*|qaraj\w*|"
+                   r"garage\w*|гараж\w*|avtoneqliyyat\w*)(?: |$)")
 # Categories whose names are proper names however plain they look ("Avtovağzal" station).
 KEEP_PLAIN_NAMES = {"metro", "rail", "settlement", "area"}
 # Larger features are mapped as a node and an outline further apart.
@@ -242,6 +248,11 @@ CORRECTIONS = [
      "the Cyrillic э for ə"),
     ("n13785626480", "name:ru", "Kнижное кафе", "Книжное кафе", "a Latin K for the Cyrillic К"),
     ("n2629778353", "name:ru", "Tехнический Колледж", "Технический Колледж", "a Latin T for the Cyrillic Т"),
+    ("n12531251832", "*", "random market", None,
+     "a test record: its street and house number are \"random\", its postcode 1234 and its phone 789789789"),
+    ("w1061503217", "*", "Azqranata Ticarət Mərkəzi Depo", None,
+     "a trade centre's depot, a warehouse, mapped as a mall"),
+    ("w1061503218", "*", "Bazarstore MMC Depo", None, "a supermarket chain's depot, a warehouse, mapped as a mall"),
     # Private gardens and homes mapped as parks or a garden, which private_home() cannot
     # tell by their names: without that tag, no category takes them.
     ("w1074314421", "leisure", "park", None, "a villa's plot of 54 by 114 m in the Novxanı dachas"),
@@ -335,6 +346,14 @@ def tidy(name):
     return name
 
 
+def own_names(t):
+    """Every name of a feature with tags `t` as fold() writes it, without the place the
+    mappers add after it ("Lotos Ticarət Mərkəzi \\ 8-ci km"), as placeMatch.ts's
+    ownWords leaves it out."""
+    return [f for key in NAME_TAGS for v in (t.get(key) or "").split(";")
+            if (f := fold(tidy(v).split(" / ")[0]))]
+
+
 def category(t):
     """The category of a feature with tags `t`, or None if the planner does not offer it."""
     amenity, shop, tourism, leisure = t.get("amenity"), t.get("shop"), t.get("tourism"), t.get("leisure")
@@ -344,14 +363,20 @@ def category(t):
         return "metro"
     if t.get("station") == "funicular":
         return "sight"
-    if t.get("aeroway") in ("aerodrome", "terminal"):
+    # No passenger flies from a military airfield (Qala Aerodromu, the Kala air base) or an
+    # abandoned one.
+    if t.get("aeroway") in ("aerodrome", "terminal") and not (
+            t.get("military") or t.get("landuse") == "military" or t.get("aerodrome:type") == "military"
+            or "abandoned:aeroway" in t or "disused:aeroway" in t):
         return "airport"
     if amenity == "ferry_terminal" or t.get("railway") == "ferry_terminal":
         return "port"
-    if amenity == "bus_station":
-        return None if t.get("public_transport") == "platform" else "bus_station"
+    if amenity == "bus_station" or (station and t.get("bus") == "yes"):
+        # A platform is part of a station, and a depot (DEPOT) is where buses are kept.
+        platform = amenity == "bus_station" and t.get("public_transport") == "platform"
+        return None if platform or any(DEPOT.search(n) for n in own_names(t)) else "bus_station"
     if station:
-        return "bus_station" if t.get("bus") == "yes" else "rail"
+        return "rail"
     if shop in ("mall", "department_store") or t.get("landuse") == "retail":
         return "mall"
     if amenity == "marketplace":

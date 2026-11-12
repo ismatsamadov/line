@@ -67,7 +67,8 @@ describe('places.json (#720)', () => {
     // "Kafe" ×100 would fill a search for cafés with rows nobody can tell apart.
     const names = new Set(data.places.map(([, name]) => normalizeSearch(name)));
     for (const plain of ['Kafe', 'Market', 'Məscid', 'Uşaq bağçası', 'Parkinq', 'Aptek', 'İnşaat Malları', 'Abidə',
-      'Bina 1', 'Bina 11', 'ev 111a', 'Корпус № 2', 'Дом', 'Ev', 'Мужской салон', 'Шашлычная', 'Чайхана-кальянная']) {
+      'Bina 1', 'Bina 11', 'ev 111a', 'Корпус № 2', 'Дом', 'Ev', 'Мужской салон', 'Шашлычная', 'Чайхана-кальянная',
+      'Qeyri-yaşayış sahələri']) {
       expect(names.has(normalizeSearch(plain)), plain).toBe(false);
     }
     expect(data.places.some(([, name]) => / ATM$/i.test(name))).toBe(false);
@@ -75,7 +76,7 @@ describe('places.json (#720)', () => {
     expect(names.has('bina mtk') && names.has('ev goradil')).toBe(true);
   });
 
-  it('leaves out homes and flats, and a university\'s halls', () => {
+  it('leaves out homes and flats, a test record, warehouses, depots, an air base and a university\'s halls', () => {
     // Nobody else travels to someone's home (private_home() in the build script).
     const words = (name: string) => normalizeSearch(name).split(' ');
     for (const [id, name] of data.places.filter(([, , category]) => category === 'hotel')) {
@@ -87,6 +88,10 @@ describe('places.json (#720)', () => {
       // A residence's fenced grounds, and private gardens and a villa (CORRECTIONS), mapped as parks.
       parks: ['w299663211', 'w277291238', 'w314140186', 'w1074314421', 'w433838315', 'n12950186425', 'n13438559652',
         'n13766712519'],
+      // "random market", two warehouses mapped as malls, and "Qeyri-yaşayış sahələri" ("non-residential premises").
+      malls: ['n12531251832', 'w1061503217', 'w1061503218', 'w1380647101'],
+      // Two bus depots, the Kala air base and a former aero club.
+      hubs: ['n6298433289', 'n3537386606', 'w190520030', 'n1042023274'],
       // "Корупс № 1", misspelt, and "Зал ручных игр", a hall among the numbered buildings.
       halls: ['w630137385', 'w630137386'],
     };
@@ -163,13 +168,13 @@ describe('places.json (#720)', () => {
     const counts = Object.fromEntries(Object.keys(data.labels).map((c) => [c, 0]));
     for (const [, , category] of data.places) counts[category]++;
     expect(counts).toEqual({
-      metro: 27, rail: 54, bus_station: 15, airport: 8, port: 10, mall: 145, market: 62, supermarket: 1032,
+      metro: 27, rail: 54, bus_station: 13, airport: 6, port: 10, mall: 141, market: 62, supermarket: 1032,
       shop: 1849, restaurant: 1558, cafe: 1142, hotel: 410, university: 77, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
       office: 444, park: 208, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
       worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
-    expect(data.places).toHaveLength(12_611);
+    expect(data.places).toHaveLength(12_603);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });
@@ -313,6 +318,10 @@ describe('searchPlaces (#720)', () => {
       expect(airport, query).toMatchObject({ id: 'w163717459', name: 'Heydər Əliyev Beynəlxalq Aeroportu', category: 'airport' });
       expect(haversine(airport.latitude, airport.longitude, 40.464605, 50.052728), query).toBeLessThan(0.6);
     }
+    // "baku bus" lists the Central Bus Station's entrances, which a depot named Baku Bus Depo
+    // stood above as a bus station, and "random" no test record ("random market").
+    expect(searchPlaces(real, 'baku bus').slice(0, 2).map((p) => p.id)).toEqual(['n11813198969', 'n12305008200']);
+    expect(searchPlaces(real, 'random')).toEqual([]);
     // An apostrophe joins its word: "papa johns" found none of the six before.
     expect(searchPlaces(real, 'papa johns').map((p) => p.alias ?? p.name)).toEqual(Array(6).fill("Papa John's"));
     expect(searchPlaces(real, 'mcdonalds').map((p) => p.name)).toEqual(Array(8).fill("McDonald's"));

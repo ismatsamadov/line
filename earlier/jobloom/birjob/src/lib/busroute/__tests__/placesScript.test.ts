@@ -160,9 +160,10 @@ print(json.dumps(result))`);
     const result = python(`print(json.dumps({
     "plain": [b.plain(n) for n in data],
     "mixed": [b.mixed("Araя Market"), b.mixed("Gənclik Mall / Гянджлик"), b.mixed("8km Детский Сад")]}))`,
-    ['Bina 1', 'ev 111a', 'Корпус № 2', 'Дом', 'Bina', 'Bina MTK', 'Ev Goradil', 'Дом Книги', 'Мужской салон', 'Kafe']);
+    ['Bina 1', 'ev 111a', 'Корпус № 2', 'Дом', 'Bina', 'Bina MTK', 'Ev Goradil', 'Дом Книги', 'Мужской салон', 'Kafe',
+      'Qeyri-yaşayış sahələri']);
     expect(result).toEqual({
-      plain: [true, true, true, true, true, false, false, false, true, true],
+      plain: [true, true, true, true, true, false, false, false, true, true, true],
       mixed: [['Araя'], [], []],
     });
   });
@@ -197,6 +198,24 @@ print(json.dumps(result))`);
     ];
     expect(python('print(json.dumps([b.private_home(c, t, n) for c, t, n in data]))', cases.map(([c, t, n]) => [c, t, n])))
       .toEqual(cases.map(([, , , out]) => out));
+  });
+
+  it('offers no bus depot as a bus station, and no airfield no passenger flies from as an airport', () => {
+    const cases: Array<[Record<string, string>, string | null]> = [
+      [{ name: 'Baku Bus Depo', amenity: 'bus_station', bus: 'yes', public_transport: 'station' }, null],
+      [{ name: 'Penitensiar Xidmətin Avtonəqliyyat Təsərrüfatı', amenity: 'bus_station' }, null],
+      [{ name: 'Avtobaza 3', public_transport: 'station', bus: 'yes' }, null],
+      [{ name: 'Platforma 3', amenity: 'bus_station', public_transport: 'platform' }, null],
+      [{ name: 'Sumqayıt Avtovağzalı', amenity: 'bus_station' }, 'bus_station'],
+      [{ name: 'Koroğlu Avtobus stansiyası', public_transport: 'station', bus: 'yes' }, 'bus_station'],
+      [{ name: 'Depo', railway: 'halt' }, 'rail'], // a railway halt named after the depot is a station
+      [{ name: 'Qala Aerodromu', aeroway: 'aerodrome', landuse: 'military', military: 'airfield' }, null],
+      [{ name: 'Бывший аэроклуб', aeroway: 'aerodrome', 'abandoned:aeroway': 'aerodrome' }, null],
+      [{ name: 'Zabrat Aeroportu', aeroway: 'aerodrome' }, 'airport'],
+      [{ name: 'Termianl 2', aeroway: 'terminal' }, 'airport'],
+    ];
+    expect(python('print(json.dumps([b.category(t) for t in data]))', cases.map(([t]) => t)))
+      .toEqual(cases.map(([, category]) => category));
   });
 
   it('counts Baku Crystal Hall\'s amenity=events_centre as an events venue', () => {
