@@ -99,6 +99,15 @@ describe('places.json (#720)', () => {
     for (const id of Object.values(gone).flat()) expect(ids.has(id), id).toBe(false);
   });
 
+  it('labels a works or a company mapped as a government office an office (works() in the build script)', () => {
+    const category = (id: string) => data.places.find(([placeId]) => placeId === id)?.[2];
+    expect(category('n11161825286')).toBe('office'); // Afsan Plastik Qablar Zavodu, amenity=townhall
+    expect(category('w1076165657')).toBe('office'); // Bakı Neft Emalı Zavodu SOCAR, landuse=industrial
+    expect(category('n5162480623')).toBe('office'); // Saipem Company
+    expect(category('w220232806')).toBe('government'); // Müdafiə Sənayesi Nazirliyi, a ministry
+    expect(category('r2585316')).toBe('government'); // Azərbaycan Dəmir Yolları QSC, government=transportation
+  });
+
   it('writes no word in both alphabets, which neither keyboard can type (CORRECTIONS in the build script)', () => {
     for (const [id, name, , , , , aliases] of data.places) {
       for (const n of [name, ...aliases]) {
@@ -170,8 +179,8 @@ describe('places.json (#720)', () => {
     expect(counts).toEqual({
       metro: 27, rail: 54, bus_station: 13, airport: 6, port: 10, mall: 141, market: 62, supermarket: 1032,
       shop: 1849, restaurant: 1558, cafe: 1142, hotel: 410, university: 77, college: 123, school: 634,
-      kindergarten: 388, hospital: 398, clinic: 230, government: 1198, embassy: 66, post_office: 256, bank: 242,
-      office: 444, park: 208, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
+      kindergarten: 388, hospital: 398, clinic: 230, government: 924, embassy: 66, post_office: 256, bank: 242,
+      office: 718, park: 208, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
       worship: 199, beach: 60, settlement: 133, area: 161, residential: 468,
     });
     expect(data.places).toHaveLength(12_603);

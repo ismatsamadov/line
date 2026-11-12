@@ -24,7 +24,8 @@ Standard library only. What it decides, so that the planner does not have to:
   by category(), where the first test that matches wins: a hospital that is also a
   building is a hospital. Features of no category (parking, fuel, pharmacies, car repair,
   corner shops, industry, named buildings with no other tag) are left out, and so are a
-  bus depot mapped as a bus station and an airfield no passenger flies from.
+  bus depot mapped as a bus station and an airfield no passenger flies from. A works or a
+  company mapped as a government office or a town hall is an office (works()).
 - Its name is name:az where there is one, else name; the other names it is searched by
   are name, name:ru, name:en, alt_name, old_name, short_name, official_name, brand and
   their :az and :ru forms. The mappers' "Name \\ Place" convention is written
@@ -208,6 +209,11 @@ BUSINESS = {"website", "url", "phone", "mobile", "email", "fax", "opening_hours"
             "operator", "facebook", "instagram"}  # and contact:* and payment:*
 # A residence's fenced grounds mapped as a park ("President's Residence", "İqamətgah"):
 RESIDENCE = re.compile(r"(?:^| )(?:residence|rezidens\w*|iqametgah\w*|резиденц\w*)(?: |$)")
+# A works or a company that mappers tagged as a government office or a town hall
+# (works()), by a word of its own name: a factory's, a mill's or a company's ("Afsan
+# Plastik Qablar Zavodu", "Sevil MMC", "Saipem Company").
+WORKS = re.compile(r"(?:^| )(?:zavod\w*|fabri[kc]\w*|kombinat\w*|deyirman\w*|factory|завод\w*|фабрик\w*|комбинат\w*|"
+                   r"mmc|llc|ltd|qsc|asc|sirket\w*|company|group|qrup\w*|holding|holdinq\w*|ооо|оао|зао)(?: |$)")
 # A bus depot mapped as a bus station, by a word of its own name ("Baku Bus Depo", a motor
 # transport yard's "Avtonəqliyyat Təsərrüfatı"): where buses are kept, not boarded.
 DEPOT = re.compile(r"(?:^| )(?:depo\w*|депо|depot\w*|avtobaza\w*|автобаз\w*|avtopark\w*|автопарк\w*|qaraj\w*|"
@@ -355,6 +361,19 @@ def own_names(t):
             if (f := fold(tidy(v).split(" / ")[0]))]
 
 
+def works(t):
+    """Whether a feature tagged as a government office or a town hall is a works or a
+    company rather than a state body: tagged for industry or power (industrial=*,
+    landuse=industrial, man_made=works, power=*, an industrial building), for trade (a
+    shop, another kind of office beside the town hall), or named so (WORKS), unless
+    government=* says which government office it is (Azərbaycan Dəmir Yolları QSC)."""
+    if (t.get("industrial") or t.get("landuse") == "industrial" or t.get("man_made") == "works" or t.get("power")
+            or t.get("building") in ("industrial", "factory", "warehouse") or t.get("shop")
+            or t.get("office") not in (None, "government")):
+        return True
+    return "government" not in t and any(WORKS.search(n) for n in own_names(t))
+
+
 def category(t):
     """The category of a feature with tags `t`, or None if the planner does not offer it."""
     amenity, shop, tourism, leisure = t.get("amenity"), t.get("shop"), t.get("tourism"), t.get("leisure")
@@ -404,8 +423,10 @@ def category(t):
         return "clinic"
     if office == "diplomatic" or amenity == "embassy":
         return "embassy"
-    if (office == "government" or amenity in ("townhall", "courthouse", "police", "public_building")
-            or building in ("government", "public", "civic")):
+    if office == "government" or amenity == "townhall":
+        # A works or a company is no state body: an office, as every company's is.
+        return "office" if works(t) else "government"
+    if amenity in ("courthouse", "police", "public_building") or building in ("government", "public", "civic"):
         return "government"
     if amenity == "post_office":
         return "post_office"

@@ -200,6 +200,31 @@ print(json.dumps(result))`);
       .toEqual(cases.map(([, , , out]) => out));
   });
 
+  it('labels a works or a company mapped as a government office or a town hall an office, and a state body as one', () => {
+    // [tags, category]
+    const cases: Array<[Record<string, string>, string]> = [
+      [{ name: 'Bakı Neft Emalı Zavodu', office: 'government', industrial: 'oil', landuse: 'industrial' }, 'office'],
+      [{ name: 'Azfen', office: 'government', man_made: 'works' }, 'office'],
+      [{ name: 'Yarımstansiya 515', office: 'government', power: 'substation' }, 'office'],
+      [{ name: 'Spark Beton', office: 'government', building: 'industrial' }, 'office'],
+      [{ name: 'Afsan Plastik Qablar Zavodu', amenity: 'townhall', shop: 'hardware' }, 'office'],
+      [{ name: 'Pepsi Cola', amenity: 'townhall', shop: 'beverages' }, 'office'],
+      [{ name: 'Sevil', amenity: 'townhall', office: 'company' }, 'office'],
+      [{ name: 'Saipem Company', office: 'government' }, 'office'],
+      [{ name: 'Bakı Yağ Fabriki', office: 'government' }, 'office'],
+      [{ name: 'Kristal MMC \\ Bakmil', office: 'government' }, 'office'],
+      [{ name: 'Daxili İşlər Nazirliyi', office: 'government' }, 'government'],
+      [{ name: 'Bakıxanov Bələdiyyəsi', amenity: 'townhall' }, 'government'],
+      // government=* says which government office it is, whatever the name.
+      [{ name: 'Azərbaycan Dəmir Yolları QSC', office: 'government', government: 'transportation' }, 'government'],
+      // A word of the place the mappers add after " \ " is not the feature's own.
+      [{ name: 'Polis İdarəsi \\ Maşınqayırma Zavodu', office: 'government' }, 'government'],
+      [{ name: 'Abşeron Rayon Məhkəməsi', amenity: 'courthouse' }, 'government'],
+    ];
+    expect(python('print(json.dumps([b.category(t) for t in data]))', cases.map(([t]) => t)))
+      .toEqual(cases.map(([, category]) => category));
+  });
+
   it('offers no bus depot as a bus station, and no airfield no passenger flies from as an airport', () => {
     const cases: Array<[Record<string, string>, string | null]> = [
       [{ name: 'Baku Bus Depo', amenity: 'bus_station', bus: 'yes', public_transport: 'station' }, null],
