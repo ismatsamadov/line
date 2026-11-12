@@ -11,7 +11,8 @@
  * is the same as taking the fastest journey for each number of boardings and
  * keeping the one with the lowest minutes plus penalty, done in one search.
  *
- * A ride continues only along consecutive positions of the same direction.
+ * A ride continues only along consecutive positions of the same direction, or past
+ * a misplaced stop by the leg that skips it (graph.ts).
  * A metro ride is a ride like any other (#689): boarding a train or the metro's
  * express bus counts once, as boarding a bus does, and so does changing trains.
  * One walking edge (at most WALK_RADIUS_KM) is allowed between rides or at either
@@ -30,8 +31,11 @@ export const BOARDING_PENALTY_MIN = 15;
  * What the search reads of a graph. getEdges may hand back the graph's own edge
  * objects or copies of them, as a wrapper that adds or decorates edges may: the
  * search knows a ride's position by its edge's kind, rideId and toSequence, never by
- * the object, and those three must name one leg of one ride. A graph whose edges are
- * numbered once built (numberRidePositions, as graph.ts does) is searched fastest.
+ * the object, and those three must name one position of one ride, at one stop. Every
+ * leg that arrives there leads on alike, so the search keeps the cheapest: a leg past
+ * a misplaced stop arrives where the leg after the stop does (graph.ts). A graph whose
+ * edges are numbered once built (numberRidePositions, as graph.ts does) is searched
+ * fastest.
  */
 type RoutingGraph = Pick<TransitGraph, "getEdges" | "getStopInfo">;
 type Cost = readonly [cost: number, boardings: number, walkingKm: number, distanceKm: number, minutes: number];
@@ -114,7 +118,8 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
   for (let label = destination; label.previous; label = label.previous) path.push(label);
   path.reverse();
   const segments: RouteSegment[] = [];
-  const legs: Array<Array<LatLng[] | undefined>> = [];
+  // What each segment is drawn through: the stops its legs join, and each leg's road.
+  const drawn: Array<{ stops: LatLng[]; legs: Array<LatLng[] | undefined> }> = [];
   for (const label of path) {
     const edge = label.edge!;
     const from = graph.getStopInfo(label.previous!.stopId)!;
@@ -131,17 +136,24 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
         distance: 0, time: 0,
       };
       segments.push(segment);
-      legs.push([]);
+      drawn.push({ stops: [[from.latitude, from.longitude]], legs: [] });
+    }
+    // A leg past a misplaced stop (graph.ts) lists the stop among those the ride
+    // passes, as its line does, but is not drawn out to where the stop is stored.
+    if (edge.kind === "bus" && edge.passes) {
+      const passed = graph.getStopInfo(edge.passes.id)!;
+      segment.stops.push({ id: passed.id, name: edge.passes.name || passed.name, latitude: passed.latitude, longitude: passed.longitude });
     }
     segment.stops.push({ id: to.id, name: edge.toStopName || to.name, latitude: to.latitude, longitude: to.longitude });
     segment.distance += edge.distance;
     segment.time += edge.time;
-    legs[legs.length - 1].push(edge.path);
+    drawn[drawn.length - 1].stops.push([to.latitude, to.longitude]);
+    drawn[drawn.length - 1].legs.push(edge.path);
   }
   // A ride is drawn along the road or the track where its legs have one (shape.ts,
   // metro.ts), a walk to or from a metro station by its exit, any other walk straight.
   segments.forEach((segment, i) => {
-    const road = joinLegs(segment.stops.map((s): LatLng => [s.latitude, s.longitude]), legs[i]);
+    const road = joinLegs(drawn[i].stops, drawn[i].legs);
     if (road) segment.path = road;
   });
   let totalStops = 0, lastStopId: number | null = null;

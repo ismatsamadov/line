@@ -5,7 +5,7 @@
  * Walking connections are rebuilt with a spatial grid from the same stop data.
  * The metro (metro.ts) adds its stations, its rides and the walks to them (#689).
  */
-import { GraphEdge, StopDetail, Bus, BusStop, LatLng, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER, isMetroStation } from "./types";
+import { GraphEdge, StopDetail, Bus, BusStop, LatLng, PassedStop, WALKING_EDGE_BUS_ID, WALKING_EDGE_BUS_NUMBER, isMetroStation } from "./types";
 import { haversine, isBakuCoordinate } from "./geo";
 import { queryStopDetails, queryBuses, queryBusStops, queryRouteShapes } from "./db";
 import { computeWalkingEdges } from "./walking";
@@ -59,7 +59,7 @@ export class TransitGraph {
       const busId = parseInt(key.split(":")[0]);
       linesOfBus.set(busId, [...(linesOfBus.get(busId) ?? []), [key, line]]);
     }
-    let roadLegs = 0;
+    let roadLegs = 0, pastLegs = 0;
 
     for (const stop of stopDetails) {
       if (isBakuCoordinate(stop.latitude, stop.longitude)) this.stopInfo.set(stop.id, stop);
@@ -110,38 +110,47 @@ export class TransitGraph {
       const lines = [...busLines.filter(([k]) => k === key), ...busLines.filter(([k]) => k !== key)].map(([, line]) => line);
       const legs = lines.length ? legPaths(points, lines) : [];
 
-      const measured = measuredLength(points, lengths, legs);
+      const misplaced = misplacedStops(points, lengths, legs);
+      const measured = measuredLength(points, lengths, misplaced);
       // A line whose legs have no length at all (one stop listed over and over)
       // has nothing to share by, and keeps equal shares.
       const legTime = (length: number) => measured > 0 ? duration * length / measured : duration / Math.max(lengths.length, 1);
-
-      for (let i = 0; i < ordered.length - 1; i++) {
-        const fromStop = ordered[i];
-        const toStop = ordered[i + 1];
-        // A stop without valid coordinates breaks its legs; no edge bridges it.
-        const distance = lengths[i];
-        if (distance === null) continue;
-
+      const addLeg = (from: number, to: number, distance: number, extra: { path?: LatLng[]; passes?: PassedStop }) => {
         const edge: GraphEdge = {
           kind: "bus",
           rideId: key,
-          direction: fromStop.direction_type_id,
-          fromSequence: i,
-          toSequence: i + 1,
+          direction: ordered[from].direction_type_id,
+          fromSequence: from,
+          toSequence: to,
           headsign: ordered[ordered.length - 1].stop_name,
-          toStopId: toStop.stop_id,
+          toStopId: ordered[to].stop_id,
           busId: bus.id,
           busNumber: bus.number,
           distance,
           time: legTime(distance),
-          fromStopName: fromStop.stop_name,
-          toStopName: toStop.stop_name,
-          ...(legs[i] ? { path: legs[i] } : {}),
+          fromStopName: ordered[from].stop_name,
+          toStopName: ordered[to].stop_name,
+          ...extra,
         };
-        if (legs[i]) roadLegs++;
+        if (!this.adjacency.has(ordered[from].stop_id)) this.adjacency.set(ordered[from].stop_id, []);
+        this.adjacency.get(ordered[from].stop_id)!.push(edge);
+      };
 
-        if (!this.adjacency.has(fromStop.stop_id)) this.adjacency.set(fromStop.stop_id, []);
-        this.adjacency.get(fromStop.stop_id)!.push(edge);
+      for (let i = 0; i < ordered.length - 1; i++) {
+        // A stop without valid coordinates breaks its legs; no edge bridges it.
+        const distance = lengths[i];
+        if (distance === null) continue;
+        addLeg(i, i + 1, distance, legs[i] ? { path: legs[i] } : {});
+        if (legs[i]) roadLegs++;
+      }
+      // A ride that stays on past a misplaced stop takes the straight line between the
+      // stops either side, as the line's time counts it, and is drawn that way. Boarding
+      // or alighting there still takes the stop's own legs. The leg past arrives at the
+      // same position as the leg after the stop, so the search keeps the cheaper one.
+      for (const { at, direct } of misplaced) {
+        const passed = ordered[at];
+        addLeg(at - 1, at + 1, direct, { passes: { id: passed.stop_id, name: passed.stop_name }, path: [points[at - 1]!, points[at + 1]!] });
+        pastLegs++;
       }
     }
 
@@ -178,7 +187,7 @@ export class TransitGraph {
 
     this.built = true;
     const totalEdges = Array.from(this.adjacency.values()).reduce((s, e) => s + e.length, 0);
-    console.log(`[busroute] graph built: ${this.adjacency.size} nodes, ${totalEdges} edges (${walkingEdges} walking, ${roadLegs} bus legs on the road, ${metroEdges} metro)`);
+    console.log(`[busroute] graph built: ${this.adjacency.size} nodes, ${totalEdges} edges (${walkingEdges} walking, ${roadLegs} bus legs on the road, ${pastLegs} past a misplaced stop, ${metroEdges} metro)`);
   }
 
   /**
@@ -210,6 +219,35 @@ export class TransitGraph {
 const MISPLACED_RATIO = 3;
 const MISPLACED_KM = 1;
 
+/** A misplaced stop: its position in the ride, and the straight line between the stops either side (km). */
+interface Misplaced { at: number; direct: number }
+
+/**
+ * The stops of a ride that the data puts in the wrong place (#721). A stop that sticks
+ * out of its ride while the recorded line passes it by, though it runs on through the
+ * legs beyond, is taken to be misplaced. On the snapshot that is stop 3841 of 537, 1.1
+ * km from both its lines, and 536's row "28 May küçəsi 222", which points at stop 3095,
+ * C.Cavadov küç. 72A, elsewhere on the route. The buses that do go out of their way to
+ * a stop, as 145 does to Binəqədi Gənclər Şəhərciyi, have it on their recorded line,
+ * and their legs count in full. A misplaced stop's neighbours have their other legs on
+ * the line and its own are not, so misplaced stops are at least three places apart,
+ * and the legs past them never overlap.
+ */
+function misplacedStops(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>): Misplaced[] {
+  const misplaced: Misplaced[] = [];
+  for (let k = 1; k < lengths.length; k++) {
+    const into = lengths[k - 1], out = lengths[k];
+    if (into === null || out === null || legs[k - 1] || legs[k]) continue;
+    const beyond = [k - 2, k + 1].filter((i) => i >= 0 && i < lengths.length);
+    if (!beyond.length || !beyond.every((i) => legs[i])) continue;
+    const before = points[k - 1]!, after = points[k + 1]!;
+    const direct = haversine(before[0], before[1], after[0], after[1]);
+    if (into + out <= MISPLACED_RATIO * direct || into + out - direct <= MISPLACED_KM) continue;
+    misplaced.push({ at: k, direct });
+  }
+  return misplaced;
+}
+
 /**
  * The length a ride's duration is shared over, its legs' straight lines (#721), except
  * where the data puts a stop in the wrong place. One such stop would otherwise set the
@@ -219,28 +257,14 @@ const MISPLACED_KM = 1;
  * A run of stops without coordinates breaks its legs, but the bus still covers that
  * stretch, so it counts as the straight line between the stops either side.
  *
- * A stop that sticks out of its ride while the recorded line passes it by, though it
- * runs on through the legs beyond, is taken to be misplaced: its two legs count as the
- * straight line between the stops either side. Only the total changes. The stop stays
- * where it is stored, with its walks, so its legs keep their lengths and take their
- * time at the line's pace: reaching it costs the way there, never a jump. On the
- * snapshot that is stop 3841 of 537, 1.1 km from both its lines, and 536's row "28 May
- * küçəsi 222", which points at stop 3095, C.Cavadov küç. 72A, elsewhere on the route.
- * The buses that do go out of their way to a stop, as 145 does to Binəqədi Gənclər
- * Şəhərciyi, have it on their recorded line, and their legs count in full.
+ * A misplaced stop's two legs count as the straight line between the stops either
+ * side, which is also the length of the leg past it. Only the total changes: the stop
+ * stays where it is stored, with its walks, so its own legs keep their lengths and take
+ * their time at the line's pace, and reaching it costs the way there, never a jump.
  */
-function measuredLength(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>): number {
+function measuredLength(points: Array<LatLng | undefined>, lengths: Array<number | null>, misplaced: Misplaced[]): number {
   let measured = lengths.reduce<number>((sum, length) => sum + (length ?? 0), 0);
-  for (let k = 1; k < lengths.length; k++) {
-    const into = lengths[k - 1], out = lengths[k];
-    if (into === null || out === null || legs[k - 1] || legs[k]) continue;
-    const beyond = [k - 2, k + 1].filter((i) => i >= 0 && i < lengths.length);
-    if (!beyond.length || !beyond.every((i) => legs[i])) continue;
-    const before = points[k - 1]!, after = points[k + 1]!;
-    const direct = haversine(before[0], before[1], after[0], after[1]);
-    if (into + out <= MISPLACED_RATIO * direct || into + out - direct <= MISPLACED_KM) continue;
-    measured -= into + out - direct;
-  }
+  for (const { at, direct } of misplaced) measured -= lengths[at - 1]! + lengths[at]! - direct;
   let last = -1;
   points.forEach((point, i) => {
     if (!point) return;
@@ -252,7 +276,7 @@ function measuredLength(points: Array<LatLng | undefined>, lengths: Array<number
 
 /**
  * The recorded route lines, or none. They draw rides along the road and tell a
- * misplaced stop (measuredLength), so a failed read logs and leaves every ride straight
+ * misplaced stop (misplacedStops), so a failed read logs and leaves every ride straight
  * between its stops, timed as stored, instead of failing the graph and, with it,
  * every search.
  */

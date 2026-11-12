@@ -112,11 +112,21 @@ export interface MetroLine {
   color: string;
 }
 
+/** A stop a bus leg rides past, as its line lists it. */
+export interface PassedStop {
+  id: number;
+  name: string;
+}
+
 export type GraphEdge = EdgeInfo & (
   | {
       kind: "bus"; rideId: string; direction: number; fromSequence: number; toSequence: number; headsign: string;
-      /** The road to the next stop, from AYNA's recorded line where it fits the stops (shape.ts). */
+      /** The road to the next stop, from AYNA's recorded line where it fits the stops
+       *  (shape.ts); straight for a leg past a misplaced stop. */
       path?: LatLng[];
+      /** On a leg past a misplaced stop (graph.ts), from the stop before it to the stop
+       *  after: the stop it passes, which a journey still lists. */
+      passes?: PassedStop;
     }
   | {
       /** A metro train, or the express bus the metro runs where its trains do not (metro.ts). */
