@@ -34,6 +34,12 @@ type EndItem = PickerItem & { stop?: StopDetail; place?: PlaceMatch };
 const HERE = "here";
 const HERE_NAME = "Sizin yeriniz";
 
+// The stop, bus and line lists are checked with the server before every use, and a copy
+// still current comes back as a 304 (listResponse.ts, #743). no-cache says so here too: a
+// copy kept under the old header, s-maxage with stale-while-revalidate, has no tag to
+// check, so it is asked for afresh instead of shown once more after a deploy changed it.
+const LIST_REQUEST: RequestInit = { cache: "no-cache" };
+
 const metres = (km: number) => Math.round(km * 1000);
 const stopDetail = (stop: StopDetail) => stop.code ? `Dayanacaq · Kod: ${stop.code}` : "Avtobus dayanacağı";
 
@@ -251,7 +257,7 @@ export default function Component() {
   const loadStops = useCallback(async () => {
     setStopsLoading(true); setStopsError(null);
     try {
-      const response = await fetch("/api/avtobus/stops");
+      const response = await fetch("/api/avtobus/stops", LIST_REQUEST);
       if (!response.ok) throw new Error("stops");
       const data = await response.json();
       if (!Array.isArray(data.stops) || !data.stops.length) throw new Error("empty stops");
@@ -395,7 +401,7 @@ export default function Component() {
     const reqId = ++lineReqRef.current;
     setLineDirection(direction); setLineLoading(true); setLineError(null);
     try {
-      const res = await fetch(`/api/avtobus/line?busId=${busId}&direction=${direction}`);
+      const res = await fetch(`/api/avtobus/line?busId=${busId}&direction=${direction}`, LIST_REQUEST);
       const data = await res.json();
       if (lineReqRef.current !== reqId) return; // superseded (cleared/switched)
       if (!res.ok) { setLineError(data.error || "Xətt tapılmadı"); setLine(null); return; }
@@ -427,7 +433,7 @@ export default function Component() {
   const loadBuses = useCallback(async () => {
     setBusesLoading(true); setLineError(null);
     try {
-      const response = await fetch("/api/avtobus/buses");
+      const response = await fetch("/api/avtobus/buses", LIST_REQUEST);
       if (!response.ok) throw new Error("buses");
       const data = await response.json();
       if (!Array.isArray(data.buses) || !data.buses.length) throw new Error("empty buses");

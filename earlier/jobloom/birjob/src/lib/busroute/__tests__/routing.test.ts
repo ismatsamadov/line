@@ -141,12 +141,16 @@ describe('journey choice: minutes plus a boarding penalty (#664, #721)', () => {
       const through = findRoute(g, 1, 5)!;
       expect(through).toMatchObject({ totalTime: 3, totalDistance: 3, totalTransfers: 0, totalStops: 5 });
       expect(through.segments.map(s => s.stops.map(p => p.id))).toEqual([[1, 2, 3, 4, 5]]);
-      expect(through.segments[0].stops[2]).toEqual({ id: 3, name: 'As the line lists it', latitude: 40.03, longitude: 49.02 });
+      // Flagged, for the map to leave its marker out: it stands off the ride drawn past it (#743).
+      expect(through.segments[0].stops[2]).toEqual({ id: 3, name: 'As the line lists it', latitude: 40.03, longitude: 49.02, misplaced: true });
+      expect(through.segments[0].stops.filter(s => s.misplaced).map(s => s.id)).toEqual([3]);
       // Drawn by the legs it rides, straight past the stop, not out to it and back.
       expect(through.segments[0].path).toEqual([[40.01, 49], [40.02, 49], [40.04, 49], [40.05, 49]]);
       // Boarding or alighting at the stop takes its own legs.
       expect(findRoute(g, 3, 5)).toMatchObject({ totalTime: 6, segments: [{ stops: [{ id: 3 }, { id: 4 }, { id: 5 }] }] });
       expect(findRoute(g, 1, 3)).toMatchObject({ totalTime: 6, segments: [{ stops: [{ id: 1 }, { id: 2 }, { id: 3 }] }] });
+      // There the journey goes where the stop is stored, so it is not flagged.
+      for (const [from, to] of [[3, 5], [1, 3]]) expect(findRoute(g, from, to)!.segments[0].stops.some(s => s.misplaced)).toBe(false);
       // A ride of the leg past alone is still drawn past the stop.
       expect(findRoute(g, 2, 4)!.segments[0]).toMatchObject({ time: 1, stops: [{ id: 2 }, { id: 3 }, { id: 4 }], path: [[40.02, 49], [40.04, 49]] });
     };

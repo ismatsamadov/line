@@ -7,7 +7,7 @@
 import { prisma } from "@/lib/prisma";
 import type { StopDetail, Bus, BusStop, BusLite, BusLineDetail, BusLineStop, LatLng } from "./types";
 import { collapseRepeatedSequence } from "./sequence";
-import { joinLegs, legPaths } from "./shape";
+import { joinLegs, legLengths, legPaths, misplacedStops } from "./shape";
 import { isBakuCoordinate } from "./geo";
 
 export async function queryStopDetails(): Promise<StopDetail[]> {
@@ -192,11 +192,19 @@ export async function queryBusLine(
   });
   const detailById = new Map(details.map((d) => [d.id, d]));
   const stops: BusLineStop[] = [];
+  // The ride as the planner's graph has it (graph.ts): every row in travel order, a stop
+  // without valid coordinates as a gap and a stop listed twice in a row twice. The list
+  // drops the one and lists the other once; `listed` is which of its stops each row is.
+  const sequence: Array<LatLng | undefined> = [];
+  const listed: number[] = [];
   for (const r of stopRows) {
     const d = detailById.get(r.stop_id);
-    if (!d || !isBakuCoordinate(d.latitude, d.longitude)) continue;
+    const valid = !!d && isBakuCoordinate(d.latitude, d.longitude);
+    sequence.push(valid ? [d.latitude, d.longitude] : undefined);
+    if (!valid) { listed.push(-1); continue; }
     // De-dupe consecutive identical stops (data sometimes repeats a hub).
-    if (stops.length && stops[stops.length - 1].id === d.id) continue;
+    if (stops.length && stops[stops.length - 1].id === d.id) { listed.push(stops.length - 1); continue; }
+    listed.push(stops.length);
     stops.push({
       id: d.id, code: d.code ?? "", name: d.name,
       latitude: d.latitude, longitude: d.longitude,
@@ -217,8 +225,22 @@ export async function queryBusLine(
   }
   const own = lines.get(direction);
   const others = [...lines].filter(([d]) => d !== direction).map(([, line]) => line);
+  const recorded = own ? [own, ...others] : others;
   const points = stops.map((s): LatLng => [s.latitude, s.longitude]);
-  const path = joinLegs(points, legPaths(points, own ? [own, ...others] : others)) ?? [];
+  const legs = legPaths(points, recorded);
+  // A stop the data puts off the line is told on the graph's sequence, as the planner
+  // tells it (misplacedStops), so the viewer flags exactly the stops journeys ride past.
+  // It stays in the list, but the line runs straight past it, as a journey is drawn past
+  // it, and not out to where it is stored and back: 2.4 km north for 3841 on 537's second
+  // direction (#743). The map leaves its marker out.
+  const misplaced = new Set(misplacedStops(sequence, legLengths(sequence), legPaths(sequence, recorded))
+    .map(({ at }) => listed[at]).filter((at) => at >= 0));
+  for (const at of misplaced) stops[at] = { ...stops[at], misplaced: true };
+  const path = joinLegs(
+    points.filter((_, i) => !misplaced.has(i)),
+    // The leg into a misplaced stop goes straight on to the stop after it; the leg out goes.
+    legs.flatMap((leg, i) => misplaced.has(i) ? [] : [misplaced.has(i + 1) ? undefined : leg]),
+  ) ?? [];
   const coordinates = path.map(([latitude, longitude]) => ({ latitude, longitude }));
 
   return {

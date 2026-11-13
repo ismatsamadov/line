@@ -194,7 +194,9 @@ stop before it to the stop after, as long as that straight line and timed at tha
 pace. It reaches the stop after at the same route position as the leg from the
 stop itself, so the search keeps the cheaper of the two, and a journey through it
 still lists the stop among those it passes, as the line does, but draws the ride
-straight past it. The stop's own legs keep their stored lengths and take their
+straight past it, and the map leaves its marker out (#743): the data stores the two
+below 2.4 and 2.0 km off that ride. A journey that boards, leaves or walks to the stop
+keeps the marker, since it goes there. The stop's own legs keep their stored lengths and take their
 time at that pace, because the stop stays where it is stored, with its walks:
 boarding or alighting there costs the way to where it stands. Shared as the
 straight line instead, as early in the review, the stop was a jump (536 from 3077
@@ -290,7 +292,20 @@ than 5 km; every other leg stays straight, and so does a walk.
 Bus edges carry their leg's road, and a journey's ride joins them
 (`RouteSegment.path`). The line viewer matches its stops to the bus's lines the same
 way, so it no longer draws a broken line as stored; its coordinates are empty when
-nothing fits, and the map then joins the stops. Distances and times do not change:
+nothing fits, and the map then joins the stops. It tells a misplaced stop as the graph
+does, with the same `misplacedStops` (in `shape.ts`) asked of the same sequence: every
+row of the ride in travel order, a stop without valid coordinates as a gap and a stop
+listed twice in a row twice, where the viewer's own list drops the one and lists the
+other once. Asked of that list, as at first, it flagged a misplaced stop stored twice in
+a row, which the graph does not tell, and so hid a stop journeys ride to;
+`misplacedAgreement.test.ts` builds both from the same tables. The stop stays in the
+list, flagged, but the line runs straight past it, as a journey is drawn, and the map
+leaves its marker out (#743). It drew 537's second direction 2.4 km north to 3841 and
+back, and 536's out to 3095 and back over its own later stretch. The flag is the ride's,
+not the stop's: 3095 is also a stop of 108A and 592, whose lines pass within 10 m of it,
+and keeps its marker on theirs. Of the 402 directions on the snapshot those two are the
+only ones with a stop flagged, the same two the graph rides past. Distances and times do
+not change:
 they still come from straight lines between stops, as the page says; the lines only
 tell a misplaced stop, which sets its line's pace by the straight line past it and
 is ridden past that way ([Graph and data](#graph-and-data)).
@@ -651,8 +666,8 @@ outside the area with a 400 before any search. If the index cannot be built the 
 answers 200 with no places and `degraded: true`, uncached, and the pickers say place
 search is unavailable and keep every stop. The route answers `Cache-Control: no-store`,
 so neither a browser nor the edge keeps an answer past a deploy that changes
-`places.json`. At first it sent the stop and bus lists' `s-maxage` with
-`stale-while-revalidate` and no `max-age`: Cloudflare's cache rule leaves `/api/` out
+`places.json`. At first it sent what the stop and bus lists sent until #743, `s-maxage`
+with `stale-while-revalidate` and no `max-age`: Cloudflare's cache rule leaves `/api/` out
 (`docs/owner-actions.md` §2), but Chrome kept each answer and, after the data changed,
 showed it once more while it asked again, for up to a week (the airport at its old point
 on the airfield, on 11 November). Every search the pickers send reaches the route, which
@@ -789,7 +804,14 @@ with no stop within 1 km and too far to walk gets an error naming it.
 a ride serves is worked out once per graph. Timed seven times each, on a busy laptop,
 200 random place pairs took 7.6 ms at the median and 19.0 at the 95th percentile, about
 as long as the journey between the nearest stops (7.5 and 19.5); 60 pairs of places in
-the centre, with 45 or more stops at each end, took 3.8 and 8.8 against 4.0 and 9.2.
+the centre, with 45 or more stops at each end, took 3.8 and 8.8 against 4.0 and 9.2. A
+point with no stop or station within 1 km is answered before any search, with the walk
+the whole way or the error naming it (#743): with nothing to reach at the destination,
+the search from the origin settled every stop it could reach first. On 3,000 random
+requests between points over the network's area and served stops (12 November, on a
+laptop, the snapshot loaded as for #721 below), every answer stayed the same, byte for
+byte, and the 968 from a stop or a served point to an unserved one took 19.9 ms at the
+median and 23.8 at the 95th percentile before, 0.04 and 0.06 now.
 
 **On the page.** A chosen place or the location is sent as its point (`from`/`to`, see
 [API and UI](#api-and-ui)), and the notes that the walk to its stop was not counted are
@@ -912,12 +934,41 @@ an ordinary window resize keeps the view (#685). New phone results scroll into v
 respecting reduced-motion preferences. The line summary uses the returned stop order
 for its endpoints, including the return direction.
 
+The stop, bus and line lists are checked with the server before every use (#743). They
+answer `Cache-Control: no-cache` with a weak `ETag`, `W/` and the SHA-256 of the body
+(`listResponse.ts`), and `304 Not Modified`, with no body, when the browser sends that
+tag back in `If-None-Match`. Weak, because a strong tag does not come back as sent:
+Caddy appends its encoding to a strong tag (`"…-gzip"`) and, up to v2.11.7, takes it off
+`If-None-Match` again only while the tag is still strong, and Cloudflare marks a strong
+tag `W/` when it compresses an answer again, so the browser sends back `W/"…-gzip"`. The
+box's Caddy is built by hand from `caddy:2` and may be older than v2.11.8, which takes
+the suffix off either way. Neither touches a weak tag. The comparison is the weak one
+RFC 9110 asks for there, and it also takes a tag back with `-gzip` or `-zstd` still on
+it, a list of tags, or `*`. Until #743 the lists sent `public, s-maxage=86400,
+stale-while-revalidate=604800`, set in June and July 2026 for Vercel's edge. Cloudflare
+keeps nothing under `/api/` (its cache rule leaves the path out, and every answer reads
+`cf-cache-status: DYNAMIC`), so the browser held the only copy: with no `max-age` it was
+stale at once, and Chrome showed it while it asked again in the background, so the first
+load after a deploy that changed a list showed the old one, for up to a week. Now no
+copy is used before the server has seen its tag, and the server works the list out
+afresh for every request, so a list a deploy changed has a new tag and is sent whole on
+the first load after it. A returning visitor whose list did not change gets a 304
+instead of the stops' 87 KB gzipped; the server still reads the list, as every page load
+did under the old header. The page asks with `cache: "no-cache"` as well, which says the
+same, and a copy kept under the old header has no tag to send, so it is fetched afresh
+rather than shown. Measured in headless Chrome against a list that changed between
+loads: under the old header the first load after the change showed the old list; under
+`no-cache` with the tag the unchanged list came back as a 304 and the changed one whole,
+on the first load after the change; and a copy kept under the old header, asked for with
+`cache: "no-cache"`, gave way to the new list.
+
 ## Automated verification
 
 Tests cover the boarding penalty below, at and above its threshold, tie-breaks,
 origin and interchange walks, the walking limit, directions, loops, unreachable
 stops, the length-shared leg times with a missing or a misplaced stop, a ride past a
-misplaced stop and how its journey lists and draws it, a graph that hands back
+misplaced stop and how its journey lists and draws it (flagged, #743), the line
+viewer's line straight past one, which markers the map leaves out, a graph that hands back
 copies of its edges, initialization concurrency/retry and API
 input/error handling. An independent round-by-boardings oracle checks 900 trips over
 generated small networks, choosing the round with the lowest minutes plus
@@ -941,7 +992,8 @@ transfer walk's 400 m, no walk after the walk from the point or before the walk 
 a station by its exit, a stop at one end and a point at the other, the walk timed on
 its streets, the walk the whole way below, at and above the cost of riding (an exact
 tie goes to the walk), both of its limits and the radius at their boundaries, and which
-end has no stop in reach. The same round oracle checks 600 generated trips between
+end has no stop in reach, answered without a search (#743). The same round oracle
+checks 600 generated trips between
 points, finding the walks to and from them itself rather than through `accessWalks`;
 it asserts that more than 100 of them ride, more than 50 walk the whole way and more
 than 10 board at another stop than the nearest. The route handler is tested for points,

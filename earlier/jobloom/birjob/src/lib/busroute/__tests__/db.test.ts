@@ -73,6 +73,42 @@ describe('queryBusLine', () => {
     expect((await queryBusLine(7, 1))?.coordinates).toEqual([]);
   });
 
+  describe('a stop the data puts off its line (#743)', () => {
+    // As in graph.test.ts: stops 1-5 every 556 m up 49° E, but stop 3 stored 2 km east of
+    // the road, which the recorded line runs straight along.
+    const at: Record<number, [number, number]> = {
+      1: [40.005, 49], 2: [40.01, 49], 3: [40.015, 49.0235], 4: [40.02, 49], 5: [40.025, 49],
+    };
+    const road: Array<[number, number]> = [[40.005, 49], [40.01, 49], [40.015, 49], [40.02, 49], [40.025, 49]];
+    const viewed = async (line: Array<[number, number]>) => {
+      prisma.bus_bus_stops.findMany
+        .mockResolvedValueOnce([{ direction_type_id: 1 }])
+        .mockResolvedValueOnce([1, 2, 3, 4, 5].map((stop_id, i) => ({ stop_id, total_distance: i })));
+      prisma.bus_stop_details.findMany.mockResolvedValue([1, 2, 3, 4, 5].map((id) => ({ ...detail(id), latitude: at[id][0], longitude: at[id][1] })));
+      prisma.bus_routes.findMany.mockResolvedValue(line.length ? [{ id: 7, direction_type_id: 1 }] : []);
+      prisma.bus_route_coordinates.findMany.mockResolvedValue(line.map(([latitude, longitude]) => ({ route_id: 7, latitude, longitude })));
+      return (await queryBusLine(7, 1))!;
+    };
+
+    it('lists it, flagged, and draws the line straight past it, not out to it and back', async () => {
+      const line = await viewed(road);
+      expect(line.stops.map((s) => s.id)).toEqual([1, 2, 3, 4, 5]);
+      expect(line.stops.map((s) => s.misplaced ?? false)).toEqual([false, false, true, false, false]);
+      // Where it is stored stays in the list, for whoever reads it.
+      expect(line.stops[2]).toMatchObject({ latitude: 40.015, longitude: 49.0235 });
+      expect(line.coordinates.map((c) => [c.latitude, c.longitude])).toEqual([[40.005, 49], [40.01, 49], [40.02, 49], [40.025, 49]]);
+    });
+
+    it('is not flagged when the recorded line goes out to it, or when there is no line to tell', async () => {
+      const detour = await viewed([road[0], road[1], at[3], road[3], road[4]]);
+      expect(detour.stops.some((s) => s.misplaced)).toBe(false);
+      expect(detour.coordinates).toContainEqual({ latitude: 40.015, longitude: 49.0235 });
+      const none = await viewed([]);
+      expect(none.stops.some((s) => s.misplaced)).toBe(false);
+      expect(none.coordinates).toEqual([]);
+    });
+  });
+
   it('keeps a loop that returns to its first stop', async () => {
     const loop = [1, 2, 3, 1];
     prisma.bus_bus_stops.findMany

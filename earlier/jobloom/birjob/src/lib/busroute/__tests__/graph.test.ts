@@ -131,6 +131,8 @@ describe('transit graph', () => {
       // The ride still names the stop it passes, as the line lists it, and counts it,
       // but is drawn straight past it, not out to where it is stored.
       expect(through.segments[0].stops.map(s => s.id)).toEqual([1, 2, 3, 4, 5]);
+      // Flagged, so the map leaves its marker out, 2 km off the ride drawn past it (#743).
+      expect(through.segments[0].stops.map(s => s.misplaced ?? false)).toEqual([false, false, true, false, false]);
       expect(through.totalStops).toBe(5);
       expect(through.segments[0].path).toEqual([[40.005, 49], [40.01, 49], [40.02, 49], [40.025, 49]]);
       // Boarding or alighting at it costs its stored leg, more than the whole line.

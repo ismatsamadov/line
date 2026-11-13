@@ -148,10 +148,11 @@ function reconstruct(graph: RoutingGraph, destination: Label): RouteResult {
       drawn.push({ stops: [[from.latitude, from.longitude]], legs: [] });
     }
     // A leg past a misplaced stop (graph.ts) lists the stop among those the ride
-    // passes, as its line does, but is not drawn out to where the stop is stored.
+    // passes, as its line does, but is not drawn out to where the stop is stored, and
+    // the stop says so, for the map to leave its marker out too (#743).
     if (edge.kind === "bus" && edge.passes) {
       const passed = graph.getStopInfo(edge.passes.id)!;
-      segment.stops.push({ id: passed.id, name: edge.passes.name || passed.name, latitude: passed.latitude, longitude: passed.longitude });
+      segment.stops.push({ id: passed.id, name: edge.passes.name || passed.name, latitude: passed.latitude, longitude: passed.longitude, misplaced: true });
     }
     segment.stops.push({ id: to.id, name: edge.toStopName || to.name, latitude: to.latitude, longitude: to.longitude });
     segment.distance += edge.distance;
@@ -324,6 +325,12 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
 
   const away = "stopId" in from ? null : accessWalks(graph, from, "origin", options);
   const home = "stopId" in to ? null : accessWalks(graph, to, "destination", options);
+  // A point with no stop or station within its walk: no journey can ride from it or to
+  // it, so nothing is searched (#743). With none near the destination, the search from
+  // the origin settled every stop it could reach before finding that out.
+  if (away?.length === 0 || home?.length === 0) {
+    return walkable ? { route: walkOnly() } : { route: null, stranded: away?.length === 0 ? "origin" : "destination" };
+  }
   if (away) edges.set(origin.id, away.map((walk) => walkEdge(origin, graph.getStopInfo(walk.stopId)!, walk.distance, walk.exit)));
   for (const walk of home ?? []) {
     const stop = graph.getStopInfo(walk.stopId)!;
@@ -333,8 +340,5 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
   // Up to MAX_WALK_ONLY_KM a ride no faster than the walk, before any wait, never wins.
   // Within MAX_WALK_INSTEAD_MIN the bound has already let only a cheaper one through.
   if (found && !(walkable && found.cost[4] >= minutes)) return { route: reconstruct(withPoints, found) };
-  if (walkable) return { route: walkOnly() };
-  if (away?.length === 0) return { route: null, stranded: "origin" };
-  if (home?.length === 0) return { route: null, stranded: "destination" };
-  return { route: null };
+  return { route: walkable ? walkOnly() : null };
 }

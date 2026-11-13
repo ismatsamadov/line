@@ -220,6 +220,34 @@ describe('walking the whole way (#720)', () => {
     expect(findJourney(g, point(5.1, 'O'), point(0, 'D'))).toEqual({ route: null });
   });
 
+  it('answers an end with no stop within a walk without searching (#743)', () => {
+    // The network above: from stop 1, 100 m from O, a ride reaches 2 and then 9.
+    const g = graph({ 1: [ride(2, 10)], 2: [ride(9, 20)], 8: [ride(1, 30)] }, undefined, {
+      at: { 1: north(0.1), 2: north(5), 8: north(-20), 9: north(30) },
+    });
+    const searched: number[] = [];
+    const spy = { ...g, getEdges: (id: number) => { searched.push(id); return g.getEdges(id); } };
+    // Which stops serve a ride is worked out once per graph; the search is what is left.
+    accessWalks(spy, O, 'origin');
+    searched.length = 0;
+    // The answers the search gave, from a point or a stop, to a point or a stop. With no
+    // stop near the destination it searched from the origin through every stop it could
+    // reach first.
+    expect(findJourney(spy, O, point(9, 'D'))).toEqual({ route: null, stranded: 'destination' });
+    expect(findJourney(spy, { stopId: 1 }, point(9, 'D'))).toEqual({ route: null, stranded: 'destination' });
+    expect(findJourney(spy, point(-3, 'O'), point(5.1, 'D'))).toEqual({ route: null, stranded: 'origin' });
+    expect(findJourney(spy, point(-3, 'O'), { stopId: 2 })).toEqual({ route: null, stranded: 'origin' });
+    expect(findJourney(spy, point(-3, 'O'), point(9, 'D'))).toEqual({ route: null, stranded: 'origin' });
+    // Within the walk the whole way, the walk: 1.7 km takes 29.5 minutes on foot.
+    expect(walkMinutes(1.7)).toBeGreaterThan(15);
+    expect(ids(findJourney(spy, O, point(1.7, 'D')).route)).toEqual([[ORIGIN_POINT_ID, DESTINATION_POINT_ID]]);
+    expect(ids(findJourney(spy, point(8.2, 'O'), point(9.9, 'D')).route)).toEqual([[ORIGIN_POINT_ID, DESTINATION_POINT_ID]]);
+    expect(searched).toEqual([]);
+    // With a stop at each end, the search runs.
+    expect(modes(findJourney(spy, O, point(5.1, 'D')).route)).toEqual(['walk', 'bus', 'walk']);
+    expect(searched).toContain(1);
+  });
+
   it('keeps an end walk within the radius it was found in', () => {
     const edge = findJourney(near(3), O, point(1.5, 'D')).route!.segments[0];
     expect(edge.distance).toBeLessThanOrEqual(ACCESS_RADIUS_KM);

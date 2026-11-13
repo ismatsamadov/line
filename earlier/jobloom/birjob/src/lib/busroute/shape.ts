@@ -178,3 +178,52 @@ export function joinLegs(stops: LatLng[], legs: Array<LatLng[] | undefined>): La
   for (let i = 0; i < stops.length - 1; i++) for (const point of legs[i] ?? [stops[i], stops[i + 1]]) push(point);
   return path;
 }
+
+// A stop sticks out of its ride when its two legs run more than MISPLACED_RATIO times
+// the straight line between the stops either side, and over MISPLACED_KM longer.
+const MISPLACED_RATIO = 3;
+const MISPLACED_KM = 1;
+
+/** A misplaced stop: its position in the ride, and the straight line between the stops either side (km). */
+export interface Misplaced { at: number; direct: number }
+
+/** Each leg's straight line (km), or null where a stop at either end has no coordinates. */
+export const legLengths = (points: Array<LatLng | undefined>): Array<number | null> =>
+  points.slice(1).map((to, i) => {
+    const from = points[i];
+    return from && to ? km(from, to) : null;
+  });
+
+/**
+ * The stops of a ride that the data puts in the wrong place (#721). A stop that sticks
+ * out of its ride while the recorded line passes it by, though it runs on through the
+ * legs beyond, is taken to be misplaced. On the snapshot that is stop 3841 of 537, 1.1
+ * km from both its lines, and 536's row "28 May küçəsi 222", which points at stop 3095,
+ * C.Cavadov küç. 72A, elsewhere on the route. The buses that do go out of their way to
+ * a stop, as 145 does to Binəqədi Gənclər Şəhərciyi, have it on their recorded line,
+ * and their legs count in full. A misplaced stop's neighbours have their other legs on
+ * the line and its own are not, so misplaced stops are at least three places apart,
+ * and the legs past them never overlap.
+ *
+ * The graph times a ride past such a stop by the straight line between its neighbours
+ * (graph.ts), and the line viewer draws its line that way (db.ts, #743). Both ask here of
+ * the same sequence, every row of the ride in travel order with a stop that has no valid
+ * coordinates as a gap and a stop listed twice in a row twice, so they tell the same stops.
+ * The viewer's own list drops the one and lists the other once; asked of that list, it
+ * flagged a misplaced stop stored twice in a row, which this does not tell, and hid a stop
+ * that journeys ride to.
+ */
+export function misplacedStops(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>): Misplaced[] {
+  const misplaced: Misplaced[] = [];
+  for (let k = 1; k < lengths.length; k++) {
+    const into = lengths[k - 1], out = lengths[k];
+    if (into === null || out === null || legs[k - 1] || legs[k]) continue;
+    const beyond = [k - 2, k + 1].filter((i) => i >= 0 && i < lengths.length);
+    if (!beyond.length || !beyond.every((i) => legs[i])) continue;
+    const before = points[k - 1]!, after = points[k + 1]!;
+    const direct = haversine(before[0], before[1], after[0], after[1]);
+    if (into + out <= MISPLACED_RATIO * direct || into + out - direct <= MISPLACED_KM) continue;
+    misplaced.push({ at: k, direct });
+  }
+  return misplaced;
+}

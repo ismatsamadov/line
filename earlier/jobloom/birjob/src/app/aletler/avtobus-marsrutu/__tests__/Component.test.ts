@@ -12,7 +12,7 @@ import type { PlaceSearch } from '../usePlaceSearch';
 import * as access from '@/lib/busroute/access';
 import * as geo from '@/lib/busroute/geo';
 import type { PlaceMatch } from '@/lib/busroute/places';
-import type { StopDetail } from '@/lib/busroute/types';
+import type { BusLineDetail, BusLite, StopDetail } from '@/lib/busroute/types';
 import * as search from '../search';
 import * as journeyFormatting from '../journeyFormatting';
 import * as mapMarks from '../mapMarks';
@@ -170,6 +170,38 @@ describe('the planner (#720)', () => {
     p.button('Yerləri dəyiş').onClick();
     await p.render();
     expect(bodies.at(-1)).toEqual({ fromStopId: 2, to: { latitude: 40.39989, longitude: 49.85283, name: 'Gənclik Mall' } });
+  });
+});
+
+describe('the stop, bus and line lists (#743)', () => {
+  const BUS: BusLite = { id: 7, number: '7', first_point: 'A', last_point: 'B', route_length: 10, duration_minuts: 30 };
+  const LINE: BusLineDetail = {
+    busId: 7, number: '7', carrier: '', first_point: 'A', last_point: 'B', route_length: 10, duration_minuts: 30,
+    tariff_str: '', direction: 1, availableDirections: [1], stops: STOPS, coordinates: [],
+  };
+
+  it('are checked with the server before any copy the browser kept is used', async () => {
+    // The routes answer a current copy with a 304. A copy a browser kept under the old
+    // header, s-maxage with stale-while-revalidate, has no tag: asked for with no-cache, it
+    // is fetched afresh rather than shown once more after a deploy changed the list.
+    const asks: Array<[string, unknown]> = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      asks.push([url, init]);
+      if (url === '/api/avtobus/stops') return { ok: true, json: async () => ({ stops: STOPS }) };
+      if (url === '/api/avtobus/buses') return { ok: true, json: async () => ({ buses: [BUS] }) };
+      return { ok: true, json: async () => ({ line: LINE }) };
+    }));
+    const p = planner();
+    await p.render();
+    p.button('Xətti göstər').onClick();
+    await p.render();
+    p.view.find(el => Array.isArray(el.props.buses))[0].props.onSelect(BUS);
+    await p.render();
+    expect(asks).toEqual([
+      ['/api/avtobus/stops', { cache: 'no-cache' }],
+      ['/api/avtobus/buses', { cache: 'no-cache' }],
+      ['/api/avtobus/line?busId=7&direction=1', { cache: 'no-cache' }],
+    ]);
   });
 });
 

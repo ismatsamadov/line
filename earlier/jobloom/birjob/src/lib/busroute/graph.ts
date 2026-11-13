@@ -10,7 +10,7 @@ import { haversine, isBakuCoordinate } from "./geo";
 import { queryStopDetails, queryBuses, queryBusStops, queryRouteShapes } from "./db";
 import { computeWalkingEdges } from "./walking";
 import { collapseRepeatedSequence } from "./sequence";
-import { legPaths } from "./shape";
+import { legLengths, legPaths, misplacedStops, type Misplaced } from "./shape";
 import { metroNetwork } from "./metro";
 import { numberRidePositions } from "./routing";
 
@@ -105,10 +105,7 @@ export class TransitGraph {
         const c = this.stopInfo.get(s.stop_id);
         return c ? [c.latitude, c.longitude] : undefined;
       });
-      const lengths = points.slice(1).map((to, i) => {
-        const from = points[i];
-        return from && to ? haversine(from[0], from[1], to[0], to[1]) : null;
-      });
+      const lengths = legLengths(points);
 
       // The road for each leg, from the bus's recorded lines matched to these stops
       // (shape.ts). It draws the ride; routing reads it only to tell a misplaced stop.
@@ -219,40 +216,6 @@ export class TransitGraph {
       return 0;
     }
   }
-}
-
-// A stop sticks out of its ride when its two legs run more than MISPLACED_RATIO times
-// the straight line between the stops either side, and over MISPLACED_KM longer.
-const MISPLACED_RATIO = 3;
-const MISPLACED_KM = 1;
-
-/** A misplaced stop: its position in the ride, and the straight line between the stops either side (km). */
-interface Misplaced { at: number; direct: number }
-
-/**
- * The stops of a ride that the data puts in the wrong place (#721). A stop that sticks
- * out of its ride while the recorded line passes it by, though it runs on through the
- * legs beyond, is taken to be misplaced. On the snapshot that is stop 3841 of 537, 1.1
- * km from both its lines, and 536's row "28 May küçəsi 222", which points at stop 3095,
- * C.Cavadov küç. 72A, elsewhere on the route. The buses that do go out of their way to
- * a stop, as 145 does to Binəqədi Gənclər Şəhərciyi, have it on their recorded line,
- * and their legs count in full. A misplaced stop's neighbours have their other legs on
- * the line and its own are not, so misplaced stops are at least three places apart,
- * and the legs past them never overlap.
- */
-function misplacedStops(points: Array<LatLng | undefined>, lengths: Array<number | null>, legs: Array<LatLng[] | undefined>): Misplaced[] {
-  const misplaced: Misplaced[] = [];
-  for (let k = 1; k < lengths.length; k++) {
-    const into = lengths[k - 1], out = lengths[k];
-    if (into === null || out === null || legs[k - 1] || legs[k]) continue;
-    const beyond = [k - 2, k + 1].filter((i) => i >= 0 && i < lengths.length);
-    if (!beyond.length || !beyond.every((i) => legs[i])) continue;
-    const before = points[k - 1]!, after = points[k + 1]!;
-    const direct = haversine(before[0], before[1], after[0], after[1]);
-    if (into + out <= MISPLACED_RATIO * direct || into + out - direct <= MISPLACED_KM) continue;
-    misplaced.push({ at: k, direct });
-  }
-  return misplaced;
 }
 
 /**

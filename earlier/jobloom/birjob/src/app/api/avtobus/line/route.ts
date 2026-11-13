@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { queryBusLine } from "@/lib/busroute/db";
+import { listResponse } from "@/lib/busroute/listResponse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -30,9 +31,8 @@ export async function GET(request: NextRequest) {
     if (!line) {
       return NextResponse.json({ error: "Avtobus tapılmadı" }, { status: 404 });
     }
-    return NextResponse.json({ line }, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
-    });
+    // Validated before every use, as the stop list is (listResponse.ts, #743).
+    return listResponse(request, { line });
   } catch (error) {
     console.error("[avtobus] line failed:", error);
     return NextResponse.json({ error: "Marşrut yüklənmədi" }, { status: 500 });

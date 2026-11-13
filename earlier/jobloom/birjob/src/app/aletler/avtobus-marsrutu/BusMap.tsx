@@ -14,7 +14,7 @@ import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
 import { segmentColors } from "./segmentColors";
-import { END_COLORS, PLACE_PIN_PATH } from "./mapMarks";
+import { END_COLORS, PLACE_PIN_PATH, markedLineStops, markedStopIds } from "./mapMarks";
 
 const BAKU_CENTER: [number, number] = [40.4093, 49.8671];
 const DEFAULT_ZOOM = 12;
@@ -183,13 +183,12 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
   cluster.clearLayers();
   overlay.clearLayers();
 
-  const routeStopIds = new Set<number>();
-  if (route) for (const seg of route.segments) for (const s of seg.stops) routeStopIds.add(s.id);
-
   if (route) {
-    // Route mode: no clustering — show only the on-route stops, plainly.
+    // Route mode: no clustering — show only the on-route stops, plainly, but a
+    // misplaced one the ride passes (markedStopIds, #743).
     // Pull the full StopDetail from `stops` (route segment stops are a lighter
     // shape) so a tap can re-select a real stop.
+    const routeStopIds = markedStopIds(route);
     for (const stop of stops) {
       if (!routeStopIds.has(stop.id) || fromStop?.id === stop.id || toStop?.id === stop.id) continue;
       L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
@@ -244,14 +243,13 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
         .addTo(overlay);
     }
   } else if (line) {
-    // Line-viewer mode: draw one bus line's full trajectory + every stop on it.
-    // Middle stops as small dots (endpoints get green/red pins below).
-    line.stops.forEach((stop, i) => {
-      if (i === 0 || i === line.stops.length - 1) return;
+    // Line-viewer mode: draw one bus line's full trajectory + the stops on it, the
+    // middle ones as small dots (markedLineStops; endpoints get green/red pins below).
+    for (const stop of markedLineStops(line)) {
       L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false })
         .bindTooltip(stop.name, { direction: "top", offset: [0, -6] })
         .addTo(overlay);
-    });
+    }
 
     // Trajectory polyline: prefer the road-shaped geometry; fall back to a
     // stop-to-stop line when the geometry table has no rows for this route.

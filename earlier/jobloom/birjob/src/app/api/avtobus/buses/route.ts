@@ -1,18 +1,15 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { listBusesLite } from "@/lib/busroute/db";
+import { listResponse } from "@/lib/busroute/listResponse";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 // All Baku bus lines (id, number, endpoints, length) — feeds the line-viewer
-// picker. Whole-dataset response that only changes on a manual re-import, so it
-// caches hard at the edge (repeat loads hit the CDN, not Postgres).
-export async function GET() {
+// picker. Validated before every use, as the stop list is (listResponse.ts, #743).
+export async function GET(request: NextRequest) {
   try {
-    const buses = await listBusesLite();
-    return NextResponse.json({ buses }, {
-      headers: { "Cache-Control": "public, s-maxage=86400, stale-while-revalidate=604800" },
-    });
+    return listResponse(request, { buses: await listBusesLite() });
   } catch (error) {
     console.error("[avtobus] buses failed:", error);
     return NextResponse.json({ error: "Avtobuslar yüklənmədi" }, { status: 500 });

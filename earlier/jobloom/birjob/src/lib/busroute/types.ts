@@ -63,6 +63,10 @@ export interface BusLineStop {
   latitude: number;
   longitude: number;
   is_transport_hub: boolean;
+  /** Stored off the line, where the data puts it in the wrong place (misplacedStops in
+   *  shape.ts): listed, but the line is drawn straight past it and the map leaves its
+   *  marker out (#743). */
+  misplaced?: true;
 }
 
 /** Full trajectory of one bus line in one direction — metadata + ordered stops +
@@ -159,6 +163,10 @@ export interface RouteSegment {
     name: string;
     latitude: number;
     longitude: number;
+    /** A misplaced stop the ride passes on the straight line between its neighbours
+     *  (graph.ts): listed, as its line lists it, but the map leaves its marker out, since
+     *  the data stores it off the ride drawn past it (#743). */
+    misplaced?: true;
   }>;
   distance: number;
   time: number;
