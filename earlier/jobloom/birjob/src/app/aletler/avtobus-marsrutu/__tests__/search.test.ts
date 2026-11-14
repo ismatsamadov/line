@@ -3,7 +3,7 @@ import type { BusLite, StopDetail } from "@/lib/busroute/types";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { coarsePoint, EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeRank, placeStopNear, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
+import { coarsePoint, EVERYDAY_PLACES, HUB_PLACES, keepShownRows, nearestStop, normalizeSearch, placeKind, placeRank, placeStopNear, rankStops, searchBuses, searchStops, suggestEnds } from "../search";
 import { buildPlaceIndex, searchPlaces } from "@/lib/busroute/places";
 
 const stop = (id: number, name: string, code = "", hub = false): StopDetail => ({
@@ -145,6 +145,28 @@ describe("stops and places in one list (#720)", () => {
     expect(placeRank("lotos", at("Lotos Ticarət Mərkəzi / 8-ci km", "mall"))).toBe(1);
   });
 
+  it("ranks a street carried over as the search does: named what was typed, as a start, its settlement aside (#743)", () => {
+    const street = (name: string, alias?: string) => ({ name, category: "street", label: "Küçə", ...(alias ? { alias } : {}) });
+    expect(placeRank("nizami", street("Nizami / Saray"))).toBe(1);
+    expect(placeRank("nizami küçəsi", street("Nizami küçəsi / Bakı"))).toBe(1);
+    expect(placeRank("nizami küç", street("Nizami küçəsi / Bakı"))).toBe(1);
+    expect(placeRank("nizami saray", street("Nizami küçəsi / Saray"))).toBe(2);
+    expect(placeRank("torqovı", street("Nizami küçəsi / Bakı", "Torqovı"))).toBe(1);
+    expect(placeRank("nizamikücəsi", street("Nizami küçəsi"))).toBe(1); // without its spaces, still as a start
+    // Another place's district stays part of its name.
+    expect(placeRank("lotos ticarət mərkəzi", { name: "Lotos Ticarət Mərkəzi / 8-ci km", category: "mall", label: "Ticarət mərkəzi" })).toBe(1);
+  });
+
+  it("tells a street's length when it is 1 km or longer, the way the journey's walks are told (#743)", () => {
+    const street = (length?: number) => ({ category: "street", label: "Küçə", length });
+    expect(placeKind(street(0.9))).toBe("Küçə");
+    expect(placeKind(street(1))).toBe("Küçə, 1.0 km");
+    expect(placeKind(street(3.2))).toBe("Küçə, 3.2 km");
+    expect(placeKind(street(17))).toBe("Küçə, 17 km");
+    expect(placeKind(street())).toBe("Küçə");
+    expect(placeKind({ category: "mall", label: "Ticarət mərkəzi" })).toBe("Ticarət mərkəzi");
+  });
+
   it("names everyday kinds that places.json has", () => {
     const { labels } = JSON.parse(readFileSync(fileURLToPath(new URL("../../../../lib/busroute/places.json", import.meta.url)), "utf8"));
     for (const category of [...EVERYDAY_PLACES, ...HUB_PLACES]) expect(labels, category).toHaveProperty(category);
@@ -202,7 +224,7 @@ describe("a station or a mall at the top of the list it is typed for (#720)", ()
   it("ranks every place carried over as the search ranks it, for each prefix of what people type", () => {
     const typed = ["gənclik mall", "koroğlu", "nəriman nərimanov", "avtovağzal", "28 mall", "28mall", "parkbulvar", "8 km",
       "lotos", "vağzal", "sədərək", "həzi aslanov", "гянджлик", "bravo", "nizami küçəsi", "içərişəhər", "dəniz vağzalı",
-      "port baku", "elmlər akademiyası", "ganjlik"];
+      "port baku", "elmlər akademiyası", "ganjlik", "nizami", "sabir saray", "torqovı", "28 may küçəsi", "neftçilər pr"];
     let compared = 0;
     for (const name of typed) for (let n = 2; n <= name.length; n++) {
       const query = name.slice(0, n);

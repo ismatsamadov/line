@@ -1,7 +1,8 @@
 /**
  * The named places the planner's search offers as a start or a destination (#720):
  * malls, restaurants, universities, hospitals, markets, hotels, parks, offices, metro
- * stations, settlements, each in one of a fixed set of categories with an Azerbaijani label.
+ * stations, settlements, each in one of a fixed set of categories with an Azerbaijani label,
+ * and the streets (#743), each placed at its middle and with its length.
  *
  * places.json is written by scripts/bus/build_places_json.py from one OpenStreetMap
  * snapshot read through the Overpass API (its date and query are in the file), so the
@@ -15,13 +16,14 @@ import "server-only";
 import { z } from "zod";
 import { haversine } from "./geo";
 import { normalizeSearch } from "./searchText";
-import { matchesLoosely, ownWords, rankCompact, rankName, stepUp } from "./placeMatch";
+import { exactName, matchesLoosely, matchRank, ownWords, rankCompact, rankName, STREET } from "./placeMatch";
 
-/** [id, name, category, latitude, longitude, notable, other names], as the file's
- *  "fields" say. The id is OpenStreetMap's: n, w or r and the number. */
+/** [id, name, category, latitude, longitude, notable, other names, length], as the file's
+ *  "fields" say. The id is OpenStreetMap's: n, w or r and the number; a street's is the
+ *  way its point is on. Only a street has a length. */
 const Row = z.tuple([
   z.string().regex(/^[nwr][1-9]\d*$/), z.string().min(1), z.string(), z.number(), z.number(),
-  z.union([z.literal(0), z.literal(1)]), z.array(z.string().min(1)),
+  z.union([z.literal(0), z.literal(1)]), z.array(z.string().min(1)), z.number().positive().optional(),
 ]);
 export const PlacesData = z.object({
   labels: z.record(z.string(), z.string().min(1)),
@@ -36,12 +38,15 @@ export interface Place {
   label: string;
   latitude: number;
   longitude: number;
+  /** A street's (#743): how far its ends are apart, in km. Its point is its middle. */
+  length?: number;
 }
 
 export interface PlaceMatch extends Place {
   /** 0 the name itself, 1 the start of it, 2 the start of each of its words, 3 looser:
    *  a word found inside it, or the category's name ("gənclik metro"). A station's, an
-   *  airport's or a mall's 2 counts as 1 (placeMatch.ts's HUBS). */
+   *  airport's or a mall's 2 counts as 1 (placeMatch.ts's HUBS), and a street's 0 as 1
+   *  (matchRank). A street's name is the one before the settlement written after it. */
   rank: number;
   /** The other name that matched, when the one shown did not ("Ganjlik Mall"). */
   alias?: string;
@@ -49,12 +54,14 @@ export interface PlaceMatch extends Place {
 
 // The places a search should put first among equally good matches: a metro station
 // before a supermarket of the same name. A feature with a Wikidata entry is better known
-// and gets NOTABLE more.
+// and gets NOTABLE more. A street (#743) weighs what an office of state or a hotel does:
+// after the landmarks named after the same person ("nizami": the station, the museum,
+// the cinema) and before the cafés, schools and shops.
 const WEIGHT: Record<string, number> = {
   metro: 9, airport: 9, mall: 8, rail: 7, bus_station: 7, market: 7, university: 7, hospital: 7,
   square: 7, settlement: 7, port: 6, park: 6, sight: 6, museum: 6, theatre: 6, hotel: 5,
   college: 5, clinic: 5, government: 5, embassy: 5, culture: 5, sport: 5, fun: 5, beach: 5,
-  area: 5, supermarket: 4, restaurant: 4, school: 4, worship: 4, residential: 4, cafe: 3,
+  area: 5, [STREET]: 5, supermarket: 4, restaurant: 4, school: 4, worship: 4, residential: 4, cafe: 3,
   kindergarten: 3, post_office: 3, bank: 3, office: 3, shop: 3,
 };
 const NOTABLE = 2;
@@ -74,6 +81,8 @@ interface Entry {
   compact: string[];
   /** Every name's words before the mappers' " / " and the place after it. */
   ownWords: string[][];
+  /** Every name as rankName takes it for the name itself (exactName). */
+  exact: string[];
   weight: number;
 }
 
@@ -84,17 +93,18 @@ export interface PlaceIndex {
 /** Check places.json's shape and fold every name once, for searchPlaces. */
 export function buildPlaceIndex(raw: unknown): PlaceIndex {
   const data = PlacesData.parse(raw);
-  const entries = data.places.map(([id, name, category, latitude, longitude, notable, others]): Entry => {
+  const entries = data.places.map(([id, name, category, latitude, longitude, notable, others, length]): Entry => {
     const label = data.labels[category];
     if (!label) throw new Error(`place ${id} has the unknown category ${category}`);
     const names = [name, ...others].map(normalizeSearch);
     const labelWords = normalizeSearch(label).split(" ");
     return {
-      place: { id, name, category, label, latitude, longitude },
+      place: { id, name, category, label, latitude, longitude, ...(length === undefined ? {} : { length }) },
       others, names, words: names.map((n) => n.split(" ")), labelWords,
       haystack: `${names.join(" ")} ${labelWords.join(" ")}`,
       compact: names.map((n) => n.replaceAll(" ", "")),
       ownWords: [name, ...others].map(ownWords),
+      exact: [name, ...others].map((n) => exactName(n, category)),
       weight: (WEIGHT[category] ?? 0) + (notable ? NOTABLE : 0),
     };
   });
@@ -105,7 +115,7 @@ export function buildPlaceIndex(raw: unknown): PlaceIndex {
  * The best places for what a person typed: exact names, then names that start with it,
  * then names whose words start with its words in any order, then looser matches, a
  * station, an airport or a mall whose words start with them counting as starting with it
- * (placeMatch.ts). A query that matches nothing is tried again without its spaces against names
+ * and a street named it as starting with it (placeMatch.ts's matchRank). A query that matches nothing is tried again without its spaces against names
  * without theirs, so that "28mall" and "parkbulvar" find 28 Mall and Park Bulvar. Among
  * equal matches a match on the shown name comes before one on another name, then the
  * category's weight, then the better match before that step, then, given `near`, the
@@ -121,7 +131,7 @@ export function searchPlaces(
   const queryWords = q.split(" ");
   const found: Array<{ entry: Entry; rank: number; matched: number; which: number; distance: number }> = [];
   const add = (entry: Entry, matched: number, which: number) => {
-    const rank = stepUp(matched, entry.place.category, queryWords, entry.ownWords[which]);
+    const rank = matchRank(matched, entry.place.category, queryWords, entry.ownWords[which]);
     const distance = near ? haversine(near.latitude, near.longitude, entry.place.latitude, entry.place.longitude) : 0;
     found.push({ entry, rank, matched, which, distance });
   };
@@ -129,7 +139,7 @@ export function searchPlaces(
     if (!queryWords.every((w) => entry.haystack.includes(w))) continue;
     let rank = Infinity, which = 0;
     for (let i = 0; i < entry.names.length && rank > 0; i++) {
-      const r = rankName(q, queryWords, entry.names[i], entry.words[i]);
+      const r = rankName(q, queryWords, entry.names[i], entry.words[i], entry.exact[i]);
       if (r < rank) { rank = r; which = i; }
     }
     if (rank === Infinity) {

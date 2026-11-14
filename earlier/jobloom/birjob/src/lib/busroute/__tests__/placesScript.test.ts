@@ -32,8 +32,10 @@ describe('build_places_json.py (#720)', () => {
     const { query, snapshot } = python('print(json.dumps({"query": b.QUERY, "snapshot": b.SNAPSHOT}))') as
       { query: string; snapshot: string };
     expect(query).toContain(`[date:"${snapshot}"]`);
-    // The ways and relations are given once with their centre and once with their bounding box.
-    expect(query).toMatch(/out tags center qt;\nout ids bb qt;\n$/);
+    // The places' ways and relations are given once with their centre and once with their
+    // bounding box, and every named road last, with its line (#743).
+    expect(query).toContain('way[name][highway]->.roads;');
+    expect(query).toMatch(/out tags center qt;\nout ids bb qt;\n\.roads out tags geom qt;\n$/);
   });
 
   it('folds a name as the search does, so that the names it dedupes are the ones the search cannot tell apart', () => {
@@ -258,6 +260,121 @@ print(json.dumps(result))`);
     ];
     expect(python('print(json.dumps([b.category(t) for t in data]))', cases.map(([t]) => t)))
       .toEqual(cases.map(([, category]) => category));
+  });
+
+  it('writes out a street name\'s abbreviations, and tells a street named only by its kind and number (#743)', () => {
+    const result = python(`print(json.dumps({
+    "written": [b.written_out(n) for n in data["written"]],
+    "numbered": [b.numbered_street(n) for n in data["numbered"]],
+    "keys": [b.street_key(n) for n in data["keys"]]}))`, {
+      written: ['Nizami küç.', 'S.Vurğun Küç.', 'Nizami küç', 'Neftçilər pr.', 'Nizami küç. 1-ci döngə', 'Küçük Bağ', 'Bakı pr',
+        'küç.küç.'],
+      numbered: ['Döngə 1', '1-ci döngə', '2-ci küçə', '1572-ci keçid', 'Keçid 3', 'Dalan 3a', 'Küçə', 'Nərimanov döngə 8',
+        '2-ci Kiçik Qala döngəsi', '28 May küçəsi', '1-ci Gölkənarı'],
+      keys: ['Salyan şosesi', 'Salyan Şossesi', 'Bakı-Sumqayıt yolu'],
+    });
+    expect(result).toEqual({
+      written: ['Nizami küçəsi', 'S.Vurğun Küçəsi', 'Nizami küçəsi', 'Neftçilər prospekti', 'Nizami küçəsi 1-ci döngə', 'Küçük Bağ',
+        'Bakı pr', 'küç.küç.'],
+      numbered: [true, true, true, true, true, true, true, false, false, false, false],
+      // Both spellings of the word for a highway are one name.
+      keys: ['salyan sossesi', 'salyan sossesi', 'baki sumqayit yolu'],
+    });
+  });
+
+  it('makes a street of the ways of one name near each other, at its middle, under the way that is on (#743)', () => {
+    const result = python(`
+def way(i, name, line, highway="residential", **tags):
+    return {"type": "way", "id": i, "tags": {"name": name, "highway": highway, **tags},
+            "geometry": [{"lat": p[0], "lon": p[1]} for p in line]}
+roads = [
+    way(1, "Nizami küç.", [(40.40, 49.80), (40.40, 49.81)], **{"name:ru": "улица Низами"}),
+    way(2, "Nizami küçəsi", [(40.40, 49.81), (40.40, 49.82)], **{"name:en": "Nizami Street", "wikidata": "Q1"}),
+    way(3, "Nizami küç.", [(40.45, 49.80), (40.45, 49.805)]),  # 5.6 km away: another street
+    way(4, "Nizami küç.", [(40.40, 49.82), (40.401, 49.821)], "primary_link"),
+    way(5, "Döngə 1", [(40.40, 49.80), (40.401, 49.80)]),
+    way(6, "Fəvvarələr meydanı", [(40.37, 49.83), (40.371, 49.83)], "pedestrian", place="square"),
+    way(7, "Terminal yolu", [(40.37, 49.83), (40.371, 49.83)], "service"),
+    # An L: the centre of its lines is off them, and the point moves onto the nearer one.
+    way(8, "Bucaq küç.", [(40.30, 49.80), (40.30, 49.81), (40.31, 49.81)]),
+]
+streets, left_out = b.streets(roads)
+print(json.dumps({"streets": streets, "left_out": left_out}))`) as {
+      streets: Array<{ id: string; name: string; point: [number, number]; aliases: string[]; length: number; notable: boolean }>;
+      left_out: Record<string, number>;
+    };
+    const byId = Object.fromEntries(result.streets.map((s) => [s.id, s]));
+    expect(Object.keys(byId).sort()).toEqual(['w1', 'w3', 'w8']);
+    // Ways 1 and 2 are one street, its spelling written out, with every other name its ways
+    // have, Wikidata's mark, and the 1.7 km between its ends; its middle is where they meet.
+    expect(byId.w1).toEqual({ id: 'w1', name: 'Nizami küçəsi', category: 'street', point: [40.4, 49.81], notable: true,
+      aliases: ['улица Низами', 'Nizami Street'], length: 1.7 });
+    expect(byId.w3).toMatchObject({ name: 'Nizami küçəsi', point: [40.45, 49.8025], length: 0.4, notable: false });
+    expect(byId.w8.point[1]).toBe(49.81);
+    expect(byId.w8.point[0]).toBeGreaterThan(40.3);
+    expect(byId.w8.point[0]).toBeLessThan(40.31);
+    expect(result.left_out).toEqual({ 'highway=primary_link': 1, 'highway=service': 1, 'a place as well': 1, 'named only by its kind or number': 1 });
+  });
+
+  it('writes the settlement nearest a street after a name other streets share, if near and the street short (#743)', () => {
+    const result = python(`
+found = [{"name": n, "point": p, "length": l} for n, p, l in data]
+named = b.beside(found, [{"name": "Saray", "point": (40.53, 49.71)}, {"name": "Balaxanı / Bakı", "point": (40.46, 49.92)}])
+print(json.dumps({"names": [s["name"] for s in found], "named": named}))`, [
+      ['Sabir küçəsi', [40.527, 49.715], 1.1],
+      ['Sabir küçəsi', [40.45, 49.92], 0.4],
+      ['Sabir küçəsi', [40.30, 50.30], 0.5], // no settlement within 2 km
+      ['Sabir küçəsi', [40.531, 49.711], 5.2], // longer than 5 km: through several
+      ['Saray küçəsi', [40.531, 49.711], 0.3], // no other street has its name
+      ['Saray yolu', [40.531, 49.711], 0.3], ['Saray yolu', [40.529, 49.709], 0.3], // their names say it
+      ['Salyan şosesi', [40.531, 49.711], 1.0], ['Salyan şossesi', [40.461, 49.921], 1.0], // one name, two spellings
+    ]);
+    expect(result).toEqual({
+      names: ['Sabir küçəsi / Saray', 'Sabir küçəsi / Balaxanı', 'Sabir küçəsi', 'Sabir küçəsi', 'Saray küçəsi', 'Saray yolu',
+        'Saray yolu', 'Salyan şosesi / Saray', 'Salyan şossesi / Balaxanı'],
+      named: 4,
+    });
+  });
+
+  it('builds the streets from the answer\'s roads, apart from its places, corrections and all (#743)', () => {
+    const result = python(`
+import contextlib, io, shutil, tempfile
+from pathlib import Path
+tmp = Path(tempfile.mkdtemp())
+b.OUT = tmp / "places.json"
+stations = json.loads(b.METRO.read_text(encoding="utf-8"))["stations"]
+elements = [{"type": "node", "id": 100 + i, "lat": s["latitude"], "lon": s["longitude"],
+             "tags": {"name": s["name"].removesuffix("-2"), "railway": "station", "station": "subway"}}
+            for i, s in enumerate(stations)]
+elements.append({"type": "node", "id": 1, "lat": 40.53, "lon": 49.71, "tags": {"name": "Saray", "place": "village"}})
+line = lambda *ps: {"geometry": [{"lat": p[0], "lon": p[1]} for p in ps], "bounds": {}}
+elements.append({"type": "way", "id": 7, "tags": {"name": "Sabir küç.", "highway": "residential", "name:en": "Bad words"},
+                 **line((40.527, 49.714), (40.527, 49.716))})
+elements.append({"type": "way", "id": 8, "tags": {"name": "Sabir küç.", "highway": "residential"},
+                 **line((40.45, 49.92), (40.45, 49.921))})
+answer = tmp / "answer.json"
+answer.write_text(json.dumps({"osm3s": {"timestamp_osm_base": "2026-11-12T00:00:00Z"}, "elements": elements}))
+b.PLACED_AT.clear(); b.ALIASES.clear()
+def run(corrections):
+    b.CORRECTIONS[:] = corrections
+    try:
+        with contextlib.redirect_stdout(io.StringIO()):
+            b.build(str(answer))
+    except SystemExit as stop:
+        return {"stopped": str(stop)}
+    rows = [r for r in json.loads(b.OUT.read_text())["places"] if r[2] == "street"]
+    b.OUT.unlink()
+    return {"streets": rows}
+result = {"fine": run([("w7", "name:en", "Bad words", None, "vandalism")]),
+          "stale": run([("w8", "name:en", "Gone", None, "vandalism fixed since")])}
+shutil.rmtree(tmp)
+print(json.dumps(result))`) as { fine: { streets: unknown[][] }; stale: { stopped: string } };
+    // The name a correction leaves out goes, and the two Sabir küçəsi are told apart.
+    expect(result.fine.streets).toEqual([
+      ['w8', 'Sabir küçəsi', 'street', 40.45, 49.9205, 0, [], 0.1],
+      ['w7', 'Sabir küçəsi / Saray', 'street', 40.527, 49.715, 0, [], 0.2],
+    ]);
+    expect(result.stale.stopped).toMatch(/^CORRECTIONS whose value OpenStreetMap no longer has.*w8 name:en 'Gone'/);
   });
 
   it('counts Baku Crystal Hall\'s amenity=events_centre as an events venue', () => {

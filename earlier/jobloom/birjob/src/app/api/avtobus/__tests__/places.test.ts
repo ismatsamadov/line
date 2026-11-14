@@ -45,6 +45,16 @@ describe('GET /api/avtobus/places', () => {
     expect((await (await get('?q=ganjlik+mall')).json()).places).toMatchObject([{ id: 'w2', alias: 'Ganjlik Mall' }]);
   });
 
+  it('answers a street with its length, where its middle is (#743)', async () => {
+    getPlaceIndex.mockResolvedValueOnce(buildPlaceIndex({
+      labels: { street: 'Küçə' },
+      places: [['w25403734', 'Nizami küçəsi / Bakı', 'street', 40.37396, 49.84404, 1, ['Торговая'], 3.2]],
+    }));
+    const { places } = await (await get('?q=nizami+k%C3%BC%C3%A7%C9%99si')).json();
+    expect(places).toEqual([{ id: 'w25403734', name: 'Nizami küçəsi / Bakı', category: 'street', label: 'Küçə',
+      latitude: 40.37396, longitude: 49.84404, length: 3.2, rank: 1 }]);
+  });
+
   it('puts the place nearer the other end of the journey first among equals', async () => {
     const ids = async (query: string) => (await (await get(query)).json()).places.map((p: { id: string }) => p.id);
     expect(await ids('?q=bravo')).toEqual(['n4', 'n5']);

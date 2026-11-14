@@ -15,6 +15,15 @@ import { normalizeSearch } from "./searchText";
 // for "Lotos Ticarət Mərkəzi / 8-ci km".
 export const HUBS: ReadonlySet<string> = new Set(["metro", "rail", "airport", "bus_station", "mall"]);
 
+/** The category of the streets (#743), places at their middle with a length. */
+export const STREET = "street";
+
+/** What counts as a place's very name for rankName: a street's before the " / " after which
+ *  the build writes its settlement (#743), and any other place's whole name, district and
+ *  all, as before streets. */
+export const exactName = (name: string, category: string) =>
+  category === STREET ? ownWords(name).join(" ") : normalizeSearch(name);
+
 /** Every query word starts one of the words. */
 export const startsWords = (queryWords: string[], words: string[]) => queryWords.every((q) => words.some((w) => w.startsWith(q)));
 
@@ -22,9 +31,13 @@ export const startsWords = (queryWords: string[], words: string[]) => queryWords
 export const ownWords = (name: string) => normalizeSearch(name.split(" / ")[0]).split(" ");
 
 /** How well one folded name matches the folded query: 0 the name itself, 1 its start, 2
- *  each query word the start of one of its words. */
-export function rankName(query: string, queryWords: string[], name: string, words: string[]): number {
-  if (name === query) return 0;
+ *  each query word the start of one of its words. `own` is the name itself too: a street's
+ *  name before the settlement the build writes after it, " / Saray", when another street
+ *  has its name (#743, exactName). Counted as part of the name, the settlement put the
+ *  streets of that name with none after theirs, wherever they were, before the one near
+ *  the journey's other end. */
+export function rankName(query: string, queryWords: string[], name: string, words: string[], own = name): number {
+  if (name === query || own === query) return 0;
   if (name.startsWith(query)) return 1;
   return startsWords(queryWords, words) ? 2 : Infinity;
 }
@@ -48,3 +61,12 @@ export function rankCompact(query: string, name: string): number {
  *  own words (HUBS). */
 export const stepUp = (matched: number, category: string, queryWords: string[], own: string[]) =>
   matched === 2 && HUBS.has(category) && startsWords(queryWords, own) ? 1 : matched;
+
+/** A match's rank as the search gives it (stepUp), where a street named what was typed
+ *  ranks with the names that start with it (#743). 710 streets are named without the word
+ *  for a street, by a person or a day ("Nizami", "14 İyul") that the landmarks named after
+ *  them share: "nizami" listed four streets named Nizami, in Saray, Zabrat, Binəqədi and
+ *  Sumqayıt, before the museum, the mall and Nizami küçəsi in Baku. Typed with its word,
+ *  "nizami küçəsi", a street is still the best match there is. */
+export const matchRank = (matched: number, category: string, queryWords: string[], own: string[]) =>
+  category === STREET ? Math.max(matched, 1) : stepUp(matched, category, queryWords, own);

@@ -6,16 +6,16 @@ stops?” from the retained AYNA reference snapshot and a snapshot of the metro
 traffic or waiting-time feed. Neither snapshot refreshes automatically. The map
 also draws AYNA's bicycle lanes and racks, and a journey names the racks beside it
 (`bike.json`, [Bicycles](#bicycles-692)); nothing routes by bicycle. The start and
-destination can also be a named place from an OpenStreetMap snapshot (`places.json`,
-[Places](#places-720)) or the person's location: the journey then walks from it to a
-stop near it and from a stop to it, counted like any walk
-([Routing from a place](#routing-from-a-place-720)).
+destination can also be a named place or a street from an OpenStreetMap snapshot
+(`places.json`, [Places](#places-720), [Streets](#streets-743)) or the person's location:
+the journey then walks from it to a stop near it and from a stop to it, counted like any
+walk ([Routing from a place](#routing-from-a-place-720)).
 
 ```mermaid
 flowchart LR
   P[GET /api/avtobus/places] --> Q[places.json]
   P -->|places that match, with their points| A
-  A[Stop, place or location] --> B[POST /api/avtobus/find]
+  A[Stop, place, street or location] --> B[POST /api/avtobus/find]
   B --> C[Validate stop IDs or points]
   C --> D[Shared graph initialization]
   D --> E[PostgreSQL bus reference tables]
@@ -497,17 +497,20 @@ planner; on a 429, 502 or 504 it waits, for Retry-After when given, in seconds o
 date, and tries at most twice more) for every named feature in the network's area that
 carries one of the tags a destination does: amenity, shop, office, tourism, leisure,
 healthcare, historic, building, railway and public-transport stations, aerodromes, place,
-beaches, retail, commercial and residential land, towers, lighthouses and piers. The area
+beaches, retail, commercial and residential land, towers, lighthouses and piers, and for
+every named way with a highway tag, with its line ([Streets](#streets-743)). The area
 is the extent of AYNA's stops and about 2 km around it, 39.92–40.66 N and 49.37–50.39 E,
 inside the envelope `isBakuCoordinate` accepts. The query asks for OpenStreetMap as it was
 at the snapshot's second (`[date:"2026-11-11T06:09:21Z"]`, the script's `SNAPSHOT`), and
 Overpass keeps past states, so the same query fetches the same features whenever it is
 sent. The first answer was not kept; the one fetched again on 11 November at 12:47 UTC
-rebuilt all 12,658 places byte for byte. The answer is saved as it came and the build
-reads the saved file, so a build can be re-run on the same snapshot.
+rebuilt all 12,658 places byte for byte, and on 14 November the query with the roads added
+rebuilt the 12,590 places then kept byte for byte too (#743). The answer is saved as it came
+and the build reads the saved file, so a build can be re-run on the same snapshot.
 
 **What the script keeps.** The snapshot of 11 November 2026 (OpenStreetMap data of 06:09
-UTC) had 21,770 features, 5.9 MB with their bounding boxes. A feature becomes a place
+UTC) had 21,770 features, 5.9 MB with their bounding boxes, and 14,496 named roads, 13.4 MB
+with their lines: 19.3 MB in all. A feature becomes a place
 when `category()` gives it one of the 36 categories (the first test that matches wins, so
 a hospital that is also a building is a hospital); parking, fuel, pharmacies, car repair,
 corner shops, industry and named buildings with no other tag get none. Nor does a bus
@@ -576,7 +579,11 @@ vandalism fix cannot stop applying unseen: a person reads the feature as it is n
 updates or removes the entry. It stops the same way for an `ALIASES` or `PLACED_AT`
 feature that is gone. The first is an English name a vandal gave Heydar Aliyev's grave in
 the Alley of Honour, which the picker showed as the other name that matched "aliyev"; the
-grave keeps its own name and its Russian one. Every build also prints each name and other
+grave keeps its own name and its Russian one. OpenStreetMap still had the name on 14
+November 2026: node 3755614407 is at version 4, from a MAPS.ME edit of 12 October 2017 whose
+other change to the alley, Zarifa Aliyeva's grave's English name, is a fair one, and no note
+reports it. Mending it there needs an OpenStreetMap account, the owner's; once it is mended,
+the next refresh stops on this entry, to be removed. Every build also prints each name and other
 name with a word from `REVIEW` (insults, profanity, crime and politics, in English,
 Azerbaijani and Russian) for a person to read: four on 11 November, none of them
 vandalism (the café Mafiya's three names and the anti-corruption directorate's English
@@ -618,7 +625,8 @@ metro stations' OpenStreetMap nodes have no Russian name, and get the names they
 Russian (Гянджлик, 28 Мая, 20 Января, 8 Ноября, Автовокзал, Джафар Джаббарлы, Ходжасан):
 "гянджлик" found Gənclik Mall, not the station.
 
-The result, `src/lib/busroute/places.json`, is 1.02 MB: 1,849 shops of the kinds people
+The result, `src/lib/busroute/places.json`, is 1.58 MB, 432 KB gzipped (1.02 MB and 299 KB
+before the streets): 6,190 streets ([Streets](#streets-743)), 1,849 shops of the kinds people
 travel to (electronics, clothes, furniture, books and the like), 1,558 restaurants and
 fast-food places, 1,142 cafés, 1,028 supermarkets, 924 government offices, 718 offices,
 634 schools, 468 residential complexes, 407 hotels, 398 hospitals, 388 kindergartens, 388
@@ -688,22 +696,137 @@ stop with a name within the 1 km a journey walks, distance first so a phone cuts
 stop's name rather than the distance. A stop reads "Dayanacaq" with its code. The arrow
 keys keep the option they chose when places arrive.
 
-**Not searched.** Street addresses and house numbers. On 11 November 2026 OpenStreetMap
-had 8,552 features with both a street and a house number in the whole area (an Overpass
-count, 11:45 UTC), too few for a city of Baku's size to promise a result, and the planner
-has no other address data. The FAQ says so.
+**Not searched.** House numbers. On 11 November 2026 OpenStreetMap had 8,552 features with
+both a street and a house number in the whole area (an Overpass count, 11:45 UTC), too few
+for a city of Baku's size to promise a result, and the planner has no other address data.
+The streets themselves are searched since #743 ([Streets](#streets-743)). The FAQ says both.
 
 **Refreshing.** Move `SNAPSHOT` in the script to a recent minute, then
 `python3 scripts/bus/build_places_json.py --fetch places-overpass.json` (one query, 79
-seconds on 11 November; keep the answer outside the repository), then
-`python3 scripts/bus/build_places_json.py places-overpass.json`. The header's "read" is
-the day of the database Overpass answered from. Read the names the build prints for
-review, and if it stops on a correction or an added name that no longer applies, look at
-the feature in OpenStreetMap and update or remove the entry. `places.test.ts` fails on
+seconds on 11 November, before it asked for the roads; keep the answer outside the
+repository), then `python3 scripts/bus/build_places_json.py places-overpass.json`. The
+header's "read" is the day of the database Overpass answered from. Read the names the build
+prints for review, and if it stops on a correction or an added name that no longer applies,
+look at the feature in OpenStreetMap and update or remove the entry. A street's added names
+are keyed by the way its point is on, so a refresh that moves the point to another way stops
+on its `ALIASES` entry as well. `places.test.ts` fails on
 its counts and snapshot date, and the page's `PLACES_DATE` must move with the snapshot (a
 test compares them): update the counts, this section and the date together. The file is
 re-included in `.gitignore`, as metro.json is, and `places.test.ts` fails if it stops
 being.
+
+## Streets (#743)
+
+The pickers offer the streets as well: 6,190 of them, made from the 14,496 named roads
+OpenStreetMap had in the network's area at the snapshot, which the places' query asks for
+too ([Places](#places-720)). A street is a place of its own category, `street` ("Küçə"),
+at its middle: a journey walks to that point from a stop near it, or from it to one, as for
+any place ([Routing from a place](#routing-from-a-place-720)). House numbers are still not
+searched.
+
+**Which roads.** Every named way with a highway tag that a car, a bus or a person on foot
+takes to a house (`ROADS` in the script): motorways to living streets, `road`, `pedestrian`
+and `footway`, as the Old City's lanes are mapped. Left out on the snapshot: 118 service
+roads, a terminal's or a works' own ("BGZ Xidməti Yol"); 23 ramps, each named after the road
+it joins; 4 busways, Ziya Bünyadov prospekti's bus lane mapped beside it; 4 roads being
+built, 4 race tracks, 4 flights of steps, 3 tracks and 3 rest areas and service stations;
+and 305 ways named only by their kind, or their kind and number (`NUMBERED_STREET`: "Döngə
+1", the name of 26 lanes, "2-ci küçə", "1572-ci keçid"), which no list could tell apart. A
+lane named after its street ("Nərimanov döngə 8") stays. A road that is also a place, a
+square mapped as a road, would be the place's alone; the snapshot has none. Four streets
+centred outside the area, roads to other towns that reach into it, are left out and named
+by the build.
+
+**One street of many ways.** OpenStreetMap splits a street at its junctions and maps a dual
+carriageway twice, so the ways of one name that come within 300 m of each other (`JOIN_KM`)
+are one street: 14,028 ways make the 6,190. Joined within 150 m they would make 6,285, and
+within 600 m 6,110; the joins between 150 and 300 m that were read are stretches of one
+street either side of a gap (Murtuza Muxtarov küçəsi, 184 m; Mirzə Fətəli Axundzadə küçəsi,
+242 m). The ways' names have their abbreviations written out first (`written_out`): 6,098 of
+the named roads end in "küç." and 117 in "pr.", and "nizami küçəsi" found none of them;
+"Nizami küç." is Nizami küçəsi.
+Şosesi and şossesi, both spellings of the word for a highway, are one name (`street_key`):
+seven roads are written both ways, and Salyan şosesi was two streets, of 15 and 4.9 km.
+The spelling most of a street's length has is its name, and every other name its ways have
+is searched: Nizami küçəsi in Baku is also "Torqovaya", "улица Низами" and "Nizami Street".
+
+**Where a street is.** At the point of its lines nearest their middle (`middle()`), the
+centre of their segments weighted by length: halfway along a straight street, and moved onto
+a curved one whose centre is off it. Not at a stop: as from a place, a journey walks from a
+street to whichever stops within 1 km make it cheapest. Its row names the stop nearest its
+middle, measured from there ("Küçə, 3.2 km · ortasından dayanacağa 197 m: Nizami kino
+mərkəzi"), and a chosen street reads "Küçə, 3.2 km · orta nöqtəsi götürülür". A street's length is how far apart its ends
+are, the diagonal of its bounding box: 0.5 km at the median, 1.3 at the 90th percentile and
+4.6 at the 99th. The 1,167 streets of 1 km or more say it in their rows ("Küçə, 3.2 km"):
+every part of a shorter street is within 500 m of its middle, well inside a journey's walk,
+but a longer one's middle can be far from where one is going, and a stop or a place on the
+part one needs is then the better choice, as the FAQ says.
+
+From the 6,190 middles the nearest served stop or station is 362 m away at the median and
+1,046 m at the 90th percentile (the snapshot's stops, as in [How it was
+measured](#routing-from-a-place-720)). 685 streets (11.1%) have none within 1 km, against
+3.8% of the places; their rows come after every row a journey can reach, and say so. 268 of them have a stop within 1 km of another part of
+the street: 201 are under 2 km long, their middles 1.0 to 1.2 km from a stop, and 67 longer.
+Placing those at their nearest served part instead would need the stops in the build, which
+are in the database, not in the repository: the owner's call.
+
+**Streets of one name.** 25 streets are named Sabir küçəsi and 21 Nizami küçəsi, one in
+nearly every settlement, and the stop nearest each seldom says which ("Polimer zavodu"). So
+a street whose name another street has gets, after its name, the settlement nearest its
+point within 2 km (`SETTLEMENT_KM`), as the mappers write a district after a place's name:
+"Sabir küçəsi / Saray". 2,199 streets are named so. The settlements are the places' cities,
+towns, villages, hamlets and suburbs, by their points: OpenStreetMap maps no boundary finer
+than Baku's districts here. Against the stops within 350 m whose own names say their
+settlement ("Saray qəsəbəsi, …"), the settlement written agreed for 179 of 265 streets; the
+other 86 are mostly a settlement inside a city (Quşçuluq, in Xırdalan), the next settlement,
+or a stop's name the check misreads ("Bakı-Şamaxı şos."). Testing the 122 settlement
+outlines first made no difference worth their geometry (161 agreements against 160, on an
+earlier cut of the streets). A street longer than 5 km (`LOCAL_KM`) runs through several
+settlements and gets none: Baku's Heydər Əliyev prospekti, 17 km, would have been named
+after the one by its middle. 151 names still have streets the
+nearest settlement does not tell apart; their rows differ by the stop each names, and once
+the journey's other end is chosen the nearest comes first.
+
+**Search.** A street is searched as a place is ([Places](#places-720)), by its names and by
+the settlement after its name ("sabir saray"), and weighs what an office of state or a hotel
+does (5): after the landmarks named after the same person, before the cafés, schools and
+shops. Two rules are its own (`placeMatch.ts`). Its name before the settlement counts as the
+name itself (`exactName`): counted as part of it, the settlement put the streets of that
+name with none after theirs, wherever they were, before the one near the journey's other
+end. And a street named exactly what was typed ranks with the names that start with it
+(`matchRank`): 710 streets are named without the word for a street, after a person or a day
+("Nizami", "14 İyul"), as landmarks are, and "nizami" listed four streets named Nizami, in
+Saray, Zabrat, Binəqədi and Sumqayıt, before the museum, the mall and Nizami küçəsi in Baku.
+A place's district after " / " stays part of its name, as before. The pickers rank a street
+carried over from an earlier answer by the same rules (`placeRank`). "nizami" now lists the
+station, a café, Nizami Mall, the literature museum, Nizami küçəsi / Bakı, two parks and the
+monument; "nizami küçəsi", "nizami küç." and "торговая" list Nizami küçəsi / Bakı first,
+known by its Wikidata entry, as 48 streets are; "torqovı" lists an office named Torqovi, in
+the quarter itself, then the street; "28 may" the station, the settlement and 28 May küçəsi /
+Bakı; "neftchilar avenue" Neftçilər prospekti. `ALIASES` gives Nizami küçəsi the names Baku
+still calls it by, its old Russian name Торговая (Trade Street) and Torqovı. The stations
+stay first for "gənclik", "koroglu", "nerimanov", "avtovağzal", "28 may" and "neftçilər".
+
+**Corrections.** Five road names were typed partly in the other alphabet, on nine ways: a
+Cyrillic е in "Mehdi Huseynzade Street", in "Muzeffer Hesenov Street" and in the six ways'
+"Memmedcefer Ceferov street", and a Latin a in "улица Ровшана Гусейнова". `CORRECTIONS`
+corrects them, and applies to roads as it does to places. No road's name has a word from
+`REVIEW`.
+
+**What it costs.** The file is still read on the server alone: 1.58 MB where it was 1.02
+(432 KB gzipped, 299 before), and its index, built once per process at the first search,
+takes 79 to 111 ms to build where it took 41 to 59, and holds 29.7 MB of the heap, 17.8
+before. A search goes through 18,780 places where it went through 12,590. Over 336 searches,
+every prefix of 30 names people type (stations, malls, chains, settlements and streets),
+the median search took 0.48 to 0.52 ms against 0.31 to 0.34, and 99 in 100 under 2.3 to
+2.5 ms against 1.8 to 2.0; given `near`, as the pickers send it once the other end is
+chosen, 0.45 to 0.47 against 0.28 to 0.31. An answer is still at most eight places: 1,194
+bytes at the median against 1,151, 1,437 at most against 1,344. The browser's work for a
+keystroke, ranking the 3,841 stops and the places answered and naming each place's nearest
+stop, is unchanged, 5.6 to 6.0 ms at the median either way, since a search still answers
+eight places at most and the browser never loads the file. Measured on 14 November on a
+laptop that other work kept busy (load averages of 9 to 13), the old search and the new one
+in one process, alternating in rounds; the figures are those of the quietest rounds.
 
 ## Routing from a place (#720)
 
@@ -909,9 +1032,9 @@ before prefix and partial matches. Empty stop searches suggest transport hubs.
 The picker uses a labeled combobox and listbox; arrow keys select an option,
 Enter chooses it, and Escape or Tab closes the suggestions. Stop-list and
 bus-list failures have retry controls rather than looking like an empty network.
-The start and destination pickers list named places among the stops;
-[Places](#places-720) has how they are searched, and [Routing from a
-place](#routing-from-a-place-720) what choosing one does.
+The start and destination pickers list named places and streets among the stops;
+[Places](#places-720) and [Streets](#streets-743) have how they are searched, and [Routing
+from a place](#routing-from-a-place-720) what choosing one does.
 
 Empty-map taps choose a stop only within 600 m. That selection radius is separate
 from the routing graph's 400 m walking-transfer limit. The location button
@@ -1012,6 +1135,23 @@ request every 250 ms, the list held once from the first keystroke, the places th
 while typing standing in for later queries and for a shorter one, and a late answer
 that never becomes a newer query's own. A location sure to exactly 1 km is used, and
 after a rough one the next try asks for a fresh fix.
+
+Streets (#743) have their own. `placesScript.test.ts` runs the build's steps for them
+through python3: the abbreviations written out, a street named only by its kind and number,
+the ways of one name joined within 300 m and not 5 km apart, a street's point on its line
+(an L's centre moved onto it), its id, length and other names, the kinds of road left out,
+the settlement after a name other streets share (within 2 km, never on a street over 5 km
+or one whose name says it, both spellings of şosse as one name), and a whole build from
+roads with a correction that applies and one gone stale. `places.test.ts` pins the counts,
+that a street and nothing else has a length, the abbreviations written out, the 25 Sabir
+küçəsi and the settlements after them, where Nizami küçəsi in Baku is and its names, the
+rules of the ranking on a small index (a street named what was typed, its settlement aside,
+the nearer of a name's streets, a place's district as before) and the real lists for
+"nizami küçəsi", "torqovı", "sabir saray", "nizami" and the stations. `search.test.ts`
+ranks carried-over streets as the search does, over every prefix of "nizami", "sabir
+saray", "torqovı" and three more, and tells a long street's length; `Component.test.ts`
+checks a street's row, its chosen end and the journey asked to its middle; and the places
+route answers a street with its length.
 
 ## Verification for #721 (2026-11-11)
 

@@ -11,6 +11,7 @@ import { mountComponent, defaultExport, type FoundElement } from '@/test/clientC
 import type { PlaceSearch } from '../usePlaceSearch';
 import * as access from '@/lib/busroute/access';
 import * as geo from '@/lib/busroute/geo';
+import * as placeMatch from '@/lib/busroute/placeMatch';
 import type { PlaceMatch } from '@/lib/busroute/places';
 import type { BusLineDetail, BusLite, StopDetail } from '@/lib/busroute/types';
 import * as search from '../search';
@@ -43,6 +44,7 @@ const imports = {
   '@/components/SupportCTA': defaultExport(Stub),
   '@/lib/busroute/access': access,
   '@/lib/busroute/geo': geo,
+  '@/lib/busroute/placeMatch': placeMatch,
   './JourneyView': defaultExport(Stub),
   './Picker': defaultExport(Picker),
   './search': search,
@@ -223,5 +225,43 @@ describe('a start or destination picker (#720)', () => {
     expect(search('gənclik')).toEqual([]);
     placeSearch = { places: [mall], pending: false, degraded: false, holding: false };
     expect(search('gənclik')).toEqual(['pw674677959', 's1']);
+  });
+});
+
+describe('a street as a start or destination (#743)', () => {
+  const nizami: PlaceMatch = { id: 'w25403734', name: 'Nizami küçəsi / Bakı', category: 'street', label: 'Küçə',
+    latitude: 40.37396, longitude: 49.84404, length: 3.2, rank: 1 };
+  const sabir: PlaceMatch = { id: 'w299568692', name: 'Sabir küçəsi / Saray', category: 'street', label: 'Küçə',
+    latitude: 40.52679, longitude: 49.71485, length: 0.4, rank: 1 };
+
+  it("says a street's stop is measured from its middle, with a long street's length", () => {
+    const view = mountComponent<Record<string, unknown>>(FILE, imports, 'EndPicker');
+    placeSearch = { places: [nizami, sabir], pending: false, degraded: false, holding: false };
+    view.render({ label: 'Hara', stops: STOPS, selected: null, place: null, onSelectStop() {}, onSelectPlace() {},
+      active: true, onActivate() {}, loading: false, near: null });
+    const items = view.find(el => el.type === Picker)[0].props.searchItems('küçəsi') as Array<{ key: string; detail: string }>;
+    expect(items.map(item => [item.key, item.detail])).toEqual([
+      ['pw25403734', expect.stringMatching(/^Küçə, 3\.2 km · ortasından dayanacağa \d+ m: Sahil m\/st$/)],
+      // Nothing within a journey's walk of its middle: listed last, and says so.
+      ['pw299568692', 'Küçə · ortasından 1000 m-də dayanacaq yoxdur'],
+    ]);
+  });
+
+  it('asks for a journey to a street\'s middle, and the chosen end says it is the middle', async () => {
+    const p = planner();
+    await p.render();
+    p.end('Haradan').onSelectStop(STOPS[0]);
+    await p.render();
+    p.end('Hara').onSelectPlace(nizami);
+    await p.render();
+    expect(bodies.at(-1)).toEqual({ fromStopId: 1, to: { latitude: 40.37396, longitude: 49.84404, name: 'Nizami küçəsi / Bakı' } });
+    expect(p.end('Hara').place).toMatchObject({ name: 'Nizami küçəsi / Bakı', label: 'Küçə, 3.2 km · orta nöqtəsi götürülür' });
+    // A short street does not tell its length; a place's label is its kind, as before.
+    p.end('Haradan').onSelectPlace(sabir);
+    await p.render();
+    expect(p.end('Haradan').place).toMatchObject({ label: 'Küçə · orta nöqtəsi götürülür' });
+    p.end('Haradan').onSelectPlace(mall);
+    await p.render();
+    expect(p.end('Haradan').place).toMatchObject({ label: 'Ticarət mərkəzi' });
   });
 });

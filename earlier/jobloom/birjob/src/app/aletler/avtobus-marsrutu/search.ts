@@ -3,10 +3,23 @@ import type { PlaceMatch } from "@/lib/busroute/places";
 import { haversine } from "@/lib/busroute/geo";
 import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { normalizeSearch } from "@/lib/busroute/searchText";
-import { HUBS, matchesLoosely, ownWords, rankCompact, rankName, stepUp } from "@/lib/busroute/placeMatch";
+import { exactName, HUBS, matchesLoosely, matchRank, ownWords, rankCompact, rankName, STREET } from "@/lib/busroute/placeMatch";
 
 // The folding the place search on the server uses too (#720).
 export { normalizeSearch };
+
+/** A street long enough for its length to be told (#743). A journey to a street goes to
+ *  its middle, and every part of a street up to 1 km long is within 500 m of that, well
+ *  inside the 1 km a journey walks from a place; a longer one's middle can be far from
+ *  where one is going, and its length says so. */
+export const LONG_STREET_KM = 1;
+
+/** What kind of place a row or a chosen end says it is: its category's label, with a
+ *  long street's length ("Küçə, 3.2 km"). */
+export function placeKind(place: Pick<PlaceMatch, "category" | "label" | "length">): string {
+  if (place.category !== STREET || place.length === undefined || place.length < LONG_STREET_KM) return place.label;
+  return `${place.label}, ${place.length < 10 ? place.length.toFixed(1) : Math.round(place.length)} km`;
+}
 
 function rank(query: string, name: string, code: string): number {
   const label = normalizeSearch(name), key = normalizeSearch(code);
@@ -62,13 +75,14 @@ export function placeRank(query: string, place: Pick<PlaceMatch, "name" | "alias
   const words = names.map(name => name.split(" "));
   let matched = Infinity, which = 0;
   for (let i = 0; i < names.length && matched > 0; i++) {
-    const r = rankName(q, queryWords, names[i], words[i]);
+    const r = rankName(q, queryWords, names[i], words[i], exactName(shown[i], place.category));
     if (r < matched) { matched = r; which = i; }
   }
-  if (matched < Infinity) return stepUp(matched, place.category, queryWords, ownWords(shown[which]));
+  if (matched < Infinity) return matchRank(matched, place.category, queryWords, ownWords(shown[which]));
   const labelWords = normalizeSearch(place.label).split(" ");
   if (names.some((name, i) => matchesLoosely(queryWords, name, words[i], labelWords))) return 3;
-  return Math.min(...names.map(name => rankCompact(q.replaceAll(" ", ""), name.replaceAll(" ", ""))));
+  const compact = Math.min(...names.map(name => rankCompact(q.replaceAll(" ", ""), name.replaceAll(" ", ""))));
+  return compact < Infinity ? matchRank(compact, place.category, queryWords, []) : compact;
 }
 
 /**

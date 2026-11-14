@@ -9,9 +9,10 @@ import type { JourneyBikeParking } from "@/lib/busroute/bike";
 import type { PlaceMatch } from "@/lib/busroute/places";
 import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { isBakuCoordinate } from "@/lib/busroute/geo";
+import { STREET } from "@/lib/busroute/placeMatch";
 import JourneyView from "./JourneyView";
 import Picker, { type PickerItem } from "./Picker";
-import { coarsePoint, placeStopNear, searchBuses, suggestEnds } from "./search";
+import { coarsePoint, placeKind, placeStopNear, searchBuses, suggestEnds } from "./search";
 import { usePlaceSearch } from "./usePlaceSearch";
 import { movementMinutes } from "./journeyFormatting";
 import type { MapPlace } from "./BusMap";
@@ -50,10 +51,13 @@ const stopName = (stop: StopDetail) => stop.name.trim() || (stop.code ? `kodu ${
 const stopNote = (stop: StopDetail, km: number) => `dayanacağa ${metres(km)} m: ${stopName(stop)}`;
 
 /** A place in the list: the other name that found it, its kind, and the stop nearest it
- *  within a journey's walk (placeStopNear), so a chain's branches can be told apart. */
+ *  within a journey's walk (placeStopNear), so a chain's branches can be told apart. A
+ *  street (#743) stands at its middle, where a journey to it goes, and its row says the
+ *  stop is measured from there. */
 function placeDetail(place: PlaceMatch, near: ReturnType<typeof placeStopNear>): string {
-  const stop = near ? stopNote(near.stop, near.distance) : `${metres(ACCESS_RADIUS_KM)} m-də dayanacaq yoxdur`;
-  return [place.alias && `«${place.alias}»`, place.label, stop].filter(Boolean).join(" · ");
+  const from = place.category === STREET ? "ortasından " : "";
+  const stop = near ? `${from}${stopNote(near.stop, near.distance)}` : `${from}${metres(ACCESS_RADIUS_KM)} m-də dayanacaq yoxdur`;
+  return [place.alias && `«${place.alias}»`, placeKind(place), stop].filter(Boolean).join(" · ");
 }
 
 /** The point sent for a chosen place, or the stop's id (POST /api/avtobus/find). */
@@ -91,10 +95,10 @@ export function EndPicker({ label, stops, selected, place, onSelectStop, onSelec
     : places.places.length > 0
       ? <p className="border-t border-gray-100 px-3 py-2 text-[11px] text-gray-500">Məkanlar: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer" className="underline underline-offset-2">© OpenStreetMap iştirakçıları</a></p>
       : null;
-  return <Picker<EndItem> label={label} placeholder="Dayanacaq, məkan və ya kod…" searchItems={search} selected={shown}
+  return <Picker<EndItem> label={label} placeholder="Dayanacaq, küçə, məkan və ya kod…" searchItems={search} selected={shown}
     onSelect={item => item?.place ? onSelectPlace(item.place) : onSelectStop(item?.stop ?? null)}
     onQueryChange={setQuery} pending={places.pending} footer={footer}
-    {...{ active, onActivate, loading }} emptyHint="Əsas dayanacaqlar · dayanacaq və ya məkan adı yazın"
+    {...{ active, onActivate, loading }} emptyHint="Əsas dayanacaqlar · dayanacaq, küçə və ya məkan adı yazın"
     icon={<span className={`h-2.5 w-2.5 rounded-full ${label === "Haradan" ? "bg-green-600" : "bg-red-600"}`} />} />;
 }
 
@@ -314,7 +318,10 @@ export default function Component() {
     if (end === "from") { setFromStop(null); setFromPlace(place); setPickTarget("to"); }
     else { setToStop(null); setToPlace(place); setPickTarget("from"); }
   }, [clearRoute]);
-  const choosePlaceMatch = useCallback((end: PickTarget, { id, name, label, latitude, longitude }: PlaceMatch) => {
+  // A street is its middle (#743), and its chosen end says so.
+  const choosePlaceMatch = useCallback((end: PickTarget, place: PlaceMatch) => {
+    const { id, name, latitude, longitude } = place;
+    const label = place.category === STREET ? `${placeKind(place)} · orta nöqtəsi götürülür` : place.label;
     choosePlace(end, { id, name, label, latitude, longitude });
   }, [choosePlace]);
 
@@ -485,7 +492,7 @@ export default function Component() {
             <>
               <div>
                 <h2 className="text-lg font-bold text-gray-900">Hara gedirsiniz?</h2>
-                <p className="mt-1 text-xs leading-relaxed text-gray-500">Avtobus və metro ilə ən əlverişli yol. Dayanacaq və ya məkan seçin: ticarət mərkəzi, universitet, xəstəxana, metro.</p>
+                <p className="mt-1 text-xs leading-relaxed text-gray-500">Avtobus və metro ilə ən əlverişli yol. Dayanacaq, küçə və ya məkan seçin: ticarət mərkəzi, universitet, xəstəxana, metro.</p>
               </div>
               {stopsError && <div role="alert" className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
                 <p>{stopsError}</p>
@@ -543,7 +550,7 @@ export default function Component() {
               {!route && !error && !loading && (
                 <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
                   <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  Dayanacağın adını bilmirsiniz? Getdiyiniz yerin adını yazın (məsələn, «Gənclik Mall»), ya da «Xəritə»yə keçib istədiyiniz yerə toxunun — ən yaxın dayanacaq avtomatik seçilir.
+                  Dayanacağın adını bilmirsiniz? Getdiyiniz yerin və ya küçənin adını yazın (məsələn, «Gənclik Mall», «Nizami küçəsi»), ya da «Xəritə»yə keçib istədiyiniz yerə toxunun — ən yaxın dayanacaq avtomatik seçilir.
                 </p>
               )}
             </>

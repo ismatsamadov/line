@@ -35,7 +35,7 @@ describe('places.json (#720)', () => {
     expect(source.query).toMatch(/^\[out:json\]\[timeout:900\]\[bbox:39\.92,49\.37,40\.66,50\.39\]\[date:"2026-11-11T06:09:21Z"\];/);
     expect(source.answer_sha256).toMatch(/^[0-9a-f]{64}$/);
     expect(source.script).toBe('scripts/bus/build_places_json.py');
-    expect(placesJson.fields).toEqual(['id', 'name', 'category', 'latitude', 'longitude', 'notable', 'aliases']);
+    expect(placesJson.fields).toEqual(['id', 'name', 'category', 'latitude', 'longitude', 'notable', 'aliases', 'length']);
   });
 
   it('stays small enough to keep in memory and out of the browser', () => {
@@ -44,23 +44,27 @@ describe('places.json (#720)', () => {
   });
 
   it('puts every place in the network\'s area, under its own id, name and category', () => {
-    // #685's lesson: check reference data against the place it describes.
+    // #685's lesson: check reference data against the place it describes. The problems are
+    // gathered and asserted once: an expect for each check of 18,780 places took over 5 s
+    // when the whole suite ran at once (#743).
     const ids = new Set<string>();
+    const problems: string[] = [];
     for (const [id, name, category, lat, lng, , aliases] of data.places) {
-      expect(ids.has(id), id).toBe(false);
+      if (ids.has(id)) problems.push(`${id}: listed twice`);
       ids.add(id);
-      expect(inArea(lat, lng) && isBakuCoordinate(lat, lng), `${id} ${name}`).toBe(true);
-      expect(data.labels[category], `${id} ${category}`).toBeDefined();
-      expect(name).toBe(name.trim());
-      expect(/\p{L}/u.test(name), `${id} ${name}`).toBe(true);
-      expect(name, id).not.toMatch(/\\/); // the mappers' "Name \ Place" is written "Name / Place"
+      if (!(inArea(lat, lng) && isBakuCoordinate(lat, lng))) problems.push(`${id} ${name}: outside the area`);
+      if (!data.labels[category]) problems.push(`${id}: the unknown category ${category}`);
+      if (name !== name.trim()) problems.push(`${id} ${name}: spaces around the name`);
+      if (!/\p{L}/u.test(name)) problems.push(`${id} ${name}: no letter`);
+      if (/\\/.test(name)) problems.push(`${id} ${name}: a backslash`); // the mappers' "Name \ Place" is written "Name / Place"
       // Another name is one the search could not find through the shown one.
       const folded = new Set([normalizeSearch(name)]);
       for (const alias of aliases) {
-        expect(folded.has(normalizeSearch(alias)), `${id} ${alias}`).toBe(false);
+        if (folded.has(normalizeSearch(alias))) problems.push(`${id} ${alias}: folds as another of its names`);
         folded.add(normalizeSearch(alias));
       }
     }
+    expect(problems).toEqual([]);
   });
 
   it('leaves out names that only say what the place is, or are a building\'s number', () => {
@@ -170,6 +174,47 @@ describe('places.json (#720)', () => {
     for (const [, name, , , , , aliases] of metro) expect(aliases.some((a) => /\p{Script=Cyrillic}/u.test(a)), name).toBe(true);
   });
 
+  it('gives a street, and nothing else, how far its ends are apart, and a way\'s id (#743)', () => {
+    const problems: string[] = [];
+    for (const [id, name, category, , , , , length] of data.places) {
+      if (category === 'street' ? !(length !== undefined && length >= 0.1 && length < 50 && id.startsWith('w'))
+        : length !== undefined) problems.push(`${id} ${name} ${category} ${length}`);
+    }
+    expect(problems).toEqual([]);
+  });
+
+  it('writes out a street\'s abbreviations, and leaves out a street named only by its kind and number (#743)', () => {
+    const streets = data.places.filter(([, , category]) => category === 'street');
+    // OpenStreetMap writes 6,098 of its 14,496 named roads "… küç.": "nizami küçəsi" found none.
+    expect(streets.filter(([, name]) => /(^| )(küç\.?|Küç\.?|pr\.)( |$)/.test(name.split(' / ')[0])).map(([id, name]) => `${id} ${name}`))
+      .toEqual([]);
+    const names = new Set(streets.map(([, name]) => normalizeSearch(name.split(' / ')[0])));
+    for (const plain of ['Döngə 1', '1-ci döngə', '2-ci küçə', 'Keçid 3', '1572-ci keçid', 'Küçə']) {
+      expect(names.has(normalizeSearch(plain)), plain).toBe(false);
+    }
+    expect(names.has(normalizeSearch('Nərimanov döngə 8'))).toBe(true); // a lane named after its street stays
+  });
+
+  it('tells same-named streets apart by the settlement nearest them, unless they are long (#743)', () => {
+    const named = (prefix: string) => data.places.filter(([, name, category]) => category === 'street' && name.startsWith(prefix));
+    // One Sabir küçəsi in nearly every settlement, the stop nearest each seldom saying which.
+    expect(named('Sabir küçəsi')).toHaveLength(25);
+    expect(data.places.find(([id]) => id === 'w299568692')?.slice(1, 3)).toEqual(['Sabir küçəsi / Saray', 'street']);
+    // Baku's Heydər Əliyev prospekti runs 17 km, through more settlements than the one by its
+    // middle; the shorter ones in Xırdalan and Sumqayıt are named by theirs.
+    expect(named('Heydər Əliyev prospekti').map(([, name, , , , , , length]) => [name, length])).toEqual(expect.arrayContaining([
+      ['Heydər Əliyev prospekti', 17], ['Heydər Əliyev prospekti / Sumqayıt', 3.1],
+    ]));
+  });
+
+  it('places Nizami küçəsi in central Baku, under the names Baku calls it by (#743)', () => {
+    const [id, name, category, lat, lng, notable, aliases, length] = data.places.find(([placeId]) => placeId === 'w25403734')!;
+    expect([id, name, category, notable, length]).toEqual(['w25403734', 'Nizami küçəsi / Bakı', 'street', 1, 3.2]);
+    // Its middle, on the street, about 700 m from Fountain Square.
+    expect(haversine(lat, lng, 40.37193, 49.83709)).toBeLessThan(1);
+    expect(aliases).toEqual(expect.arrayContaining(['Torqovaya', 'Торговая', 'Torqovı', 'улица Низами']));
+  });
+
   it('is dated on the planner page as the file dates it', () => {
     // The page tells riders how old the places are; a refresh must move both.
     const MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr'];
@@ -188,9 +233,9 @@ describe('places.json (#720)', () => {
       shop: 1849, restaurant: 1558, cafe: 1142, hotel: 407, university: 77, college: 123, school: 634,
       kindergarten: 388, hospital: 398, clinic: 230, government: 924, embassy: 66, post_office: 256, bank: 242,
       office: 718, park: 207, square: 4, sight: 388, museum: 58, theatre: 66, culture: 211, sport: 221, fun: 66,
-      worship: 199, beach: 59, settlement: 133, area: 161, residential: 468,
+      worship: 199, beach: 59, settlement: 133, area: 161, residential: 468, street: 6_190,
     });
-    expect(data.places).toHaveLength(12_590);
+    expect(data.places).toHaveLength(18_780);
     expect(data.labels).toMatchObject({ mall: 'Ticarət mərkəzi', metro: 'Metro stansiyası', university: 'Universitet' });
   });
 });
@@ -278,6 +323,36 @@ describe('searchPlaces (#720)', () => {
     expect(ids('bravo', { near: { latitude: 40.4, longitude: 49.81 } })).toEqual(['n4', 'n5']);
   });
 
+  it('ranks a street named what was typed with the names that start with it, its settlement aside (#743)', () => {
+    const streets = buildPlaceIndex({
+      labels: { ...labels, street: 'Küçə' },
+      places: [
+        row('n1', 'Nizami', 'metro', 40.38, 49.83, 1),
+        row('n2', 'Nizami abidəsi', 'sight'),
+        [...row('w3', 'Nizami / Saray', 'street', 40.53, 49.71), 0.5],
+        [...row('w4', 'Nizami küçəsi / Bakı', 'street', 40.374, 49.844, 1), 3.2],
+        [...row('w5', 'Nizami küçəsi', 'street', 40.53, 49.87), 0.7],
+        [...row('w6', 'Nizami küçəsi / Saray', 'street', 40.528, 49.71), 0.3],
+      ],
+    });
+    // Named only Nizami, a street ranks with the names that start with "nizami", after the
+    // monument, which weighs more; the station is the name itself.
+    expect(searchPlaces(streets, 'nizami').map((p) => [p.id, p.rank])).toEqual([['n1', 0], ['w4', 1], ['n2', 1], ['w3', 1], ['w5', 1], ['w6', 1]]);
+    // The settlement after a street's name is not part of it: each Nizami küçəsi is the name
+    // itself, before the step, so the one near the other end comes first, and the known one
+    // (Wikidata) before both.
+    expect(searchPlaces(streets, 'nizami küçəsi', { near: { latitude: 40.528, longitude: 49.71 } }).map((p) => p.id)).toEqual(['w4', 'w6', 'w5']);
+    expect(searchPlaces(streets, 'nizami küçəsi', { near: { latitude: 40.53, longitude: 49.87 } }).map((p) => p.id)).toEqual(['w4', 'w5', 'w6']);
+    // Its settlement is searched with it, and its length goes with it.
+    expect(searchPlaces(streets, 'nizami saray').map((p) => p.id)).toEqual(['w3', 'w6']);
+    expect(searchPlaces(streets, 'nizami küçəsi bakı')[0]).toEqual({
+      id: 'w4', name: 'Nizami küçəsi / Bakı', category: 'street', label: 'Küçə', latitude: 40.374, longitude: 49.844, length: 3.2, rank: 1,
+    });
+    // A place's district, after the mappers' " / ", is still part of its name, as before streets.
+    const district = buildPlaceIndex({ labels, places: [row('n1', 'Lotos Ticarət Mərkəzi / 8-ci km', 'mall')] });
+    expect(searchPlaces(district, 'lotos ticarət mərkəzi').map((p) => [p.id, p.rank])).toEqual([['n1', 1]]);
+  });
+
   it('finds nothing for under two letters, and at most `limit` places', () => {
     expect(ids('')).toEqual([]);
     expect(ids(' g ')).toEqual([]);
@@ -349,5 +424,33 @@ describe('searchPlaces (#720)', () => {
     // An apostrophe joins its word: "papa johns" found none of the six before.
     expect(searchPlaces(real, 'papa johns').map((p) => p.alias ?? p.name)).toEqual(Array(6).fill("Papa John's"));
     expect(searchPlaces(real, 'mcdonalds').map((p) => p.name)).toEqual(Array(8).fill("McDonald's"));
+  });
+
+  it('finds the streets people ask for in the real data (#743)', async () => {
+    const real = await getPlaceIndex();
+    const first = (query: string, near?: { latitude: number; longitude: number }) => searchPlaces(real, query, { near })[0];
+    // Written out, as typed in short, and by the names Baku calls it by.
+    for (const query of ['nizami küçəsi', 'nizami küç.', 'nizami kuc', 'торговая', 'torgovaya']) {
+      expect(first(query), query).toMatchObject({ id: 'w25403734', name: 'Nizami küçəsi / Bakı', category: 'street', length: 3.2 });
+    }
+    // An office named Torqovi, in the quarter itself, is named it; the street is called so.
+    expect(searchPlaces(real, 'torqovı').slice(0, 2).map((p) => [p.id, p.alias])).toEqual([['n1896641395', undefined], ['w25403734', 'Torqovı']]);
+    expect(first('neftçilər prospekti')).toMatchObject({ id: 'w323377758', category: 'street', rank: 1 });
+    expect(first('neftchilar avenue')).toMatchObject({ id: 'w323377758', alias: 'Neftchilar Avenue' });
+    expect(first('28 may küçəsi')).toMatchObject({ name: '28 May küçəsi / Bakı' });
+    // The settlement after a name is searched with it, and the nearer of a name's streets
+    // comes first, the settlement or none after its name.
+    expect(first('sabir saray')).toMatchObject({ id: 'w299568692' });
+    expect(first('sabir küçəsi', { latitude: 40.527, longitude: 49.715 })).toMatchObject({ id: 'w299568692' });
+    // A bare "nizami" is the station, the museum and the mall before the streets named only
+    // Nizami, and Baku's Nizami küçəsi, known (Wikidata), is among them.
+    const nizami = searchPlaces(real, 'nizami');
+    expect(nizami[0]).toMatchObject({ name: 'Nizami', category: 'metro' });
+    expect(nizami.map((p) => p.id)).toContain('w25403734');
+    expect(nizami.filter((p) => p.category === 'street' && p.name.split(' / ')[0] === 'Nizami')).toEqual([]);
+    // A station's lists are unchanged by the streets named after it.
+    for (const [query, name] of [['gənclik', 'Gənclik'], ['koroglu', 'Koroğlu'], ['28 may', '28 May'], ['neftçilər', 'Neftçilər']]) {
+      expect(first(query), query).toMatchObject({ name, category: 'metro' });
+    }
   });
 });

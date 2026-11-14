@@ -62,6 +62,13 @@ Standard library only. What it decides, so that the planner does not have to:
   is printed at each build for a person to read; vandalism goes into CORRECTIONS.
 - ALIASES adds other names people search a well-known place by that OpenStreetMap does
   not have, each with where the name is used. The build stops if one's feature is gone.
+- Streets (#743) are places too, of the category "street": the named roads of the kinds in
+  ROADS, whose lines the query's last output gives. Ways of one name within JOIN_KM of each
+  other are one street, placed at the point of its lines nearest their middle (middle()),
+  with how far its ends are apart. Its name has its abbreviations written out ("Nizami
+  küç." is Nizami küçəsi), a street named only by its number and kind ("Döngə 1") is left
+  out, and a street whose name another street has gets the settlement nearest it after its
+  name ("Sabir küçəsi / Saray"). House numbers are not searched.
 
 ODbL 4.6: places.json is a derived database. This script, its query and the snapshot's
 date (recorded in the file) are how it is produced; docs/bus-routing.md says so.
@@ -113,13 +120,16 @@ QUERY = f"""[out:json][timeout:{TIMEOUT_S}][bbox:{BBOX[0]},{BBOX[1]},{BBOX[2]},{
   nwr[name][landuse~"^(retail|commercial|residential)$"];
   nwr[name][man_made~"^(tower|lighthouse|pier)$"];
 )->.found;
+way[name][highway]->.roads;
 node.found;
 out qt;
 (way.found; relation.found;);
 out tags center qt;
 out ids bb qt;
+.roads out tags geom qt;
 """
 EARTH_RADIUS_KM = 6371.0
+KM_PER_DEGREE = math.radians(1) * EARTH_RADIUS_KM
 
 # category: the label the planner shows beside a place, in Azerbaijani. The order is the
 # order the file lists them in; category() decides which one a feature gets.
@@ -160,7 +170,36 @@ LABELS = {
     "settlement": "Yaşayış məntəqəsi",
     "area": "Ərazi",
     "residential": "Yaşayış kompleksi",
+    "street": "Küçə",
 }
+# The roads street search offers (#743): every named way a car, a bus or a person on foot
+# takes to a house, the Old City's lanes among them, which are mapped as footways. Not a
+# ramp (motorway_link and the like, named after the road it joins), a service road (a
+# terminal's or a works' own), a busway (an avenue's bus lane, mapped beside it), steps, a
+# track, a race track or a road still being built. QUERY asks for every named way with a
+# highway tag, and this decides which of them are streets.
+ROADS = {"motorway", "trunk", "primary", "secondary", "tertiary", "unclassified", "residential", "living_street",
+         "road", "pedestrian", "footway"}
+# Ways of one name this close to each other are one street: the pieces OpenStreetMap splits
+# a street into, its two carriageways, and its stretches either side of a square or a
+# park. A name's streets in two settlements are kilometres apart.
+JOIN_KM = 0.3
+# A street whose name another street has is told apart by the settlement nearest its
+# point, within SETTLEMENT_KM, written after its name as the mappers write a district. A
+# street longer than LOCAL_KM runs through several, and none is named: Baku's Heydər
+# Əliyev prospekti, 17 km, would have been named after the settlement nearest its middle.
+SETTLEMENT_KM = 2.0
+LOCAL_KM = 5.0
+# The abbreviations of OpenStreetMap's street names, written out so that a search for the
+# whole word finds them: "Nizami küç." is Nizami küçəsi and "Neftçilər pr." Neftçilər
+# prospekti. 6,098 of the 14,496 named roads end in "küç.", and "nizami küçəsi" found none.
+ABBREVIATIONS = ((re.compile(r"(?<![\w.])([Kk])üç\.?(?=[\s,;]|$)"), r"\1üçəsi"),
+                 (re.compile(r"(?<![\w.])pr\.(?=[\s,;]|$)"), "prospekti"))
+# A street named only by its kind, or by its kind and its number ("Döngə 1", "2-ci küçə",
+# "1572-ci keçid"), as fold() writes it: 26 lanes are named "Döngə 1", and nothing in a
+# list tells them apart. A lane named after its street ("Nərimanov döngə 8") stays.
+NUMBERED_STREET = re.compile(r"^(?:\d+[a-z]? (?:ci|cu|nci|ncu) |\d+ )?(?:kuce|kucesi|donge|dongesi|dalan|dalani|"
+                             r"kecid|kecidi|tupik|zolaq)(?: \d+[a-z]?)?$")
 # The shops people travel to: the rest (corner shops, bakeries, butchers, car parts,
 # hairdressers) are many, alike and near everyone.
 SHOPS = {
@@ -285,6 +324,13 @@ CORRECTIONS = [
      "Ələt's new railway depot, where no passenger boards; the halt named Depo is a passenger stop"),
     ("n4483965589", "tourism", "hotel", None,
      "Baku's sea terminal, mapped as a hotel 32 m from its outline (w25402557), the port, which takes its names"),
+    # Streets' names typed partly in the other alphabet (#743).
+    ("w790253523", "name", "Mehdi Huseynzadе Street", "Mehdi Huseynzade Street", "a Cyrillic е for the Latin e"),
+    ("w167315689", "name:en", "Muzеffеr Hеsеnov Street", "Muzeffer Hesenov Street", "Cyrillic е's for the Latin e"),
+    *[(way, "name:en", "Memmedcefer Cefеrov street", "Memmedcefer Ceferov street",
+       "a Cyrillic е for the Latin e, on each of the street's six ways")
+      for way in ("w362587851", "w362588675", "w362588677", "w1227769756", "w1414904178", "w1414904179")],
+    ("w75079477", "name:ru", "улица Ровшанa Гусейнова", "улица Ровшана Гусейнова", "a Latin a for the Cyrillic а"),
 ]
 # Outlines placed at a feature inside them rather than at their centre: (the feature it
 # is placed at, why). The build stops if either is missing from the answer, or the one is
@@ -323,6 +369,11 @@ ALIASES = {
     "n2295524457": (["Джафар Джаббарлы"], "the Russian name of the station Cəfər Cabbarlı"),
     "n11622641264": (["Гянджлик"], "the Russian name of the station Gənclik"),
     "n14255299687": (["Ходжасан"], "the Russian name of the station Xocəsən"),
+    # A street's id is the way its point is on (streets()): a refresh that moves the point
+    # to another way stops here, for a person to update the id.
+    "w25403734": (["Торговая", "Torqovı"],
+                  "Nizami küçəsi in central Baku is still called by its old Russian name, Торговая (Trade "
+                  "Street), Torqovı in Azerbaijani; OpenStreetMap has it only in Latin letters, as Torqovaya"),
 }
 # Word starts a person reads every name and other name for at each refresh, as fold()
 # writes them (no diacritics, й as и): insults, profanity, crime and politics, in English,
@@ -668,6 +719,150 @@ def dedupe(places):
     return out
 
 
+def written_out(name):
+    """A street's name with its abbreviations written out (ABBREVIATIONS)."""
+    for pattern, whole in ABBREVIATIONS:
+        name = pattern.sub(whole, name)
+    return name
+
+
+def join(ways):
+    """The ways of one name in groups, a way joining a group when one of its points is
+    within JOIN_KM of one of the group's. A grid of cells at least JOIN_KM across keeps it
+    from comparing every pair."""
+    parent = list(range(len(ways)))
+
+    def root(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    # A degree of longitude is narrowest at the area's northern edge.
+    lat_cell = JOIN_KM / KM_PER_DEGREE
+    lon_cell = JOIN_KM / (KM_PER_DEGREE * math.cos(math.radians(BBOX[2])))
+    cells = {}
+    for i, way in enumerate(ways):
+        for p in way["line"]:
+            cells.setdefault((int(p[0] // lat_cell), int(p[1] // lon_cell)), []).append((i, p))
+    for (x, y), here in cells.items():
+        around = [q for dx in (-1, 0, 1) for dy in (-1, 0, 1) for q in cells.get((x + dx, y + dy), ())]
+        for i, p in here:
+            for j, q in around:
+                if root(i) != root(j) and km(p, q) <= JOIN_KM:
+                    parent[root(i)] = root(j)
+    groups = {}
+    for i, way in enumerate(ways):
+        groups.setdefault(root(i), []).append(way)
+    return list(groups.values())
+
+
+def middle(ways):
+    """Where a street is placed: the point of its lines nearest their middle, the centre
+    of their segments weighted by length, measured flat at its latitude; and the way that
+    point is on. A straight street's is halfway along it; a curved one's centre, off the
+    street, is moved onto it."""
+    segments = [(way, p, q) for way in ways for p, q in zip(way["line"], way["line"][1:])]
+    total = sum(km(p, q) for _, p, q in segments)
+    if not total:
+        return ways[0]["line"][0], ways[0]
+    lat = sum((p[0] + q[0]) / 2 * km(p, q) for _, p, q in segments) / total
+    lon = sum((p[1] + q[1]) / 2 * km(p, q) for _, p, q in segments) / total
+    scale = math.cos(math.radians(lat))
+    best = None
+    for way, p, q in segments:
+        dx, dy = (q[1] - p[1]) * scale, q[0] - p[0]
+        t = 0.0 if not (dx or dy) else max(0.0, min(1.0, (((lon - p[1]) * scale) * dx + (lat - p[0]) * dy) / (dx * dx + dy * dy)))
+        at = (p[0] + t * (q[0] - p[0]), p[1] + t * (q[1] - p[1]))
+        off = ((at[1] - lon) * scale) ** 2 + (at[0] - lat) ** 2
+        if best is None or off < best[0]:
+            best = (off, at, way)
+    return (round(best[1][0], 5), round(best[1][1], 5)), best[2]
+
+
+def numbered_street(name):
+    """Whether a street is named only by its kind and its number (NUMBERED_STREET)."""
+    return bool(NUMBERED_STREET.match(fold(name)))
+
+
+def street_key(name):
+    """What tells one street's name from another's: its folded name, with şosesi and
+    şossesi, both spellings of the word for a highway, as one. Seven roads are written both
+    ways, and Salyan şosesi was two streets, of 15 and 4.9 km."""
+    return re.sub(r"\bsosesi\b", "sossesi", fold(name))
+
+
+def streets(roads):
+    """The streets of the named roads, and what was left out, by why. A street is the ways
+    of one name (its abbreviations written out) that join() puts in one group, shown by the
+    spelling most of its length has, searched by every other name its ways have, at
+    middle()'s point, under the id of the way that point is on, with how far its ends are
+    apart (the diagonal of its bounding box) in km."""
+    left_out, by_name = Counter(), {}
+    for e in sorted(roads, key=lambda e: e["id"]):
+        t = e["tags"]
+        if t["highway"] not in ROADS:
+            left_out[f"highway={t['highway']}"] += 1
+            continue
+        if category(t):
+            left_out["a place as well"] += 1  # a square mapped as a road: the places have it
+            continue
+        named = names(t)
+        if named is None:
+            continue
+        shown, others = written_out(named[0]), [written_out(n) for n in named[1]]
+        if plain(shown) or numbered_street(shown):
+            left_out["named only by its kind or number"] += 1
+            continue
+        line = [(p["lat"], p["lon"]) for p in e["geometry"]]
+        length = sum(km(p, q) for p, q in zip(line, line[1:]))
+        by_name.setdefault(street_key(shown), []).append({"id": e["id"], "name": shown, "others": others, "line": line,
+                                                          "length": length, "notable": notable(t)})
+    out = []
+    for key in sorted(by_name):
+        for group in join(by_name[key]):
+            spelling = Counter()
+            for way in group:
+                spelling[way["name"]] += way["length"]
+            shown = max(sorted(spelling), key=lambda n: spelling[n])
+            seen, others = {fold(shown)}, []
+            for way in group:
+                for n in [way["name"], *way["others"]]:
+                    if fold(n) not in seen:
+                        seen.add(fold(n))
+                        others.append(n)
+            at, way = middle(group)
+            lats = [p[0] for w in group for p in w["line"]]
+            lons = [p[1] for w in group for p in w["line"]]
+            length = km((min(lats), min(lons)), (max(lats), max(lons)))
+            out.append({"id": f"w{way['id']}", "name": shown, "category": "street", "point": at,
+                        "notable": any(w["notable"] for w in group), "aliases": others,
+                        "length": max(0.1, round(length, 1))})
+    return out, left_out
+
+
+def beside(found, settlements):
+    """Write the settlement nearest a street within SETTLEMENT_KM after the name of each
+    street up to LOCAL_KM long whose name another street has, as the mappers write a
+    district after a place's name ("Sabir küçəsi / Saray"), unless the name already says
+    it. 25 streets are named Sabir küç., one in nearly every settlement, and the stop
+    nearest each ("Polimer zavodu") seldom says which settlement it is in. Returns how many
+    it named."""
+    shared = Counter(street_key(s["name"]) for s in found)
+    named = 0
+    for s in found:
+        if shared[street_key(s["name"])] < 2 or s["length"] > LOCAL_KM:
+            continue
+        near = min(settlements, key=lambda p: km(s["point"], p["point"]), default=None)
+        if near is None or km(s["point"], near["point"]) > SETTLEMENT_KM:
+            continue
+        where = near["name"].split(" / ")[0]
+        if not set(fold(where).split()) <= set(fold(s["name"]).split()):
+            s["name"] = f"{s['name']} / {where}"
+            named += 1
+    return named
+
+
 def retry_after(value, attempt):
     """How many seconds to wait before trying again: Retry-After's, in seconds or as an
     HTTP date, else two minutes more for each attempt made."""
@@ -718,14 +913,18 @@ def build(path):
     read = answer["osm3s"]["timestamp_osm_base"]
     if read < SNAPSHOT:
         sys.exit(f"{path}: read from a database of {read}, before the snapshot ({SNAPSHOT})")
-    # The ways and relations come twice: with their tags and centre, then with their
-    # bounding box alone (QUERY's last output).
-    features = [e for e in answer["elements"] if "tags" in e]
-    elements, stale = correct(features)
+    # The places' ways and relations come twice: with their tags and centre, then with
+    # their bounding box alone. The named roads come last, with their lines (geometry). A
+    # road that is also a place, a square mapped as one, comes both ways.
+    features = [e for e in answer["elements"] if "tags" in e and "geometry" not in e]
+    roads = [e for e in answer["elements"] if "geometry" in e]
+    corrected, stale = correct(features + roads)
     if stale:
         sys.exit("CORRECTIONS whose value OpenStreetMap no longer has, to read and update or remove: "
                  + "; ".join(f"{c[0]} {c[1]} {c[2]!r}" for c in stale))
-    bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"] if "bounds" in e}
+    elements = [e for e in corrected if "geometry" not in e]
+    bounds = {e["type"][0] + str(e["id"]): e["bounds"] for e in answer["elements"]
+              if "bounds" in e and "geometry" not in e}
 
     places, plain_names, homes, outside = [], Counter(), [], []
     for e in elements:
@@ -753,6 +952,11 @@ def build(path):
                        "notable": notable(t), "aliases": others})
     place_at(places, elements, bounds)
     places = dedupe(places) + metro_places(elements)
+    found, left_out = streets([e for e in corrected if "geometry" in e])
+    away = [s for s in found if not in_bbox(s["point"])]
+    found = [s for s in found if in_bbox(s["point"])]
+    shared = beside(found, [p for p in places if p["category"] == "settlement"])
+    places += found
     missing = add_aliases(places)
     if missing:
         sys.exit(f"ALIASES for features the answer does not have, to update or remove: {', '.join(missing)}")
@@ -771,20 +975,30 @@ def build(path):
         "script": "scripts/bus/build_places_json.py",
     }
     def row(p):
+        # A street's row ends with how far its ends are apart, in km; a place's has no length.
         return json.dumps([p["id"], p["name"], p["category"], p["point"][0], p["point"][1], int(p["notable"]),
-                           p["aliases"]], ensure_ascii=False, separators=(",", ":"))
+                           p["aliases"], *([p["length"]] if "length" in p else [])],
+                          ensure_ascii=False, separators=(",", ":"))
 
     OUT.write_text("{\n" + ",\n".join([
         f'"source": {json.dumps(source, ensure_ascii=False)}',
         f'"labels": {json.dumps(LABELS, ensure_ascii=False)}',
-        '"fields": ["id", "name", "category", "latitude", "longitude", "notable", "aliases"]',
+        '"fields": ["id", "name", "category", "latitude", "longitude", "notable", "aliases", "length"]',
         '"places": [\n' + ",\n".join("  " + row(p) for p in places) + "\n]",
     ]) + "\n}\n", encoding="utf-8")
     counts = Counter(p["category"] for p in places)
     print(f"wrote {OUT}: {len(places)} places ({OUT.stat().st_size / 1e6:.2f} MB) from "
-          f"{len(features)} features of {source['snapshot']}; left out {sum(plain_names.values())} "
-          f"with a plain name and {len(outside)} centred outside the area ({', '.join(outside)})")
+          f"{len(features)} features and {len(roads)} named roads of {source['snapshot']}; left out "
+          f"{sum(plain_names.values())} with a plain name and {len(outside)} centred outside the area "
+          f"({', '.join(outside)})")
     print("  " + ", ".join(f"{cat} {counts[cat]}" for cat in LABELS))
+    longest = ", ".join("%s (%g km)" % (s["name"], s["length"]) for s in sorted(found, key=lambda s: -s["length"])[:10])
+    print(f"  {counts['street']} streets, {shared} of them with the settlement nearest them after their name; "
+          f"left out {', '.join(f'{n} {why}' for why, n in sorted(left_out.items()))}, and {len(away)} centred "
+          f"outside the area ({', '.join(s['name'] for s in away)}); the longest: {longest}")
+    twins = Counter(street_key(s["name"]) for s in found)
+    print(f"  {sum(1 for n in twins.values() if n > 1)} names still shared by streets the nearest settlement "
+          f"does not tell apart: {', '.join(sorted(k for k, n in twins.items() if n > 1)[:40])}")
     print(f"  {len(homes)} homes and flats left out, to read for a place people go to (private_home()): "
           f"{', '.join(homes)}")
     # Settlements and areas are regions, whose centre is as good a point as any.
