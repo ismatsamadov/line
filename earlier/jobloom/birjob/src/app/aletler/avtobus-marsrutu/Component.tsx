@@ -11,6 +11,7 @@ import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { isBakuCoordinate } from "@/lib/busroute/geo";
 import { STREET } from "@/lib/busroute/placeMatch";
 import JourneyView from "./JourneyView";
+import JourneyChoice, { type Shown } from "./JourneyChoice";
 import Picker, { type PickerItem } from "./Picker";
 import { coarsePoint, placeKind, placeStopNear, searchBuses, suggestEnds } from "./search";
 import { usePlaceSearch } from "./usePlaceSearch";
@@ -34,6 +35,10 @@ type EndItem = PickerItem & { stop?: StopDetail; place?: PlaceMatch };
 
 const HERE = "here";
 const HERE_NAME = "Sizin yeriniz";
+// A point tapped on the map, chosen as the start or the destination (#743). Its id
+// carries where it is, so taps in two places are two ends.
+const MAP_POINT = "map:";
+const MAP_POINT_NAME = "Xəritədə seçilən nöqtə";
 
 // The stop, bus and line lists are checked with the server before every use, and a copy
 // still current comes back as a 304 (listResponse.ts, #743). no-cache says so here too: a
@@ -60,10 +65,28 @@ function placeDetail(place: PlaceMatch, near: ReturnType<typeof placeStopNear>):
   return [place.alias && `«${place.alias}»`, placeKind(place), stop].filter(Boolean).join(" · ");
 }
 
-/** The point sent for a chosen place, or the stop's id (POST /api/avtobus/find). */
+/** A point tapped on the map (#743), to five decimals, about a metre. Its label names
+ *  the stop nearest it within a journey's walk, as a place's row does. */
+function mapPoint(stops: StopDetail[], latitude: number, longitude: number): ChosenPlace {
+  const at = { latitude: Math.round(latitude * 1e5) / 1e5, longitude: Math.round(longitude * 1e5) / 1e5 };
+  const near = placeStopNear(stops, at);
+  const stop = near ? stopNote(near.stop, near.distance) : `${metres(ACCESS_RADIUS_KM)} m-də dayanacaq yoxdur`;
+  return { id: `${MAP_POINT}${at.latitude},${at.longitude}`, name: MAP_POINT_NAME, label: `Xəritədən · ${stop}`, ...at };
+}
+
+const isMapPoint = (place: ChosenPlace | null) => !!place && place.id.startsWith(MAP_POINT);
+
+/** The point sent for a chosen place, or the stop's id (POST /api/avtobus/find). A point
+ *  tapped on the map goes without a name, so the journey calls it by its end, "Başlanğıc
+ *  nöqtəsi" or "Təyinat nöqtəsi", and two tapped ends read apart in its steps (#743). */
 const journeyEnd = (side: "from" | "to", place: ChosenPlace | null, stop: StopDetail | null) => place
-  ? { [side]: { latitude: place.latitude, longitude: place.longitude, name: place.name } }
+  ? { [side]: { latitude: place.latitude, longitude: place.longitude, ...(isMapPoint(place) ? {} : { name: place.name }) } }
   : { [`${side}StopId`]: stop?.id };
+
+/** An end as the map's summary and its buttons name it: a tapped point by its end, as the
+ *  journey does (journeyEnd). */
+const endName = (side: "from" | "to", place: ChosenPlace | null, stop: StopDetail | null) =>
+  isMapPoint(place) ? (side === "from" ? "Başlanğıc nöqtəsi" : "Təyinat nöqtəsi") : place?.name ?? stop?.name;
 
 /** A start or destination: a stop, a named place, or the person's location. Exported for
  *  its tests. */
@@ -207,6 +230,10 @@ export default function Component() {
   const [route, setRoute] = useState<RouteResult | null>(null);
   // The racks beside the route's first boarding and last alighting (#692).
   const [bikeParking, setBikeParking] = useState<JourneyBikeParking | null>(null);
+  // The other answer worth weighing, the walk beside a ride or a ride beside the walk,
+  // and which of the two is shown (#743).
+  const [alternative, setAlternative] = useState<{ route: RouteResult; bikeParking: JourneyBikeParking | null; costsNoMore?: boolean } | null>(null);
+  const [shown, setShown] = useState<Shown>("route");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const routeReqRef = useRef(0);
@@ -255,7 +282,7 @@ export default function Component() {
     routeReqRef.current++;
     locationReqRef.current++;
     setLocating(false);
-    setRoute(null); setBikeParking(null); setLoading(false); setError(null);
+    setRoute(null); setBikeParking(null); setAlternative(null); setShown("route"); setLoading(false); setError(null);
   }, []);
 
   const loadStops = useCallback(async () => {
@@ -280,7 +307,7 @@ export default function Component() {
       return;
     }
     const requestId = ++routeReqRef.current;
-    setLoading(true); setError(null); setRoute(null); setBikeParking(null);
+    setLoading(true); setError(null); setRoute(null); setBikeParking(null); setAlternative(null); setShown("route");
     try {
       // A place or the person's location goes as its point, and the journey's walks from
       // it and to it are counted (#720).
@@ -294,6 +321,7 @@ export default function Component() {
       if (!res.ok) { setError(data.error || "Marşrut tapılmadı"); return; }
       setRoute(data.route);
       setBikeParking(data.bikeParking ?? null);
+      setAlternative(data.alternative ?? null);
       setMobileTab("panel"); // show the step-by-step result on mobile
     } catch {
       if (requestId === routeReqRef.current) setError("Şəbəkə xətası. Yenidən cəhd edin.");
@@ -369,8 +397,9 @@ export default function Component() {
     setFromStop(toStop); setToStop(fromStop); setFromPlace(toPlace); setToPlace(fromPlace);
   }, [fromStop, toStop, fromPlace, toPlace, clearRoute]);
 
-  // A map tap (on a marker OR snapped from empty map) fills the ACTIVE field,
-  // then advances to the other one — so the user always knows what a tap does.
+  // A tap on a stop's marker fills the ACTIVE field, then advances to the other one —
+  // so the user always knows what a tap does. A tap off every marker is a point
+  // (handleMapPoint, #743).
   const handleMapClick = useCallback((stop: StopDetail) => {
     setMapNotice(null); clearRoute();
     if (pickTarget === "from") {
@@ -385,11 +414,39 @@ export default function Component() {
     }
   }, [pickTarget, toStop, toPlace, clearRoute]);
 
+  // A tap on the map off every marker makes that point the start or the destination
+  // (#743), as a chosen place is: the journey walks from it to whichever stops near it
+  // suit it best, or to it. It fills the field a stop's tap would, by the same rule.
+  // Until #743 the tap took the nearest stop within 600 m, and none beyond.
+  const handleMapPoint = useCallback((latitude: number, longitude: number) => {
+    setMapNotice(null);
+    if (!isBakuCoordinate(latitude, longitude)) {
+      setMapNotice("Bu nöqtə Bakı və ətrafının avtobus şəbəkəsindən kənardadır. Şəbəkənin daxilində bir yerə toxunun.");
+      return;
+    }
+    clearRoute();
+    const point = mapPoint(stops, latitude, longitude);
+    if (pickTarget === "from") {
+      setFromStop(null);
+      setFromPlace(point);
+      setPickTarget(toStop || toPlace ? "from" : "to");
+    } else {
+      setToStop(null);
+      setToPlace(point);
+      setPickTarget("from");
+    }
+  }, [pickTarget, toStop, toPlace, clearRoute, stops]);
+
   // Each picker's places put the ones nearer the journey's other end first (#720). The
   // search sends that point in its address, which logs and error reports keep, so the
-  // person's location goes only to about 1 km (coarsePoint).
+  // person's location goes only to about 1 km (coarsePoint), and so does a point tapped
+  // on the map, which may be where they live (#743).
   const rankingPoint = (place: ChosenPlace | null, stop: StopDetail | null): Point | null =>
-    place?.id === HERE ? coarsePoint(place) : place ?? stop;
+    place && (place.id === HERE || isMapPoint(place)) ? coarsePoint(place) : place ?? stop;
+  // The answer shown, the planner's or the one beside it, in the steps and on the map.
+  const showsAlternative = shown === "alternative" && alternative !== null;
+  const shownRoute = showsAlternative ? alternative.route : route;
+  const shownBikeParking = showsAlternative ? alternative.bikeParking : bikeParking;
   const fromPoint = useMemo(() => rankingPoint(fromPlace, fromStop), [fromPlace, fromStop]);
   const toPoint = useMemo(() => rankingPoint(toPlace, toStop), [toPlace, toStop]);
   // The chosen places, and the person's location, on the map.
@@ -544,13 +601,15 @@ export default function Component() {
                   >
                     <MapIcon className="h-4 w-4" /> Nəticəni xəritədə gör
                   </button>
-                  <JourneyView route={route} bikeParking={bikeParking} />
+                  {alternative && <JourneyChoice route={route} alternative={alternative.route} shown={shown} onShow={setShown} />}
+                  {shownRoute && <JourneyView route={shownRoute} bikeParking={shownBikeParking}
+                    {...(alternative ? { recommended: alternative.costsNoMore ? null : !showsAlternative } : {})} />}
                 </div>
               )}
               {!route && !error && !loading && (
                 <p className="flex items-start gap-2 rounded-xl bg-gray-50 p-3 text-xs text-gray-500">
                   <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  Dayanacağın adını bilmirsiniz? Getdiyiniz yerin və ya küçənin adını yazın (məsələn, «Gənclik Mall», «Nizami küçəsi»), ya da «Xəritə»yə keçib istədiyiniz yerə toxunun — ən yaxın dayanacaq avtomatik seçilir.
+                  Dayanacağın adını bilmirsiniz? Getdiyiniz yerin və ya küçənin adını yazın (məsələn, «Gənclik Mall», «Nizami küçəsi»), ya da «Xəritə»yə keçib istədiyiniz yerə toxunun: həmin nöqtə başlanğıc və ya təyinat olur.
                 </p>
               )}
             </>
@@ -623,11 +682,11 @@ export default function Component() {
                 ? <span><strong className="text-blue-700">{line.number}</strong> xətti — {line.stops[0]?.name ?? line.first_point} → {line.stops[line.stops.length - 1]?.name ?? line.last_point} · {line.stops.length} dayanacaq</span>
                 : <span>Avtobus nömrəsini seçin — xəttin bütün marşrutu xəritədə görünəcək.</span>}
             </div>
-          ) : !route ? (
+          ) : !shownRoute ? (
             <div className="mb-2 rounded-xl border border-orange-200 bg-orange-50 p-2.5">
               <div className="mb-2 flex items-start gap-1.5 text-xs text-gray-600">
                 <Hand className="mt-0.5 h-3.5 w-3.5 shrink-0 text-orange-500" />
-                <span>Xəritədə dayanacağa <strong>toxun</strong>, ya da boş yerə toxun — <strong>ən yaxın</strong> dayanacaq seçilir.</span>
+                <span>Xəritədə dayanacağa və ya <strong>istənilən yerə</strong> toxunun: seçilən yer aşağıda işarələnən sahəyə yazılır.</span>
               </div>
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -635,20 +694,20 @@ export default function Component() {
                   className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "from" ? "border-green-500 bg-white text-green-700 ring-2 ring-green-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
                 >
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-green-600" />
-                  <span className="min-w-0 truncate">{fromPlace?.name ?? fromStop?.name ?? "Başlanğıc seç"}</span>
+                  <span className="min-w-0 truncate">{endName("from", fromPlace, fromStop) ?? "Başlanğıc seç"}</span>
                 </button>
                 <button
                   aria-pressed={pickTarget === "to"} onClick={() => setPickTarget("to")}
                   className={`flex items-center justify-center gap-1.5 rounded-lg border px-2 py-2 text-xs font-semibold transition ${pickTarget === "to" ? "border-red-500 bg-white text-red-700 ring-2 ring-red-200" : "border-gray-200 bg-white/60 text-gray-500"}`}
                 >
                   <span className="inline-block h-2.5 w-2.5 rounded-full bg-red-600" />
-                  <span className="min-w-0 truncate">{toPlace?.name ?? toStop?.name ?? "Təyinat seç"}</span>
+                  <span className="min-w-0 truncate">{endName("to", toPlace, toStop) ?? "Təyinat seç"}</span>
                 </button>
               </div>
             </div>
           ) : (
             <div className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-gray-200 bg-white p-2.5">
-              <span className="min-w-0 text-xs text-gray-700"><strong className="block text-sm text-gray-900">≈ {movementMinutes(route.totalTime)} dəq hərəkət</strong>{route.totalTransfers === 0 ? "Dəyişmə yoxdur" : `${route.totalTransfers} dəyişmə`} · {fromPlace?.name ?? fromStop?.name} → {toPlace?.name ?? toStop?.name}</span>
+              <span className="min-w-0 text-xs text-gray-700"><strong className="block text-sm text-gray-900">≈ {movementMinutes(shownRoute.totalTime)} dəq hərəkət</strong>{shownRoute.totalTransfers === 0 ? "Dəyişmə yoxdur" : `${shownRoute.totalTransfers} dəyişmə`} · {endName("from", fromPlace, fromStop)} → {endName("to", toPlace, toStop)}</span>
               <button
                 onClick={() => { clearRoute(); setToStop(null); setToPlace(null); setPickTarget("to"); }}
                 className="rounded-lg border border-gray-200 px-2.5 py-1.5 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
@@ -664,13 +723,15 @@ export default function Component() {
               stops={stops}
               fromStop={mode === "line" ? null : fromStop}
               toStop={mode === "line" ? null : toStop}
-              route={mode === "line" ? null : route}
+              route={mode === "line" ? null : shownRoute}
               line={mode === "line" ? line : null}
               places={mode === "line" ? undefined : mapPlaces}
               onStopClick={mode === "line" ? () => {} : handleMapClick}
+              // Only once the stops are in: a point's label names the stop nearest it, and
+              // the pickers wait for the stops too.
+              onPointClick={mode === "route" && stops.length > 0 ? handleMapPoint : undefined}
               isVisible={mobileTab === "map"}
-              bikeParking={mode === "line" ? null : bikeParking}
-              onMiss={mode === "route" ? () => setMapNotice("Bu nöqtədən 600 metr yaxınlıqda dayanacaq yoxdur. Dayanacaq işarəsinə toxunun və ya xəritədə başqa yer seçin.") : undefined}
+              bikeParking={mode === "line" ? null : shownBikeParking}
             />}
           </div>
           <p className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-gray-500"><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-green-600" />Başlanğıc</span><span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-full bg-red-600" />Təyinat</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-2 border-dashed border-gray-500" />Piyada</span><span className="flex items-center gap-1.5"><span className="w-4 border-t-[3px] border-dotted border-green-700" />Velosiped zolağı</span><span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-white bg-green-700 shadow-[0_0_0_1px_rgba(0,0,0,0.35)]" />Velosiped parkinqi</span>{mode === "route" && mapPlaces.some(place => !place.here) && <span className="flex items-center gap-1">{mapPlaces.filter(place => !place.here).map(place => <svg key={place.end} aria-hidden="true" width="10" height="13" viewBox="0 0 28 36"><path d={PLACE_PIN_PATH} fill={END_COLORS[place.end]} stroke="#fff" strokeWidth="2.5" /><circle cx="14" cy="13.5" r="4.5" fill="#fff" /></svg>)}Seçilən məkan</span>}{mode === "route" && mapPlaces.some(place => place.here) && <span className="flex items-center gap-1.5"><span className="h-2.5 w-2.5 rounded-full border-2 border-indigo-600 bg-indigo-500" />Sizin yeriniz</span>}</p>

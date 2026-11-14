@@ -276,7 +276,21 @@ export interface Journey {
   route: RouteResult | null;
   /** The end with no stop or station within a walk, when that is why there is no route. */
   stranded?: "origin" | "destination";
+  /** The other answer a person may well take instead, shown beside the route (#743): the
+   *  walk the whole way beside a journey that rides, when the walk takes no more than
+   *  MAX_WALK_INSTEAD_MIN; or, when the walk is the answer, the cheapest journey that
+   *  rides, when it is faster before any wait. From or to a point, never beside a walk of
+   *  BOARDING_PENALTY_MIN or less, which is the answer: no journey that rides can be
+   *  quicker door to door. Between two stops the answer is findRoute's, which walks only
+   *  within WALK_RADIUS_KM, so the walk beside its ride can be the one that costs less. */
+  alternative?: RouteResult;
+  /** Between two stops, when the walk beside the ride costs no more than the ride by the
+   *  cost journeys are ranked by: neither is the better by the planner's own rule. */
+  alternativeCostsNoMore?: true;
 }
+
+/** Whether a journey boards anything: a bus, a train or the metro's express bus. */
+const rides = (route: RouteResult) => route.segments.some((segment) => segment.mode !== "walk");
 
 /** The journey's point as a stop of its route, so reconstruct() can name and place it. */
 const pointStop = (point: JourneyPoint, id: number): StopDetail => ({
@@ -291,14 +305,40 @@ const walkEdge = (from: StopDetail, to: StopDetail, distance: number, exit?: Lat
   ...(exit ? { path: [[from.latitude, from.longitude], exit, [to.latitude, to.longitude]] } : {}),
 });
 
+/** The walk the whole way from one end to the other, in a straight line timed on its
+ *  streets, as a journey. */
+function walkTheWay(graph: RoutingGraph, origin: StopDetail, destination: StopDetail, km: number): RouteResult {
+  const minutes = walkMinutes(km);
+  const start: Label = { key: startAt(origin.id), stopId: origin.id, cost: [0, 0, 0, 0, 0], previous: null, edge: null, boarded: false };
+  return reconstruct(graph, {
+    key: walkedTo(destination.id, false), stopId: destination.id, previous: start,
+    edge: walkEdge(origin, destination, km), boarded: false, cost: [minutes, 0, km, km, minutes],
+  });
+}
+
 /**
  * The journey between two ends, either of which may be a point (#720). Between two
  * stops it is findRoute's. A point joins the graph as a node with walks to the stops
  * near it, or with walks to it from the stops near it, and one search chooses among
- * them all.
+ * them all. Beside the answer comes the other one worth weighing, if there is one
+ * (Journey's `alternative`, #743).
  */
 export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEnd, options: JourneyOptions = {}): Journey {
-  if ("stopId" in from && "stopId" in to) return { route: findRoute(graph, from.stopId, to.stopId) };
+  const walkOnlyKm = options.walkOnlyKm ?? MAX_WALK_ONLY_KM;
+  const walkInsteadMin = options.walkInsteadMin ?? MAX_WALK_INSTEAD_MIN;
+  if ("stopId" in from && "stopId" in to) {
+    const route = findRoute(graph, from.stopId, to.stopId);
+    // Between two stops the answer stays findRoute's, which walks only up to
+    // WALK_RADIUS_KM. A walk between them short enough to take instead stands beside it.
+    const origin = graph.getStopInfo(from.stopId), destination = graph.getStopInfo(to.stopId);
+    if (!route || !origin || !destination || !rides(route)) return { route };
+    const km = haversine(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
+    if (km > walkOnlyKm || walkMinutes(km) > walkInsteadMin) return { route };
+    // The ride's cost as journeys are ranked: its minutes and a penalty for each boarding.
+    const boardings = route.segments.filter((segment) => segment.mode !== "walk").length;
+    const costsNoMore = walkMinutes(km) <= route.totalTime + BOARDING_PENALTY_MIN * boardings;
+    return { route, alternative: walkTheWay(graph, origin, destination, km), ...(costsNoMore ? { alternativeCostsNoMore: true as const } : {}) };
+  }
   const origin = "stopId" in from ? graph.getStopInfo(from.stopId) : pointStop(from, ORIGIN_POINT_ID);
   const destination = "stopId" in to ? graph.getStopInfo(to.stopId) : pointStop(to, DESTINATION_POINT_ID);
   if (!origin || !destination) return { route: null };
@@ -313,14 +353,12 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
   // ride is no faster, and against a cheaper journey that rides within MAX_WALK_INSTEAD_MIN.
   const km = haversine(origin.latitude, origin.longitude, destination.latitude, destination.longitude);
   const minutes = walkMinutes(km);
-  const walkable = km <= (options.walkOnlyKm ?? MAX_WALK_ONLY_KM);
-  const competes = walkable && minutes <= (options.walkInsteadMin ?? MAX_WALK_INSTEAD_MIN);
+  const walkable = km <= walkOnlyKm;
+  const competes = walkable && minutes <= walkInsteadMin;
   const start: Label = { key: startAt(origin.id), stopId: origin.id, cost: [0, 0, 0, 0, 0], previous: null, edge: null, boarded: false };
-  const walkOnly = () => reconstruct(withPoints, {
-    key: walkedTo(destination.id, false), stopId: destination.id, previous: start,
-    edge: walkEdge(origin, destination, km), boarded: false, cost: [minutes, 0, km, km, minutes],
-  });
-  // Every journey that rides pays for a boarding, so a shorter walk needs no search.
+  const walkOnly = () => walkTheWay(withPoints, origin, destination, km);
+  // Every journey that rides pays for a boarding, so a shorter walk needs no search, and
+  // nothing stands beside it.
   if (competes && minutes <= BOARDING_PENALTY_MIN) return { route: walkOnly() };
 
   const away = "stopId" in from ? null : accessWalks(graph, from, "origin", options);
@@ -336,9 +374,14 @@ export function findJourney(graph: JourneyGraph, from: JourneyEnd, to: JourneyEn
     const stop = graph.getStopInfo(walk.stopId)!;
     edges.set(stop.id, [...graph.getEdges(stop.id), walkEdge(stop, destination, walk.distance, walk.exit)]);
   }
-  const found = cheapest(withPoints, [start], destination.id, competes ? minutes : Infinity);
+  // Not bounded by the walk's cost, as it was until #743: when the walk wins, the cheapest
+  // journey that rides is what stands beside it. The answer is the bounded search's: a
+  // label leaves the queue cheapest first either way, and within MAX_WALK_INSTEAD_MIN the
+  // bound let through only a journey that costs less than the walk.
+  const found = cheapest(withPoints, [start], destination.id);
   // Up to MAX_WALK_ONLY_KM a ride no faster than the walk, before any wait, never wins.
-  // Within MAX_WALK_INSTEAD_MIN the bound has already let only a cheaper one through.
-  if (found && !(walkable && found.cost[4] >= minutes)) return { route: reconstruct(withPoints, found) };
-  return { route: walkable ? walkOnly() : null };
+  const rideWins = found !== null && (competes ? found.cost[0] < minutes : !(walkable && found.cost[4] >= minutes));
+  if (rideWins) return { route: reconstruct(withPoints, found), ...(competes ? { alternative: walkOnly() } : {}) };
+  if (!walkable) return { route: null };
+  return { route: walkOnly(), ...(found && found.cost[4] < minutes ? { alternative: reconstruct(withPoints, found) } : {}) };
 }

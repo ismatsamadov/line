@@ -6,6 +6,7 @@ import { findJourney, type JourneyEnd } from "@/lib/busroute/routing";
 import { ACCESS_RADIUS_KM } from "@/lib/busroute/access";
 import { isBakuCoordinate } from "@/lib/busroute/geo";
 import { journeyBikeParking, type JourneyBikeParking } from "@/lib/busroute/bike";
+import type { RouteResult } from "@/lib/busroute/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export async function POST(request: NextRequest) {
     if (fromStop === undefined) return NextResponse.json({ error: "Başlanğıc dayanacağı tapılmadı" }, { status: 404 });
     if (toStop === undefined) return NextResponse.json({ error: "Təyinat dayanacağı tapılmadı" }, { status: 404 });
 
-    const { route, stranded } = findJourney(graph, origin, destination);
+    const { route, stranded, alternative, alternativeCostsNoMore } = findJourney(graph, origin, destination);
     if (!route) {
       // A point with nothing to board or leave near it gets told so, by its name.
       const end = stranded === "origin" ? origin : stranded === "destination" ? destination : null;
@@ -62,12 +63,15 @@ export async function POST(request: NextRequest) {
 
     // The bicycle racks beside the journey's first boarding and last alighting (#692).
     // A fault there must not cost the journey: it is sent without them.
-    let bikeParking: JourneyBikeParking | null = null;
-    try {
-      bikeParking = journeyBikeParking(route);
-    } catch (error) {
-      console.error("[avtobus] bike parking not added:", error);
-    }
+    const racks = (journey: RouteResult): JourneyBikeParking | null => {
+      try {
+        return journeyBikeParking(journey);
+      } catch (error) {
+        console.error("[avtobus] bike parking not added:", error);
+        return null;
+      }
+    };
+    const bikeParking = racks(route);
 
     const end = (stop: { id: number; name: string } | null, point: JourneyEnd) => stop
       ? { id: stop.id, name: stop.name }
@@ -77,6 +81,13 @@ export async function POST(request: NextRequest) {
       to: end(toStop, destination),
       route,
       bikeParking,
+      // The walk beside a journey that rides, or the ride beside the walk, when the other
+      // is worth weighing (#743); the page shows the two side by side. `costsNoMore`:
+      // between two stops the walk can cost no more than the ride, and then the page calls
+      // neither recommended.
+      alternative: alternative
+        ? { route: alternative, bikeParking: racks(alternative), costsNoMore: alternativeCostsNoMore === true }
+        : null,
     });
   } catch (error) {
     console.error("[avtobus] find failed:", error);

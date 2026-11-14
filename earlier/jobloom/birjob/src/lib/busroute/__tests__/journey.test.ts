@@ -248,6 +248,77 @@ describe('walking the whole way (#720)', () => {
     expect(searched).toContain(1);
   });
 
+  it('puts the walk beside a journey that rides, when the walk takes half an hour or less (#743)', () => {
+    // On foot 26 minutes; the bus 0.9 + 9 + 0.9 and a boarding costs 25.7, and is the answer.
+    const journey = findJourney(near(9), O, point(1.5, 'D'));
+    expect(modes(journey.route)).toEqual(['walk', 'bus', 'walk']);
+    expect(ids(journey.alternative ?? null)).toEqual([[ORIGIN_POINT_ID, DESTINATION_POINT_ID]]);
+    expect(journey.alternative).toMatchObject({ totalTime: 26, totalDistance: 1.5, totalTransfers: 0 });
+    // 1.9 km takes 32.9 minutes on foot, more than half an hour: the faster bus alone.
+    const far = findJourney(near(20, 1.9), O, point(1.9, 'D'));
+    expect(modes(far.route)).toEqual(['walk', 'bus', 'walk']);
+    expect(far).not.toHaveProperty('alternative');
+  });
+
+  it('puts the cheapest journey that rides beside the walk, when it is faster before any wait (#743)', () => {
+    // A bus of 10 minutes costs 26.7 with its boarding, against the walk's 26: the walk is
+    // the answer, and the bus, 11.7 minutes before its wait, stands beside it.
+    const journey = findJourney(near(10), O, point(1.5, 'D'));
+    expect(modes(journey.route)).toEqual(['walk']);
+    expect(modes(journey.alternative ?? null)).toEqual(['walk', 'bus', 'walk']);
+    expect(journey.alternative!.totalTime).toBe(11.7);
+    // A bus no faster than the walk, even before its wait, is no alternative.
+    expect(walkMinutes(0.05) * 2 + 25).toBeGreaterThan(26);
+    expect(findJourney(near(25), O, point(1.5, 'D'))).not.toHaveProperty('alternative');
+    expect(findJourney(near(40, 1.9), O, point(1.9, 'D'))).not.toHaveProperty('alternative');
+    // Nor is there one where nothing rides.
+    expect(findJourney(graph({}, []), O, point(1.9, 'D'))).not.toHaveProperty('alternative');
+  });
+
+  it('puts nothing beside a walk of a quarter of an hour or less, which no journey that rides can beat (#743)', () => {
+    expect(walkMinutes(0.85)).toBeLessThan(15);
+    expect(findJourney(near(0, 1.2), O, point(0.85, 'D'))).toEqual({ route: expect.anything() });
+  });
+
+  it('on one bus line, walks or rides by the rule for the walk, on every walk around the half hour (#743)', () => {
+    // The search no longer stops at the walk's cost. On networks of several lines the
+    // answers are checked against an independent oracle (routingOracle.test.ts).
+    for (const km of [0.9, 1.2, 1.5, 1.7, 1.73, 1.8, 1.95]) {
+      for (const minutes of [0, 5, 9, 10, 12, 20, 25, 40]) {
+        const walk = walkMinutes(haversine(...north(0), ...north(km)));
+        const ride = walkMinutes(0.05) * 2 + minutes;
+        const competes = walk <= MAX_WALK_INSTEAD_MIN;
+        const expected = competes ? (ride + 15 < walk ? 'ride' : 'walk') : (ride < walk ? 'ride' : 'walk');
+        const got = modes(findJourney(near(minutes, km), O, point(km, 'D')).route);
+        expect(got?.length === 1 ? 'walk' : 'ride', `${km} km, a bus of ${minutes} minutes`).toBe(walk <= 15 ? 'walk' : expected);
+      }
+    }
+  });
+
+  it('between two stops, puts the walk between them beside the ride when they are a short walk apart (#743)', () => {
+    const between = (km: number) => graph({ 1: [ride(2, 10, 5)] }, undefined, { at: { 1: north(0), 2: north(km) } });
+    const short = findJourney(between(1.2), { stopId: 1 }, { stopId: 2 });
+    // The answer is findRoute's as ever.
+    expect(short.route).toEqual(findRoute(between(1.2), 1, 2));
+    expect(ids(short.alternative ?? null)).toEqual([[1, 2]]);
+    expect(short.alternative).toMatchObject({ totalTime: walkMinutes(1.2), totalTransfers: 0 });
+    expect(short.alternative!.segments[0]).toMatchObject({ mode: 'walk', busId: -1 });
+    // The bus costs 5 minutes and a boarding, 20, and the walk of 1.2 km 20.8: the ride is
+    // the cheaper. 600 m apart, the walk of 10.4 minutes costs less than the ride, which
+    // findRoute still answers with, walking only within 400 m; the page then calls neither
+    // recommended.
+    expect(short).not.toHaveProperty('alternativeCostsNoMore');
+    const nearer = findJourney(between(0.6), { stopId: 1 }, { stopId: 2 });
+    expect(modes(nearer.route)).toEqual(['bus']);
+    expect(nearer).toMatchObject({ alternative: { totalTime: walkMinutes(0.6) }, alternativeCostsNoMore: true });
+    // 3 km apart, the walk takes 52 minutes; 300 m apart, the walk is the answer.
+    expect(findJourney(between(3), { stopId: 1 }, { stopId: 2 })).not.toHaveProperty('alternative');
+    const close = graph({ 1: [ride(2, 10, 5), walk(2, 0.3)] }, undefined, { at: { 1: north(0), 2: north(0.3) } });
+    const walked = findJourney(close, { stopId: 1 }, { stopId: 2 });
+    expect(modes(walked.route)).toEqual(['walk']);
+    expect(walked).not.toHaveProperty('alternative');
+  });
+
   it('keeps an end walk within the radius it was found in', () => {
     const edge = findJourney(near(3), O, point(1.5, 'D')).route!.segments[0];
     expect(edge.distance).toBeLessThanOrEqual(ACCESS_RADIUS_KM);

@@ -142,7 +142,7 @@ export function searchBuses(buses: BusLite[], query: string): BusLite[] {
     .slice(0, 40).map(item => item.bus);
 }
 
-// Do not silently call a stop across town "nearby". Shared with map snapping.
+// Do not silently call a stop across town "nearby": the default radius of nearestStop.
 export const NEARBY_STOP_RADIUS_KM = 0.6;
 
 export function nearestStop(stops: StopDetail[], lat: number, lng: number, radiusKm = NEARBY_STOP_RADIUS_KM, { named = false } = {}) {

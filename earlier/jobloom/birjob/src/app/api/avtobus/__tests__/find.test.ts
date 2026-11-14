@@ -161,6 +161,39 @@ describe('POST /api/avtobus/find', () => {
     expect(getGraph).not.toHaveBeenCalled();
   });
 
+  it('sends the walk beside a journey that rides, and the ride beside the walk, when either is worth weighing (#743)', async () => {
+    const steps = (route: { segments: Array<{ mode: string; stops: Array<{ id: number }> }> }) =>
+      route.segments.map((s) => `${s.mode} ${s.stops.map((p) => p.id).join('-')}`);
+    // Stops 1 and 2, 1.1 km apart, 19 minutes on foot: the bus of 1 minute is the answer,
+    // and the walk between them stands beside it, with no racks, as a walk has none.
+    const stops = await (await POST(request({ fromStopId: 1, toStopId: 2 }))).json();
+    expect(steps(stops.route)).toEqual(['bus 1-2']);
+    expect(stops.alternative).toEqual({ route: expect.objectContaining({ totalTransfers: 0 }), bikeParking: null, costsNoMore: false });
+    expect(steps(stops.alternative.route)).toEqual(['walk 1-2']);
+    // A bus of 5 minutes costs 20 with its boarding, more than the walk's 19: the answer
+    // stays the bus, as between two stops it is, and the walk is said to cost no more.
+    getGraph.mockResolvedValueOnce(graph({ 1: [ride(2, 20, 5)] }));
+    const dearer = await (await POST(request({ fromStopId: 1, toStopId: 2 }))).json();
+    expect(steps(dearer.route)).toEqual(['bus 1-2']);
+    expect(dearer.alternative).toMatchObject({ costsNoMore: true });
+    // 2.2 km apart, 38 minutes on foot: nothing beside the bus.
+    expect((await (await POST(request({ fromStopId: 1, toStopId: 3 }))).json()).alternative).toBeNull();
+    // From the mall to a point 1.3 km on, 23 minutes on foot: the bus of 1 minute is the
+    // answer with the walk beside it ...
+    const near = { latitude: 40.0215, longitude: 49, name: 'Poçt' };
+    const rides = await (await POST(request({ from: mall, to: near }))).json();
+    expect(steps(rides.route)).toEqual(['walk -1-1', 'bus 1-2', 'walk 2--2']);
+    expect(steps(rides.alternative.route)).toEqual(['walk -1--2']);
+    // ... and a bus of 8 minutes, 26.9 with its boarding, loses to the walk, and stands
+    // beside it, 11.9 minutes before its wait, with its racks worked out as the answer's are.
+    getGraph.mockResolvedValueOnce(graph({ 1: [ride(2, 20, 8)] }));
+    const walks = await (await POST(request({ from: mall, to: near }))).json();
+    expect(steps(walks.route)).toEqual(['walk -1--2']);
+    expect(steps(walks.alternative.route)).toEqual(['walk -1-1', 'bus 1-2', 'walk 2--2']);
+    expect(walks.alternative.bikeParking).toBeNull();
+    expect(journeyBikeParking).toHaveBeenCalledWith(walks.alternative.route);
+  });
+
   it('says which place has no stop within a walk, by its name (#720)', async () => {
     const res = await POST(request({ from: { latitude: 40.2, longitude: 49, name: 'Uzaq bağ' }, toStopId: 3 }));
     expect(res.status).toBe(404);

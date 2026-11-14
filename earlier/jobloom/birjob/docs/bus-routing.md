@@ -905,10 +905,13 @@ its streets (about 1.7 km in a straight line), it is the answer when it costs no
 than the cheapest journey that rides; up to `MAX_WALK_ONLY_KM`, 2 km in a straight line,
 it is the answer when nothing rides there, or when the cheapest journey that rides takes
 as long or longer even before its waits. A walk of 15 minutes or less (865 m) costs
-no more than any journey that rides, so it needs no search, and a longer one bounds the
-search: it stops once nothing left can be cheaper. On random place pairs, 60 in each
-band of straight-line distance, the walk was the cheaper in 56 of those from 1.1 to 1.5
-km and was the answer in all 56; from 1.5 to 2 km it was the cheaper in 43 and the
+no more than any journey that rides, so it needs no search. A longer one bounded the
+search until #743, stopping it once nothing left could be cheaper; now the search runs on
+to the cheapest journey that rides, which stands beside the walk ([The walk beside the
+ride](#the-walk-beside-the-ride-743)), and the answer is the one the bound gave. On random
+place pairs, 60 in each band of straight-line distance, the walk was the cheaper in 56 of
+those from 1.1 to 1.5 km and was the answer in all 56; from 1.5 to 2 km it was the cheaper
+in 43 and the
 answer in 27, the other 16 taking more than 30 minutes against a faster ride; it was
 still the cheaper in 22 pairs from 2 to 2.5 km, 11 from 2.5 to 3 km and 5 beyond, and
 offered in none. Without the limits, with walks timed on their straight line, it won as
@@ -943,7 +946,8 @@ length in kilometres from 1 km. The map marks a place with a pin in its end's co
 and the location with a blue dot, each labelled as a chosen stop is, draws the walks
 dashed like every walk, and frames the places themselves, with room above for their
 labels. A map tap fills the start, and keeps filling it while a destination, a stop or
-a place, is chosen.
+a place, is chosen; off every marker it fills it with the point tapped ([A point tapped
+on the map](#a-point-tapped-on-the-map-743)).
 
 In the pickers a place names the nearest stop with a name within 1 km
 (`placeStopNear`), and a place with none is listed last and says so; choosing it is not
@@ -999,6 +1003,67 @@ ms, with every request 300 ms slower as on a phone network, says "Axtarılır…
 second and third letters only, then lists the stops and places at every key, Gənclik the
 station first for "gənclik".
 
+## The walk beside the ride (#743)
+
+A journey can have a second answer, the other one a person may well take: the response's
+`alternative` (`findJourney`'s). Beside a journey that rides it is the walk the whole way,
+when that takes `MAX_WALK_INSTEAD_MIN` (30 minutes on its streets) or less; beside the walk
+it is the cheapest journey that rides, when that is faster before any wait. Nothing stands
+beside a walk of 15 minutes or less, which no journey that rides beats once its wait is
+reckoned at a boarding's 15 minutes, nor beside a walk over 30 minutes, which loses only to
+a faster ride. Between two stops the answer stays `findRoute`'s, which walks only within
+400 m; the walk between the stops stands beside a journey that rides when it takes 30
+minutes or less, so between two stops 1.1 km apart a bus of 1 minute is the answer and the
+19-minute walk is offered with it. There the walk can cost no more than the ride by the
+cost journeys are ranked by, every pair of stops 0.4 to 0.87 km apart among them, as
+between two places it would be the answer; the response says so (`costsNoMore`), and the
+page marks neither as recommended, only what each is. Whether two stops should be answered
+as two places are is the owner's call.
+
+The page puts the two side by side above the steps, "Nəqliyyatla" and "Piyada"
+(`JourneyChoice.tsx`, styled as the line viewer's Gediş and Qayıdış), the planner's answer
+first and shown. Each says its minutes; a ride's read "+ gözləmə", since they leave out the
+wait a walk does not have. The steps, the map and the map's summary follow the one pressed,
+and the journey shown is marked "Tövsiyə olunan" or "Alternativ" ("Nəqliyyatla" or "Piyada"
+where neither is recommended). A new answer shows the planner's again, and with one answer
+the page is as it was.
+
+To find the ride beside the walk, the search no longer stops at the walk's cost: it runs on
+to the cheapest journey that rides. Its answer is the one the bound gave, since labels leave
+the queue cheapest first either way. Measured on 14 November against the snapshot (a
+scratch PostgreSQL loaded as for #721, the real `graph.ts`, seed 743): of 2,000 random
+point pairs 0.5 to 2.5 km apart, every answer was the same as before, byte for byte, and so
+were those of 500 stop pairs as far apart. 617 pairs ride and 1,276 walk; the ride stands
+beside the walk in 544 of them, the walk beside the ride in 24, and the walk beside the bus
+in 241 of the 500 stop pairs. A search took 0.19 ms at the median against 0.14, and 7.6 ms
+at the 99th percentile against 8.8, on a laptop and noisy. Where the walk wins between 15
+and 30 minutes, the 813 pairs that now search on, it took 0.25 ms against 0.13 at the
+median, 11.6 against 1.5 at the 99th percentile, and 38 ms at most.
+
+## A point tapped on the map (#743)
+
+A tap on the map off every marker makes that point the start or the destination, filling
+the field a stop's tap would: the start first, the destination next, and the start again
+once a destination is chosen. The journey walks from it or to it as from a chosen place
+([Routing from a place](#routing-from-a-place-720)), to whichever stops within 1 km suit it
+best. Its picker reads "Xəritədə seçilən nöqtə", to five decimals (about a metre), with
+"Xəritədən · dayanacağa 111 m: …", the stop with a name nearest it within the walk. It is
+sent without a name, so the journey's steps call it by its end, "Başlanğıc nöqtəsi" or
+"Təyinat nöqtəsi", as the map's summary does: with both ends tapped, one name for the two
+read as one point. A point outside the network's area is refused with a note, as the server would
+refuse it. It reaches the place search's `near` only to two decimals, as the location does,
+since a tapped point may be where someone lives. A stop's marker still chooses the stop: a
+Leaflet mark that listens for taps does not hand them on to the map. One that listened for
+none did, and a review found the tap on a chosen end's pin, a chosen place's pin, the
+location's dot or a hub's or an end's label making a point there: a tap on the destination's
+pin put the start on top of it. Now a tap on an end's pin or label, a stop's or a place's,
+changes nothing, and a hub's label chooses the hub. A tap waits 250 ms
+(`DOUBLE_TAP_MS`) for a second one, so a double tap zooms the map, as it always did, and
+chooses nothing; at first it chose both ends. The map takes a point only once the stops are
+in, as the pickers wait for them, so the label always names the nearest. Until #743 a tap
+off every marker chose the nearest stop within 600 m, and refused a point with none that
+close.
+
 ## API and UI
 
 `POST /api/avtobus/find` accepts, for each end, a positive PostgreSQL integer ID
@@ -1012,7 +1077,9 @@ and so does a point with no stop within 1 km and too far to walk, with an error 
 names it; initialization failures return 500 with a retryable error message. Error
 bodies keep the string shape consumed by the client. A successful response includes
 origin/destination metadata (`{id, name}` for a stop, `{name, latitude, longitude}`
-for a point), a single `RouteResult` and the racks beside it, `bikeParking` (#692).
+for a point), a single `RouteResult` and the racks beside it, `bikeParking` (#692), and
+`alternative`: the other answer worth weighing, with its own racks, `{route, bikeParking}`,
+or null ([The walk beside the ride](#the-walk-beside-the-ride-743)).
 Every segment has its `mode`; bus segments include their direction and terminal name,
 and metro segments their line and terminus. A walk from or to a point is a `walk`
 segment whose first or last stop is the point, with id -1 (`ORIGIN_POINT_ID`) or -2
@@ -1024,7 +1091,8 @@ has a generation number; changing stops, swapping them, choosing a location or
 switching mode invalidates an older response. A delayed itinerary cannot overwrite
 the current selection. Results show boarding/alighting stops, walking endpoints,
 terminal direction and movement-time limitations. Walking-only journeys are
-labeled “Piyada,” rather than “0 avtobus.”
+labeled “Piyada,” rather than “0 avtobus.” Where a journey has an alternative, the two
+stand side by side above the steps (#743).
 
 Stop and bus searches fold Azerbaijani letters and Latin keyboard equivalents
 (including dotted İ), support words in any order, and rank exact names/codes
@@ -1036,8 +1104,9 @@ The start and destination pickers list named places and streets among the stops;
 [Places](#places-720) and [Streets](#streets-743) have how they are searched, and [Routing
 from a place](#routing-from-a-place-720) what choosing one does.
 
-Empty-map taps choose a stop only within 600 m. That selection radius is separate
-from the routing graph's 400 m walking-transfer limit. The location button
+A tap on the map off every marker makes that point an end ([A point tapped on the
+map](#a-point-tapped-on-the-map-743)); until #743 it chose the nearest stop within 600 m.
+The location button
 ("Olduğum yerdən başla") makes the person's location the start itself, shown as
 "Sizin yeriniz" with its accuracy, and the journey walks from it (#720). A location
 outside the network's area is refused in the browser, as the server refuses it, and so
@@ -1152,6 +1221,22 @@ ranks carried-over streets as the search does, over every prefix of "nizami", "s
 saray", "torqovı" and three more, and tells a long street's length; `Component.test.ts`
 checks a street's row, its chosen end and the journey asked to its middle; and the places
 route answers a street with its length.
+
+The walk beside the ride and the tapped point (#743) have theirs too. The oracle of
+journeys between points (`routingOracle.test.ts`) checks what stands beside each answer:
+the walk beside a journey that rides exactly while the walk competes, and the oracle's
+cheapest journey that rides beside the walk exactly when it is faster before any wait; with
+the answers themselves checked as before, that is the bounded search's answer kept on
+networks of several lines. `journey.test.ts` checks the same on one bus line around the half
+hour, nothing beside a walk of a quarter of an hour, and the walk between two stops beside
+their ride, said to cost no more where it does. The find route sends the alternative with
+its racks and `costsNoMore`. `Component.test.ts` checks that the steps and the map follow
+the option pressed, a new answer shows the planner's again, neither is called recommended
+where the walk costs no more, and the taps: the start, the destination, the start again
+once a destination is chosen, a stop handed over by a marker still a stop, none before the
+stops are in or while a line is shown, a point outside the area refused and a tapped point's
+`near` to two decimals. `JourneyChoice.test.ts` checks the two buttons and the mark on the
+journey shown. That a mark keeps its tap from the map is Leaflet's, checked in the browser.
 
 ## Verification for #721 (2026-11-11)
 

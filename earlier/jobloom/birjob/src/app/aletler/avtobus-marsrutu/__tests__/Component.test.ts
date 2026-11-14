@@ -21,6 +21,8 @@ import * as mapMarks from '../mapMarks';
 const FILE = fileURLToPath(new URL('../Component.tsx', import.meta.url));
 const Stub = () => null;
 const BusMap = () => null;
+const JourneyView = () => null;
+const JourneyChoice = () => null;
 const icons = new Proxy({}, { get: () => Stub });
 
 const stop = (id: number, name: string, latitude: number, longitude: number): StopDetail =>
@@ -45,7 +47,8 @@ const imports = {
   '@/lib/busroute/access': access,
   '@/lib/busroute/geo': geo,
   '@/lib/busroute/placeMatch': placeMatch,
-  './JourneyView': defaultExport(Stub),
+  './JourneyView': defaultExport(JourneyView),
+  './JourneyChoice': defaultExport(JourneyChoice),
   './Picker': defaultExport(Picker),
   './search': search,
   './usePlaceSearch': { usePlaceSearch: () => placeSearch },
@@ -263,5 +266,127 @@ describe('a street as a start or destination (#743)', () => {
     p.end('Haradan').onSelectPlace(mall);
     await p.render();
     expect(p.end('Haradan').place).toMatchObject({ label: 'Ticarət mərkəzi' });
+  });
+});
+
+describe('the walk and the ride side by side (#743)', () => {
+  const journey = (minutes: number, mode: 'walk' | 'bus') => ({
+    segments: [{ mode, stops: [] }], totalDistance: 1.2, totalTime: minutes, totalTransfers: 0, totalStops: 0,
+  });
+  const RIDE = journey(9, 'bus'), WALK = journey(21, 'walk');
+  const RACKS = { boarding: null, alighting: null };
+  const answer = (body: unknown) => vi.stubGlobal('fetch', vi.fn(async (url: string) => url === '/api/avtobus/stops'
+    ? { ok: true, json: async () => ({ stops: STOPS }) } : { ok: true, json: async () => body }));
+
+  async function found(body: unknown) {
+    answer(body);
+    const p = planner();
+    await p.render();
+    p.end('Haradan').onSelectStop(STOPS[0]);
+    await p.render();
+    p.end('Hara').onSelectStop(STOPS[1]);
+    await p.render();
+    const shown = () => ({
+      view: p.view.find(el => el.type === JourneyView)[0]?.props,
+      choice: p.view.find(el => el.type === JourneyChoice)[0]?.props,
+      map: p.map(),
+    });
+    return { p, shown };
+  }
+
+  it('shows the planner\'s answer, and the other on a press, in the steps and on the map', async () => {
+    const { p, shown } = await found({ route: RIDE, bikeParking: null, alternative: { route: WALK, bikeParking: RACKS } });
+    expect(shown().choice).toMatchObject({ route: RIDE, alternative: WALK, shown: 'route' });
+    expect(shown().view).toMatchObject({ route: RIDE, bikeParking: null, recommended: true });
+    expect(shown().map).toMatchObject({ route: RIDE, bikeParking: null });
+    shown().choice.onShow('alternative');
+    await p.render();
+    expect(shown().view).toMatchObject({ route: WALK, bikeParking: RACKS, recommended: false });
+    expect(shown().map).toMatchObject({ route: WALK, bikeParking: RACKS });
+    // A new answer is shown as the planner's again.
+    p.button('Yenidən hesabla').onClick();
+    await p.render();
+    expect(shown().choice).toMatchObject({ shown: 'route' });
+    expect(shown().view).toMatchObject({ route: RIDE, recommended: true });
+  });
+
+  it('calls neither recommended where the walk between two stops costs no more than their ride', async () => {
+    const { p, shown } = await found({ route: RIDE, bikeParking: null, alternative: { route: WALK, bikeParking: null, costsNoMore: true } });
+    expect(shown().view).toMatchObject({ route: RIDE, recommended: null });
+    shown().choice.onShow('alternative');
+    await p.render();
+    expect(shown().view).toMatchObject({ route: WALK, recommended: null });
+  });
+
+  it('shows one answer as before when nothing stands beside it', async () => {
+    const { shown } = await found({ route: RIDE, bikeParking: null, alternative: null });
+    expect(shown().choice).toBeUndefined();
+    expect(shown().view).toEqual({ route: RIDE, bikeParking: null });
+    const { shown: older } = await found({ route: WALK, bikeParking: null });
+    expect(older().choice).toBeUndefined();
+    expect(older().view).toEqual({ route: WALK, bikeParking: null });
+  });
+});
+
+describe('a point tapped on the map (#743)', () => {
+  it('starts or ends the journey at the point itself, filling the field a stop\'s tap would', async () => {
+    const p = planner();
+    await p.render();
+    // The first tap is the start; a stop at 40.4, 49.85 is 111 m north of it.
+    p.map().onPointClick(40.399, 49.850004);
+    await p.render();
+    expect(p.end('Haradan').place).toEqual({
+      id: 'map:40.399,49.85', name: 'Xəritədə seçilən nöqtə', label: 'Xəritədən · dayanacağa 111 m: Gənclik m/st',
+      latitude: 40.399, longitude: 49.85,
+    });
+    // The next is the destination, and the journey is asked for between the two points.
+    p.map().onPointClick(40.371234567, 49.84);
+    await p.render();
+    // Without names: the journey calls them by their ends, so two tapped points read apart.
+    expect(bodies.at(-1)).toEqual({ from: { latitude: 40.399, longitude: 49.85 }, to: { latitude: 40.37123, longitude: 49.84 } });
+    const text = (node: unknown): string => Array.isArray(node) ? node.map(text).join('') : typeof node === 'string' ? node
+      : (node as { props?: { children?: unknown } } | null)?.props ? text((node as { props: { children?: unknown } }).props.children) : '';
+    expect(p.view.find(el => el.type === 'span' && text(el.props.children).includes('Başlanğıc nöqtəsi → Təyinat nöqtəsi'))).toHaveLength(1);
+    // With a destination chosen, a tap changes the start, as a stop's tap does.
+    p.map().onPointClick(40.4, 49.86);
+    await p.render();
+    expect(bodies.at(-1)).toMatchObject({ from: { latitude: 40.4, longitude: 49.86 }, to: { latitude: 40.37123 } });
+    // A stop handed over by a marker's tap is still a stop. That a marker keeps its tap
+    // from the map is Leaflet's doing, checked in the browser.
+    p.map().onStopClick(STOPS[0]);
+    await p.render();
+    expect(bodies.at(-1)).toMatchObject({ fromStopId: 1, to: { latitude: 40.37123 } });
+  });
+
+  it('refuses a point outside the network\'s area, and says so', async () => {
+    const p = planner();
+    await p.render();
+    p.map().onPointClick(41.5, 48.0);
+    await p.render();
+    expect(p.end('Haradan').place).toBeNull();
+    expect(p.view.find(el => el.props.role === 'status' && /kənardadır/.test(String(el.props.children)))).toHaveLength(1);
+  });
+
+  it('tells the place search where a tapped point is only to about 1 km, as for the location', async () => {
+    const p = planner();
+    await p.render();
+    p.map().onPointClick(40.377134, 49.854137);
+    await p.render();
+    expect(p.end('Hara').near).toEqual({ latitude: 40.38, longitude: 49.85 });
+  });
+
+  it('takes no point before the stops are in, whose nearest its label names', async () => {
+    vi.stubGlobal('fetch', vi.fn(() => new Promise(() => {})));
+    const p = planner();
+    await p.render();
+    expect(p.map().onPointClick).toBeUndefined();
+  });
+
+  it('takes no point while a line is shown', async () => {
+    const p = planner();
+    await p.render();
+    p.button('Xətti göstər').onClick();
+    await p.render();
+    expect(p.map().onPointClick).toBeUndefined();
   });
 });

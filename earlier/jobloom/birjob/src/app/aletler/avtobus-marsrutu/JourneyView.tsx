@@ -19,7 +19,13 @@ function WalkEnd({ stop }: { stop: RouteSegment["stops"][number] | undefined }) 
   return <span className="font-semibold text-gray-800"><MapPin aria-hidden="true" className="mr-0.5 inline h-3.5 w-3.5 align-[-2px]" />{stop.name}</span>;
 }
 
-export default function JourneyView({ route, bikeParking = null }: { route: RouteResult; bikeParking?: JourneyBikeParking | null }) {
+/** `recommended` is set when the walk and a ride stand side by side (#743): the planner's
+ *  answer is marked as recommended, the other as the alternative, and null marks neither,
+ *  only what the journey is, where the walk costs no more than the ride the planner
+ *  answers with between two stops. Unset, as with one answer, a walk is marked as a walk. */
+export default function JourneyView({ route, bikeParking = null, recommended }: {
+  route: RouteResult; bikeParking?: JourneyBikeParking | null; recommended?: boolean | null;
+}) {
   const colors = segmentColors(route);
   const rides = route.segments.filter(segment => segment.mode !== "walk");
   const walkOnly = rides.length === 0;
@@ -31,7 +37,10 @@ export default function JourneyView({ route, bikeParking = null }: { route: Rout
       <div className="border-b border-gray-100 p-4 sm:p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 className="text-base font-bold text-gray-900">{walkOnly ? "Piyada gedə bilərsiniz" : "Marşrutunuz hazırdır"}</h2>
-          <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-800">{walkOnly ? "Piyada" : "Tövsiyə olunan"}</span>
+          <span className={`rounded-full px-2.5 py-1 text-xs font-semibold ${recommended === false || recommended === null ? "bg-gray-100 text-gray-700" : "bg-orange-50 text-orange-800"}`}>
+            {recommended === undefined ? (walkOnly ? "Piyada" : "Tövsiyə olunan")
+              : recommended === null ? (walkOnly ? "Piyada" : "Nəqliyyatla") : recommended ? "Tövsiyə olunan" : "Alternativ"}
+          </span>
         </div>
         <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
           <span className="text-3xl font-extrabold tracking-tight text-gray-900">≈ {movementMinutes(route.totalTime)}</span>

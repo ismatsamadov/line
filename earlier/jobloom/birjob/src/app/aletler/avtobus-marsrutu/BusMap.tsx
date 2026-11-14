@@ -10,7 +10,6 @@ import type { StopDetail, RouteResult, BusLineDetail } from "@/lib/busroute/type
 import { isMetroStation } from "@/lib/busroute/types";
 import { BIKE, type JourneyBikeParking } from "@/lib/busroute/bike";
 import { escapeXml } from "@/lib/escapeXml";
-import { nearestStop } from "./search";
 import { isLeafletAnimating, cancelZoomAnimation } from "@/lib/leafletAnimation";
 import { fitFeatures, sizedFromZero, type FitTargets } from "./mapFit";
 import { segmentColors } from "./segmentColors";
@@ -27,6 +26,15 @@ const LINE_COLOR = "#2563eb";
 const ANIM_SETTLE_MS = 700;
 // One empty list, so a map with no places does not redraw on every render.
 const NO_PLACES: MapPlace[] = [];
+// How long a tap on the map waits for a second one (#743): a double tap zooms, as
+// Leaflet's double-click does, and chooses no point. Each tap of the two reaches the
+// map's click first.
+const DOUBLE_TAP_MS = 250;
+// A mark on the map takes a tap only when it listens for one: a tap on the chosen ends'
+// pins, or on a permanent label, which listens for none, went on to the map and made a
+// point there (#743). These handlers keep it, as an interactive label keeps a tap on it
+// for its mark.
+const keepTap = () => {};
 // Bicycle lanes and racks (#692): a dotted green, apart from every route line, which is
 // solid, and from the walk, which is dashed grey. Racks show from this zoom on, where
 // they stop crowding each other (the median gap between two is 260 m).
@@ -55,10 +63,12 @@ export interface BusMapProps {
   route: RouteResult | null;
   /** Line-viewer mode: draw one bus line's full trajectory (takes precedence over browse). */
   line: BusLineDetail | null;
-  /** Called with the chosen stop — from a marker tap OR a snap from empty map. */
+  /** Called with the stop whose marker was tapped. */
   onStopClick: (stop: StopDetail) => void;
+  /** Called with where the map was tapped off every marker (#743), when the page takes a
+   *  point as the start or the destination. Unset, such a tap does nothing. */
+  onPointClick?: (latitude: number, longitude: number) => void;
   isVisible?: boolean;
-  onMiss?: () => void;
   /** The racks beside the found route's first boarding and last alighting (#692). */
   bikeParking?: JourneyBikeParking | null;
   /** The places, or the person's location, chosen as the start or the destination (#720). */
@@ -117,8 +127,8 @@ function bikeParkingIcon(): L.DivIcon {
 
 /**
  * Baku's bicycle lanes, with its racks in a group of their own that the map adds once
- * zoomed in (#692). Neither takes a tap on the map: a lane is not interactive at all,
- * and a rack shows its name without the tap going on to choose the nearest stop.
+ * zoomed in (#692). A lane is not interactive at all, so a tap on one is a tap on the
+ * map; a rack shows its name without the tap going on to the map.
  */
 function bikeLayers(): { lanes: L.LayerGroup; racks: L.LayerGroup } {
   const lanes = L.layerGroup([], { attribution: BIKE_ATTRIBUTION });
@@ -282,36 +292,41 @@ function drawFeatures({ map, cluster, overlay, stops, fromStop, toStop, route, l
       if (fromStop?.id === stop.id || toStop?.id === stop.id) continue;
       const marker = L.marker([stop.latitude, stop.longitude], { icon: stopIcon(stop.is_transport_hub), keyboard: false });
       marker.bindTooltip(stop.name, stop.is_transport_hub
-        ? { permanent: true, direction: "top", offset: [0, -8], className: "stop-label" }
+        ? { permanent: true, interactive: true, direction: "top", offset: [0, -8], className: "stop-label" }
         : { direction: "top", offset: [0, -6] });
       marker.on("click", () => onStopClick(stop));
       cluster.addLayer(marker);
     }
   }
 
-  // Selected start / destination — big always-visible pins (never clustered).
+  // Selected start / destination — big always-visible pins (never clustered). A tap on
+  // one, or on its label, changes nothing (keepTap, #743): chosen again for the end the
+  // next tap fills, the destination's stop would start the journey where it ends.
   if (fromStop) {
     L.marker([fromStop.latitude, fromStop.longitude], { icon: pinIcon("#16a34a", 26) })
-      .bindTooltip(`Başlanğıc: ${fromStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
+      .bindTooltip(`Başlanğıc: ${fromStop.name}`, { permanent: true, interactive: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-from" })
+      .on("click", keepTap)
       .addTo(overlay);
   }
   if (toStop) {
     L.marker([toStop.latitude, toStop.longitude], { icon: pinIcon("#dc2626", 26) })
-      .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
+      .bindTooltip(`Təyinat: ${toStop.name}`, { permanent: true, interactive: true, direction: "top", offset: [0, -12], className: "stop-label stop-label-to" })
+      .on("click", keepTap)
       .addTo(overlay);
   }
   // A chosen place, a pin in its end's colour, or the person's location, a blue dot,
   // labelled like a chosen stop (#720). A found journey's walk from or to it is drawn
   // with the route, dashed as every walk is. Leaflet reads a tooltip as HTML and a
   // place's name is OpenStreetMap's, so it is escaped.
+  // A tap on its pin or its label changes nothing (keepTap, #743).
   for (const place of places) {
     const from = place.end === "from";
     const marker = place.here
-      ? L.circleMarker([place.latitude, place.longitude], { radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3 })
+      ? L.circleMarker([place.latitude, place.longitude], { radius: 9, color: "#4f46e5", fillColor: "#6366f1", fillOpacity: 0.85, weight: 3, bubblingMouseEvents: false })
       : L.marker([place.latitude, place.longitude], { icon: placeIcon(END_COLORS[place.end]), keyboard: false });
     marker.bindTooltip(`${from ? "Başlanğıc" : "Təyinat"}: ${escapeXml(place.name)}`, {
-      permanent: true, direction: "top", offset: [0, place.here ? -12 : -4], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
-    }).addTo(overlay);
+      permanent: true, interactive: true, direction: "top", offset: [0, place.here ? -12 : -4], className: `stop-label ${from ? "stop-label-from" : "stop-label-to"}`,
+    }).on("click", keepTap).addTo(overlay);
   }
 
   fitFeatures(map, fitTargets(route, line, fromStop, toStop, places));
@@ -333,15 +348,16 @@ function fitTargets(route: RouteResult | null, line: BusLineDetail | null, fromS
  *
  * The ~3,400 stops are clustered (leaflet.markercluster) so the city view shows
  * a handful of count bubbles instead of an unreadable carpet of dots; zooming in
- * splits them into individually tappable, name-labelled stops. Tapping empty map
- * snaps to the nearest stop, so users never need a pixel-perfect hit.
+ * splits them into individually tappable, name-labelled stops. Tapping the map off
+ * every marker hands the page the point itself (#743), which a journey can start or
+ * end at; until #743 it snapped to the nearest stop within 600 m.
  *
  * Leaflet — not React — owns every node inside the container div, which is why it
  * is rendered with no JSX children: React must never reconcile the panes. The
  * flip side of that contract is that a React re-render must not mutate those
  * layers while Leaflet is mid-animation either; see the redraw effect.
  */
-export default function BusMap({ stops, fromStop, toStop, route, line, onStopClick, isVisible, onMiss, bikeParking = null, places = NO_PLACES }: BusMapProps) {
+export default function BusMap({ stops, fromStop, toStop, route, line, onStopClick, onPointClick, isVisible, bikeParking = null, places = NO_PLACES }: BusMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const clusterRef = useRef<L.MarkerClusterGroup | null>(null);
@@ -349,10 +365,8 @@ export default function BusMap({ stops, fromStop, toStop, route, line, onStopCli
   // Latest props read inside Leaflet event handlers without forcing a redraw.
   const clickRef = useRef(onStopClick);
   clickRef.current = onStopClick;
-  const missRef = useRef(onMiss);
-  missRef.current = onMiss;
-  const stopsRef = useRef(stops);
-  stopsRef.current = stops;
+  const pointRef = useRef(onPointClick);
+  pointRef.current = onPointClick;
   const fitRef = useRef<FitTargets>(fitTargets(route, line, fromStop, toStop, places));
   fitRef.current = fitTargets(route, line, fromStop, toStop, places);
 
@@ -390,12 +404,16 @@ export default function BusMap({ stops, fromStop, toStop, route, line, onStopCli
     map.on("zoomend", showRacks);
     showRacks();
 
-    // Tap on empty map → use the same 600 m radius as location selection.
+    // A tap off every marker is the point itself (#743), once DOUBLE_TAP_MS have passed
+    // with no second tap. A marker that listens for taps keeps its own: Leaflet's markers
+    // do not bubble their mouse events.
+    let pendingTap: ReturnType<typeof setTimeout> | undefined;
     map.on("click", (e: L.LeafletMouseEvent) => {
-      const nearest = nearestStop(stopsRef.current, e.latlng.lat, e.latlng.lng);
-      if (nearest) clickRef.current(nearest.stop);
-      else missRef.current?.();
+      clearTimeout(pendingTap);
+      pendingTap = setTimeout(() => pointRef.current?.(e.latlng.lat, e.latlng.lng), DOUBLE_TAP_MS);
     });
+    map.on("dblclick", () => clearTimeout(pendingTap));
+    map.on("unload", () => clearTimeout(pendingTap));
 
     // A fit made while the map sat 0×0 in the phone's hidden tab is redone once the
     // map has a size (#685; sizedFromZero has the why).
