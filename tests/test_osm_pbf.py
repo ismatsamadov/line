@@ -1,5 +1,6 @@
-"""The PBF reader in data/osm_pbf.py, on a file written here with a small protobuf
-encoder: a header, a block of dense nodes and a block of ways."""
+"""The PBF reader in data/osm_pbf.py, on files written here with a small protobuf encoder:
+a header, a block of dense nodes and a block of ways; and a second file whose nodes and
+ways carry the tags of places."""
 
 import importlib.util
 import struct
@@ -113,3 +114,54 @@ class PbfReader(unittest.TestCase):
         self.assertEqual(nodes[0], {"type": "node", "id": 1, "lat": 40.4, "lon": 49.8})
         self.assertEqual(answer["osm3s"]["timestamp_osm_base"], "2025-10-24T21:00:00Z")
         self.assertEqual(answer["elements"], sorted(answer["elements"], key=lambda e: (e["type"] != "way", e["id"])))
+
+
+def places_file(path):
+    """Nodes 1-4 in a row at 40.40 N, node 2 a school and node 4 a supermarket, node 5 a
+    clinic far away; way 20 a hospital around nodes 1, 2 and 3, way 21 a bus station far away."""
+    strings = [b"", b"amenity", b"school", b"shop", b"supermarket", b"clinic", b"hospital", b"bus_station", b"name", b"Ward"]
+    k = strings.index
+    table = field_bytes(1, b"".join(field_bytes(1, s) for s in strings))
+    ids = [1, 2, 3, 4, 5]
+    lats = [404_000_000, 404_000_000, 404_100_000, 404_000_000, 410_000_000]
+    lons = [498_000_000, 498_100_000, 498_050_000, 498_300_000, 505_000_000]
+    kv = [0, k(b"amenity"), k(b"school"), 0, 0, k(b"shop"), k(b"supermarket"), 0, k(b"amenity"), k(b"clinic"), 0]
+    dense = (packed(1, deltas(ids), signed=True) + packed(8, deltas(lats), signed=True)
+             + packed(9, deltas(lons), signed=True) + packed(10, kv))
+    def way(wid, refs, tags):
+        return field_bytes(3, field_varint(1, wid) + packed(2, [k(a) for a, _ in tags]) + packed(3, [k(b) for _, b in tags])
+                           + packed(8, deltas(refs), signed=True))
+    ways_block = table + field_bytes(2, way(20, [1, 2, 3, 1], [(b"amenity", b"hospital"), (b"name", b"Ward")])
+                                     + way(21, [5, 5], [(b"amenity", b"bus_station")]))
+    header = field_varint(32, 1_761_339_600) + field_bytes(17, b"test extract")
+    path.write_bytes(blob("OSMHeader", header) + blob("OSMData", table + field_bytes(2, field_bytes(2, dense)))
+                     + blob("OSMData", ways_block))
+
+
+class Places(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.tmp.cleanup)
+        self.path = Path(self.tmp.name) / "places.osm.pbf"
+        places_file(self.path)
+
+    def test_tagged_nodes(self):
+        data = [d for kind, d in osm_pbf.blobs(self.path) if kind == "OSMData"][0]
+        self.assertEqual([(n[0], n[3]) for n in osm_pbf.nodes(data, tagged=True)],
+                         [(2, {"amenity": "school"}), (4, {"shop": "supermarket"}), (5, {"amenity": "clinic"})])
+        self.assertEqual(len(list(osm_pbf.nodes(data))), 5)          # untagged reading still gives every node
+
+    def test_places_as_overpass_gives_them(self):
+        kinds = {"education": lambda t: t.get("amenity") == "school",
+                 "health": lambda t: t.get("amenity") in ("hospital", "clinic"),
+                 "shopping": lambda t: t.get("shop") == "supermarket",
+                 "transport": lambda t: t.get("amenity") == "bus_station"}
+        out = osm_pbf.places(self.path, "40.39,49.79,40.42,49.85", kinds, say=lambda *a: None)
+        self.assertEqual(out["education"]["elements"],
+                         [{"type": "node", "id": 2, "lat": 40.4, "lon": 49.81, "tags": {"amenity": "school"}}])
+        self.assertEqual(out["health"]["elements"],                  # the clinic is outside the box
+                         [{"type": "way", "id": 20, "center": {"lat": 40.405, "lon": 49.805},
+                           "tags": {"amenity": "hospital", "name": "Ward"}}])
+        self.assertEqual([e["id"] for e in out["shopping"]["elements"]], [4])
+        self.assertEqual(out["transport"]["elements"], [])
+        self.assertEqual(out["health"]["osm3s"]["timestamp_osm_base"], "2025-10-24T21:00:00Z")
