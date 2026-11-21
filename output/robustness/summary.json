@@ -683,7 +683,13 @@
   "gtfs_date": "",
   "gtfs_route_types": [
    3
-  ]
+  ],
+  "daily_journeys": 0,
+  "fuel_price": 0,
+  "cost_per_bus_hour": 0,
+  "value_of_time": 0,
+  "currency": "",
+  "days_per_year": 0
  },
  "inputs": {
   "db": "data/ayna.db",

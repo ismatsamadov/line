@@ -1,18 +1,22 @@
 #!/usr/bin/env python3
 """
-Search for a better bus network with today's fleet, and report what changed: Baku's, or
-any city's read from its GTFS feed.
+Search for a better bus network with today's fleet, and report what changed and what it is
+worth: Baku's, or any city's read from its GTFS feed.
 
 Reads the same settings and data as measure.py (busnet.toml, or a city's settings file;
 search settings are in its [redesign] table). The search keeps a change only if it
 shortens the average door-to-door trip without cutting people off from bus service; the
-result is then checked on a different, finer sample of trips than the search used.
+result is then checked on a different, finer sample of trips than the search used, both
+as it is and with the fleet cut until trips are no longer than today's.
 
 Writes to ./output/redesign/ (or --out):
   changes.csv        every change kept, in order, with its effect on average door-to-door time
   routes.csv         each route before and after: kept, straightened, merged or dropped; riders, buses, headway, length
   summary.json       riders, operator and network measures before and after (the independent check),
                      and how much of the fleet would give today's travel times
+  impact.csv         what the redesign is worth, with today's buses and with fewer: minutes per
+                     trip, people near a stop, buses, bus-hours, bus-km, fuel and CO2 a day, and
+                     money where the settings give prices (busnet/impact.py)
   network.geojson    redesigned routes and dropped routes, for any map tool (GitHub draws it)
   gtfs_today.zip     today's network as GTFS, with the estimated headways
   gtfs_redesign.zip  the redesigned network as GTFS
@@ -21,6 +25,7 @@ Standard library only. Usage:
   python3 redesign.py
   python3 redesign.py --set redesign_origins=200     # larger, slower search sample
   python3 redesign.py --set redesign_max_people_losing_stop=0
+  python3 redesign.py --config city.toml --set fuel_price=1.1 --set currency=EUR --out output/city/redesign
 """
 
 import argparse
@@ -36,11 +41,11 @@ sys.path.insert(0, str(ROOT))
 
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.gtfs import write_gtfs                                             # noqa: E402
+from busnet.impact import capped_minutes, impact_rows                         # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.metrics import evaluate_od, network_summary                        # noqa: E402
 from busnet.optimize import Context, Evaluator, Plan, fleet_for_same_time, search  # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
-from busnet.service import operations                                          # noqa: E402
 
 
 def write_csv(path, rows):
@@ -139,9 +144,7 @@ def main():
         s["accessibility"].pop("modelled_boardings", None)
 
     def capped(acc):
-        """Average door-to-door minutes, counting trips that cannot be made in time at the limit."""
-        r = acc["share_reachable"]
-        return r * acc["mean_door_to_door_min"] + (1 - r) * a.max_trip_min
+        return capped_minutes(acc, a)
 
     target = capped(check_before["accessibility"])
     fleet_share = 1.0
@@ -154,10 +157,13 @@ def main():
             hi, lo = (mid, lo) if capped(acc) <= target else (hi, mid)
         fleet_share = hi
     saving_plan = plan.changed(fleet={r: f * fleet_share for r, f in plan.fleet.items()})
-    saving_ops = operations(saving_plan.network, a, saving_plan.headways(a))[1]
+    check_saving = network_summary(saving_plan.network, a, fine, 300, saving_plan.headways(a), fine_pull)
+    check_saving["accessibility"].pop("modelled_boardings", None)
+    saving_ops = check_saving["operations"]
+    impact = impact_rows(check_before, check_after, check_saving, a)
 
     keep = ["served_stops", "route_km_one_way_total", "corridor_km", "duplication_ratio", "median_stop_gap_m",
-            "share_stop_gaps_under_300m", "share_population_covered"]
+            "share_stop_gaps_under_300m", "share_population_covered", "population_within_coverage_radius"]
     summary = {
         "fleet_buses": today.total_fleet(),
         "routes_before": len(today.fleet), "routes_after": len(plan.fleet),
@@ -167,16 +173,19 @@ def main():
                           "unreachable_before": before["unreachable"], "unreachable_after": after["unreachable"]},
         "minutes_counting_impossible_trips_at_limit": {"before": target, "after": capped(check_after["accessibility"])},
         "share_of_fleet_for_todays_travel_time": {"independent_check": fleet_share, "search_sample": share},
-        "fleet_saving_option": {"buses": saving_plan.total_fleet(), "operations": saving_ops},
+        "fleet_saving_option": {"buses": saving_plan.total_fleet(), "operations": saving_ops,
+                                "accessibility": check_saving["accessibility"]},
         "independent_check": {
             "before": {"accessibility": check_before["accessibility"], "operations": check_before["operations"],
                        **{k: check_before[k] for k in keep}},
             "after": {"accessibility": check_after["accessibility"], "operations": check_after["operations"],
                       **{k: check_after[k] for k in keep}},
         },
+        "impact": impact,
         "settings": asdict(a), "inputs": inp.found,
     }
     write_csv(out / "changes.csv", log)
+    write_csv(out / "impact.csv", impact)
     riders_today = ctx.riders_for(today, before["boardings"])
     write_csv(out / "routes.csv", route_rows(today, plan, a, log, riders_today, ctx.observed, ctx.protected))
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -185,20 +194,15 @@ def main():
     write_gtfs(out / "gtfs_today.zip", today.network, a, today.headways(a), "today", feed=feed)
     write_gtfs(out / "gtfs_redesign.zip", plan.network, a, plan.headways(a), "redesign", feed=feed)
 
-    b, f = check_before["accessibility"], check_after["accessibility"]
-    print(f"\nIndependent check, before -> after:")
-    print(f"  mean door-to-door (trips possible)  {b['mean_door_to_door_min']:.1f} -> {f['mean_door_to_door_min']:.1f} min")
-    print(f"  trips possible within 45 min        {b['share_within_45_min']:.1%} -> {f['share_within_45_min']:.1%}")
-    print(f"  trips possible within 2 hours       {b['share_reachable']:.1%} -> {f['share_reachable']:.1%}")
-    print(f"  people within 400 m of a stop       {check_before['share_population_covered']:.2%} -> {check_after['share_population_covered']:.2%}")
-    print(f"  bus-km a day                        {check_before['operations']['bus_km_per_day']:,.0f} -> {check_after['operations']['bus_km_per_day']:,.0f}")
-    print(f"  fuel a day (L)                      {check_before['operations']['fuel_l_per_day']:,.0f} -> {check_after['operations']['fuel_l_per_day']:,.0f}")
-    before_ops = check_before["operations"]
-    print(f"\nOr keep today's travel times with {fleet_share:.0%} of the fleet "
-          f"({before_ops['fleet'] - saving_ops['fleet']:,} fewer buses, rounded up per route):")
-    print(f"  fuel a day (L)                      {before_ops['fuel_l_per_day']:,.0f} -> {saving_ops['fuel_l_per_day']:,.0f}")
-    print(f"  CO2 a day (t)                       {before_ops['co2_t_per_day']:,.0f} -> {saving_ops['co2_t_per_day']:,.0f}")
-    print(f"  bus-hours a day                     {before_ops['bus_hours_per_day']:,.0f} -> {saving_ops['bus_hours_per_day']:,.0f}")
+    print(f"\nWhat it is worth on the independent sample (model estimates; impact.csv). Same buses, or "
+          f"{fleet_share:.0%} of them with trips no longer than today's:")
+    width = max(len(f"{r['measure']} ({r['unit']})") for r in impact) + 2
+    print(f"  {'':<{width}}{'today':>12}{'same buses':>12}{'change':>10}{'fewer buses':>13}{'change':>10}")
+    for r in impact:
+        fmt = (lambda v: f"{v:.1%}") if r["unit"] == "share" else (lambda v: f"{v:,.2f}") if abs(r["today"]) < 100 else (lambda v: f"{v:,.0f}")
+        sign = (lambda v: f"{v * 100:+.1f} pt") if r["unit"] == "share" else (lambda v: "+" + fmt(v) if v >= 0 else fmt(v))
+        print(f"  {r['measure'] + ' (' + r['unit'] + ')':<{width}}{fmt(r['today']):>12}{fmt(r['same_buses']):>12}"
+              f"{sign(r['same_buses_change']):>10}{fmt(r['fewer_buses']):>13}{sign(r['fewer_buses_change']):>10}")
     print(f"\nWrote {out.resolve()} in {time.time() - t0:.0f}s")
 
 
