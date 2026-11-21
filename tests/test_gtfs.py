@@ -307,7 +307,7 @@ class BranchesAndExpressTest(unittest.TestCase):
         self.assertFalse(branch.runs_one_way)
         self.assertEqual((self.table.trips_each_way["L"], self.table.trips_each_way["L~1"]), (4, 4))
         self.assertEqual(self.table.summary["branches_run_as_routes"], 1)
-        self.assertEqual(self.table.summary["departures_left_out"], 0)
+        self.assertEqual(self.table.summary["departures_left_out"], 1)          # the night bus
 
     def test_express_routes_are_found_by_their_stops_and_by_their_name(self):
         self.assertEqual(self.net.routes["X"].zone, "Bus express")              # 4 of the local route's 10 stops
@@ -320,10 +320,11 @@ class BranchesAndExpressTest(unittest.TestCase):
         self.assertEqual((s["first_departure"], s["last_departure"]), ("06:00", "26:30"))
         self.assertEqual((s["service_from"], s["service_to"], s["hours_of_service"]), ("06:00", "10:00", 4))
 
-    def test_a_night_bus_is_named_for_protection(self):
+    def test_a_night_bus_is_left_out(self):
+        self.assertNotIn("N", self.net.routes)                              # no day route can merge into it
         self.assertEqual((self.table.night, self.table.summary["routes_at_night"]), (["N1"], 1))
-        self.assertEqual(self.net.routes["N"].zone, "Bus night")           # so no day route merges into it
-        self.assertTrue(any(n.startswith("N1: runs at night, 1 of its 1 departures") for n in self.table.notes))
+        self.assertTrue(any(n.startswith("N1: runs at night, 1 of its 1 departures") and n.endswith("stand for it")
+                            for n in self.table.notes))
 
 
 class ShapeDistanceTest(unittest.TestCase):

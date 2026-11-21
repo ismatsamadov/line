@@ -21,10 +21,10 @@ them. A route that runs in one direction only is a loop, and is not counted as i
 back. A route is marked express when its name says so, or when nearly all its stops lie
 on another route that calls at many more stops along the way, so the redesign does not
 merge it into that route. The summary gives the hours in which buses leave at least a
-quarter as often as in the busiest hour, the value service_hours should have; a route
-with most of its departures outside them runs at night, which an all-day model cannot
-value. Its zone says "night", so the redesign never merges a day route into it or it into
-one, and the notes say to protect it from the rest of the redesign.
+quarter as often as in the busiest hour, the value service_hours should have. A route
+with most of its departures outside them runs at night and is left out, as a small branch
+is: one all-day frequency cannot stand for it, and the redesign would take it for a
+little-used day route or hand it a day route's buses.
 
 Writing turns each route direction into one trip that repeats every headway between the
 start and end of service (frequencies.txt). Times between stops follow the same model as
@@ -186,7 +186,7 @@ class Timetable:
     warnings: list
     notes: list
     feed: dict
-    night: list = None          # numbers of the routes that run mostly outside the hours of service
+    night: list = None          # numbers of the routes left out for running mostly outside the hours of service
 
 
 def basic_route_type(value):
@@ -492,9 +492,26 @@ def _read(feed, a, repair, source):
             return _seconds(last[tid][1]) - _seconds(first[tid][1])
         return None
 
+    starts = defaultdict(list)                   # route -> every departure time of the day
+    for tid in trips:
+        if tid in windows:
+            for s, e, h in windows[tid]:
+                starts[trips[tid][0]] += [s + k * h for k in range(int(math.ceil((e - s) / h)))]
+        elif tid in first:
+            starts[trips[tid][0]].append(_seconds(first[tid][1]))
+    leaving = [t for times in starts.values() for t in times]
+    per_hour = Counter(int(t // 3600) for t in leaving)
+    busy = sorted(h for h, n in per_hour.items() if n >= max(per_hour.values()) / 4) if per_hour else []
+    service = (busy[0], busy[-1] + 1) if busy else None
+    night = {}                                   # route -> (departures outside the hours of service, departures)
+    for rid, times in sorted(starts.items()):
+        out = sum(1 for t in times if service and not service[0] * 3600 <= t < service[1] * 3600)
+        if out > len(times) / 2:
+            night[rid] = (out, len(times))
+
     by_route = defaultdict(list)
     for tid in sorted(seqs):
-        if len(seqs[tid]) >= 2:
+        if len(seqs[tid]) >= 2 and trips[tid][0] not in night:
             by_route[trips[tid][0]].append(tid)
     plans = {}                                   # (route, direction) -> ({sequence: its trips}, {sequence: departures})
     for rid, tids in sorted(by_route.items()):
@@ -623,29 +640,11 @@ def _read(feed, a, repair, source):
         notes.append(f"{routes[rid].number}: express" + (" (its name says so)" if rid in named_express
                                                          else ", skipping most stops of a route it runs along"))
 
-    alone = sum(departures[t] for t in trips if len(seqs.get(t, ())) < 2)      # trips with fewer than two stops
-    starts = defaultdict(list)                   # route -> every departure time of the day
-    for tid in trips:
-        if tid in windows:
-            for s, e, h in windows[tid]:
-                starts[trips[tid][0]] += [s + k * h for k in range(int(math.ceil((e - s) / h)))]
-        elif tid in first:
-            starts[trips[tid][0]].append(_seconds(first[tid][1]))
-    leaving = [t for times in starts.values() for t in times]
-    per_hour = Counter(int(t // 3600) for t in leaving)
-    busy = sorted(h for h, n in per_hour.items() if n >= max(per_hour.values()) / 4) if per_hour else []
-    service = (busy[0], busy[-1] + 1) if busy else None
-    night = []                                   # an all-day model cannot see what these are for
-    for rid in sorted(by_route):
-        times = starts[rid]
-        out = sum(1 for t in times if service and not service[0] * 3600 <= t < service[1] * 3600)
-        if out > len(times) / 2:
-            for k in sorted(k for k in routes if k == rid or k.startswith(f"{rid}~")):
-                routes[k].zone = f"{routes[k].zone} night"               # never merged with a day route
-                night.append(routes[k].number)
-            notes.append(f"{kinds[rid][1]}: runs at night, {out} of its {len(times)} departures outside the hours "
-                         f"of service; an all-day model cannot see what it is for, so redesign_protected_routes "
-                         f"should hold it")
+    alone = sum(departures[t] for t in trips if len(seqs.get(t, ())) < 2 and trips[t][0] not in night)
+    at_night = sum(departures[t] for t in trips if trips[t][0] in night)
+    for rid, (out, n) in night.items():
+        notes.append(f"{kinds[rid][1]}: runs at night, {out} of its {n} departures outside the hours of service; "
+                     f"left out, since one all-day frequency cannot stand for it")
     if service and abs(service[1] - service[0] - a.service_hours) > 1:
         warnings.append(f"buses leave at least a quarter as often as in the busiest hour from {service[0]:02d}:00 to "
                         f"{service[1]:02d}:00, {service[1] - service[0]} hours; service_hours is {a.service_hours:g}, "
@@ -657,7 +656,7 @@ def _read(feed, a, repair, source):
         "day": day.isoformat(), "weekday": WEEKDAYS[day.weekday()],
         "route_types": sorted(types),
         "routes_of_these_types": len(kinds),
-        "routes_running": len(by_route),
+        "routes_running": len(by_route) + len(night),
         "routes_of_other_types": dict(sorted(other.items())),
         "branches_run_as_routes": branch_routes,
         "routes_in_the_model": len(routes),
@@ -667,7 +666,7 @@ def _read(feed, a, repair, source):
         "departures": total,
         "departures_on_patterns": in_patterns,
         "departures_on_part_of_a_pattern": folded,
-        "departures_left_out": left_out + alone,
+        "departures_left_out": left_out + alone + at_night,
         "share_of_departures_modelled": (in_patterns + folded) / total if total else None,
         "stops_served": len(served),
         "stops_only_on_departures_left_out": len(branch_stops - served),
@@ -692,4 +691,4 @@ def _read(feed, a, repair, source):
             "timezone": next((ag[2] for ag in agencies.values() if ag[2]), "UTC"),
             "lang": lang}
     return Network(routes, stops, patterns, log), Timetable(day.isoformat(), trips_each_way, summary, warnings, notes,
-                                                            meta, night)
+                                                            meta, [kinds[rid][1] for rid in sorted(night)])

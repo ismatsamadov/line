@@ -123,8 +123,8 @@ without a position, hours of service that differ from `service_hours`), then a l
 each branch that runs as a route of its own, for each route direction whose other stop
 sequences were left out (with their departures and the stops only they call at), for each
 route whose timetable speed fell outside 5 to 90 km/h and gave way to the settings, for
-each express route, with what marked it, and for each route that runs at night, which
-`redesign_protected_routes` should hold.
+each express route, with what marked it, and for each route left out because it runs
+at night.
 
 ## output/redesign/changes.csv — each change the search kept
 

@@ -97,11 +97,10 @@ routes, stops and patterns from it, for one service day:
    leave at least a quarter as often as in the busiest hour, from the first such hour to
    the end of the last; a night bus or an early depot run does not stretch them, and
    `service_hours` should be set to them. A route with most of its departures outside
-   them runs at night. One all-day frequency cannot see what such a route is for, so the
-   redesign would only find it little used; `timetable.txt` names it, to be put in
-   `redesign_protected_routes`. Its zone says "night", so the near-duplicate check leaves
-   it out as it does express routes: no day route is merged into the night route that
-   shadows it, nor the other way round.
+   them runs at night, and is left out as a small branch is: one all-day frequency cannot
+   stand for it, and the redesign would take it for a little-used day route, merge the
+   day route it shadows into it, or hand it a day route's buses. `timetable.txt` names it,
+   and its departures count among those left out.
 7. **Express routes.** A feed has no service types, so a route is marked express when its
    name says so ("express", "ekspres", "экспресс"), or when at least 85% of its stops lie
    on one direction of another route that calls at more than two stops for every one of
