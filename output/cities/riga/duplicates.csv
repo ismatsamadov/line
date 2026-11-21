@@ -1,0 +1,9 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+25,25 (Tīraine),1.0,43,49,True
+36 (Imanta),36,1.0,30,78,True
+56,56 (branch 1),1.0,108,112,True
+11 (Jaunciema kapi),11,0.9747,79,81,True
+56 (branch 1),56,0.9643,112,108,True
+11,11 (Jaunciema kapi),0.9506,81,79,True
+25 (Tīraine),25,0.8776,49,43,True
+32,43,0.8636,44,50,True

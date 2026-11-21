@@ -29,6 +29,7 @@ lacks, and each redesign comes with what it is worth in minutes, buses, fuel and
 |---|---|
 | Run the tools and regenerate every result | [getting-started.md](getting-started.md) |
 | Measure and redesign another city from its GTFS feed | [getting-started.md](getting-started.md#another-city-from-its-gtfs-feed) |
+| See a second city measured and redesigned from its feed, Riga, beside Baku | [cities.md](cities.md) |
 | See what a redesign is worth: minutes per trip, buses, bus-hours, fuel, CO₂ and money | [outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth), [results.md](results.md#what-the-redesign-is-worth) |
 | See the latest findings and the redesign | [results.md](results.md) |
 | See how much the results depend on the trip sample and the assumptions | [results.md](results.md#how-robust-the-results-are) |

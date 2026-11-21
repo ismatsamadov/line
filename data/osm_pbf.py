@@ -1,9 +1,9 @@
 """Read OpenStreetMap PBF files with the standard library.
 
 Enough of the format (github.com/openstreetmap/OSM-binary) to cut the ways of one kind
-in a box out of a country extract: the file framing, the protobuf wire format, zlib
-blobs, the header, dense nodes and ways. Relations and the metadata of each object
-(versions, users, timestamps) are skipped.
+in a box out of a country extract, or the places of several kinds: the file framing, the
+protobuf wire format, zlib blobs, the header, dense nodes with their tags, and ways.
+Relations and the metadata of each object (versions, users, timestamps) are skipped.
 
     answer = extract(path, bbox="39.92,49.37,40.66,50.39",
                      keep=lambda tags: "highway" in tags and tags.get("area") != "yes")
@@ -185,13 +185,22 @@ def ways(data, keep):
                 yield wid, tags, list(accumulate(refs))
 
 
-def nodes(data):
-    """(id, latitude, longitude) for each node in a data block, dense or not."""
-    _, granularity, lat0, lon0, groups = _block(data)
+def nodes(data, tagged=False):
+    """(id, latitude, longitude) for each node in a data block, dense or not; with tagged,
+    (id, latitude, longitude, tags) for each node that has tags."""
+    strings, granularity, lat0, lon0, groups = _block(data)
+    text = {}
+
+    def s(k):
+        t = text.get(k)
+        if t is None:
+            t = text[k] = strings[k].decode("utf-8", "replace")
+        return t
+
     for group in groups:
         for number, _, v in fields(group):
             if number == 2:                                       # dense nodes, delta coded
-                ids, lats, lons = [], [], []
+                ids, lats, lons, kv = [], [], [], []
                 for n, wire, x in fields(v):
                     if n == 1:
                         _packed(x, wire, ids, signed=True)
@@ -199,18 +208,40 @@ def nodes(data):
                         _packed(x, wire, lats, signed=True)
                     elif n == 9:
                         _packed(x, wire, lons, signed=True)
+                    elif n == 10 and tagged:                      # each node's keys and values, then a 0
+                        _packed(x, wire, kv)
+                at = 0
                 for i, lat, lon in zip(accumulate(ids), accumulate(lats), accumulate(lons)):
-                    yield i, (lat0 + granularity * lat) * 1e-9, (lon0 + granularity * lon) * 1e-9
+                    lat, lon = (lat0 + granularity * lat) * 1e-9, (lon0 + granularity * lon) * 1e-9
+                    if not tagged:
+                        yield i, lat, lon
+                        continue
+                    tags = {}
+                    while at < len(kv) and kv[at]:
+                        tags[s(kv[at])] = s(kv[at + 1])
+                        at += 2
+                    at += 1
+                    if tags:
+                        yield i, lat, lon, tags
             elif number == 1:                                     # a plain node
                 nid = lat = lon = None
-                for n, _, x in fields(v):
+                keys, vals = [], []
+                for n, wire, x in fields(v):
                     if n == 1:
                         nid = (x >> 1) ^ -(x & 1)
+                    elif n == 2:
+                        _packed(x, wire, keys)
+                    elif n == 3:
+                        _packed(x, wire, vals)
                     elif n == 8:
                         lat = (x >> 1) ^ -(x & 1)
                     elif n == 9:
                         lon = (x >> 1) ^ -(x & 1)
-                yield nid, (lat0 + granularity * lat) * 1e-9, (lon0 + granularity * lon) * 1e-9
+                lat, lon = (lat0 + granularity * lat) * 1e-9, (lon0 + granularity * lon) * 1e-9
+                if not tagged:
+                    yield nid, lat, lon
+                elif keys:
+                    yield nid, lat, lon, {s(k): s(x) for k, x in zip(keys, vals)}
 
 
 def extract(path, bbox, keep, margin_deg=0.05, say=print):
@@ -256,3 +287,50 @@ def extract(path, bbox, keep, margin_deg=0.05, say=print):
                                "The data is made available under ODbL."},
         "elements": elements,
     }
+
+
+def places(path, bbox, kinds, margin_deg=0.05, say=print):
+    """{kind: an Overpass-shaped answer} for the places in bbox ("s,w,n,e") whose tags pass
+    that kind's test in kinds ({kind: keep}), as Overpass's "out center tags" gives them: a
+    node with its position, a way with the centre of the box around its nodes, both with
+    their tags. A place may pass several kinds; relations are skipped."""
+    south, west, north, east = (float(v) for v in bbox.split(","))
+    inside = lambda lat, lon: south <= lat <= north and west <= lon <= east     # noqa: E731
+    info, found, kept, needed = {}, {k: [] for k in kinds}, [], set()
+    for kind, data in blobs(path):                                 # tagged nodes, and the ways that pass
+        if kind == "OSMHeader":
+            info = header(data)
+        elif kind == "OSMData":
+            for nid, lat, lon, tags in nodes(data, tagged=True):
+                if inside(lat, lon):
+                    for name, keep in kinds.items():
+                        if keep(tags):
+                            found[name].append({"type": "node", "id": nid, "lat": round(lat, 7), "lon": round(lon, 7),
+                                                "tags": tags})
+            for wid, tags, refs in ways(data, lambda t: any(keep(t) for keep in kinds.values())):
+                kept.append((wid, tags, array("q", refs)))
+                needed.update(refs)
+    coords = {}
+    s, w, n, e = south - margin_deg, west - margin_deg, north + margin_deg, east + margin_deg
+    for kind, data in blobs(path):                                 # then the nodes of those ways
+        if kind == "OSMData":
+            for nid, lat, lon in nodes(data):
+                if nid in needed and s <= lat <= n and w <= lon <= e:
+                    coords[nid] = (lat, lon)
+    for wid, tags, refs in kept:
+        pts = [coords[r] for r in refs if r in coords]
+        if pts:
+            lat = (min(p[0] for p in pts) + max(p[0] for p in pts)) / 2
+            lon = (min(p[1] for p in pts) + max(p[1] for p in pts)) / 2
+            if inside(lat, lon):
+                for name, keep in kinds.items():
+                    if keep(tags):
+                        found[name].append({"type": "way", "id": wid, "center": {"lat": round(lat, 7), "lon": round(lon, 7)},
+                                            "tags": tags})
+    say("  " + ", ".join(f"{name}: {len(e)}" for name, e in found.items()))
+    return {name: {"version": 0.6, "generator": f"data/osm_pbf.py from {info.get('source') or path}",
+                   "osm3s": {"timestamp_osm_base": info.get("timestamp"), "bbox": bbox,
+                             "copyright": "The data included in this document is from www.openstreetmap.org. "
+                                          "The data is made available under ODbL."},
+                   "elements": sorted(elements, key=lambda e: (e["type"] != "node", e["id"]))}
+            for name, elements in found.items()}

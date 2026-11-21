@@ -174,15 +174,16 @@ def save(path, body):
     print(f"  wrote {path.relative_to(OUT.parent.parent)} ({len(body) / 1024:,.0f} KB)")
 
 
-def overpass(query):
-    """Run a query on the first Overpass server that answers with valid JSON.
+def overpass(query, timeout=640, tries=3):
+    """Run a query on the first Overpass server that answers with valid JSON, waiting up to
+    timeout seconds for each of tries attempts on each server.
 
     Mirrors can lag the main server by months, so the date of the data is printed."""
-    body = urllib.parse.urlencode({"data": f"[out:json][timeout:600][maxsize:1073741824];{query}"}).encode()
+    body = urllib.parse.urlencode({"data": f"[out:json][timeout:{timeout - 40}][maxsize:1073741824];{query}"}).encode()
     errors = []
     for server in OVERPASS_SERVERS:
         try:
-            raw = fetch(server, body, timeout=640, tries=3)
+            raw = fetch(server, body, timeout=timeout, tries=tries)
             answer = json.loads(raw)
             if not answer.get("elements") and answer.get("remark"):     # ran out of time or memory
                 raise RuntimeError(answer["remark"])

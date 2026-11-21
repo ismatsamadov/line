@@ -69,13 +69,13 @@ and they would credit her; two researchers have been told to expect them.
 The code now runs on any city that publishes a GTFS feed. The feed replaces the snapshot,
 and its timetable gives every route the headway and speed Baku's data lacks
 ([getting-started.md](getting-started.md#another-city-from-its-gtfs-feed)). Read back,
-Baku's own feed reproduces the snapshot's results to within 0.1%. No other city's feed
-has been through it yet, and that is the next test. It needs a city whose feed,
-population grid and OpenStreetMap destinations can be committed under their licences.
-That city's network would be measured and redesigned, and its `impact.csv` sent to
-someone there who would read it. The reader already places stops by a feed's
-`shape_dist_traveled`, keeps a route's large branches as routes of their own, and tells
-express routes apart, three things a real feed was expected to need.
+Baku's own feed reproduces the snapshot's results to within 0.1%. Riga's feed has been
+through it too ([cities.md](cities.md)): its timetable is CC0, so the feed, Kontur's grid
+for Latvia and OpenStreetMap's destinations are committed, and its bus network is
+measured and redesigned. What it needs next is a reader in Riga, someone at Rīgas
+satiksme or the city who would look at its `impact.csv`. After that, a feed with
+`shape_dist_traveled` and express routes, which Riga's does not have, would exercise the
+two parts of the reader only made-up feeds have tried.
 
 Everything else can wait, because it would make the method look more serious without
 changing the answer much: generating new candidate routes (k-shortest paths between

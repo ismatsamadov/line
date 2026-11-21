@@ -20,6 +20,7 @@ paper/figures.py      the manuscript's figures, drawn from output/ as SVG and PD
 paper/check.py        word counts, highlight lengths and citation checks of paper/manuscript.md
 paper/build.py        the submission files (Word, preprint PDF) from the Markdown -> paper/submission/
 busnet.toml           settings: data paths and every assumption
+cities/riga.toml      settings for Riga, read from its GTFS feed (written by data/fetch_city.py)
 busnet/
   assumptions.py      Assumptions: the default value of every assumption
   bicycle.py          read AYNA's bicycle lanes and parking files (KMZ); a line index; the measures against the network
@@ -56,7 +57,10 @@ animations/
 data/                 every input, committed (see data.md)
   ayna_scraper.py     the bus network from AYNA's map API -> ayna.db (run in a folder outside the repository)
   fetch_external.py   the public datasets -> data/external/
-  osm_pbf.py          reads OpenStreetMap PBF extracts (standard library); cuts the walking network out of Geofabrik's
+  fetch_city.py       another city's feed, population grid and destinations -> data/cities/<city>/, and cities/<city>.toml
+  cities/riga/        Riga's inputs
+  osm_pbf.py          reads OpenStreetMap PBF extracts (standard library); cuts the walking network out of Geofabrik's,
+                      and a city's destinations (places) for fetch_city.py --osm geofabrik
   metro_scraper.py    the metro's own API -> data/external/metro_api/
   build_metro.py      the metro tables (stations, services, running times, departures) -> data/metro/
   external/utrp/      Mumford's (2013) benchmark networks and route sets, as her supplement's zip, and the route sets of Hüsselmann et al. (2024) and Jiao (2026)

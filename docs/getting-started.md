@@ -113,38 +113,55 @@ defaults (and then finds no data files except `data/ayna.db`).
 
 The measurements and the redesign search run on any city that publishes a GTFS feed.
 The feed replaces the AYNA snapshot, and its timetable gives every route its headway and
-its speed, which Baku's data cannot. Three inputs are needed, and they exist for most of
-the world:
+its speed, which Baku's data cannot. Riga is in the repository as the worked example
+([cities.md](cities.md)):
+
+```sh
+python3 measure.py --config cities/riga.toml --out output/cities/riga                  # a few seconds
+python3 redesign.py --config cities/riga.toml --out output/cities/riga/redesign        # about a minute
+```
+
+A new city takes one more command first. `data/fetch_city.py` downloads the three inputs
+into `data/cities/<city>/` and writes the settings file `cities/<city>.toml`:
 
 | Input | Where it comes from |
 |---|---|
-| The city's GTFS feed, a zip file | The agency's open-data page, or the [Mobility Database](https://mobilitydatabase.org), which listed about 3,600 feeds in October 2026 |
-| A population grid | Kontur Population for the country on [HDX](https://data.humdata.org/organization/kontur), the same source as Azerbaijan's in `data/external/kontur/`; unzip the `.gpkg.gz` |
-| Destinations, optional | OpenStreetMap through the Overpass API: the five `osm_*.json` queries in `data/fetch_external.py`, with the city's box in place of `BBOX` |
-
-A settings file for the city names them and resets what is tuned to Baku. Relative paths
-are read from the file's own folder:
-
-```toml
-# my_city.toml
-[data]
-gtfs = "my_city/gtfs.zip"
-population = "my_city/kontur_population_XX_20231101.gpkg"
-destinations = ["my_city/osm_education.json", "my_city/osm_health.json", "my_city/osm_shopping.json",
-                "my_city/osm_offices.json", "my_city/osm_transport.json"]
-
-[service]
-service_hours = 18.5             # the hours of departures measure.py reports for the feed
-headway_from_ridership = false   # no counts in BakuBus's format
-reference_fleet = 0              # or the city's buses in service
-
-[redesign]
-redesign_protected_routes = []   # 180 is a Baku route
-```
+| The city's GTFS feed, a zip file | `--feed`: the agency's open-data page, or the [Mobility Database](https://mobilitydatabase.org), which listed about 3,600 feeds in October 2026 |
+| A population grid | Kontur Population for the country (`--country`, its two-letter code), the same source as Azerbaijan's in `data/external/kontur/` |
+| Places people go | OpenStreetMap: the five destination queries of `data/fetch_external.py` through the Overpass API, in the box of the feed's served stops plus 2 km; or, with `--osm geofabrik`, the same kinds cut out of the country's extract from [Geofabrik](https://download.geofabrik.de) |
 
 ```sh
-python3 measure.py --config my_city.toml --out output/my_city
-python3 redesign.py --config my_city.toml --out output/my_city/redesign
+python3 data/fetch_city.py my_city --feed https://example.org/gtfs.zip --country XX
+python3 measure.py --config cities/my_city.toml --out output/cities/my_city
+python3 redesign.py --config cities/my_city.toml --out output/cities/my_city/redesign
+```
+
+The public Overpass servers are sometimes overloaded for hours; when a query fails, run
+the script again with `--osm geofabrik --refresh`. It downloads the country's extract
+(Latvia's is 142 MB), reads it in a few minutes with `data/osm_pbf.py` and keeps it
+nowhere. An extract gives nodes and ways, as Overpass's `out center` does, a way at the
+centre of the box around its nodes, but not relations, so a few large sites mapped only
+as relations are missed. Riga's destinations came this way on 21 November 2026, when no
+Overpass server answered.
+
+The settings file names the inputs, sets `service_hours` to the feed's hours of service
+and resets what `busnet.toml` sets for Baku alone; the script never overwrites it, so
+edits to it stay. Riga's, for instance, protects the airport bus by hand:
+
+```toml
+[data]
+gtfs = "../data/cities/riga/gtfs.zip"
+population = "../data/cities/riga/kontur_population_LV_20231101.gpkg"
+destinations = ["../data/cities/riga/osm_education.json", "...", "../data/cities/riga/osm_transport.json"]
+
+[service]
+service_hours = 18                   # the hours of service the feed's timetable shows
+headway_from_ridership = false       # no counts in the format of BakuBus's
+reference_fleet = 0                  # buses in daily service, if known
+
+[redesign]
+redesign_protected_routes = ["22"]   # 22 runs to the airport, which no destination kind covers,
+                                     # so the model cannot see its riders and would drop it
 ```
 
 `measure.py` prints the day it read (the weekday with the most bus trips, or
@@ -159,7 +176,7 @@ to the settings
 money, riders' hours and a year
 ([configuration.md](configuration.md#what-the-redesign-is-worth-impact)). Before
 publishing another city's data, check its licence: this repository commits every input
-it uses, and a feed's terms may not allow that.
+it uses, and a feed's terms may not allow that. Riga's feed is CC0.
 
 ## Refresh the public data
 

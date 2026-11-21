@@ -1,8 +1,8 @@
 """Regenerate the committed results and compare them with the committed files.
 
-The measurement run takes about 12 seconds and always runs. The redesign (about two
-minutes), the benchmark (about three) and the robustness checks (about ten) run only with
-BUSNET_SLOW_TESTS=1 in the environment.
+The measurement runs, Baku's (about 12 seconds) and Riga's from its GTFS feed (a few
+seconds), always run. The redesigns (about two minutes each), the benchmark (about three)
+and the robustness checks (about ten) run only with BUSNET_SLOW_TESTS=1 in the environment.
 
 Files must match byte for byte, with one allowance: Python 3.12 changed how sum() adds
 floats, so an older Python can differ in the last digits. A CSV or JSON file that is not
@@ -21,6 +21,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SLOW = os.environ.get("BUSNET_SLOW_TESTS") == "1"
+CITY = ROOT / "cities" / "riga.toml"                 # another city, read from its GTFS feed
+CITY_OUT = ROOT / "output" / "cities" / "riga"
 
 
 def regenerate(script, out, *args):
@@ -81,6 +83,17 @@ class CommittedResults(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             regenerate("measure.py", tmp, "--scenario", "stop-balancing", "--min-gap", "250")
             self.assertEqual(differences(ROOT / "output", Path(tmp)), [])
+
+    def test_city_measure_regenerates_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            regenerate("measure.py", tmp, "--config", str(CITY))
+            self.assertEqual(differences(CITY_OUT, Path(tmp)), [])
+
+    @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to run the two-minute redesign of Riga")
+    def test_city_redesign_regenerates_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            regenerate("redesign.py", tmp, "--config", str(CITY))
+            self.assertEqual(differences(CITY_OUT / "redesign", Path(tmp)), [])
 
     @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to run the two-minute redesign")
     def test_redesign_regenerates_output(self):
