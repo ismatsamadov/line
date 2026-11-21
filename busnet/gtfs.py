@@ -65,7 +65,7 @@ def write_gtfs(path, network, a, headways, version, start_hour=6, feed_name="Bak
             continue
         trip, shape = f"{rid}_{d}", f"shape_{rid}_{d}"
         trips.append([rid, "daily", trip, network.stops[p.stop_ids[-1]].name, d - 1, shape])
-        speed = a.cruise_mps(network.routes[rid].zone)
+        speed = a.speed_mps(network.routes[rid])
         t = 0.0
         for i, s in enumerate(p.stop_ids):
             if i:

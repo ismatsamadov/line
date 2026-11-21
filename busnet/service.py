@@ -17,7 +17,7 @@ SOURCES = ("supplied", "ridership", "zone", "default")
 
 def run_time_s(pattern, network, a):
     """One trip in one direction: moving time plus the fixed loss at each stop after the first."""
-    speed = a.cruise_mps(network.routes[pattern.route_id].zone)
+    speed = a.speed_mps(network.routes[pattern.route_id])
     return pattern.length_m / speed + (len(pattern.stop_ids) - 1) * a.stop_loss_s
 
 
@@ -58,17 +58,19 @@ def route_headways(network, a, observed=None, supplied=None):
 def operations(network, a, headways):
     """Daily service the headways imply, per route and in total.
 
-    A route with one direction is counted as if it ran the same way back."""
+    A route with one direction is counted as if it ran the same way back, unless it is a
+    loop that runs one way (Network.directions_run)."""
     per_route, total = {}, {"trips_per_day": 0.0, "bus_hours_per_day": 0.0, "bus_km_per_day": 0.0,
                             "fleet": 0, "fuel_l_per_day": 0.0}
     for rid, (headway, source) in headways.items():
         pats = network.patterns_of(rid)
-        both = 2 / len(pats)
+        directions = network.directions_run(rid)
+        both = directions / len(pats)
         trips_each_way = a.service_hours * 60 / headway
         run_s = sum(run_time_s(p, network, a) for p in pats) * both
         row = {
             "headway_min": headway, "headway_source": source,
-            "trips_per_day": 2 * trips_each_way,
+            "trips_per_day": directions * trips_each_way,
             "fleet": math.ceil(run_s / 60 * (1 + a.layover_share) / headway),
             "bus_hours_per_day": trips_each_way * run_s / 3600,
             "bus_km_per_day": trips_each_way * sum(p.length_m for p in pats) * both / 1000,

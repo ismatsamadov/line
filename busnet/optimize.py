@@ -65,7 +65,8 @@ class Plan:
     def cycle_min(self, rid, a):
         """Minutes for one bus to go out and back, including layover."""
         pats = self.by_route[rid]
-        return sum(run_time_s(p, self.network, a) for p in pats) * (2 / len(pats)) / 60 * (1 + a.layover_share)
+        both = self.network.directions_run(rid) / len(pats)
+        return sum(run_time_s(p, self.network, a) for p in pats) * both / 60 * (1 + a.layover_share)
 
     def headways(self, a):
         return {rid: (max(a.min_headway_min, self.cycle_min(rid, a) / buses), "plan") for rid, buses in self.fleet.items()}
@@ -202,7 +203,7 @@ class Evaluator:
                         continue
                     p = pred[n]
                     flow[p] = flow.get(p, 0.0) + f
-                    if graph.node_route[n] >= 0 and graph.is_departure(p):
+                    if graph.node_route[n] is not None and graph.is_departure(p):
                         rides[graph.node_route[n]] += f
         n = len(self.origins)
         out = {"minutes": tot["time"] / n / 60, "unreachable": tot["unreachable"] / n,
@@ -505,7 +506,7 @@ def candidates(plan, ctx):
             if not path:
                 continue
             new = sum(h for _, h, _ in path)
-            speed = a.cruise_mps(net.routes[key[0]].zone)
+            speed = a.speed_mps(net.routes[key[0]])
             saved_s = (along - new) / speed + max(0, (j - i - 1) - (len(path) - 2)) * a.stop_loss_s
             straight.append((saved_s, Straighten(key, i, j, path, along, new, list(p.stop_ids), p.stop_ids[i + 1:j])))
     straight.sort(key=lambda t: (-t[0], t[1].key, t[1].i))

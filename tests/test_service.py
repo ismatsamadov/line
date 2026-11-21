@@ -63,3 +63,16 @@ class TripsAndService(unittest.TestCase):
         del self.net.patterns[(2, 2)]
         row = operations(self.net, self.a, {2: (15, "zone")})[0][2]
         self.assertAlmostEqual(row["bus_km_per_day"], (17 * 60 / 15) * 2 * self.net.patterns[(2, 1)].length_m / 1000)
+
+    def test_a_loop_that_runs_one_way_is_not(self):
+        del self.net.patterns[(2, 2)]
+        self.net.routes[2].runs_one_way = True
+        row = operations(self.net, self.a, {2: (15, "timetable")})[0][2]
+        one_way_s = run_time_s(self.net.patterns[(2, 1)], self.net, self.a)
+        self.assertAlmostEqual(row["trips_per_day"], 17 * 60 / 15)
+        self.assertAlmostEqual(row["bus_km_per_day"], (17 * 60 / 15) * self.net.patterns[(2, 1)].length_m / 1000)
+        self.assertEqual(row["fleet"], math.ceil(one_way_s / 60 * 1.15 / 15))
+
+    def test_a_speed_from_a_timetable_replaces_the_zones(self):
+        self.net.routes[1].speed_kmh = 36.0
+        self.assertAlmostEqual(run_time_s(self.p, self.net, self.a), self.p.length_m / 10 + 4 * 20)

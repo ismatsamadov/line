@@ -42,6 +42,8 @@ class Route:
     fare_azn: float
     payment: str                  # Kart (card) or Nəğd (cash)
     card_since: str
+    speed_kmh: float = None       # moving speed read from a timetable (gtfs.py); None: the zone's
+    runs_one_way: bool = False    # a loop that runs one way only (gtfs.py); see Network.directions_run
 
 
 @dataclass
@@ -76,6 +78,11 @@ class Network:
 
     def patterns_of(self, route_id):
         return [p for (r, _), p in sorted(self.patterns.items()) if r == route_id]
+
+    def directions_run(self, route_id):
+        """Directions a bus covers in one cycle: one for a loop that runs one way, otherwise
+        two, so a route stored with one direction counts as if it ran the same way back."""
+        return 1 if self.routes[route_id].runs_one_way else 2
 
     def served_stop_ids(self):
         return {s for p in self.patterns.values() for s in p.stop_ids}

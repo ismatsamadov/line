@@ -90,6 +90,10 @@ class Assumptions:
     def cruise_mps(self, zone):
         return self.cruise_kmh.get(zone, self.default_cruise_kmh) / 3.6
 
+    def speed_mps(self, route):
+        """A route's moving speed: its own, read from a timetable, or else its zone's."""
+        return route.speed_kmh / 3.6 if route.speed_kmh else self.cruise_mps(route.zone)
+
     @property
     def transfer_penalty_s(self):
         return self.transfer_penalty_min * 60
