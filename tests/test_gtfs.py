@@ -322,6 +322,7 @@ class BranchesAndExpressTest(unittest.TestCase):
 
     def test_a_night_bus_is_named_for_protection(self):
         self.assertEqual((self.table.night, self.table.summary["routes_at_night"]), (["N1"], 1))
+        self.assertEqual(self.net.routes["N"].zone, "Bus night")           # so no day route merges into it
         self.assertTrue(any(n.startswith("N1: runs at night, 1 of its 1 departures") for n in self.table.notes))
 
 

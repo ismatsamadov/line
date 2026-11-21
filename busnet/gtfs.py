@@ -23,7 +23,8 @@ on another route that calls at many more stops along the way, so the redesign do
 merge it into that route. The summary gives the hours in which buses leave at least a
 quarter as often as in the busiest hour, the value service_hours should have; a route
 with most of its departures outside them runs at night, which an all-day model cannot
-value, and the notes say to protect it from the redesign.
+value. Its zone says "night", so the redesign never merges a day route into it or it into
+one, and the notes say to protect it from the rest of the redesign.
 
 Writing turns each route direction into one trip that repeats every headway between the
 start and end of service (frequencies.txt). Times between stops follow the same model as
@@ -639,7 +640,9 @@ def _read(feed, a, repair, source):
         times = starts[rid]
         out = sum(1 for t in times if service and not service[0] * 3600 <= t < service[1] * 3600)
         if out > len(times) / 2:
-            night += sorted(r.number for k, r in routes.items() if k == rid or k.startswith(f"{rid}~"))
+            for k in sorted(k for k in routes if k == rid or k.startswith(f"{rid}~")):
+                routes[k].zone = f"{routes[k].zone} night"               # never merged with a day route
+                night.append(routes[k].number)
             notes.append(f"{kinds[rid][1]}: runs at night, {out} of its {len(times)} departures outside the hours "
                          f"of service; an all-day model cannot see what it is for, so redesign_protected_routes "
                          f"should hold it")
