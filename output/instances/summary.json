@@ -1,0 +1,409 @@
+{
+ "instances": {
+  "Baku0": {
+   "radius_m": 2800,
+   "nodes": 30,
+   "links": 56,
+   "routes": 27,
+   "min_nodes": 2,
+   "max_nodes": 9,
+   "routes_today": 41,
+   "clusters_in_window": 31,
+   "clusters_left_out": 1,
+   "people": 303548,
+   "people_left_out": 2322,
+   "trips": 2840762,
+   "link_minutes": {
+    "min": 1,
+    "median": 3.0,
+    "max": 7
+   },
+   "matrix_mb": 0.01086,
+   "today": {
+    "att": 10.76613105920172,
+    "d0": 67.93825037085121,
+    "d1": 30.282438303525602,
+    "d2": 1.7793113256231954,
+    "dun": 0.0,
+    "route_time": 420
+   },
+   "straightening": {
+    "one_pass": {
+     "passes": 1,
+     "candidates": 35,
+     "breaking_a_rule": 2,
+     "better_alone": 22,
+     "changes": 10,
+     "att_after": 10.110167624038903,
+     "route_time_after": 390,
+     "d0_after": 67.760199552092,
+     "d1_after": 31.83223374573442,
+     "d2_after": 0.4075667021735717,
+     "dun_after": 0.0
+    },
+    "repeated": {
+     "passes": 3,
+     "candidates": 87,
+     "breaking_a_rule": 7,
+     "better_alone": 25,
+     "changes": 13,
+     "att_after": 10.058636379957209,
+     "route_time_after": 382,
+     "d0_after": 67.75027263811612,
+     "d1_after": 31.83786603735195,
+     "d2_after": 0.41186132453193897,
+     "dun_after": 0.0
+    }
+   }
+  },
+  "Baku1": {
+   "radius_m": 4500,
+   "nodes": 70,
+   "links": 127,
+   "routes": 50,
+   "min_nodes": 2,
+   "max_nodes": 16,
+   "routes_today": 62,
+   "clusters_in_window": 71,
+   "clusters_left_out": 1,
+   "people": 585749,
+   "people_left_out": 1818,
+   "trips": 5657404,
+   "link_minutes": {
+    "min": 1,
+    "median": 3,
+    "max": 7
+   },
+   "matrix_mb": 0.05894,
+   "today": {
+    "att": 15.935600498037616,
+    "d0": 58.27672904392191,
+    "d1": 36.53856079572893,
+    "d2": 4.884006869581879,
+    "dun": 0.3007032907672848,
+    "route_time": 1181
+   },
+   "straightening": {
+    "one_pass": {
+     "passes": 1,
+     "candidates": 74,
+     "breaking_a_rule": 2,
+     "better_alone": 49,
+     "changes": 22,
+     "att_after": 14.731021860910056,
+     "route_time_after": 1091,
+     "d0_after": 58.02092267053935,
+     "d1_after": 37.28201132533579,
+     "d2_after": 4.380737172031553,
+     "dun_after": 0.3163288320933064
+    },
+    "repeated": {
+     "passes": 6,
+     "candidates": 340,
+     "breaking_a_rule": 31,
+     "better_alone": 64,
+     "changes": 34,
+     "att_after": 14.485710407105449,
+     "route_time_after": 1040,
+     "d0_after": 56.16038734373575,
+     "d1_after": 38.618101164421,
+     "d2_after": 4.973235073896084,
+     "dun_after": 0.24827641794717153
+    }
+   }
+  },
+  "Baku2": {
+   "radius_m": 6100,
+   "nodes": 111,
+   "links": 198,
+   "routes": 59,
+   "min_nodes": 2,
+   "max_nodes": 21,
+   "routes_today": 79,
+   "clusters_in_window": 115,
+   "clusters_left_out": 4,
+   "people": 809844,
+   "people_left_out": 3951,
+   "trips": 7887866,
+   "link_minutes": {
+    "min": 1,
+    "median": 3.0,
+    "max": 12
+   },
+   "matrix_mb": 0.148074,
+   "today": {
+    "att": 18.683151818248433,
+    "d0": 53.16669933287406,
+    "d1": 39.801741053917496,
+    "d2": 6.5098976072869394,
+    "dun": 0.5216620059215001,
+    "route_time": 1806
+   },
+   "straightening": {
+    "one_pass": {
+     "passes": 1,
+     "candidates": 80,
+     "breaking_a_rule": 6,
+     "better_alone": 51,
+     "changes": 23,
+     "att_after": 17.37707232856136,
+     "route_time_after": 1683,
+     "d0_after": 52.842327696743325,
+     "d1_after": 40.96137028696989,
+     "d2_after": 5.717541347685166,
+     "dun_after": 0.4787606686016218
+    },
+    "repeated": {
+     "passes": 5,
+     "candidates": 359,
+     "breaking_a_rule": 54,
+     "better_alone": 84,
+     "changes": 47,
+     "att_after": 16.912322293507522,
+     "route_time_after": 1594,
+     "d0_after": 52.28210012695449,
+     "d1_after": 42.36826538381864,
+     "d2_after": 5.073793089284225,
+     "dun_after": 0.27584139994264606
+    }
+   }
+  },
+  "Baku3": {
+   "radius_m": 6900,
+   "nodes": 125,
+   "links": 220,
+   "routes": 63,
+   "min_nodes": 2,
+   "max_nodes": 22,
+   "routes_today": 100,
+   "clusters_in_window": 130,
+   "clusters_left_out": 5,
+   "people": 869953,
+   "people_left_out": 5780,
+   "trips": 8489320,
+   "link_minutes": {
+    "min": 1,
+    "median": 3.0,
+    "max": 12
+   },
+   "matrix_mb": 0.18775,
+   "today": {
+    "att": 19.793003915507956,
+    "d0": 50.271117121277086,
+    "d1": 41.46174251883543,
+    "d2": 7.52166251242738,
+    "dun": 0.7454778474601028,
+    "route_time": 1976
+   },
+   "straightening": {
+    "one_pass": {
+     "passes": 1,
+     "candidates": 80,
+     "breaking_a_rule": 5,
+     "better_alone": 56,
+     "changes": 26,
+     "att_after": 18.397176216705226,
+     "route_time_after": 1828,
+     "d0_after": 49.77689614715902,
+     "d1_after": 43.61998369716302,
+     "d2_after": 6.2014154254993334,
+     "dun_after": 0.40170473017862446
+    },
+    "repeated": {
+     "passes": 5,
+     "candidates": 359,
+     "breaking_a_rule": 43,
+     "better_alone": 93,
+     "changes": 51,
+     "att_after": 17.879559729165585,
+     "route_time_after": 1741,
+     "d0_after": 48.83755118195568,
+     "d1_after": 45.36184288023069,
+     "d2_after": 5.560327564516357,
+     "dun_after": 0.24027837329727234
+    }
+   }
+  },
+  "BakuFull": {
+   "radius_m": null,
+   "nodes": 680,
+   "links": 1068,
+   "routes": 196,
+   "min_nodes": 2,
+   "max_nodes": 34,
+   "routes_today": 200,
+   "clusters_in_window": 710,
+   "clusters_left_out": 30,
+   "people": 2197463,
+   "people_left_out": 37285,
+   "trips": 21498080,
+   "link_minutes": {
+    "min": 1,
+    "median": 3.0,
+    "max": 34
+   },
+   "matrix_mb": 5.55016,
+   "today": {
+    "att": 34.86901555859872,
+    "d0": 31.705882571838973,
+    "d1": 43.58663657405685,
+    "d2": 19.23647134999963,
+    "dun": 5.471009504104552,
+    "route_time": 9284
+   },
+   "straightening": {
+    "one_pass": {
+     "passes": 1,
+     "candidates": 80,
+     "breaking_a_rule": 13,
+     "better_alone": 48,
+     "changes": 30,
+     "att_after": 33.760132253671024,
+     "route_time_after": 8961,
+     "d0_after": 31.80227257503926,
+     "d1_after": 44.83498061222212,
+     "d2_after": 18.82209015874906,
+     "dun_after": 4.540656653989566
+    }
+   }
+  }
+ },
+ "construction": {
+  "served_stops": 3456,
+  "routes_with_stops": 201,
+  "cluster_radius_m": 600,
+  "clusters": 710,
+  "centre": {
+   "name": "the 28 May metro station",
+   "lat": 40.379862,
+   "lon": 49.848636
+  },
+  "circle_sizes": {
+   "Baku0": 30,
+   "Baku1": 70,
+   "Baku2": 110,
+   "Baku3": 127
+  },
+  "coordinates": {
+   "origin_lat": 39.9,
+   "origin_lon": 49.4,
+   "unit": "m",
+   "projection": "flat, centred on 40.4 N 49.85 E (busnet/geo.py)"
+  },
+  "node_numbering": "from 1, nearest the centre first",
+  "link_minutes": "median over every route and both directions of the travel model's time between the clusters, rounded to the nearest minute, at least 1",
+  "stop_loss_s": 20,
+  "minutes_of_every_route_direction": {
+   "travel_model": 20153.06191900586,
+   "along_the_links": 19274,
+   "ratio": 0.9563807265348181
+  },
+  "demand": {
+   "trip_decay_km": 6.0,
+   "access_walk_m": 500,
+   "destination_share": 0.5,
+   "scale": 10
+  }
+ },
+ "demand_check": {
+  "spearman": 0.5768,
+  "routes_compared": 56
+ },
+ "settings": {
+  "walk_speed_mps": 1.25,
+  "walk_detour": 1.3,
+  "max_access_walk_m": 500,
+  "max_transfer_walk_m": 300,
+  "coverage_radius_m": 400,
+  "default_headway_min": 12,
+  "headway_by_zone": {
+   "Şəhərdaxili": 10,
+   "Şəhərdaxili (ekspres)": 15,
+   "Şəhərətrafı": 15,
+   "Şəhərətrafı (ekspres)": 20,
+   "Qəsəbədaxili": 20,
+   "Qəsəbələrarası": 20,
+   "Şəhərlərarası": 30
+  },
+  "headway_from_ridership": true,
+  "boardings_per_trip": 60,
+  "service_hours": 17,
+  "min_headway_min": 3,
+  "max_headway_min": 30,
+  "transfer_penalty_min": 5,
+  "layover_share": 0.15,
+  "reference_fleet": 2300,
+  "cruise_kmh": {
+   "Şəhərdaxili": 22,
+   "Şəhərdaxili (ekspres)": 29,
+   "Şəhərətrafı": 29,
+   "Şəhərətrafı (ekspres)": 36,
+   "Qəsəbədaxili": 25,
+   "Qəsəbələrarası": 31,
+   "Şəhərlərarası": 40
+  },
+  "default_cruise_kmh": 25,
+  "stop_loss_s": 20,
+  "fuel_l_per_km": 0.3,
+  "fuel_l_per_stop": 0.05,
+  "co2_kg_per_l": 2.67,
+  "trip_decay_km": 6.0,
+  "max_trip_min": 120,
+  "destination_share": 0.5,
+  "destination_weights": {
+   "office": 1,
+   "townhall": 3,
+   "courthouse": 3,
+   "kindergarten": 1,
+   "school": 3,
+   "college": 5,
+   "university": 10,
+   "clinic": 2,
+   "hospital": 8,
+   "supermarket": 2,
+   "department_store": 4,
+   "mall": 10,
+   "marketplace": 8,
+   "station": 5,
+   "bus_station": 5
+  },
+  "metro_weight_per_1000_entries": 2.0,
+  "redesign_origins": 100,
+  "redesign_seed": 11,
+  "redesign_min_gain_min": 0.005,
+  "redesign_max_straighten": 80,
+  "redesign_max_drop": 20,
+  "redesign_max_people_losing_stop": 500,
+  "redesign_max_people_losing_stop_total": 3000,
+  "redesign_shift_share": 0.2,
+  "redesign_shift_rounds": 4,
+  "redesign_protect_boardings": 1000,
+  "redesign_protected_routes": [
+   "180"
+  ],
+  "gtfs_date": "",
+  "gtfs_route_types": [
+   3
+  ],
+  "daily_journeys": 0,
+  "fuel_price": 0,
+  "cost_per_bus_hour": 0,
+  "value_of_time": 0,
+  "currency": "",
+  "days_per_year": 0
+ },
+ "inputs": {
+  "db": "data/ayna.db",
+  "population": "data/external/kontur/kontur_population_AZ_20231101.gpkg",
+  "ridership": "data/external/opendata/bakubus_passenger-2026.csv",
+  "headways": "data/headways.csv",
+  "destinations:osm_education.json": "data/external/osm/osm_education.json",
+  "destinations:osm_health.json": "data/external/osm/osm_health.json",
+  "destinations:osm_shopping.json": "data/external/osm/osm_shopping.json",
+  "destinations:osm_offices.json": "data/external/osm/osm_offices.json",
+  "destinations:osm_transport.json": "data/external/osm/osm_transport.json",
+  "metro_passengers": "data/external/opendata/metro_passengers-2026.csv",
+  "metro_exits": "data/external/opendata/metro_exits.csv",
+  "walk_network": "data/external/osm/osm_walk_network.json.gz"
+ }
+}
