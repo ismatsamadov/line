@@ -4,13 +4,17 @@ Download what another city needs into data/cities/<city>/, and write its setting
 cities/<city>.toml, so that measure.py and redesign.py run on it:
 
   gtfs.zip                                  the city's GTFS feed
-  kontur_population_<XX>_20231101.gpkg      Kontur's population grid for its country
+  kontur_population_<XX>_20231101.gpkg      Kontur's population grid for its country, cut to the
+                                            box of the feed's served stops plus 5 km
+                                            (busnet.population.cut_gpkg), which the model reads
+                                            to 2 km
   osm_education.json, osm_health.json, osm_shopping.json, osm_offices.json, osm_transport.json
                                             places people go, from OpenStreetMap, in the box of
                                             the feed's served stops plus 2 km: from the Overpass
-                                            API as for Baku, or with --osm geofabrik cut out of the
-                                            country's extract from Geofabrik (osm_pbf.places), which
-                                            does not depend on Overpass servers being up
+                                            API as for Baku, or with --osm geofabrik cut out of
+                                            Geofabrik's extract of the city's region (CITIES) or
+                                            country (osm_pbf.places), which does not depend on
+                                            Overpass servers being up
 
 The settings file names those files, sets service_hours to the hours of service the
 feed's timetable shows, and resets what busnet.toml sets for Baku alone. It is written only
@@ -24,11 +28,14 @@ Standard library only. Usage (from the repository root):
   python3 data/fetch_city.py riga --refresh                         # download everything again
   python3 data/fetch_city.py my_city --feed URL --country XX        # a city not in CITIES
   python3 data/fetch_city.py riga --osm geofabrik                   # the destinations from Geofabrik
+  python3 data/fetch_city.py penang --osm geofabrik --osm-cache DIR # keep extracts for cities sharing one
 """
 
 import argparse
 import gzip
+import io
 import json
+import shutil
 import sys
 import tempfile
 import time
@@ -42,15 +49,75 @@ import fetch_external                                                           
 import osm_pbf                                                                  # noqa: E402
 from busnet.assumptions import Assumptions                                      # noqa: E402
 from busnet.gtfs import read_gtfs                                               # noqa: E402
-from busnet.population import stops_bbox                                        # noqa: E402
+from busnet.population import cut_gpkg, stops_bbox                              # noqa: E402
 
 KONTUR = "https://geodata-eu-central-1-kontur-public.s3.amazonaws.com/kontur_datasets/kontur_population_{}_20231101.gpkg.gz"
+CUT_KM = 5.0                     # the population grid is kept to the served stops plus this
+# The Mobility Database's copy of a feed it lists, for feeds whose own address wants a key or
+# would not answer from here on 21 November 2026.
+MDB = "https://files.mobilitydatabase.org/{}/latest.zip"
+# Each city: its feed, its country (for the population grid) and, where a smaller extract than
+# the country's holds it, the Geofabrik region for --osm geofabrik. data/SOURCES.md has each
+# feed's publisher, date and licence; all allow redistribution with credit.
 CITIES = {
     # Rīgas satiksme's timetable for October 2026 on Latvia's open data portal (CC0 1.0),
     # dataset "Maršrutu saraksti Rīgas Satiksme sabiedriskajam transportam".
     "riga": {"feed": "https://data.gov.lv/dati/dataset/6d78358a-0095-4ce3-b119-6cde5d0ac54f/resource/"
                      "2e3e9182-f294-48e5-a133-b45cec6ceda4/download/marsrutusaraksti10_2026.zip",
              "country": "LV"},
+    # ZTM Gdańsk, from Gdańsk's open data portal (CC0 1.0).
+    "gdansk": {"feed": MDB.format("mdb-2093"), "country": "PL", "region": "pomorskie"},
+    # Cardiff Bus, from the Bus Open Data Service (Open Government Licence v3.0).
+    "cardiff": {"feed": MDB.format("mdb-1931"), "country": "GB", "region": "wales"},
+    # Dublin Bus, from the National Transport Authority (CC BY 4.0).
+    "dublin": {"feed": MDB.format("mdb-2635"), "country": "IE", "region": "ireland-and-northern-ireland"},
+    # AMAT Palermo, from the city's open data portal (CC BY 4.0; the tram's data CC BY-SA 4.0).
+    "palermo": {"feed": MDB.format("mdb-2373"), "country": "IT", "region": "isole"},
+    # Kyivpastrans, Kyiv's municipal operator (CC BY 4.0).
+    "kyiv": {"feed": MDB.format("mdb-3230"), "country": "UA"},
+    # Sofia Urban Mobility Center, under Sofia Municipality's terms for mobility data (CC BY 4.0).
+    "sofia": {"feed": MDB.format("mdb-2848"), "country": "BG"},
+    # EMT València, from the city's open data portal (CC BY 4.0).
+    "valencia": {"feed": MDB.format("mdb-795"), "country": "ES", "region": "valencia"},
+    # STAR, Rennes Métropole's network, from transport.data.gouv.fr (ODbL 1.0).
+    "rennes": {"feed": MDB.format("tdg-83281"), "country": "FR", "region": "bretagne"},
+    # TAG, the Grenoble area's network (SMMAG), from transport.data.gouv.fr (ODbL 1.0).
+    "grenoble": {"feed": MDB.format("tdg-83459"), "country": "FR", "region": "rhone-alpes"},
+    # Linkki, Jyväskylä's network, from Waltti (CC BY 4.0).
+    "jyvaskyla": {"feed": MDB.format("mdb-867"), "country": "FI"},
+    # Halifax Transit (Open Government Licence – Halifax).
+    "halifax": {"feed": MDB.format("mdb-734"), "country": "CA", "region": "nova-scotia"},
+    # Réseau de transport de la Capitale, Québec City, from Données Québec (CC BY 4.0).
+    "quebec": {"feed": MDB.format("mdb-757"), "country": "CA", "region": "quebec"},
+    # Capital Metro, Austin, from the Texas Open Data Portal (CapMetro's open data licence).
+    "austin": {"feed": MDB.format("mdb-150"), "country": "US", "region": "us/texas"},
+    # Trujillo's routes from the city transport authority's OMUS platform, built from OpenStreetMap
+    # by the Trufi Association (GPL-3.0 repository; the map data ODbL).
+    "trujillo": {"feed": MDB.format("mdb-2200"), "country": "PE"},
+    # Prasarana's Rapid Bus networks and BAS.MY Melaka, from Malaysia's GTFS Static API (CC BY 4.0).
+    "kuala_lumpur": {"feed": MDB.format("tld-6767"), "country": "MY", "region": "malaysia-singapore-brunei"},
+    "penang": {"feed": MDB.format("tld-6770"), "country": "MY", "region": "malaysia-singapore-brunei"},
+    "melaka": {"feed": "https://api.data.gov.my/gtfs-static/mybas-melaka", "country": "MY",
+               "region": "malaysia-singapore-brunei"},
+    # Sendai City Transportation Bureau's buses, from the Public Transportation Open Data Center (CC BY 4.0).
+    "sendai": {"feed": MDB.format("odpt-SendaiMunicipal-bus_realtime_information"), "country": "JP",
+               "region": "tohoku"},
+    # Tosaden Kotsu's buses in Kōchi, from Japan's GTFS data repository (CC BY 4.0).
+    "kochi": {"feed": MDB.format("jbda-tosaden-kotsu-GTFS-Tosadentraffic_Regularbus"), "country": "JP",
+              "region": "shikoku"},
+    # Metro Christchurch, Environment Canterbury (CC BY 4.0).
+    "christchurch": {"feed": MDB.format("mdb-1313"), "country": "NZ"},
+    # Translink Queensland's regional networks, from Queensland's open data portal (CC BY 4.0).
+    "cairns": {"feed": "https://gtfsrt.api.translink.com.au/GTFS/CNS_GTFS.zip", "country": "AU",
+               "region": "queensland"},
+    "townsville": {"feed": "https://gtfsrt.api.translink.com.au/GTFS/TSV_GTFS.zip", "country": "AU",
+                   "region": "queensland"},
+    # Anbessa and Sheger city buses, mapped by AddisMapTransit in 2022-2024 with DigitalTransport4Africa
+    # (ODbL 1.0); the buses-only file, without the minibus taxis.
+    "addis_ababa": {"feed": "https://gitlab.com/digitaltransport/data/africa/addis-ababa/-/raw/master/"
+                            "Addis%20Ababa%20GTFS_2023/et-addisababa-bus.zip", "country": "ET"},
+    # Accra's trotro lines, mapped for Accra Mobility (Accra Metropolitan Assembly and AFD) (ODbL 1.0).
+    "accra": {"feed": MDB.format("mdb-881"), "country": "GH"},
 }
 DESTINATIONS = ["osm_education.json", "osm_health.json", "osm_shopping.json", "osm_offices.json", "osm_transport.json"]
 # The same five as tests on a place's tags, for a country extract: the Overpass queries of
@@ -66,13 +133,13 @@ KINDS = {
 GEOFABRIK_INDEX = "https://download.geofabrik.de/index-v1-nogeom.json"
 
 
-def geofabrik(country):
-    """The address of a country's extract, from Geofabrik's index of them."""
+def geofabrik(country, region=None):
+    """The address of a region's extract, or else the country's, from Geofabrik's index of them."""
     for f in json.loads(fetch_external.fetch(GEOFABRIK_INDEX))["features"]:
         p = f["properties"]
-        if country in p.get("iso3166-1:alpha2", []) and p.get("urls", {}).get("pbf"):
+        if (p["id"] == region if region else country in p.get("iso3166-1:alpha2", [])) and p.get("urls", {}).get("pbf"):
             return p["urls"]["pbf"]
-    raise RuntimeError(f"Geofabrik's index has no extract for {country}")
+    raise RuntimeError(f"Geofabrik's index has no extract for {region or country}")
 
 
 def settings(city, folder, country, hours):
@@ -108,8 +175,10 @@ def main():
     ap.add_argument("--country", help="the country's two-letter ISO code, for Kontur's population grid")
     ap.add_argument("--refresh", action="store_true", help="download files that already exist too")
     ap.add_argument("--osm", choices=["overpass", "geofabrik"], default="overpass",
-                    help="where the destinations come from: the Overpass API, or the country's extract from "
-                         "Geofabrik (with --refresh, all five from it)")
+                    help="where the destinations come from: the Overpass API, or the extract of the city's region "
+                         "or country from Geofabrik (with --refresh, all five from it)")
+    ap.add_argument("--osm-cache", metavar="DIR",
+                    help="with --osm geofabrik, keep the extract in DIR, and use one already there")
     args = ap.parse_args()
     known = CITIES.get(args.city, {})
     url, country = args.feed or known.get("feed"), (args.country or known.get("country") or "").upper()
@@ -133,18 +202,31 @@ def main():
     if args.refresh or not gpkg.exists():
         print(f"population: {KONTUR.format(country)}")
         try:
-            fetch_external.save(gpkg, gzip.decompress(fetch_external.fetch(KONTUR.format(country), timeout=900)))
+            gz = fetch_external.fetch(KONTUR.format(country), timeout=1800)
+            with tempfile.TemporaryDirectory() as tmp:
+                whole = Path(tmp) / gpkg.name
+                with gzip.open(io.BytesIO(gz)) as src, open(whole, "wb") as dst:
+                    shutil.copyfileobj(src, dst)
+                gpkg.unlink(missing_ok=True)
+                kept = cut_gpkg(whole, gpkg, stops_bbox(net, margin_km=CUT_KM))
+            print(f"  wrote {gpkg.relative_to(ROOT)}: the {kept:,} cells within {CUT_KM:g} km of the served "
+                  f"stops' box ({gpkg.stat().st_size / 1024:,.0f} KB)")
         except RuntimeError as e:
             failed.append(f"{gpkg.name}: {e}")
 
     missing = [name for name in DESTINATIONS if args.refresh or not (folder / name).exists()]
     if missing and args.osm == "geofabrik":
         try:
-            extract = geofabrik(country)
+            extract = geofabrik(country, known.get("region"))
             with tempfile.TemporaryDirectory() as tmp:
-                pbf = Path(tmp) / extract.rsplit("/", 1)[1]
-                print(f"osm: {extract}")
-                pbf.write_bytes(fetch_external.fetch(extract, timeout=1800))
+                keep = Path(args.osm_cache).expanduser() if args.osm_cache else Path(tmp)
+                keep.mkdir(parents=True, exist_ok=True)
+                pbf = keep / extract.rsplit("/", 1)[1]
+                if pbf.exists():
+                    print(f"osm: {pbf}")
+                else:
+                    print(f"osm: {extract}")
+                    pbf.write_bytes(fetch_external.fetch(extract, timeout=3600))
                 found = osm_pbf.places(pbf, box, {name: KINDS[name] for name in missing})
             for name in missing:
                 fetch_external.save(folder / name, json.dumps(found[name], ensure_ascii=False).encode("utf-8"))

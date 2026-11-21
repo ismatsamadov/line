@@ -1,0 +1,24 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,merge,8 (Lyttelton via City & Ara),"Merge 8 (Lyttelton via City & Ara) into 8: 94% of its stops are also on 8; its buses go to 8, 155, 125",78.6813,78.3803,0.301,0.0
+2,merge,3 (branch 1),"Merge 3 (branch 1) into 3: 95% of its stops are also on 3; its buses go to 3, 86, 5 (branch 1)",78.3803,78.1188,0.2615,0.0
+3,merge,5,"Merge 5 into 5 (branch 1): 99% of its stops are also on 5 (branch 1); its buses go to 5 (branch 1), 86, 80",78.1188,77.8359,0.2829,0.0
+4,drop,1 (Princess Margaret Hospital & Cashmere),"Drop 1 (Princess Margaret Hospital & Cashmere): among the 20 routes with the fewest modelled riders per bus; its buses go to 1, 95, 44",77.8359,77.6266,0.2093,6.0
+5,straighten,100,"Straighten 100 direction 2 between Straven Rd near Rochdale St and Riccarton Rd near Middleton Rd: 2.7 km shorter, 8 of its stops dropped",77.6266,77.5778,0.0488,0.0
+6,straighten,120,"Straighten 120 direction 2 between Barrington St near Bewdley St and Whiteleigh Ave near Barrington St: 3.3 km shorter, 11 of its stops dropped",77.5778,77.5348,0.043,0.0
+7,drop,91,"Drop 91: among the 20 routes with the fewest modelled riders per bus; its buses go to 92, 1, 7",77.5348,77.5056,0.0292,0.0
+8,drop,81,"Drop 81: among the 20 routes with the fewest modelled riders per bus; its buses go to 80, 820, 60",77.5056,77.4777,0.0279,0.0
+9,drop,85,"Drop 85: among the 20 routes with the fewest modelled riders per bus; its buses go to 84, 820, 5 (branch 1)",77.4777,77.4471,0.0307,197.1429
+10,drop,84,"Drop 84: among the 20 routes with the fewest modelled riders per bus; its buses go to 5 (branch 1), 820, 60",77.4471,77.3684,0.0787,226.5714
+11,straighten,135,"Straighten 135 direction 1 between Marshland Rd and Burwood Hospital - Mairehau Rd: 3.2 km shorter, 4 of its stops dropped",77.3684,77.345,0.0234,0.0
+12,straighten,120,"Straighten 120 direction 1 between Brougham St near Kipling St and Barrington Mall: 1.9 km shorter, 10 of its stops dropped",77.345,77.3238,0.0212,0.0
+13,drop,92,"Drop 92: among the 20 routes with the fewest modelled riders per bus; its buses go to 7, 44, 95",77.3238,77.2797,0.0441,0.0
+14,straighten,130,"Straighten 130 direction 2 between Riccarton Rd near Paeroa St and Kotare St near Roa Rd: 2.1 km shorter, 11 of its stops dropped",77.2797,77.2608,0.0189,0.0
+15,straighten,125,"Straighten 125 direction 2 between Halswell Shops and Patterson Tce near Brigham Dr: 2.4 km shorter, 5 of its stops dropped",77.2608,77.2466,0.0142,0.0
+16,straighten,820,"Straighten 820 direction 2 between Faringdon Boulevard near Broomfield Dr and Izone Dr: 2.9 km shorter, 5 of its stops dropped",77.2466,77.238,0.0087,-226.5714
+17,straighten,44,"Straighten 44 direction 2 between Flockton St near Archer St and Emmett St near Jebson St: 1.0 km shorter, 11 of its stops dropped",77.238,77.2312,0.0068,0.0
+18,straighten,5 (branch 1),"Straighten 5 (branch 1) direction 2 between Jones Rd near Hoskyns Rd and Rolleston Dr near Othello Dr: 1.3 km shorter, 4 of its stops dropped",77.2312,77.2173,0.0139,0.0
+19,straighten,135,"Straighten 135 direction 2 between Burwood Rd and Marshland Rd near Cotton St: 3.9 km shorter, 11 of its stops dropped",77.2173,77.2071,0.0102,247.4286
+20,stops,,"Remove 376 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",77.2071,76.2315,0.9756,0.0
+21,shift,,"Move 13 buses from the 5 routes where a bus saves riders the least waiting (7, 3, Oa, Oc, 125) to the 5 where it saves the most (107, 110, 97, 135, 120)",76.2315,75.2919,0.9396,0.0
+22,shift,,"Move 9 buses from the 5 routes where a bus saves riders the least waiting (107, 110, 7, 3, 27) to the 5 where it saves the most (130, 120, 100, 1, 44)",75.2919,75.0737,0.2182,0.0
+23,shift,,"Move 7 buses from the 5 routes where a bus saves riders the least waiting (107, 120, 27, 130, 7) to the 5 where it saves the most (140, 44, 5 (branch 1), 135, 60)",75.0737,75.0504,0.0233,0.0

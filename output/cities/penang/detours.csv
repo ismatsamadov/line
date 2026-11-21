@@ -1,0 +1,149 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+101,1,Klinik Kesihatan Teluk Bahang,Jalan Hassan Abbas,11,0,3.413,0.4142,2.9987,9.8604,0
+101,2,H.S. Sam Book Store,Terminal B Weld Quay,8,0,2.7025,1.0487,1.6538,6.0824,0
+102,1,Penjara P.Pinang(Hospital),Koperasi Melayu Pulau Pinang,11,0,4.6244,0.5838,4.0406,10.9554,0
+102,1,Klinik Kesihatan Teluk Bahang,Jalan Hassan Abbas,11,0,3.4134,0.4142,2.9991,9.0767,0
+102,2,Hospital Loh Guan Lye,Stadium Bandaraya,11,0,3.8939,0.7669,3.1271,9.3075,0
+103,1,Flat Kelawei,Hardware Pulau Tikus,11,0,3.3577,0.2876,3.07,11.1086,0
+104,1,Lorong Lembah Permai 3,Kompleks Institut Pendidikan,11,9,5.49,1.6111,3.8789,12.9388,9594.1429
+104,1,Wawasan Open University,(M1) Hub Lebuh Carnarvon,11,3,4.8001,1.7843,3.0158,10.8756,0
+104,2,Hong Seng Estate,Lorong Lembah Permai 3,11,10,6.5567,2.1707,4.386,14.151,10940.2857
+201,1,JKR Paya Terubong,Pangsapuri Wisma Indah,11,0,4.556,0.2066,4.3494,14.7951,0
+201,1,H.S. Sam Book Store,Terminal B Weld Quay,8,0,2.7025,1.0487,1.6538,6.8981,0
+201,2,Paya Terubong Cemetery,(M1) Hub Paya Terubong - Petronas,8,0,2.752,0.9836,1.7684,7.1913,0
+202,1,Masjid Negeri P.Pinang,SJK (C) Sin Kang,11,0,3.3752,1.2885,2.0867,10.3617,0
+202,1,Flat 4E Farlim,Tingkat Paya Terubong 2 - 2,11,0,4.4307,1.7081,2.7226,12.402,0
+202,2,Tingkat Paya Terubong 2 - 3,Flat 4E Farlim,7,0,4.0567,1.5183,2.5384,10.4777,0
+202,2,Wisma Yatim,Masjid Negeri P.Pinang,7,0,2.6586,1.0594,1.5992,7.4644,0
+202,2,H.S. Sam Book Store,Terminal B Weld Quay,8,0,2.7025,1.0487,1.6538,7.9728,0
+203,1,SMK Air Itam,Klinik Desa Paya Terubong,11,0,5.1211,1.0522,4.0689,16.2531,0
+203,2,Klinik Desa Paya Terubong.,Masjid Bandar Baru Air Itam,11,0,4.9636,0.9849,3.9787,15.9742,0
+203,2,H.S. Sam Book Store,Terminal B Weld Quay,8,0,2.7025,1.0487,1.6538,7.7824,0
+204,1,Terminal B Weld Quay,Gama Supermarket,11,0,3.836,1.5142,2.3218,9.8674,0
+204,1,Pejabat Pos Padang Tembak,Klinik Kesihatan Air Itam,11,6,3.4383,0.6542,2.7841,11.102,3991.5714
+204,2,Klinik Kesihatan  Air Itam,Flat Padang Tembak,11,6,3.7008,1.004,2.6968,10.8689,3991.5714
+204,2,Komtar Utara,Terminal B Weld Quay,11,0,3.7842,1.4234,2.3608,9.9715,0
+206,1,Taman Hutchings,Jalan Delima 3,9,7,4.841,1.9348,2.9062,10.6662,9909.4286
+206,1,Jalan Delima 3,Lotus E-Gate,11,3,5.7465,1.8677,3.8788,13.8985,10144.5714
+206,2,Lotus E-Gate,Jalan Delima 4,11,4,5.6888,1.831,3.8578,13.843,11988.5714
+206,2,Jalan Delima 4,Pasar Batu Lanchang II,11,7,4.1752,1.1335,3.0417,11.6902,9909.4286
+206,2,H.S. Sam Book Store,Terminal B Weld Quay,8,0,2.7025,1.0487,1.6538,7.0292,0
+301,1,Restoran Kapitan,Pasar Lebuh Cecil,11,0,4.8676,1.5524,3.3152,13.6167,0
+301,1,Taman Bukit Jambul,Apartmen Taman Bendera,8,0,4.4059,1.7252,2.6806,10.7121,0
+301,2,Komtar Timur,Terminal A Weld Quay,10,0,2.9628,1.1011,1.8618,8.9211,0
+302,1,(M2) RECSAM,Perumahan Kastam,5,0,2.2444,0.7399,1.5045,5.8962,0
+302,1,Taman Bukit Jambul,Kampung Sungai Ara,11,0,6.4698,2.0645,4.4053,16.0509,0
+302,1,(M3) Taman Rajawali 2,SJK Tamil Bayan Lepas,7,3,3.6227,1.3821,2.2406,8.632,1791.4286
+302,1,Kampung Batu Lima,Hub Batu Maung,11,11,4.4796,1.0253,3.4543,13.3773,10304.5714
+302,2,SJK(T) Bayan Lepas,Klinik Menara,8,2,2.832,1.112,1.72,7.5019,1791.4286
+302,2,SMK Sungai Ara,Setia Welcome Center,11,1,4.2087,1.4244,2.7843,11.4939,0
+302,2,Perumahan Kastam,Lebuh Raya Gelugor II,8,0,4.0688,1.5758,2.493,9.6751,0
+302,2,Presgrave Corner,Terminal A Weld Quay,11,0,3.494,1.3461,2.148,9.705,0
+303,1,Terminal A Weld Quay,Pejabat Pos Macallum,10,1,4.0252,1.4585,2.5666,10.9564,0
+303,1,Sungai Nibong Kecil,Hub Giant Bayan Baru,11,0,5.0939,1.1339,3.96,15.4282,0
+303,2,Hub Giant Bayan Baru,KFC Jalan Mahsuri,11,1,3.8052,0.6219,3.1832,13.1212,0
+303,2,KFC Jalan Mahsuri,Kompleks Bukit Jambul,6,0,2.5594,0.7907,1.7687,7.2532,0
+303,2,Jalan Magazine,Terminal A Weld Quay,11,0,3.5144,1.0513,2.463,10.9821,0
+304,1,SMK/SK Convent Pulau Tikus,Buddhist Society,11,2,4.7619,1.2079,3.554,12.9565,1108.8571
+304,1,Hospital Loh Guan Lye,Stadium Bandaraya,11,0,3.894,0.7669,3.1271,11.8407,0
+304,1,Kampung Dua Bukit,Sunshine Square,11,0,7.9633,2.3096,5.6537,18.4451,0
+304,1,Sunshine Square,Hub Giant Bayan Baru,7,0,2.9966,0.556,2.4406,8.7129,0
+304,2,Hub Giant Bayan Baru,KFC Jalan Mahsuri,10,0,3.805,0.6219,3.1831,11.6537,0
+304,2,KFC Jalan Mahsuri,Terminal Ekspress Sg Nibong,11,0,7.202,2.2419,4.9602,16.6321,0
+304,2,McDonald Green Lane,Kampung Makam,11,0,5.7044,2.256,3.4483,12.6804,0
+306,1,Flat 4E Farlim,Tingkat Paya Terubong 2 - 3,11,0,4.6265,1.5183,3.1082,11.3852,0
+306,1,Public Bank Jalan Relau,Snake Temple,11,0,10.8426,2.0145,8.8281,25.5896,0
+306,2,Giant Bayan Baru,Kompleks Golden Triangle,11,0,8.7037,1.58,7.1237,21.3571,0
+306,2,Tingkat Paya Terubong 2 - 3,Flat 4E Farlim,7,0,4.0573,1.5183,2.539,8.6385,0
+308,1,(M1) Hadapan Depo Sungai Nibong,Kampung Dua Bukit,10,0,4.6753,0.2747,4.4006,13.9242,0
+308,1,Kampung Dua Bukit,Sunshine Square,11,0,7.9634,2.3096,5.6538,17.2737,0
+308,1,Balai Polis Teluk Kumbar,Taman Pasir Belanda,9,9,3.3406,1.2606,2.08,8.0059,5463.8571
+308,2,Taman Pasir Belanda,Kg. Nelayan Teluk Kumbar,11,11,3.0247,1.0014,2.0233,8.5362,6202.7143
+308,2,SMK Sungai Ara,Setia Welcome Center,11,1,4.2085,1.4244,2.7841,10.3673,0
+308,2,Kompleks Bukit Jambul,Klinik Rakyat  Batu Uban,11,0,7.7566,2.232,5.5246,16.9628,0
+401,2,Apartmen Bayan Permai,Dynacraft Industries Sdn. Bhd.,5,0,5.6338,2.1175,3.5163,10.7259,0
+401,2,Presgrave Corner,Terminal A Weld Quay,11,0,3.4942,1.3461,2.1481,9.2011,0
+401E,1,Terminal A Weld Quay,Flat Macallum,3,0,4.0294,1.3925,2.6369,6.5291,0
+401E,1,Gold Coast Kondominium,Snake Temple,11,0,10.0482,3.8822,6.1661,16.5956,0
+401E,2,Apartmen Bayan Permai,Dynacraft Industries Sdn. Bhd.,5,0,5.6338,2.1175,3.5163,9.0396,0
+401E,2,Jalan Tengah,Krystal Point Corporate Park,11,0,4.6931,1.8499,2.8432,9.6282,0
+401E,2,Flat Macullum,Terminal A Weld Quay,7,0,4.1742,1.4101,2.7642,8.1292,0
+403,1,Pejabat Kesihatan Barat Daya,Pondok Polis Sungai Korok,11,11,4.3774,1.7388,2.6386,6.2038,2531.1429
+403,1,Kampung Parit Lama,(M2) Kampung Perlis 1,11,11,4.2785,0.4883,3.7901,7.311,1053.8571
+403,1,Kg Sungai Burung 2,Sungai Korok,11,11,3.6348,1.1235,2.5113,6.0813,2019.5714
+404,1,(M1) Balai Bomba Air Putih,Permatang Pasir,5,4,2.9759,1.1512,1.8247,3.724,1049.1429
+404,1,Kampung Sungai Rusa,Kampung Sungai Pinang,11,11,5.6655,1.0283,4.6372,8.8952,1775.0
+404,1,Jalan Haji Hamid Senawi,Jalan Haji Hamid Senawi,11,11,5.9563,0.036,5.9202,10.3419,1617.5714
+404,1,Kampung Sungai Pinang,Kampung Sungai Rusa,11,11,5.6515,1.0006,4.6509,8.9107,1927.0
+404,1,Permatang Pasir,(M3) Balai Bomba Air Putih,6,5,2.9438,1.1613,1.7825,4.0098,1049.1429
+502,1,SJK (C) Chong Teik,Sardon Hill,5,4,6.9651,2.7355,4.2296,10.7829,617.5714
+502,1,Komtar Utara,Terminal A Weld Quay,11,0,3.7055,1.4693,2.2362,8.4865,0
+502,2,Terminal A Weld Quay,Terminal Komtar,10,0,3.6041,1.319,2.2852,8.2586,0
+502,2,Surau Al Muttaqin,Pangsapuri Green Garden,5,0,2.2909,0.6753,1.6155,5.1487,0
+502,2,Sardon Hill,Terminal Bas Balik Pulau,5,5,6.6038,2.4866,4.1172,10.5405,642.0
+601,1,(M1) Penang Sentral,Public Mutual Bagan Luar,2,0,4.5708,1.7957,2.7751,5.3558,0
+601,1,Taman Aman Putra,Kompleks Dato Kailan,11,8,7.1858,0.7968,6.389,14.4624,5288.5714
+601,2,Kompleks Dato Kailan,Kompleks Kepala Batas,11,7,7.8375,0.6954,7.1421,15.7349,5461.0
+603,1,(M1) Penang Sentral,Public Mutual Bagan Luar,2,0,4.5239,1.7957,2.7281,4.6908,0
+604,1,(M1) Penang Sentral,Jalan Siram I,3,1,5.2521,2.0285,3.2236,8.3435,1280.8571
+605,1,(M1) Penang Sentral,Public Mutual Bagan Luar,2,0,4.5239,1.7957,2.7281,5.911,0
+606,1,Terminal Bas Bukit Mertajam,Petronas Tanah Liat,2,1,2.8461,1.1072,1.739,3.115,1789.4286
+606,1,Taman Seri Serdang,Kompleks Dato Kailan,5,1,3.6304,1.3638,2.2665,4.8577,1668.1429
+606,2,Kompleks Dato Kailan,Taman Orkid Permai,11,7,7.4077,2.7808,4.6268,10.1809,5905.8571
+610,1,Kompleks Dato Kailan,Kayangan,11,7,6.7539,2.357,4.3969,9.6493,1488.5714
+610,1,Midtown PERDA,Taman Tasek Gelugor Utama III,11,7,5.8464,0.9716,4.8748,10.2995,574.2857
+610,1,Tesco Kepala Batas,Kompleks Dato Kailan,3,0,3.4822,1.3454,2.1368,3.9074,0
+610,2,Tesco Kepala Batas,Kompleks Dato Kailan,4,0,3.4822,1.3454,2.1368,4.2408,0
+701,1,(M1) Penang Sentral,Taman Chai Leng,7,0,7.472,2.9698,4.5022,11.4036,0
+701,1,Pusat Perniagaan Perda,Pusat Perniagaan Permatang Rawa,5,3,3.1719,1.2146,1.9573,5.61,0
+702,1,(M1) Penang Sentral,Public Mutual Bagan Luar,2,0,4.5239,1.7957,2.7281,6.81,0
+703,1,(M1) Penang Sentral,Taman Chai Leng,7,0,7.425,2.9698,4.4552,11.7077,0
+703,1,Pangsapuri A1,Tesco Extra,9,4,7.9783,1.4135,6.5648,16.8131,1518.2857
+703,2,Taman Sembilang,SP Arena,11,1,7.7555,2.042,5.7135,15.6887,357.0
+703,2,SP Arena,Public Bank Inderawasih,11,2,8.7625,1.5224,7.2401,18.9008,449.4286
+708,1,SK Alma,AEON Pintu Utama,8,8,3.6889,1.4037,2.2852,7.1397,13784.0
+708,2,Taman Sri Kijang,SMK Jalan Damai,9,9,5.7725,2.2727,3.4998,9.8508,16562.1429
+709,1,(M1) Penang Sentral,Pusat Perniagaan Chain Ferry,3,0,4.4686,1.7663,2.7023,6.1887,0
+709,1,Pusat Perniagaan Chain Ferry II,Prudential,11,5,7.1898,1.9793,5.2106,13.6714,2090.1429
+709,2,Kampung Batu Dua,Shell Lintang Tenggiri,7,0,4.9962,1.9494,3.0468,8.1834,0
+709,2,Shell Lintang Tenggiri,Pusat Perniagaan Chain Ferry II,11,1,9.8749,2.213,7.6618,18.3781,0
+801,1,(M1) Penang Sentral,Taman Chai Leng,7,0,7.472,2.9698,4.5022,11.3159,0
+EB60,1,Central Square,Terminal UTC Ukir Square,2,2,2.435,0.5907,1.8443,2.7435,4043.2857
+EB60,2,Terminal UTC Ukir Square,MSU,4,4,3.3821,1.1918,2.1903,3.7997,5898.0
+11,1,Harmony View,Mewah Court,9,1,3.3386,1.2809,2.0576,10.7769,1476.1429
+11,2,Love Lane,Terminal A Weld Quay,7,0,2.34,0.7942,1.5458,8.1756,0
+12,1,Lebuh Carnarvon,Pejabat Pos Macallum,11,4,7.4787,1.0049,6.4738,28.7571,1804.1429
+12,1,Jalan Magazine,Terminal A Weld Quay,11,0,3.5145,1.0513,2.4632,13.2131,0
+13,1,Flat 4E Farlim,Tingkat Paya Terubong 2 - 3,11,1,3.8232,1.5183,2.3049,9.8477,0
+13,2,(M1) Hub Paya Terubong - Petronas,Flat 4E Farlim,11,0,5.0585,1.8594,3.199,12.2454,0
+13,2,(M2) Pasar Batu Lanchang I,Lotus E-Gate,11,0,5.6214,1.6312,3.9901,14.3668,0
+CAT,1,SMK St. Xavier,Hotel Armenian,6,0,3.6131,0.6787,2.9345,9.1936,0
+CAT,1,Hotel Armenian,Terminal A Weld Quay,6,1,2.443,0.785,1.658,6.0645,0
+613,1,(M1) Penang Sentral,Public Mutual Bagan Luar,2,0,4.5708,1.7957,2.7751,4.8865,0
+CT13,1,Hotel Blanket,Megamal Pinang - Pacific,3,0,5.0706,1.8008,3.2698,7.5244,0
+CT13,2,Megamal Pinang - Pacific,Hotel Blanket,4,0,4.8871,1.8008,3.0863,7.4916,0
+CT13 (CAT BRIDGE - FIZ 1.2.3),1,Hotel Blanket,Megamal Pinang - Pacific,3,0,5.0706,1.8008,3.2698,8.0115,0
+CT13 (CAT BRIDGE - FIZ 1.2.3),1,Hadapan Queensbay Mall,Intel PG12,11,0,8.6576,0.9534,7.7043,20.187,0
+CT13 (CAT BRIDGE - FIZ 1.2.3),1,Western Digital,Renesas,11,0,8.4524,1.6227,6.8298,18.3118,0
+C13A,1,Hotel Blanket,Megamal Pinang - Pacific,3,0,5.0706,1.8008,3.2698,10.4034,0
+C13A,1,AMD,Snake Temple,11,0,7.6552,1.4563,6.199,21.4938,0
+C13A,1,Snake Temple,Terminal Bas Bayan Baru,11,0,6.4114,1.5883,4.8231,17.537,0
+C13A,2,Olive Tree Hotel,UTIC Service,11,0,9.4472,1.7089,7.7384,25.9208,0
+C13A,2,PSDC,Giant Bayan Baru,11,1,6.1016,0.5806,5.521,19.544,0
+C13A,2,Megamal Pinang - Pacific,Hotel Blanket,4,0,4.8872,1.8008,3.0864,10.2092,0
+C13C,1,Hotel Blanket,Megamal Pinang - Pacific,3,0,5.0706,1.8008,3.2698,8.8373,0
+C13C,1,Venture Electronics,Advantest Engineering,7,7,2.7773,0.5557,2.2217,7.6584,8097.1429
+C13C,1,Advantest Engineering,Esquel Group,11,10,9.4031,3.0079,6.3952,18.995,9517.5714
+C13C,2,Terminal Bas Bayan Baru,Advantest Engineering,11,8,9.2358,3.3447,5.891,17.7866,9127.7143
+C13C,2,Mini Circuits,Queensbay Mall,11,8,12.9634,4.5524,8.411,23.8266,7484.0
+C13C,2,Megamal Pinang - Pacific,Hotel Blanket,4,0,4.8871,1.8008,3.0864,8.7309,0
+T310,1,Padang Kawad,Taman Pekaka,11,11,4.137,0.5576,3.5793,11.6715,9054.1429
+T310,1,SMJK Phor Tay,SJK (C) Keong Hoe,11,0,7.1026,0.3168,6.7858,18.8425,0
+CT15,1,Kolej MSU,Koperasi Melayu Pulau Pinang,8,2,3.6152,0.3753,3.2398,12.1708,0
+T713,1,Megamal Pinang - Pacific,Warung Bonda,11,11,9.3821,2.4185,6.9636,21.9211,8354.0
+T713,1,Nashmir Car Park,Nashmir Car Park,4,4,1.5827,0.0273,1.5554,5.4107,3378.2857
+T713,1,Nashmir Car Park,Taman Lembah Permai,11,9,8.9406,3.352,5.5886,18.3166,7529.7143
+T713,1,Taman Lembah Permai,Kamdar Bukit Mertajam,11,6,5.46,1.8394,3.6205,13.1576,4103.4286
+T713,2,Terminal Bas Bukit Mertajam,Taman Lembah Permai,8,4,5.2444,1.9094,3.335,11.4091,3970.8571
+T713,2,Taman Kota Permai,Nashmir Car Park,11,9,8.4212,3.2245,5.1967,17.2894,7778.2857
+T713,2,Nasi Kandar Mohamad,Megamal Pinang - Pacific,11,11,9.2163,2.3129,6.9033,21.7633,15129.5714

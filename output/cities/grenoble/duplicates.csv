@@ -1,0 +1,34 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+17,17 (branch 1),1.0,26,40,True
+50,"50 (Sassenage, La Dent du Loup)",1.0,28,31,True
+"59 (Gières, Le Chamandier)",59,1.0,16,49,True
+67,"67 (Eybens, Collège des Saules)",1.0,25,26,True
+265,465,1.0,26,26,True
+266,466,1.0,13,13,True
+465,265,1.0,26,26,True
+466,266,1.0,13,13,True
+241,167,0.975,40,61,True
+191,20,0.9744,39,49,True
+205,191,0.9677,31,39,True
+205,20,0.9677,31,49,True
+"67 (Eybens, Collège des Saules)",67,0.9615,26,25,True
+211,152,0.96,25,40,True
+282,23,0.9412,17,61,True
+261,161,0.9375,16,32,True
+15 (branch 1),15,0.9348,46,48,True
+142,59,0.9333,15,49,True
+142,"59 (Gières, Le Chamandier)",0.9333,15,16,True
+"20 (Sassenage, Les Engenières)",20,0.9231,13,49,True
+431,132,0.9231,13,39,True
+"54 (Sassenage, Les Engenières)",54,0.9091,11,38,True
+273,73,0.9091,11,29,True
+"50 (Sassenage, La Dent du Loup)",50,0.9032,31,28,True
+C14 (branch 1),C14,0.9032,31,46,True
+15,15 (branch 1),0.8958,48,46,True
+144,167,0.8958,48,61,True
+"65 (Vizille, Le Péage)",65,0.8846,26,46,True
+"59 (Gières, Le Chamandier)",142,0.875,16,15,True
+144,231,0.875,48,56,True
+413,152,0.8667,15,40,True
+231,167,0.8571,56,61,True
+241,231,0.85,40,56,True

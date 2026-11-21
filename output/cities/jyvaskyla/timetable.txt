@@ -1,0 +1,74 @@
+Matka Mäkelä [14] d2: 3 other stop sequence(s) with 3 of 5 departures left out; 58 stops they call at are on no pattern of the route
+Matka Mäkelä [15] d2: 6 other stop sequence(s) with 6 of 7 departures left out; 56 stops they call at are on no pattern of the route
+Matka Mäkelä [216] d1: 2 other stop sequence(s) with 2 of 5 departures left out; 10 stops they call at are on no pattern of the route
+Matka Mäkelä [216] d2: 2 other stop sequence(s) with 3 of 6 departures left out; 9 stops they call at are on no pattern of the route
+Uuraisten Liikenne: the timetable gives a moving speed of 97.8 km/h; using the setting for Bus instead
+Uuraisten Liikenne d2: 2 other stop sequence(s) with 2 of 4 departures left out; 45 stops they call at are on no pattern of the route
+Koivuranta d1: 4 other stop sequence(s) with 4 of 6 departures left out; 151 stops they call at are on no pattern of the route
+Koivuranta d2: 9 other stop sequence(s) with 9 of 11 departures left out; 265 stops they call at are on no pattern of the route
+Kyläbussi d2: 3 other stop sequence(s) with 3 of 4 departures left out; 120 stops they call at are on no pattern of the route
+113 [6133] d2: 1 other stop sequence(s) with 1 of 5 departures left out; 1 stops they call at are on no pattern of the route
+140 d1: a branch with 3 of 14 departures runs as route 140 (Äänekoski)
+140 d1: 4 other stop sequence(s) with 5 of 14 departures left out; 19 stops they call at are on no pattern of the route
+140 d2: 6 other stop sequence(s) with 10 of 14 departures left out; 45 stops they call at are on no pattern of the route
+141 d1: 3 other stop sequence(s) with 3 of 4 departures left out; 19 stops they call at are on no pattern of the route
+141 d2: 2 other stop sequence(s) with 2 of 3 departures left out; 33 stops they call at are on no pattern of the route
+Koiviston Auto [6541] d2: 2 other stop sequence(s) with 2 of 10 departures left out; 2 stops they call at are on no pattern of the route
+Koiviston Auto [6542] d2: 4 other stop sequence(s) with 5 of 9 departures left out; 2 stops they call at are on no pattern of the route
+Koiviston Auto [6671] d1: 2 other stop sequence(s) with 2 of 3 departures left out; 6 stops they call at are on no pattern of the route
+Koiviston Auto [6671] d2: 1 other stop sequence(s) with 2 of 5 departures left out; 42 stops they call at are on no pattern of the route
+SEUTU VEHNIÄ d2: 1 other stop sequence(s) with 1 of 2 departures left out; 16 stops they call at are on no pattern of the route
+S1 d1: 1 other stop sequence(s) with 1 of 34 departures left out; 15 stops they call at are on no pattern of the route
+3 d1: a branch with 9 of 34 departures runs as route 3 (Nova)
+3 d2: a branch with 14 of 35 departures runs as route 3 (Nova)
+3 d1: 2 other stop sequence(s) with 2 of 34 departures left out; 7 stops they call at are on no pattern of the route
+S5 d1: 1 other stop sequence(s) with 1 of 65 departures left out; 5 stops they call at are on no pattern of the route
+S5 d2: 2 other stop sequence(s) with 5 of 67 departures left out; 4 stops they call at are on no pattern of the route
+S6 d1: 3 other stop sequence(s) with 13 of 67 departures left out; 21 stops they call at are on no pattern of the route
+S6 d2: 2 other stop sequence(s) with 18 of 67 departures left out; 2 stops they call at are on no pattern of the route
+8 d1: 1 other stop sequence(s) with 1 of 13 departures left out; 3 stops they call at are on no pattern of the route
+13 d1: 2 other stop sequence(s) with 2 of 6 departures left out; 41 stops they call at are on no pattern of the route
+13 d2: 2 other stop sequence(s) with 2 of 6 departures left out; 38 stops they call at are on no pattern of the route
+14M d1: a branch with 6 of 28 departures runs as route 14M (VIITANIEMI)
+14M d2: a branch with 6 of 24 departures runs as route 14M (VIITANIEMI)
+14M d1: 1 other stop sequence(s) with 1 of 28 departures left out; 16 stops they call at are on no pattern of the route
+14M d2: 1 other stop sequence(s) with 1 of 24 departures left out; 7 stops they call at are on no pattern of the route
+15 d1: 2 other stop sequence(s) with 5 of 39 departures left out; 13 stops they call at are on no pattern of the route
+15 d2: 1 other stop sequence(s) with 1 of 38 departures left out; 7 stops they call at are on no pattern of the route
+16 d1: a branch with 10 of 25 departures runs as route 16 (branch 1)
+16 d1: 1 other stop sequence(s) with 1 of 25 departures left out; 1 stops they call at are on no pattern of the route
+16 d2: 4 other stop sequence(s) with 13 of 27 departures left out; 4 stops they call at are on no pattern of the route
+16M d1: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route
+21 d1: 1 other stop sequence(s) with 1 of 16 departures left out; 19 stops they call at are on no pattern of the route
+21 d2: 2 other stop sequence(s) with 4 of 19 departures left out; 26 stops they call at are on no pattern of the route
+22 d2: 3 other stop sequence(s) with 5 of 34 departures left out; 21 stops they call at are on no pattern of the route
+22M d1: a branch with 3 of 8 departures runs as route 22M (branch 1)
+22M d2: 2 other stop sequence(s) with 3 of 7 departures left out; 2 stops they call at are on no pattern of the route
+KOULUKYYTI d2: 2 other stop sequence(s) with 2 of 3 departures left out; 17 stops they call at are on no pattern of the route
+26 d2: 2 other stop sequence(s) with 3 of 7 departures left out; 22 stops they call at are on no pattern of the route
+31 d1: 4 other stop sequence(s) with 5 of 8 departures left out; 20 stops they call at are on no pattern of the route
+31 d2: 3 other stop sequence(s) with 4 of 8 departures left out; 21 stops they call at are on no pattern of the route
+34 d1: 4 other stop sequence(s) with 4 of 6 departures left out; 61 stops they call at are on no pattern of the route
+34 d2: 4 other stop sequence(s) with 5 of 7 departures left out; 48 stops they call at are on no pattern of the route
+36 d1: a branch with 4 of 18 departures runs as route 36 (branch 1)
+36 d1: 1 other stop sequence(s) with 3 of 18 departures left out; 1 stops they call at are on no pattern of the route
+36 d2: 2 other stop sequence(s) with 4 of 17 departures left out; 2 stops they call at are on no pattern of the route
+38 d1: 1 other stop sequence(s) with 1 of 6 departures left out; 13 stops they call at are on no pattern of the route
+38 d2: 1 other stop sequence(s) with 2 of 7 departures left out; 12 stops they call at are on no pattern of the route
+38K d1: 2 other stop sequence(s) with 2 of 5 departures left out; 12 stops they call at are on no pattern of the route
+38K d2: 3 other stop sequence(s) with 3 of 5 departures left out; 11 stops they call at are on no pattern of the route
+38R d1: 1 other stop sequence(s) with 1 of 2 departures left out; 9 stops they call at are on no pattern of the route
+39 d1: 1 other stop sequence(s) with 1 of 4 departures left out; 29 stops they call at are on no pattern of the route
+39 d2: 1 other stop sequence(s) with 2 of 5 departures left out; 32 stops they call at are on no pattern of the route
+41 [9411] d1: a branch with 5 of 21 departures runs as route 41 [9411] (branch 1)
+41 [9411] d2: a branch with 5 of 19 departures runs as route 41 [9411] (branch 1)
+41 [9411] d2: a branch with 4 of 19 departures runs as route 41 [9411] (PEURUNKA)
+41 [9411] d1: 7 other stop sequence(s) with 10 of 21 departures left out; 36 stops they call at are on no pattern of the route
+41 [9411] d2: 2 other stop sequence(s) with 4 of 19 departures left out; 13 stops they call at are on no pattern of the route
+42 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 23 stops they call at are on no pattern of the route
+143 d1: 7 other stop sequence(s) with 7 of 11 departures left out; 41 stops they call at are on no pattern of the route
+143 d2: 7 other stop sequence(s) with 9 of 11 departures left out; 34 stops they call at are on no pattern of the route
+NOJOSNIEMI d2: 1 other stop sequence(s) with 1 of 2 departures left out; 36 stops they call at are on no pattern of the route
+41 [9604] d2: 1 other stop sequence(s) with 1 of 2 departures left out; 49 stops they call at are on no pattern of the route
+140: express, skipping most stops of a route it runs along
+S2M: express, skipping most stops of a route it runs along

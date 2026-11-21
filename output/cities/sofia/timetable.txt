@@ -1,0 +1,44 @@
+42 d2: 1 other stop sequence(s) with 1 of 55 departures left out; 2 stops they call at are on no pattern of the route
+150 d1: a branch with 46 of 93 departures runs as route 150 (ПЛОДОХРАНИЛИЩЕ)
+59 d2: 1 other stop sequence(s) with 4 of 46 departures left out; 1 stops they call at are on no pattern of the route
+260 d2: 1 other stop sequence(s) with 5 of 72 departures left out; 1 stops they call at are on no pattern of the route
+47 d1: 1 other stop sequence(s) with 1 of 34 departures left out; 1 stops they call at are on no pattern of the route
+47 d2: 1 other stop sequence(s) with 1 of 34 departures left out; 3 stops they call at are on no pattern of the route
+49 d2: 1 other stop sequence(s) with 1 of 30 departures left out; 1 stops they call at are on no pattern of the route
+185 d1: 1 other stop sequence(s) with 3 of 66 departures left out; 3 stops they call at are on no pattern of the route
+185 d2: 1 other stop sequence(s) with 3 of 66 departures left out; 3 stops they call at are on no pattern of the route
+58 d2: 1 other stop sequence(s) with 4 of 24 departures left out; 1 stops they call at are on no pattern of the route
+63 d1: a branch with 9 of 22 departures runs as route 63 (branch 1)
+63 d2: a branch with 9 of 24 departures runs as route 63 (branch 1)
+63 d2: 1 other stop sequence(s) with 1 of 24 departures left out; 1 stops they call at are on no pattern of the route
+X10 d2: 1 other stop sequence(s) with 7 of 37 departures left out; 1 stops they call at are on no pattern of the route
+803 d1: a branch with 14 of 33 departures runs as route 803 (ВЗ. ЛЮЛИН)
+803 d2: a branch with 14 of 33 departures runs as route 803 (ВЗ. ЛЮЛИН)
+181 d1: 1 other stop sequence(s) with 5 of 57 departures left out; 1 stops they call at are on no pattern of the route
+181 d2: 1 other stop sequence(s) with 5 of 57 departures left out; 2 stops they call at are on no pattern of the route
+81 d1: 1 other stop sequence(s) with 1 of 44 departures left out; 1 stops they call at are on no pattern of the route
+81 d2: 1 other stop sequence(s) with 4 of 44 departures left out; 1 stops they call at are on no pattern of the route
+107 d2: 1 other stop sequence(s) with 2 of 46 departures left out; 1 stops they call at are on no pattern of the route
+111 d1: 1 other stop sequence(s) with 12 of 95 departures left out; 1 stops they call at are on no pattern of the route
+111 d2: 1 other stop sequence(s) with 10 of 97 departures left out; 1 stops they call at are on no pattern of the route
+44 d2: 1 other stop sequence(s) with 1 of 13 departures left out; 7 stops they call at are on no pattern of the route
+119 d1: 1 other stop sequence(s) with 6 of 54 departures left out; 5 stops they call at are on no pattern of the route
+119 d2: 1 other stop sequence(s) with 6 of 54 departures left out; 3 stops they call at are on no pattern of the route
+20 d1: 1 other stop sequence(s) with 2 of 39 departures left out; 6 stops they call at are on no pattern of the route
+20 d2: 1 other stop sequence(s) with 2 of 39 departures left out; 6 stops they call at are on no pattern of the route
+22 d1: a branch with 8 of 29 departures runs as route 22 (branch 1)
+22 d2: a branch with 8 of 29 departures runs as route 22 (branch 1)
+24 d1: 1 other stop sequence(s) with 3 of 31 departures left out; 3 stops they call at are on no pattern of the route
+24 d2: 1 other stop sequence(s) with 3 of 31 departures left out; 4 stops they call at are on no pattern of the route
+28 d1: a branch with 7 of 16 departures runs as route 28 (ЦЕНТЪР С. МРАМОР)
+28 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 36 stops they call at are on no pattern of the route
+94 d2: 1 other stop sequence(s) with 15 of 146 departures left out; 1 stops they call at are on no pattern of the route
+280 d2: 1 other stop sequence(s) with 18 of 180 departures left out; 1 stops they call at are on no pattern of the route
+69 d1: 2 other stop sequence(s) with 4 of 20 departures left out; 1 stops they call at are on no pattern of the route
+69 d2: 2 other stop sequence(s) with 4 of 20 departures left out; 1 stops they call at are on no pattern of the route
+70 d2: 1 other stop sequence(s) with 3 of 18 departures left out; 1 stops they call at are on no pattern of the route
+84 d2: 1 other stop sequence(s) with 3 of 86 departures left out; 1 stops they call at are on no pattern of the route
+N1: runs at night, 8 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N2: runs at night, 8 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N3: runs at night, 8 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N4: runs at night, 8 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

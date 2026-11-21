@@ -1,0 +1,3 @@
+﻿from_stop,to_stop,via_stop,km,stops,mean_routes_per_link,max_routes_on_a_link,routes,stop_ids
+Cairns Central Shopping Centre (Spence St),Sheridan St at Lily St (Tobruk Pool),,3.8993,10,10.4444,17,100 110 111 113 120 120N 121 123 130 131 133 140 141 142 143 143W 150 150E,750225 750226 750441 750477 750443 750136 750138 750139 750140 750141
+Cairns Hospital (Lake Street),Cairns Central Terminus,,2.5152,5,12.25,16,100 110 111 113 120 121 123 130 131 133 140 141 142 143 143W 150 150E,750444 750478 750442 750481 750489

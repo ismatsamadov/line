@@ -1,0 +1,11 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,100,"Drop 100: among the 20 routes with the fewest modelled riders per bus; its buses go to 131, 130, 123",83.2531,82.2257,1.0274,32.0
+2,merge,150,"Merge 150 into 150E: 98% of its stops are also on 150E; its buses go to 150E, 140, 142",82.2257,81.5131,0.7126,0.0
+3,merge,140,"Merge 140 into 150E: 93% of its stops are also on 150E; its buses go to 150E, 142, 143",81.5131,80.6901,0.823,0.0
+4,merge,143,"Merge 143 into 143W: 89% of its stops are also on 143W; its buses go to 143W, 142, 150E",80.6901,80.1412,0.5489,0.0
+5,straighten,112,"Straighten 112 direction 2 between Mac Peak Crescent at Kinetic Cairns Depot and Smithfield Shopping Centre (Cattana Rd): 2.8 km shorter, 3 of its stops dropped",80.1412,79.9806,0.1606,0.0
+6,merge,141,"Merge 141 into 143W: 100% of its stops are also on 143W; its buses go to 143W, 142, 150E",79.9806,79.2578,0.7228,0.0
+7,drop,113,"Drop 113: among the 20 routes with the fewest modelled riders per bus; its buses go to 120, 111, 110",79.2578,79.1809,0.0769,0.0
+8,straighten,120,"Straighten 120 direction 2 between Captain Cook Hwy near Arnold St hail 'n' ride and Mount Milman Dr near Danbulan St hail 'n' ride: 10.1 km shorter, 8 of its stops dropped",79.1809,79.1363,0.0446,0.0
+9,drop,120N,"Drop 120N: among the 20 routes with the fewest modelled riders per bus; its buses go to 120, 111, 110",79.1363,79.1084,0.0279,0.0
+10,stops,,"Remove 19 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",79.1084,78.9319,0.1765,0.0

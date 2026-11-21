@@ -1,0 +1,347 @@
+{
+ "fleet_buses": 229.52046181430552,
+ "routes_before": 65,
+ "routes_after": 58,
+ "changes": {
+  "merge": 2,
+  "drop": 5,
+  "straighten": 4,
+  "stops": 1,
+  "shift": 4
+ },
+ "search_sample": {
+  "origins": 100,
+  "seed": 11,
+  "minutes_before": 101.87284118198656,
+  "minutes_after": 100.48947097475093,
+  "unreachable_before": 0.712420490735658,
+  "unreachable_after": 0.7029334203366788
+ },
+ "minutes_counting_impossible_trips_at_limit": {
+  "before": 102.65108182161008,
+  "after": 101.77245605831862
+ },
+ "share_of_fleet_for_todays_travel_time": {
+  "independent_check": 0.8125,
+  "search_sample": 0.74609375
+ },
+ "fleet_saving_option": {
+  "buses": 186.48537522412323,
+  "operations": {
+   "trips_per_day": 3860.967710160558,
+   "bus_hours_per_day": 3081.062721094211,
+   "bus_km_per_day": 69780.11258290554,
+   "fleet": 217,
+   "fuel_l_per_day": 26567.544621532692,
+   "co2_t_per_day": 70.93534413949229,
+   "fleet_vs_reference": null,
+   "headway_sources": {
+    "supplied": 0,
+    "ridership": 0,
+    "zone": 0,
+    "default": 0,
+    "plan": 58
+   }
+  },
+  "accessibility": {
+   "origins_sampled": 300,
+   "mean_door_to_door_min": 53.82207981047828,
+   "share_reachable": 0.26265052217462126,
+   "share_within_30_min": 0.07099530678895134,
+   "share_within_45_min": 0.10991651028139537,
+   "share_within_60_min": 0.14987456886810108,
+   "share_trips_without_stop_nearby": 0.7667082304098306,
+   "mean_trip_km_straight_line": 9.194036747801151,
+   "transfers": {
+    "0": 0.17464579697031246,
+    "1": 0.4133695166336992,
+    "2": 0.11276829178102388,
+    "3+": 0.0037131616905680623,
+    "walk only": 0.2955032329244053
+   }
+  }
+ },
+ "independent_check": {
+  "before": {
+   "accessibility": {
+    "origins_sampled": 300,
+    "mean_door_to_door_min": 53.72404943610709,
+    "share_reachable": 0.26176792683893396,
+    "share_within_30_min": 0.07058064507142717,
+    "share_within_45_min": 0.1101977936024924,
+    "share_within_60_min": 0.14921834548028842,
+    "share_trips_without_stop_nearby": 0.7664050401358116,
+    "mean_trip_km_straight_line": 9.194036747801151,
+    "transfers": {
+     "0": 0.17218538553384669,
+     "1": 0.4086987910403156,
+     "2": 0.11719905388269708,
+     "3+": 0.0051911106361236985,
+     "walk only": 0.29672565890702984
+    }
+   },
+   "operations": {
+    "trips_per_day": 4666.923476599558,
+    "bus_hours_per_day": 3792.077195192874,
+    "bus_km_per_day": 83426.14372471298,
+    "fleet": 266,
+    "fuel_l_per_day": 31634.24933032306,
+    "co2_t_per_day": 84.46344571196256,
+    "fleet_vs_reference": null,
+    "headway_sources": {
+     "supplied": 0,
+     "ridership": 0,
+     "zone": 0,
+     "default": 0,
+     "plan": 65
+    }
+   },
+   "served_stops": 2260,
+   "route_km_one_way_total": 2411.453002530592,
+   "corridor_km": 2114.8774409563925,
+   "duplication_ratio": 1.1402329779640006,
+   "median_stop_gap_m": 438.86171549435676,
+   "share_stop_gaps_under_300m": 0.21149068322981365,
+   "share_population_covered": 0.32407253830879557,
+   "population_within_coverage_radius": 591740.7142857143
+  },
+  "after": {
+   "accessibility": {
+    "origins_sampled": 300,
+    "mean_door_to_door_min": 51.457578832978996,
+    "share_reachable": 0.26593084445128296,
+    "share_within_30_min": 0.07421844646670527,
+    "share_within_45_min": 0.11695893464343421,
+    "share_within_60_min": 0.16455860908343695,
+    "share_trips_without_stop_nearby": 0.7667082304098306,
+    "mean_trip_km_straight_line": 9.194036747801151,
+    "transfers": {
+     "0": 0.17800125942292244,
+     "1": 0.40573002291736715,
+     "2": 0.12508194792943397,
+     "3+": 0.005927838515523967,
+     "walk only": 0.285258931214767
+    }
+   },
+   "operations": {
+    "trips_per_day": 4751.960258659147,
+    "bus_hours_per_day": 3792.0771951928746,
+    "bus_km_per_day": 85883.21548665297,
+    "fleet": 263,
+    "fuel_l_per_day": 32698.51645727101,
+    "co2_t_per_day": 87.30503894091359,
+    "fleet_vs_reference": null,
+    "headway_sources": {
+     "supplied": 0,
+     "ridership": 0,
+     "zone": 0,
+     "default": 0,
+     "plan": 58
+    }
+   },
+   "served_stops": 2038,
+   "route_km_one_way_total": 2224.5843999780413,
+   "corridor_km": 1996.3222156818308,
+   "duplication_ratio": 1.114341353566638,
+   "median_stop_gap_m": 496.2965100063608,
+   "share_stop_gaps_under_300m": 0.12333099086437105,
+   "share_population_covered": 0.32299044099123275,
+   "population_within_coverage_radius": 589764.8571428572
+  }
+ },
+ "impact": [
+  {
+   "measure": "Average door-to-door trip, impossible trips counted at 120 min",
+   "unit": "min",
+   "today": 102.65108182161008,
+   "same_buses": 101.77245605831862,
+   "same_buses_change": -0.8786257632914527,
+   "fewer_buses": 102.61833470579171,
+   "fewer_buses_change": -0.03274711581836698
+  },
+  {
+   "measure": "Average door-to-door trip, possible trips only",
+   "unit": "min",
+   "today": 53.72404943610709,
+   "same_buses": 51.457578832978996,
+   "same_buses_change": -2.2664706031280915,
+   "fewer_buses": 53.82207981047828,
+   "fewer_buses_change": 0.09803037437119144
+  },
+  {
+   "measure": "Trips possible within 45 min",
+   "unit": "share",
+   "today": 0.1101977936024924,
+   "same_buses": 0.11695893464343421,
+   "same_buses_change": 0.006761141040941804,
+   "fewer_buses": 0.10991651028139537,
+   "fewer_buses_change": -0.00028128332109703114
+  },
+  {
+   "measure": "Trips possible within 120 min",
+   "unit": "share",
+   "today": 0.26176792683893396,
+   "same_buses": 0.26593084445128296,
+   "same_buses_change": 0.004162917612348993,
+   "fewer_buses": 0.26265052217462126,
+   "fewer_buses_change": 0.0008825953356872973
+  },
+  {
+   "measure": "People with a stop within 400 m",
+   "unit": "people",
+   "today": 591740.7142857143,
+   "same_buses": 589764.8571428572,
+   "same_buses_change": -1975.8571428571595,
+   "fewer_buses": 589764.8571428572,
+   "fewer_buses_change": -1975.8571428571595
+  },
+  {
+   "measure": "Buses in service",
+   "unit": "buses",
+   "today": 266,
+   "same_buses": 263,
+   "same_buses_change": -3,
+   "fewer_buses": 217,
+   "fewer_buses_change": -49
+  },
+  {
+   "measure": "Bus-hours a day",
+   "unit": "h",
+   "today": 3792.077195192874,
+   "same_buses": 3792.0771951928746,
+   "same_buses_change": 4.547473508864641e-13,
+   "fewer_buses": 3081.062721094211,
+   "fewer_buses_change": -711.014474098663
+  },
+  {
+   "measure": "Bus-km a day",
+   "unit": "km",
+   "today": 83426.14372471298,
+   "same_buses": 85883.21548665297,
+   "same_buses_change": 2457.0717619399948,
+   "fewer_buses": 69780.11258290554,
+   "fewer_buses_change": -13646.031141807442
+  },
+  {
+   "measure": "Fuel a day",
+   "unit": "L",
+   "today": 31634.24933032306,
+   "same_buses": 32698.51645727101,
+   "same_buses_change": 1064.2671269479506,
+   "fewer_buses": 26567.544621532692,
+   "fewer_buses_change": -5066.704708790367
+  },
+  {
+   "measure": "CO2 a day",
+   "unit": "t",
+   "today": 84.46344571196256,
+   "same_buses": 87.30503894091359,
+   "same_buses_change": 2.8415932289510266,
+   "fewer_buses": 70.93534413949229,
+   "fewer_buses_change": -13.528101572470277
+  },
+  {
+   "measure": "Riders' time per 100,000 journeys",
+   "unit": "h",
+   "today": 171085.1363693501,
+   "same_buses": 169620.76009719772,
+   "same_buses_change": -1464.3762721523817,
+   "fewer_buses": 171030.5578429862,
+   "fewer_buses_change": -54.578526363911806
+  }
+ ],
+ "settings": {
+  "walk_speed_mps": 1.25,
+  "walk_detour": 1.3,
+  "max_access_walk_m": 500,
+  "max_transfer_walk_m": 300,
+  "coverage_radius_m": 400,
+  "default_headway_min": 12,
+  "headway_by_zone": {
+   "Şəhərdaxili": 10,
+   "Şəhərdaxili (ekspres)": 15,
+   "Şəhərətrafı": 15,
+   "Şəhərətrafı (ekspres)": 20,
+   "Qəsəbədaxili": 20,
+   "Qəsəbələrarası": 20,
+   "Şəhərlərarası": 30
+  },
+  "headway_from_ridership": false,
+  "boardings_per_trip": 60,
+  "service_hours": 19,
+  "min_headway_min": 3,
+  "max_headway_min": 30,
+  "transfer_penalty_min": 5,
+  "layover_share": 0.15,
+  "reference_fleet": 0,
+  "cruise_kmh": {
+   "Şəhərdaxili": 22,
+   "Şəhərdaxili (ekspres)": 29,
+   "Şəhərətrafı": 29,
+   "Şəhərətrafı (ekspres)": 36,
+   "Qəsəbədaxili": 25,
+   "Qəsəbələrarası": 31,
+   "Şəhərlərarası": 40
+  },
+  "default_cruise_kmh": 25,
+  "stop_loss_s": 20,
+  "fuel_l_per_km": 0.3,
+  "fuel_l_per_stop": 0.05,
+  "co2_kg_per_l": 2.67,
+  "trip_decay_km": 6.0,
+  "max_trip_min": 120,
+  "destination_share": 0.5,
+  "destination_weights": {
+   "office": 1,
+   "townhall": 3,
+   "courthouse": 3,
+   "kindergarten": 1,
+   "school": 3,
+   "college": 5,
+   "university": 10,
+   "clinic": 2,
+   "hospital": 8,
+   "supermarket": 2,
+   "department_store": 4,
+   "mall": 10,
+   "marketplace": 8,
+   "station": 5,
+   "bus_station": 5
+  },
+  "metro_weight_per_1000_entries": 2.0,
+  "redesign_origins": 100,
+  "redesign_seed": 11,
+  "redesign_min_gain_min": 0.005,
+  "redesign_max_straighten": 80,
+  "redesign_max_drop": 20,
+  "redesign_max_people_losing_stop": 500,
+  "redesign_max_people_losing_stop_total": 3000,
+  "redesign_shift_share": 0.2,
+  "redesign_shift_rounds": 4,
+  "redesign_protect_boardings": 1000,
+  "redesign_protected_routes": [],
+  "gtfs_date": "",
+  "gtfs_route_types": [
+   3
+  ],
+  "daily_journeys": 0,
+  "fuel_price": 0,
+  "cost_per_bus_hour": 0,
+  "value_of_time": 0,
+  "currency": "",
+  "days_per_year": 0
+ },
+ "inputs": {
+  "gtfs": "data/cities/austin/gtfs.zip",
+  "population": "data/cities/austin/kontur_population_US_20231101.gpkg",
+  "ridership": null,
+  "headways": null,
+  "destinations:osm_education.json": "data/cities/austin/osm_education.json",
+  "destinations:osm_health.json": "data/cities/austin/osm_health.json",
+  "destinations:osm_shopping.json": "data/cities/austin/osm_shopping.json",
+  "destinations:osm_offices.json": "data/cities/austin/osm_offices.json",
+  "destinations:osm_transport.json": "data/cities/austin/osm_transport.json",
+  "metro_passengers": null,
+  "walk_network": null
+ }
+}

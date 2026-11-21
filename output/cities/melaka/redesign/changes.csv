@@ -1,0 +1,11 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,merge,M23,"Merge M23 into M23X: 87% of its stops are also on M23X; its buses go to M23X, M16, M17",103.0881,102.8952,0.1929,0.0
+2,straighten,M12,"Straighten M12 direction 1 between Opp Taman Seri Daya and Opp Taman Datuk Tamby Chik Karim: 9.2 km shorter, 3 of its stops dropped",102.8952,102.7767,0.1185,0.0
+3,straighten,M12,"Straighten M12 direction 2 between Klinik Desa Batu Beremdam and Opp Medan Selera Batu Berendam: 9.0 km shorter, 2 of its stops dropped",102.7767,102.6452,0.1315,0.0
+4,drop,M21,"Drop M21: among the 20 routes with the fewest modelled riders per bus; its buses go to M21X, M32, M10B",102.6452,102.5392,0.106,0.0
+5,straighten,M20,"Straighten M20 direction 1 between Opp Smjk Tinggi Cina Melaka and Melaka Sentral: 0.7 km shorter, 2 of its stops dropped",102.5392,102.5209,0.0183,0.0
+6,straighten,M13,"Straighten M13 direction 2 between Taman Bertam Mutiara and Opp Taman Sri Krubong/Goldsta: 2.3 km shorter, 1 of its stops dropped",102.5209,102.5117,0.0091,0.0
+7,merge,M20X,"Merge M20X into M20: 100% of its stops are also on M20; its buses go to M22, M20, M14",102.5117,102.5038,0.0079,0.0
+8,straighten,M10B,"Straighten M10B direction 2 between Melaka Sentral and Opp SK Bukit Beruang: 1.8 km shorter, 0 of its stops dropped",102.5038,102.4881,0.0158,0.0
+9,straighten,M10B,"Straighten M10B direction 1 between Opp Ayer Keroh Heights and SK Bukit Beruang: 3.5 km shorter, 8 of its stops dropped",102.4881,102.4769,0.0112,384.8571
+10,stops,,"Remove 76 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",102.4769,102.1685,0.3084,0.0

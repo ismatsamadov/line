@@ -1,0 +1,20 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+26,1,Camí de Moncada (imparell) - Alqueria Senent,Camí de Moncada - Alqueria Paella,8,3,3.5629,1.2819,2.281,7.6287,0
+26 (Moncada - Alfara),1,Camí de Moncada - Alqueria Ballester,Camí de Moncada (parell) - Alqueria Senent,8,3,3.5156,1.2545,2.2611,8.282,0
+32 (branch 1),1,Eugènia Viñes - Platja del Cabanyal,Sants Just i Pastor - Fusta,9,0,3.0218,1.1785,1.8433,8.3978,0
+32 (branch 1),2,Marí Blas de Lezo - Felip de Gauna,Passeig Marítim - Platja de la Malva-rosa,8,0,2.4949,0.9726,1.5223,7.1247,0
+23,1,Forn d'Alcedo,Ribàs (parell) - Doctor Ruiz i Comes,11,2,4.0664,1.4291,2.6374,8.7318,0
+23,1,Ribàs (parell) - Doctor Ruiz i Comes,Carrera del Riu - Entrada casa Rosquilla,11,5,7.43,1.449,5.981,15.1534,0
+23,1,Carrera del Riu - Entrada casa Rosquilla,Jesús Morante Borrás (V),11,4,5.5011,1.0729,4.4282,12.1711,0
+23 (Forn d'Alcedo),1,La Punta,Carrera del Riu - Camí dels Anouers,11,3,5.405,1.0359,4.3692,12.3193,0
+23 (Forn d'Alcedo),1,Carrera del Riu - Camí dels Anouers,Ribàs (imparell) - Doctor Ruiz i Comes,11,5,7.6061,1.4149,6.1913,15.9278,0
+23 (Forn d'Alcedo),1,Ribàs (imparell) - Doctor Ruiz i Comes,Forn d'Alcedo,11,3,4.1445,1.4502,2.6943,9.0025,0
+11,2,Editor Manuel Aguilar - Guillem Sorolla,Museu de Belles Arts,7,0,2.8315,1.0531,1.7784,8.2932,0
+62 [1077],1,Felipe Valls - Lluís Cano,Camp de Túria (imparell) - Beniferri.,5,1,3.9066,1.562,2.3446,6.4207,720.0
+62 [1077],2,Corts Valencianes - Palau de Congressos,Doctor Soriano Benlloch - Rafael Tenes Escrich,5,1,3.8101,1.4604,2.3497,6.4311,720.0
+9,1,Forn d'Alcedo,Josep Soto Micó - Síndic Mojolí,8,2,3.5279,1.3822,2.1458,9.0127,3799.2857
+9,2,Sant Vicent Màrtir (parell) - Arquebisbe Olaechea,Forn d'Alcedo,9,2,4.2388,1.5897,2.6491,10.8346,3799.2857
+10,2,Uruguai - Veneçuela,Sant Marcel·lí,11,8,3.9158,0.9871,2.9288,12.7288,4406.5714
+35,2,Institut Obrer de València (parell) - Autopista Saler,Pere II el Cerimoniós - Luis Merelo y Mas,6,4,2.5826,1.0299,1.5527,7.5237,0
+73 [962],1,Fra Juníper Serra - Tres Forques,Petxina - Pérez Galdos,9,1,3.6178,1.299,2.3187,10.8524,0
+30,2,Manuel Soto Enginyer - Comandància Marina,Natzaret,9,2,2.64,0.9361,1.704,8.6673,1228.8571

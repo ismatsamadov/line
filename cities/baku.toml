@@ -1,0 +1,25 @@
+# Settings for Baku in the world pilot (world.py): Baku read from its own GTFS feed, the one
+# redesign.py writes and the Mobility Database lists as mdb-3629, with the same settings as every
+# other city, so that its row compares like for like. Baku's own study reads AYNA's snapshot
+# with BakuBus's counts and the metro (busnet.toml); quote that one for Baku. See docs/world.md.
+#   python3 measure.py --config cities/baku.toml --out output/cities/baku
+#   python3 redesign.py --config cities/baku.toml --out output/cities/baku/redesign
+
+[data]
+gtfs = "../output/redesign/gtfs_today.zip"
+population = "../data/external/kontur/kontur_population_AZ_20231101.gpkg"
+destinations = [
+    "../data/external/osm/osm_education.json",
+    "../data/external/osm/osm_health.json",
+    "../data/external/osm/osm_shopping.json",
+    "../data/external/osm/osm_offices.json",
+    "../data/external/osm/osm_transport.json",
+]
+
+[service]
+service_hours = 17                   # the hours of service the feed's timetable shows (measure.py reports them)
+headway_from_ridership = false       # the feed's headways, as for every other city
+reference_fleet = 0                  # buses in daily service, if known
+
+[redesign]
+redesign_protected_routes = []       # route numbers the search must leave as they are

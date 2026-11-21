@@ -1,0 +1,23 @@
+72: the timetable gives a moving speed of 4.9 km/h; using the setting for Bus instead
+58: the timetable gives a moving speed of 4.1 km/h; using the setting for Bus instead
+196: the timetable gives a moving speed of 3.9 km/h; using the setting for Bus instead
+173: the timetable gives a moving speed of 3.9 km/h; using the setting for Bus instead
+203: the timetable gives a moving speed of 1.7 km/h; using the setting for Bus instead
+46: express, skipping most stops of a route it runs along
+998: express, skipping most stops of a route it runs along
+454: express, skipping most stops of a route it runs along
+422: express, skipping most stops of a route it runs along
+4: express, skipping most stops of a route it runs along
+8: express, skipping most stops of a route it runs along
+10: express, skipping most stops of a route it runs along
+19: express, skipping most stops of a route it runs along
+26: express, skipping most stops of a route it runs along
+48: express, skipping most stops of a route it runs along
+286: express, skipping most stops of a route it runs along
+290: express, skipping most stops of a route it runs along
+415: express, skipping most stops of a route it runs along
+410: express, skipping most stops of a route it runs along
+188: express, skipping most stops of a route it runs along
+174: express, skipping most stops of a route it runs along
+348: express, skipping most stops of a route it runs along
+337: express, skipping most stops of a route it runs along

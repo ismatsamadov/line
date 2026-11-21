@@ -141,7 +141,7 @@ every stop. A route whose timetable gives a speed outside 5 to 90 km/h, or none,
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `gtfs_date` | `""` | The service day to read, `YYYY-MM-DD`. Empty: the weekday with the most trips of the route types read (the first if several), after the holidays and extra days of `calendar_dates.txt` |
+| `gtfs_date` | `""` | The service day to read, `YYYY-MM-DD`. Empty: the weekday with the most trips of the route types read (the first if several), after the holidays and extra days of `calendar_dates.txt`, passing over a day that runs over 1.25 times the trips of its weekday in the weeks around it ([methodology.md](methodology.md#from-a-gtfs-feed)) |
 | `gtfs_route_types` | `[3]` | GTFS route types to read. 3 is bus, and takes in the extended bus (700 to 799) and coach (200 to 299) types; add 11 for trolleybuses or 0 for trams. Other modes are counted in the summary and left out |
 
 The Baku settings are tuned to Baku, so a city's settings file should also set

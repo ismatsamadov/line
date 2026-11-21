@@ -233,6 +233,17 @@ class ReadTest(unittest.TestCase):
         day = Calendar(Old()).busiest_weekday({"OLD": 1, "NEW": 5})
         self.assertEqual(day.isoformat(), "2026-11-02")
 
+    def test_a_holiday_added_on_top_of_the_usual_timetable_is_passed_over(self):
+        from busnet.gtfs import Calendar
+
+        class Doubled:                           # as Cardiff Bus's feed runs 25 December and 1 January
+            def columns(self, name, *wanted):
+                rows = {"calendar.txt": [("WK", "1", "1", "1", "1", "1", "0", "0", "20261102", "20270129")],
+                        "calendar_dates.txt": [("XMAS", "20261225", "1"), ("XMAS", "20270101", "1")]}
+                return iter(rows.get(name, []))
+        day = Calendar(Doubled()).busiest_weekday({"WK": 10, "XMAS": 6})
+        self.assertEqual(day.isoformat(), "2026-11-02")
+
     def test_a_chosen_day_and_a_day_without_service(self):
         _, table = read_gtfs(self.feed, Assumptions(gtfs_date="2026-11-03"))
         self.assertAlmostEqual(table.trips_each_way["R1"], ((2 + 2 / 5) + 2) / 2, places=3)
@@ -271,6 +282,41 @@ STREET = {f"T{i}": (LAT, LON + STEP / 2 * (i - 1)) for i in range(1, 11)}       
 STREET.update({"T11": (LAT + 0.01, LON + STEP), "T12": (LAT + 0.02, LON + STEP)})   # a branch north from T3
 LOCAL = [f"T{i}" for i in range(1, 11)]
 BRANCH = ["T1", "T2", "T3", "T11", "T12"]
+
+
+class SplitLineTest(unittest.TestCase):
+    """A line its feed splits into two routes, one for each direction, as Christchurch's does,
+    beside two routes that share a number but run the same way."""
+
+    def setUp(self):
+        keep_projection(self)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        trips = [("O", "o_%d" % k, "0", LOCAL, f"{6 + k:02d}:00:00") for k in range(4)]
+        trips += [("B", "b_%d" % k, "1", LOCAL[::-1], f"{6 + k:02d}:30:00") for k in range(4)]
+        trips += [("P", "p_%d" % k, "0", LOCAL[:5], f"{6 + k:02d}:10:00") for k in range(2)]
+        trips += [("Q", "q_%d" % k, "0", LOCAL[5:], f"{6 + k:02d}:20:00") for k in range(2)]
+        files = dict(BASIC)
+        files["stops.txt"] = "stop_id,stop_name,stop_lat,stop_lon\n" + "".join(
+            f"{k},stop {k},{lat:.6f},{lon:.6f}\n" for k, (lat, lon) in STREET.items())
+        files["routes.txt"] = ("route_id,agency_id,route_short_name,route_long_name,route_type\n"
+                               "O,A,100,,3\nB,A,100,,3\nP,A,7,,3\nQ,A,7,,3\n")
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\n" + "".join(
+            f"{r},WK,{t},{d}\n" for r, t, d, _, _ in trips)
+        files["stop_times.txt"] = stop_times([(t, st, start, None) for _, t, _, st, start in trips])
+        self.net, self.table = read_gtfs(zipped(tmp.name, "split.zip", files), Assumptions())
+
+    def test_the_two_halves_of_a_line_run_as_one_route(self):
+        line = self.net.routes["O"]
+        self.assertEqual(line.number, "100")
+        self.assertFalse(line.runs_one_way)
+        self.assertNotIn("B", self.net.routes)
+        self.assertEqual(self.net.patterns[("O", 2)].stop_ids, LOCAL[::-1])
+        self.assertIn("100: the feed's routes O and B, one for each direction, read as one route", self.table.notes)
+
+    def test_routes_that_share_a_number_but_run_the_same_way_stay_apart(self):
+        self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["100", "7 [P]", "7 [Q]"])
+        self.assertTrue(self.net.routes["P"].runs_one_way)
 
 
 class BranchesAndExpressTest(unittest.TestCase):

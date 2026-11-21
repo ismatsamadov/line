@@ -72,10 +72,12 @@ and its timetable gives every route the headway and speed Baku's data lacks
 Baku's own feed reproduces the snapshot's results to within 0.1%. Riga's feed has been
 through it too ([cities.md](cities.md)): its timetable is CC0, so the feed, Kontur's grid
 for Latvia and OpenStreetMap's destinations are committed, and its bus network is
-measured and redesigned. What it needs next is a reader in Riga, someone at Rīgas
-satiksme or the city who would look at its `impact.csv`. After that, a feed with
-`shape_dist_traveled` and express routes, which Riga's does not have, would exercise the
-two parts of the reader only made-up feeds have tried.
+measured and redesigned. So are 24 more cities on five continents and Baku's own feed, in
+the world pilot ([world.md](world.md)), which also put the reader's two untried parts to
+work: six feeds place their stops by `shape_dist_traveled`, and thirteen have express
+routes. What they need next is readers: someone at Rīgas satiksme, at each operator of the
+pilot or in each city, who would look at its `impact.csv`, and the counts by route that
+would replace the modelled demand.
 
 Everything else can wait, because it would make the method look more serious without
 changing the answer much: generating new candidate routes (k-shortest paths between
@@ -92,6 +94,33 @@ today's feed as a community feed
 Azerbaijan. That asks two things of me: the file keeps its link, and its nominal service
 dates, which end on 31 December 2027, move forward by 24 December 2027
 ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)).
+
+### A Mac desktop app
+
+Today the tool is three commands and a folder of CSV files, which suits someone who reads
+code and few of the people at a transit agency who would use the answers. A Mac app would
+put the same runs behind a window: pick a city from the Mobility Database or drop in a GTFS
+zip; let it fetch the population grid and the destinations as `data/fetch_city.py` does;
+see the network on a map with its long routes, duplicates and gaps; run the measurements
+and the redesign with a progress bar; read the change list and `impact.csv` beside a map of
+before and after; and export the report and the redesigned feed.
+
+I would keep the engine as it is, Python's standard library only, and wrap it rather than
+rewrite it. A SwiftUI shell would carry its own copy of Python inside the app, run
+`measure.py` and `redesign.py` as they run now, read their JSON and CSV, and draw the
+networks with MapKit. The page in `index.html` already draws a network, so a web view could
+stand in for the native map at first. The steps, in order:
+
+1. A command with a stable interface for the app to call: run a city, report progress as
+   lines of JSON, and write the results where the app expects them.
+2. The window: a city picker, the map, the change list and the impact table.
+3. The bundle: Python inside the app, signed and notarised with an Apple Developer account
+   ($99 a year) so that macOS opens it without warnings, as a `.dmg` and a Homebrew cask.
+4. Offline runs: the downloads cached, so that a city fetched once runs without the network.
+
+A first version is a few weeks of work. It would reach Mac users only; a web version, or
+the same shell built for Windows, would reach more of the people at agencies, and the
+command in step 1 serves all three.
 
 ## What this version cannot do
 

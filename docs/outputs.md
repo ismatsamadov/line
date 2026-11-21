@@ -419,6 +419,45 @@ files found).
 | `parking.csv` | one per point in the parking file (834), MPS then MPV, by number | `name`, `kind`, `number`, `suffix`, `lat`, `lon`, `nearest_stop_id`, `nearest_stop`, `m_to_stop`, `routes_at_stop`, `nearest_lane`, `m_to_lane`, `nearest_metro_exit`, `m_to_metro_exit`, `mps_within_5m` (for an MPV point, the MPS point on the same spot) |
 | `bicycle.geojson` | the 60 lanes and the 834 points | lanes carry `street`, `km` and `bus_routes`; points carry `kind`, `name`, `nearest_stop` and `m_to_stop`; GitHub draws the file as a map |
 
+## output/cities/ — other cities, each read from its GTFS feed
+
+`output/cities/<city>/` holds what `measure.py` writes for a city with `cities/<city>.toml`,
+the same files as `output/` above (without `ridership_check.csv`, which needs counts), and
+`output/cities/<city>/redesign/` what `redesign.py` writes, the same files as
+`output/redesign/`. For the cities of the world pilot other than Riga, the redesign's two
+GTFS feeds and its map, `network.geojson`, are not in git but in the Hugging Face dataset
+with the inputs; `python3 data/fetch_world.py` puts them in place ([world.md](world.md)).
+
+## output/world/ — the world pilot in one table
+
+Written by `world.py` from each city's `network.json` and `redesign/summary.json`, in a
+second ([world.md](world.md)). The savings are the redesign's two options of `impact.csv`:
+with the same buses, and with the fewest buses that keep today's trip times.
+
+`cities.csv` has one row per city (26), by continent and name:
+
+| Column | Meaning |
+|---|---|
+| `city`, `name`, `country`, `continent` | The folder name under `cities/` and `output/cities/`, the city's name, its ISO country code, its continent |
+| `service_day`, `hours_of_service` | The day of the feed the model read, and the hours of service it shows |
+| `routes`, `stops` | Bus routes with stops in the model, and the stops they serve |
+| `people_in_area`, `people_within_400m`, `share_within_400m` | People in the box of the served stops plus 2 km, and those within 400 m of a stop |
+| `door_to_door_min`, `share_trips_possible` | The average door-to-door trip today over the trips the network makes possible within 120 minutes, and their share |
+| `buses`, `bus_hours`, `bus_km`, `fuel_l`, `co2_t` | Today's service on that day: buses in service and their hours, km, fuel and CO₂ |
+| `changes`, `routes_after` | Changes the search kept, and routes after them |
+| `minutes_saved`, `minutes_saved_possible_trips` | How much shorter the average trip gets with the same buses: counting trips the network cannot make at 120 minutes, as the search does, and over the trips it can make |
+| `riders_hours_saved_per_100k_journeys` | The first, as riders' hours for every 100,000 journeys |
+| `same_buses_fuel_l_change` | The fuel the same-buses option uses beyond today's, a day |
+| `fewer_buses`, `share_of_buses_needed` | The buses the redesign needs for today's trip times, and that share of today's fleet on the independent check |
+| `buses_saved`, `bus_hours_saved`, `bus_km_saved`, `fuel_l_saved`, `co2_t_saved` | What that saves a day |
+| `feed` | The feed the city was read from |
+
+`summary.json` holds `cities`, `total` (the columns that add up, summed over the cities,
+with `share_of_buses_saved` and `share_of_fuel_saved`), `spread` (for the measures that do
+not add up, such as minutes per trip: the median, the lowest, the highest, and the mean
+weighted by the people in each city's box), `by_continent` (cities, buses, and buses,
+fuel and CO₂ saved) and `rows`, the rows of `cities.csv`.
+
 ## site/data.js and the checklist workbook
 
 `site/build.py` writes `data.js` and `checklist.xlsx` for the page in `index.html`, and

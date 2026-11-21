@@ -1,0 +1,39 @@
+1 d2: 2 other stop sequence(s) with 4 of 25 departures left out; 7 stops they call at are on no pattern of the route
+102 d1: 1 other stop sequence(s) with 1 of 7 departures left out; 15 stops they call at are on no pattern of the route
+102 d2: 1 other stop sequence(s) with 1 of 7 departures left out; 14 stops they call at are on no pattern of the route
+136 d1: a branch with 4 of 12 departures runs as route 136 (branch 1)
+136 d2: 2 other stop sequence(s) with 4 of 12 departures left out; 5 stops they call at are on no pattern of the route
+2 d2: 1 other stop sequence(s) with 4 of 25 departures left out; 7 stops they call at are on no pattern of the route
+28 d2: 1 other stop sequence(s) with 2 of 24 departures left out; 3 stops they call at are on no pattern of the route
+4 d2: a branch with 5 of 12 departures runs as route 4 (Leckwith)
+44 d1: 1 other stop sequence(s) with 1 of 53 departures left out; 1 stops they call at are on no pattern of the route
+44 d2: 1 other stop sequence(s) with 3 of 52 departures left out; 10 stops they call at are on no pattern of the route
+45 d1: 1 other stop sequence(s) with 6 of 50 departures left out; 4 stops they call at are on no pattern of the route
+45 d2: 3 other stop sequence(s) with 12 of 49 departures left out; 13 stops they call at are on no pattern of the route
+49 d2: 1 other stop sequence(s) with 1 of 40 departures left out; 1 stops they call at are on no pattern of the route
+50 d2: 1 other stop sequence(s) with 1 of 43 departures left out; 1 stops they call at are on no pattern of the route
+52 d1: a branch with 6 of 27 departures runs as route 52 (branch 1)
+52 d1: 1 other stop sequence(s) with 1 of 27 departures left out; 1 stops they call at are on no pattern of the route
+52 d2: 1 other stop sequence(s) with 1 of 28 departures left out; 1 stops they call at are on no pattern of the route
+57 d1: a branch with 10 of 50 departures runs as route 57 (branch 1)
+57 d2: 1 other stop sequence(s) with 3 of 44 departures left out; 2 stops they call at are on no pattern of the route
+58 d2: a branch with 9 of 45 departures runs as route 58 (St. Edeyrns)
+58 d1: 2 other stop sequence(s) with 3 of 47 departures left out; 7 stops they call at are on no pattern of the route
+61 d2: 1 other stop sequence(s) with 6 of 52 departures left out; 1 stops they call at are on no pattern of the route
+63 d2: a branch with 4 of 17 departures runs as route 63 (Radyr)
+9 d1: 1 other stop sequence(s) with 9 of 75 departures left out; 3 stops they call at are on no pattern of the route
+9 d2: 1 other stop sequence(s) with 8 of 73 departures left out; 5 stops they call at are on no pattern of the route
+92 d2: 1 other stop sequence(s) with 4 of 35 departures left out; 11 stops they call at are on no pattern of the route
+93S d1: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+94 d1: 2 other stop sequence(s) with 6 of 30 departures left out; 6 stops they call at are on no pattern of the route
+94 d2: 2 other stop sequence(s) with 7 of 29 departures left out; 6 stops they call at are on no pattern of the route
+95 d2: a branch with 8 of 36 departures runs as route 95 (Cardiff City Stadium)
+95 d1: 3 other stop sequence(s) with 3 of 30 departures left out; 15 stops they call at are on no pattern of the route
+96 d1: a branch with 7 of 27 departures runs as route 96 (branch 1)
+96 d1: 1 other stop sequence(s) with 1 of 27 departures left out; 7 stops they call at are on no pattern of the route
+96 d2: 2 other stop sequence(s) with 5 of 26 departures left out; 2 stops they call at are on no pattern of the route
+B1 d1: 1 other stop sequence(s) with 1 of 11 departures left out; 15 stops they call at are on no pattern of the route
+B1 d2: 1 other stop sequence(s) with 1 of 11 departures left out; 8 stops they call at are on no pattern of the route
+M1 d1: 1 other stop sequence(s) with 2 of 10 departures left out; 2 stops they call at are on no pattern of the route
+M1 d2: 1 other stop sequence(s) with 2 of 10 departures left out; 3 stops they call at are on no pattern of the route
+30 [NB:30] d1: 1 other stop sequence(s) with 1 of 12 departures left out; 2 stops they call at are on no pattern of the route

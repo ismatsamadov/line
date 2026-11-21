@@ -54,14 +54,19 @@ def _gpkg_shape(blob):
     return sum(xs) / len(xs), sum(ys) / len(ys), max(xs) - min(xs), max(ys) - min(ys)
 
 
+def _features(con):
+    """(table, geometry column, srs id) of a GeoPackage's first features table."""
+    return con.execute(
+        "SELECT c.table_name, g.column_name, g.srs_id FROM gpkg_contents c "
+        "JOIN gpkg_geometry_columns g ON g.table_name = c.table_name "
+        "WHERE c.data_type = 'features' LIMIT 1").fetchone()
+
+
 def load_gpkg(path, bbox=None, split=True):
     """Zones from a GeoPackage. With split=True each polygon becomes seven points
     sharing its population, so coverage is not judged from the centre alone."""
     con = sqlite3.connect(f"file:{path}?mode=ro", uri=True)
-    table, geom_col, srs = con.execute(
-        "SELECT c.table_name, g.column_name, g.srs_id FROM gpkg_contents c "
-        "JOIN gpkg_geometry_columns g ON g.table_name = c.table_name "
-        "WHERE c.data_type = 'features' LIMIT 1").fetchone()
+    table, geom_col, srs = _features(con)
     cols = [r[1] for r in con.execute(f'PRAGMA table_info("{table}")')]
     pop_col = next((c for c in cols if c.lower() in ("population", "pop", "people")), None)
     if pop_col is None:
@@ -80,6 +85,55 @@ def load_gpkg(path, bbox=None, split=True):
                 zones.append((lat, lon, share))
     con.close()
     return zones
+
+
+def cut_gpkg(src, dst, bbox):
+    """Write to dst a GeoPackage with src's tables and only the features whose centre lies in
+    bbox (min_lat, max_lat, min_lon, max_lon), in src's order, so that load_gpkg reads the
+    same zones from either within a box that bbox holds with a cell's width to spare. The
+    feature count and extent are set to the features kept."""
+    con = sqlite3.connect(f"file:{src}?mode=ro", uri=True)
+    table, geom_col, srs = _features(con)
+    out = sqlite3.connect(dst)
+    for pragma in ("application_id", "user_version"):
+        out.execute(f"PRAGMA {pragma} = {con.execute(f'PRAGMA {pragma}').fetchone()[0]}")
+    schema = con.execute("SELECT type, name, sql FROM sqlite_master WHERE sql IS NOT NULL AND name NOT LIKE "
+                         "'sqlite_%' AND name NOT LIKE 'rtree_%' ORDER BY type = 'trigger'").fetchall()   # no index kept
+    for kind, name, sql in schema:
+        if kind != "trigger":
+            out.execute(sql)
+    cols = [r[1] for r in con.execute(f'PRAGMA table_info("{table}")')]
+    at = cols.index(geom_col)
+    kept, box = [], [math.inf, math.inf, -math.inf, -math.inf]
+    for row in con.execute(f'SELECT * FROM "{table}"'):
+        if not row[at]:
+            continue
+        cx, cy, w, h = _gpkg_shape(row[at])
+        lat, lon = _mercator_to_latlon(cx, cy) if srs == 3857 else (cy, cx)
+        if bbox[0] <= lat <= bbox[1] and bbox[2] <= lon <= bbox[3]:
+            kept.append(row)
+            box = [min(box[0], cx - w / 2), min(box[1], cy - h / 2), max(box[2], cx + w / 2), max(box[3], cy + h / 2)]
+    out.executemany(f'INSERT INTO "{table}" VALUES ({", ".join("?" * len(cols))})', kept)
+    for kind, name, sql in schema:
+        if kind == "table" and name != table:
+            rows = con.execute(f'SELECT * FROM "{name}"').fetchall()
+            if rows:
+                out.executemany(f'INSERT INTO "{name}" VALUES ({", ".join("?" * len(rows[0]))})', rows)
+    if kept:
+        out.execute("UPDATE gpkg_contents SET min_x = ?, min_y = ?, max_x = ?, max_y = ? WHERE table_name = ?",
+                    (*box, table))
+    if out.execute("SELECT 1 FROM sqlite_master WHERE name = 'gpkg_ogr_contents'").fetchone():
+        out.execute("UPDATE gpkg_ogr_contents SET feature_count = ? WHERE table_name = ?", (len(kept), table))
+    if out.execute("SELECT 1 FROM sqlite_master WHERE name = 'gpkg_extensions'").fetchone():
+        out.execute("DELETE FROM gpkg_extensions WHERE extension_name = 'gpkg_rtree_index'")
+    for kind, name, sql in schema:
+        if kind == "trigger":
+            out.execute(sql)
+    out.commit()
+    out.execute("VACUUM")
+    out.close()
+    con.close()
+    return len(kept)
 
 
 def load_csv(path, bbox=None):

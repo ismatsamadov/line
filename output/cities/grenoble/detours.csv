@@ -1,0 +1,128 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+C10,1,"Saint-Martin-d'Hères, Porte du Grésivaudan","Gières, Vignate",4,0,2.51,0.7557,1.7543,4.2278,0
+C10,1,"Bernin, Les Varvoux","Bernin, Cloyères",7,4,4.373,1.5755,2.7975,6.9492,1336.4286
+C10,2,"Bernin, Cloyères","Bernin, Les Varvoux",6,6,4.483,1.6135,2.8695,6.7346,1614.1429
+C10,2,"Gières, Vignate","Saint-Martin-d'Hères, Porte du Grésivaudan",4,0,2.751,0.7831,1.9679,4.5804,0
+101,1,"Le Gua, L'Arzelier","Le Gua, Le Gua Mairie",5,0,10.9458,4.3287,6.6171,14.4524,0
+131,1,"Corenc, Rochasson","Corenc, Collège Jules Flandrin",5,3,4.8688,1.8759,2.9929,7.1039,197.7143
+131,2,"Corenc, Collège Jules Flandrin","Corenc, Rochasson",5,3,5.0548,1.9111,3.1437,7.378,197.7143
+132,1,"Corenc, Batonnière","Meylan, Lycée du Gresivaudan (Parking)",7,0,7.4465,2.2458,5.2007,12.6988,0
+132,2,"Meylan, Lycée du Gresivaudan (Parking)","Corenc, Batonnière",7,0,7.374,2.2323,5.1417,12.5811,0
+142,1,"Venon, Venon Mairie","Gières, Pont de Venon",4,0,3.6556,1.3244,2.3312,7.1653,0
+143,1,"Saint-Martin-d'Uriage, Saint-Nizier-d'Uriage","Saint-Martin-d'Uriage, Le Chenil",7,1,7.524,1.7229,5.8011,14.5719,0
+143,2,"Saint-Martin-d'Uriage, Croisement 6","Saint-Martin-d'Uriage, La Piscine",7,1,5.5469,0.9855,4.5615,11.9565,0
+143,2,"Saint-Martin-d'Uriage, Carrefour de Chamrousse","Saint-Martin-d'Uriage, Le Pinet d'Uriage",6,0,3.7027,1.2864,2.4162,7.0974,0
+151,1,"Claix, Vert Sapin","Claix, Fond Ratel",6,0,2.4233,0.9218,1.5015,5.5149,0
+152,1,"Claix, Les Taillis","Claix, La Chênaie",7,0,2.7904,0.5383,2.2521,8.0058,0
+152,2,"Claix, La Chênaie","Claix, Les Taillis",7,0,2.5949,0.5552,2.0397,7.4709,0
+16,1,"Échirolles, Grugliasco","Échirolles, Colonel Manhès",6,2,2.4365,0.85,1.5865,6.7234,0
+16,2,"Échirolles, Danielle Casanova","Échirolles, Grugliasco",7,2,2.8385,1.1024,1.7361,7.5022,0
+161,2,"Corenc, Collège Le Rondeau","La Tronche, Commandant Nal",3,0,3.9326,1.2707,2.662,10.6422,0
+171,1,"Saint-Égrève, Bellevue","Saint-Martin-le-Vinoux, Col de Clémencières",11,1,12.3024,2.8139,9.4885,24.5669,0
+18,1,"Grenoble, Clemenceau","La Tronche, Hôpital – Neuroscience",9,4,4.1382,1.6207,2.5175,9.0423,561.4286
+18,2,"La Tronche, Cimetière du Grand Sablon","Grenoble, Edison",7,2,3.3412,1.2402,2.101,7.3761,0
+181,1,"Champ-sur-Drac, Le Monument","Vizille, Vizille Lycée",2,0,6.9628,2.614,4.3488,9.4893,0
+181,2,"Vizille, Lycée Portes de l'Oisans","Saint-Georges-de-Commiers, Les Condamines",3,0,13.8129,5.437,8.376,17.9928,0
+181,2,"Saint-Georges-de-Commiers, Pré du Bil","Notre-Dame-de-Commiers, Le Moulin",2,1,2.7869,1.0593,1.7276,4.1715,0
+182,2,"Vaulnaveys-le-Haut, Les Roux","Vaulnaveys-le-Haut, Les Blanchères",3,0,2.4381,0.3859,2.0522,6.7379,0
+183,1,"Vizille, Paul Langevin","Saint-Pierre-de-Mésage, Hameau du Pont",2,2,5.8252,1.0492,4.776,10.3967,0
+183,2,"Notre-Dame-de-Mésage, Lotissement Les Templiers","Vizille, Le Péage",3,2,6.4879,1.4448,5.0431,11.274,0
+185,1,"Champagnier, Place du Laca","Jarrie, Maupertuis",4,0,4.498,1.6824,2.8156,6.7529,0
+185,2,"Vizille, Lycée Portes de l'Oisans","Jarrie, Jarrie Gare",1,0,6.6801,2.6403,4.0398,8.1091,0
+185,2,"Jarrie, Maupertuis","Champagnier, Place du Laca",4,0,4.4008,1.6931,2.7077,6.5451,0
+187,1,"Chamrousse, Le Recoin – Office du Tourisme","Vaulnaveys-le-Haut, Saint-Georges d'Uriage",5,5,20.046,4.2402,15.8058,30.4897,385.1429
+187,1,"Vaulnaveys-le-Bas, Chemin des Cottes","Vizille, Collège les Mattons (quai 1)",5,0,7.6257,1.6489,5.9767,12.5657,0
+187,2,"Vizille, Lycée Portes de l'Oisans","Vaulnaveys-le-Bas, Les Travers",4,0,8.6366,3.1551,5.4815,11.3292,0
+187,2,"Vaulnaveys-le-Haut, Les Roux","Chamrousse, Le Recoin – Office du Tourisme",4,4,19.8193,4.1337,15.6857,29.9374,369.7143
+193,1,"Seyssins, Les Hauts de Seyssins","Seyssins, Ancienne Gare",5,1,3.8601,1.1159,2.7442,7.3181,47.4286
+22,1,"Saint-Égrève, Saint-Égrève Gare","Saint-Égrève, Église",6,5,2.8561,1.1132,1.7429,5.8676,1301.2857
+22,2,"Saint-Égrève, Église","Saint-Égrève, Saint-Égrève Gare",6,5,2.8974,1.1117,1.7856,5.9625,1242.8571
+221,2,"Meylan, Croix de Cibeins","Meylan, La Détourbe",5,4,2.2539,0.7193,1.5346,5.981,114.4286
+233,2,"Montbonnot-Saint-Martin, Montbonnot Gare","Montbonnot-Saint-Martin, Les Claverins",2,2,4.5535,0.6816,3.872,5.8906,138.5714
+243,2,"Saint-Martin-d'Uriage, Les Peiffendes","Saint-Martin-d'Uriage, Saint-Nizier-d'Uriage",7,1,6.6629,1.2688,5.3942,14.6245,0
+251,1,"La Tronche, Le Gorget","Corenc, Collège Jules Flandrin",3,3,4.7786,1.1755,3.6032,17.4192,281.8571
+251,2,"Corenc, Collège Jules Flandrin","La Tronche, Le Gorget",4,4,4.8255,1.1698,3.6557,17.9919,281.8571
+251,2,"La Tronche, Le Gorget","La Tronche, Chantemerle",4,4,2.303,0.7092,1.5938,8.5962,247.4286
+262,1,"Varces-Allières-et-Risset, La Pommeraie","Varces-Allières-et-Risset, Rond-Point de l'Europe",3,2,2.8284,1.0733,1.7551,5.1726,0
+265,1,"Quaix-en-Chartreuse, Roudier","Quaix-en-Chartreuse, Mont Cornard",5,0,7.814,1.185,6.629,14.2395,0
+265,2,"Quaix-en-Chartreuse, Mont Cornard","Quaix-en-Chartreuse, Roudier",5,0,7.7917,1.2023,6.5895,14.1645,0
+265,2,"Quaix-en-Chartreuse, Sous La Frette","Quaix-en-Chartreuse, Fontvieille",3,0,3.1139,1.2333,1.8806,4.5668,0
+266,1,"Quaix-en-Chartreuse, La Frette","Quaix-en-Chartreuse, Le Charpen",2,0,4.5361,1.0963,3.4398,8.3032,0
+266,2,"Quaix-en-Chartreuse, Le Charpen","Quaix-en-Chartreuse, La Frette",2,0,4.3164,1.1015,3.2149,7.804,0
+271,1,"Le Gua, La Charrière","Le Gua, École Primaire Le Bruyant",5,0,11.9382,2.7682,9.1701,19.1356,0
+271,2,"Vif, Le Rif","Le Gua, Le Gua Mairie",4,1,3.6147,1.4287,2.186,5.4976,137.5714
+271,2,"Le Gua, Les Rossets","Le Gua, Prélenfrey Eglise",5,1,10.115,2.1524,7.9626,16.8354,11.7143
+273,2,"Saint-Georges-de-Commiers, Les Peupliers","Saint-Georges-de-Commiers, Les Condamines",2,0,2.0399,0.4079,1.6321,4.9754,0
+282,2,"Vizille, Collège les Mattons (quai 1)","Vaulnaveys-le-Bas, Les Travers",3,0,5.4763,1.3914,4.0849,9.7269,0
+287,1,"Vaulnaveys-le-Bas, Les Travers","Vizille, Collège les Mattons (quai 1)",3,0,5.4059,1.398,4.0079,8.0548,0
+291,1,"Brié-et-Angonnes, Le Replat","Jarrie, Le Louvarou",3,0,5.0661,1.7435,3.3226,9.8919,0
+292,1,"Champ-sur-Drac, Colmard – Maternelle","Jarrie, Jarrie Gare",2,0,2.431,0.8776,1.5534,3.9215,0
+294,2,"Jarrie, Clos Jouvin","Champagnier, Place du Laca",1,0,5.7275,2.2839,3.4436,8.5662,0
+402,1,"Vaulnaveys-le-Bas, École du Bourg","Vaulnaveys-le-Bas, Les Roberts",2,2,9.1452,2.2565,6.8887,15.1147,23.8571
+402,1,"Vaulnaveys-le-Bas, Les Alloux Haut","Vaulnaveys-le-Bas, École du Bourg",2,2,4.514,1.1012,3.4128,7.8246,97.0
+403,1,"Vaulnaveys-le-Haut, École Jules Bruant","Vaulnaveys-le-Haut, Les Blanchères",3,0,4.3626,1.6529,2.7096,12.9168,0
+403,1,"Vaulnaveys-le-Haut, Les Roux","Vaulnaveys-le-Haut, Ecole Jules Bruant",3,0,3.4877,1.269,2.2187,10.7577,0
+403,2,"Vaulnaveys-le-Haut, Ecole Jules Bruant","Vaulnaveys-le-Haut, Belmont – La Chapelle",3,0,4.5726,1.2831,3.2895,15.467,0
+403,2,"Vaulnaveys-le-Haut, Les Blaches","Vaulnaveys-le-Haut, Ecole Jules Bruant",3,1,3.6294,1.3089,2.3204,11.2051,0
+404,1,"Saint-Martin-d'Uriage, Le Mollard","Saint-Martin-d'Uriage, Saint-Martin-d'Uriage Mairie",1,0,2.8576,0.8231,2.0345,5.9075,0
+404,2,"Saint-Martin-d'Uriage, GS Les Petites Maisons","Saint-Martin-d'Uriage, La Ferme",3,0,4.0128,1.1197,2.8931,8.9266,0
+404,2,"Saint-Martin-d'Uriage, La Ferme","Saint-Martin-d'Uriage, La Rapallière",3,1,3.9752,1.4402,2.535,7.9455,86.7143
+405,2,"Saint-Martin-d'Uriage, Les Bonnets","Saint-Martin-d'Uriage, Route des Angères",3,3,4.0033,0.2061,3.7972,12.1636,333.0
+406,1,"Saint-Martin-d'Uriage, Uriage Gare","Saint-Martin-d'Uriage, GS Les Petites Maisons",2,0,3.1239,0.5444,2.5795,8.854,0
+406,2,"Saint-Martin-d'Uriage, Saint-Martin-d'Uriage Mairie","Saint-Martin-d'Uriage, Uriage Gare",2,0,4.8262,1.137,3.6892,12.3762,0
+411,1,"Claix, Beau Dunois","Claix, Malhivert",4,0,3.1435,0.9117,2.2318,6.6114,0
+411,2,"Claix, Claix Mairie","Claix, Furonnières",5,0,4.5053,0.6351,3.8702,10.8194,0
+411,2,"Claix, Les Chaumes","Claix, Les Cimentiers",5,2,2.5426,0.87,1.6725,5.6221,93.5714
+412,1,"Claix, La Ronzy","Claix, Tabor",4,1,3.1933,0.2162,2.9771,12.9213,0
+412,1,"Claix, Furonnières","Claix, École Claix Centre",4,1,2.3586,0.5733,1.7853,8.2826,0
+412,2,"Claix, Les Tilleuls","Claix, Claix Mairie",4,1,2.4168,0.3245,2.0922,9.4771,0
+414,1,"Claix, Pompidou","Claix, La Croix Blanche Bas",5,3,5.2748,0.9375,4.3373,13.8088,0
+414,2,"Claix, École François Mignot","Claix, Belledonne",5,2,4.7154,1.0782,3.6372,11.8489,0
+414,2,"Claix, Les Pérouses","Claix, Pompidou",5,1,2.9808,1.0959,1.8849,6.9434,0
+42 (branch 1),1,"Montbonnot-Saint-Martin, Le Prieuré","Meylan, La Détourbe",6,0,4.0566,1.4974,2.5591,7.3415,0
+42 (branch 1),2,"Meylan, Les Jaillières","Montbonnot-Saint-Martin, Le Prieuré",7,0,4.2903,1.6843,2.6061,7.7728,0
+431,1,"Sarcenas, Sarcenas Le Village","Sarcenas, Pont du Croz",2,0,1.845,0.34,1.505,4.632,0
+431,1,"Le Sappey-en-Chartreuse, Les Jonquilles","Sarcenas, Sarcenas Le Village",2,1,4.2639,1.4949,2.769,7.9622,0
+431,2,"Sarcenas, Sarcenas Le Village","Le Sappey-en-Chartreuse, Les Jonquilles",2,1,4.321,1.5849,2.7361,7.8755,0
+"44 (Château-Bernard, Col de l'Arzelier)",1,"Le Gua, Les Rossets","Le Gua, Les Faures",2,0,6.977,2.1231,4.8539,9.4459,0
+"44 (Château-Bernard, Col de l'Arzelier)",2,"Le Gua, La Charrière","Le Gua, Le Gua Mairie",2,0,7.3232,2.4795,4.8437,9.4275,0
+46,1,"Varces-Allières-et-Risset, La Pommeraie","Varces-Allières-et-Risset, Collège Jules Verne",4,3,3.0406,0.8629,2.1777,5.5251,99.2857
+46,2,"Varces-Allières-et-Risset, Collège Jules Verne","Varces-Allières-et-Risset, La Pommeraie",4,2,2.9368,0.8662,2.0706,5.319,99.2857
+465,1,"Quaix-en-Chartreuse, Roudier","Quaix-en-Chartreuse, Mont Cornard",5,0,7.814,1.185,6.629,14.2395,0
+465,2,"Quaix-en-Chartreuse, Mont Cornard","Quaix-en-Chartreuse, Roudier",5,0,7.7917,1.2023,6.5895,14.1645,0
+465,2,"Quaix-en-Chartreuse, Sous La Frette","Quaix-en-Chartreuse, Fontvieille",3,0,3.1139,1.2333,1.8806,4.5668,0
+466,1,"Quaix-en-Chartreuse, La Frette","Quaix-en-Chartreuse, Le Charpen",2,0,4.5361,1.0963,3.4398,8.3032,0
+466,2,"Quaix-en-Chartreuse, Le Charpen","Quaix-en-Chartreuse, La Frette",2,0,4.3164,1.1015,3.2149,7.804,0
+47,1,"Claix, La Ronzy","Claix, Les Bauches",5,0,3.2657,1.1271,2.1386,5.1845,0
+47,2,"Claix, Les Bauches","Claix, La Ronzy",5,0,3.2677,1.159,2.1088,5.1355,0
+49,2,"Seyssinet-Pariset, Cimetière","Seyssins, L'Agneau",4,2,2.6282,0.9306,1.6976,4.6839,0
+50,1,"Sassenage, Place de la Libération","Sassenage, Mollard Pichon",5,0,3.0266,1.0875,1.9391,6.2826,0
+50,2,"Sassenage, Mollard Pichon","Sassenage, Place de la Libération",5,0,2.8778,1.0839,1.7939,5.937,0
+"50 (Sassenage, La Dent du Loup)",1,"Sassenage, Place de la Libération","Sassenage, Mollard Pichon",5,0,3.0266,1.0875,1.9391,6.7524,0
+"50 (Sassenage, La Dent du Loup)",2,"Sassenage, Mollard Pichon","Sassenage, Place de la Libération",5,0,2.8778,1.0839,1.7939,6.3716,0
+54,1,"Sassenage, Les Engenières","Saint-Égrève, Champaviotte – Vence",6,1,6.8658,1.3205,5.5454,13.1339,615.2857
+54,2,"Saint-Égrève, Champaviotte – Vence","Sassenage, Les Engenières",6,1,6.9185,1.3435,5.575,13.1935,834.4286
+55,1,"Saint-Martin-le-Vinoux, La Rivoire","Saint-Martin-le-Vinoux, Souchet",5,5,3.5766,1.1317,2.4449,5.8787,591.4286
+55,2,"Saint-Martin-le-Vinoux, Clos Saint-Martin","Saint-Martin-le-Vinoux, La Banchardière",5,5,3.7454,1.2793,2.4661,5.9153,536.0
+56,1,"Saint-Martin-le-Vinoux, Conrad Kilian","Saint-Martin-le-Vinoux, Ancienne route",5,3,2.5891,0.7631,1.8259,4.7714,0
+56,2,"Saint-Martin-le-Vinoux, Ancienne route","Saint-Martin-le-Vinoux, Conrad Kilian",5,1,2.575,0.7591,1.8158,4.7543,0
+59,1,"Saint-Martin-d'Uriage, Carrefour du Replat","Saint-Martin-d'Uriage, Combeloup",11,7,7.8476,1.1189,6.7287,18.0704,409.4286
+59,1,"Venon, Les Puis","Gières, Pont de Venon",10,0,5.588,2.1467,3.4412,10.6997,0
+59,2,"Gières, Pont de Venon","Venon, Venon Mairie",4,4,3.6464,1.3336,2.3129,6.2843,0
+"59 (Gières, Le Chamandier)",1,"Venon, La Serralière","Gières, Le Chamandier",5,0,4.2373,1.6716,2.5658,7.2772,0
+C6,1,"Grenoble, Oxford","Fontaine, Rue Pasteur",6,5,3.7951,1.3772,2.4179,8.0226,1040.8571
+C6,2,"Fontaine, Rue Pasteur","Grenoble, Oxford",5,4,3.7973,1.4181,2.3792,7.5928,1040.8571
+N62,1,"La Tronche, Le Gorget","Corenc, Batonnière",6,1,3.8671,1.5367,2.3304,6.2417,0
+N62,2,"Corenc, Batonnière","Corenc, Monument",5,0,3.3769,1.2229,2.154,5.5873,0
+63,1,"Fontanil-Cornillon, Fontanil-Cornillon Cimetière","Mont-Saint-Martin, Chemin de Namière",3,3,5.7283,1.8906,3.8377,8.707,41.5714
+63,2,"Mont-Saint-Martin, Chemin de Namière","Fontanil-Cornillon, Fontanil-Cornillon Cimetière",3,3,5.7253,1.9032,3.8221,8.6757,41.7143
+66,1,"Champagnier, Place du Laca","Jarrie, André Malraux",7,0,6.1692,2.4671,3.7021,9.1008,0
+66,2,"Jarrie, Les Charbonnaux","Champagnier, Place du Laca",5,0,5.0868,1.8146,3.2722,7.6483,0
+70,1,"Montchaboud, Montchaboud Le Village","Vizille, Parc Vöhringen",8,3,5.1694,1.8685,3.3009,9.3787,71.0
+70,1,"Vizille, Les Forges","Champ-sur-Drac, Marcel Paul",8,3,8.5988,2.9006,5.6982,14.2533,61.2857
+70,1,"Champ-sur-Drac, Marcel Paul","Champ-sur-Drac, La Melle",2,1,2.4559,0.8193,1.6366,3.9945,44.1429
+70,2,"Champ-sur-Drac, Léo Lagrange","Vizille, L'Alliance",7,1,7.8694,2.6729,5.1965,12.8997,61.2857
+70,2,"Vizille, L'Alliance","Montchaboud, Montchaboud Le Village",7,4,4.9251,1.5247,3.4004,9.2475,71.0
+73,1,"Saint-Georges-de-Commiers, La Tour","Saint-Georges-de-Commiers, St-Georges-de-Commiers Gare",5,0,3.4982,0.6392,2.859,7.553,0
+73,2,"Vif, Vif Gare","Saint-Georges-de-Commiers, La Tour",6,0,4.9415,1.8389,3.1026,8.3878,0
+73,2,"Saint-Georges-de-Commiers, Pré du Bil","Notre-Dame-de-Commiers, Le Moulin",4,2,2.7277,1.0593,1.6684,4.7683,0

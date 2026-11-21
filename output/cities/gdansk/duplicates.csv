@@ -1,0 +1,51 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+M32,M32 (branch 1),1.0,30,33,True
+107,107 (Pruszcz Gdański Pruszcz Gdański Dworzec),1.0,48,51,True
+120,120 (branch 1),1.0,74,76,True
+126,126 (Żukowo Urząd Gminy),1.0,50,64,True
+132,132 (branch 1),1.0,50,51,True
+158,258,1.0,40,49,True
+166,166 (branch 1),1.0,24,27,True
+169,169 (branch 1),1.0,38,41,True
+174,174 (Stara Piła),1.0,39,54,True
+179,179 (branch 1),1.0,27,29,True
+213,176,1.0,13,25,True
+213,213 (Kowale Szkoła Metropolitalna),1.0,13,17,True
+262 (Łostowice Świętokrzyska),262,1.0,23,57,True
+268 (Jasień PKM),268,1.0,30,51,True
+307,307 (Będzieszyn Panattoni),1.0,15,17,True
+911,111,1.0,31,62,True
+166 (branch 2),166,1.0,14,24,True
+166 (branch 2),166 (branch 1),1.0,14,27,True
+132 (branch 1),132,0.9804,51,50,True
+212,112,0.9747,79,88,True
+199 (Wrzeszcz PKP),199,0.9737,38,77,True
+120 (branch 1),120,0.9737,76,74,True
+T8,T8 (Stogi Plaża),0.9444,18,20,True
+107 (Pruszcz Gdański Pruszcz Gdański Dworzec),107,0.9412,51,48,True
+156 (Ujeścisko),156,0.9412,17,26,True
+183 (Uniwersytet Medyczny),183,0.9333,15,35,True
+179 (branch 1),179,0.931,29,27,True
+169 (branch 1),169,0.9268,41,38,True
+166 (branch 1),112,0.9259,27,88,True
+166 (branch 1),186,0.9259,27,64,True
+166,112,0.9167,24,88,True
+166,186,0.9167,24,64,True
+158 (Stogi),158,0.913,23,40,True
+158 (Stogi),258,0.913,23,49,True
+M32 (branch 1),M32,0.9091,33,30,True
+157 (branch 1),157,0.9048,21,47,True
+256,255,0.8947,19,20,True
+166 (branch 1),166,0.8889,27,24,True
+166 (branch 1),212,0.8889,27,79,True
+307 (Będzieszyn Panattoni),307,0.8824,17,15,True
+112,212,0.875,88,79,True
+166,212,0.875,24,79,True
+911 (Stogi),111,0.875,16,62,True
+911 (Stogi),911,0.875,16,31,True
+T9,106,0.8571,14,49,True
+T9,111,0.8571,14,62,True
+166 (branch 2),112,0.8571,14,88,True
+166 (branch 2),186,0.8571,14,64,True
+T8 (Stogi Plaża),T8,0.85,20,18,True
+255,256,0.85,20,19,True

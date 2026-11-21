@@ -1,0 +1,31 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,303,"Drop 303: among the 20 routes with the fewest modelled riders per bus; its buses go to 301, 302, 401",102.7732,102.6757,0.0975,0.0
+2,drop,201,"Drop 201: among the 20 routes with the fewest modelled riders per bus; its buses go to 202, 502, 203",102.6757,102.5794,0.0963,0.0
+3,drop,CT15,"Drop CT15: among the 20 routes with the fewest modelled riders per bus; its buses go to 102, 304, 101",102.5794,102.5162,0.0632,0.0
+4,drop,401,"Drop 401: among the 20 routes with the fewest modelled riders per bus; its buses go to 301, 302, 401E",102.5162,102.4391,0.0771,0.0
+5,drop,CAT,"Drop CAT: among the 20 routes with the fewest modelled riders per bus; its buses go to 502, 204, 104",102.4391,102.39,0.0491,0.0
+6,straighten,202,"Straighten 202 direction 2 between Wisma Yatim and Masjid Negeri P.Pinang: 1.4 km shorter, 7 of its stops dropped",102.39,102.3396,0.0504,0.0
+7,straighten,302,"Straighten 302 direction 2 between SMK Sungai Ara and Setia Welcome Center: 0.8 km shorter, 6 of its stops dropped",102.3396,102.3002,0.0394,0.0
+8,straighten,202,"Straighten 202 direction 1 between Masjid Negeri P.Pinang and SJK (C) Sin Kang: 1.8 km shorter, 10 of its stops dropped",102.3002,102.2734,0.0268,0.0
+9,drop,203,"Drop 203: among the 20 routes with the fewest modelled riders per bus; its buses go to 202, 502, 204",102.2734,102.2353,0.0382,0.0
+10,straighten,304,"Straighten 304 direction 1 between Kampung Dua Bukit and Sunshine Square: 4.8 km shorter, 10 of its stops dropped",102.2353,102.2175,0.0177,0.0
+11,straighten,306,"Straighten 306 direction 2 between Giant Bayan Baru and Kompleks Golden Triangle: 4.9 km shorter, 7 of its stops dropped",102.2175,102.1991,0.0184,0.0
+12,straighten,304,"Straighten 304 direction 2 between KFC Jalan Mahsuri and Terminal Ekspress Sg Nibong: 2.9 km shorter, 4 of its stops dropped",102.1991,102.1786,0.0205,0.0
+13,straighten,206,"Straighten 206 direction 2 between Jalan Delima 4 and Pasar Batu Lanchang II: 2.1 km shorter, 7 of its stops dropped",102.1786,102.1576,0.021,0.0
+14,straighten,306,"Straighten 306 direction 1 between Public Bank Jalan Relau and Snake Temple: 4.8 km shorter, 7 of its stops dropped",102.1576,102.1418,0.0159,0.0
+15,straighten,102,"Straighten 102 direction 1 between Penjara P.Pinang(Hospital) and Koperasi Melayu Pulau Pinang: 3.8 km shorter, 11 of its stops dropped",102.1418,102.1159,0.0259,0.0
+16,straighten,302,"Straighten 302 direction 1 between Taman Bukit Jambul and Kampung Sungai Ara: 1.2 km shorter, 0 of its stops dropped",102.1159,102.099,0.0169,0.0
+17,straighten,308,"Straighten 308 direction 1 between Kampung Dua Bukit and Sunshine Square: 4.8 km shorter, 10 of its stops dropped",102.099,102.0844,0.0146,0.0
+18,straighten,401E,"Straighten 401E direction 1 between Gold Coast Kondominium and Snake Temple: 4.8 km shorter, 8 of its stops dropped",102.0844,102.071,0.0134,0.0
+19,straighten,308,"Straighten 308 direction 2 between Kompleks Bukit Jambul and Klinik Rakyat  Batu Uban: 5.1 km shorter, 11 of its stops dropped",102.071,102.0582,0.0128,0.0
+20,straighten,502,"Straighten 502 direction 2 between Surau Al Muttaqin and Pangsapuri Green Garden: 1.5 km shorter, 4 of its stops dropped",102.0582,102.0471,0.0111,0.0
+21,straighten,301,"Straighten 301 direction 1 between Taman Bukit Jambul and Apartmen Taman Bendera: 1.2 km shorter, 0 of its stops dropped",102.0471,102.0351,0.012,0.0
+22,merge,CT14,"Merge CT14 into 701: 85% of its stops are also on 701; its buses go to 701, 709, 702",102.0351,102.0275,0.0076,0.0
+23,straighten,301,"Straighten 301 direction 2 between Komtar Timur and Terminal A Weld Quay: 1.4 km shorter, 5 of its stops dropped",102.0275,102.02,0.0074,0.0
+24,straighten,101,"Straighten 101 direction 1 between Klinik Kesihatan Teluk Bahang and Jalan Hassan Abbas: 2.4 km shorter, 7 of its stops dropped",102.02,102.0126,0.0075,0.0
+25,straighten,502,"Straighten 502 direction 1 between Komtar Utara and Terminal A Weld Quay: 1.6 km shorter, 11 of its stops dropped",102.0126,102.0075,0.0051,0.0
+26,stops,,"Remove 304 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",102.0075,101.68,0.3275,0.0
+27,shift,,"Move 20 buses from the 10 routes where a bus saves riders the least waiting (204, 202, 101, 301, 701, 502, 401E, 302, 103, T310) to the 10 where it saves the most (206, 604, 708, 13, 102, 613, 606, 308, 304, T713)",101.68,99.9006,1.7794,0.0
+28,shift,,"Move 15 buses from the 10 routes where a bus saves riders the least waiting (202, 204, 101, 301, 401E, 206, 502, 302, T310, 604) to the 10 where it saves the most (708, 606, 102, T713, 613, 304, 801, 603, 403, 709)",99.9006,99.4037,0.497,0.0
+29,shift,,"Move 7 buses from the 5 routes where a bus saves riders the least waiting (202, 101, 301, 103, 401E) to the 5 where it saves the most (102, 708, 702, T713, 308)",99.4037,99.2101,0.1936,0.0
+30,shift,,"Move 7 buses from the 5 routes where a bus saves riders the least waiting (202, 101, 301, 304, 701) to the 5 where it saves the most (102, T310, 104, 801, 502)",99.2101,99.0931,0.117,0.0

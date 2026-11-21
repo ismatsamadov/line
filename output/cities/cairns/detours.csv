@@ -1,0 +1,49 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+120N,2,Captain Cook Hwy near Arnold St hail 'n' ride,Wattle St at Fairweather Street,11,0,24.9186,7.1232,17.7953,16.8669,0
+143W,1,Mt Sheridan Plaza (Barnard Dr) Stop A,Anderson Rd at Windarra St (Coconut Village),11,0,10.8006,2.4893,8.3113,15.2924,0
+143W,1,Windarra St at Noela Close,Mulgrave Rd at Soure Street,8,0,6.1678,2.4354,3.7324,7.8875,0
+143W,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,4.3545,0
+143W,2,Toogood Rd near Windarra St hail 'n' ride,Skull Rd at Kowinka St,11,0,8.6788,1.8156,6.8631,13.2667,0
+143W,2,Kowinka St near Sheehy St hail 'n' ride,Mt Sheridan Plaza (Barnard Dr) Stop A,7,0,5.1074,1.7671,3.3403,7.0056,0
+150E,1,Dempsey Street at Pyramid Estate (Gordonvale),Bruce Hwy near King St,8,0,7.7367,1.3629,6.3738,10.317,0
+150E,1,Petersen Rd near Farmer St hail 'n' ride,Ravizza Dr near MacKellar Cl hail 'n' ride,11,0,7.6259,2.0128,5.6131,10.4039,0
+150E,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,3.9258,0
+150E,2,Bicentennial Road at Resolution Drive,Farmer St at Tilse Street,11,0,7.8028,2.0378,5.765,10.5863,0
+150E,2,Bruce Hwy near Loftus St hail 'n' ride,Dempsey Street at Pyramid Estate (Gordonvale),8,0,7.2266,1.1999,6.0267,9.9004,0
+110,1,Cedar Rd at Warren Street,Endeavour Rd at Upolu Esplanade,7,7,5.2265,1.9135,3.313,7.1806,2366.0
+110,2,Arlington Esp near Upolu Esp hail 'n' ride,Cedar Rd at Warren Street,9,9,5.9233,2.3244,3.599,8.2657,2395.4286
+111,1,Cottesloe Dr at Daytona St (Kewarra Beach),Anderson St at Lae Street,11,10,8.5267,1.6784,6.8483,13.0463,6652.4286
+111,1,Moresby St near Saidor Cl hail 'n' ride,James Cook University bus station,9,8,7.2055,2.8286,4.3769,8.9947,3635.2857
+111,2,James Cook University bus station,Moresby St at Saidor Close,9,8,7.1963,2.8312,4.365,8.9785,4000.0
+111,2,Anderson St near Lae St hail 'n' ride,Cottesloe Dr near Daytona St (Kewarra Beach) HnR,11,10,8.7784,1.6243,7.1541,13.4651,6652.4286
+112,1,Gavin St near Stanton Rd hail 'n' ride,McGregor Rd at Smithfield Village Dr,3,0,4.0558,1.6223,2.4335,4.1381,0
+112,2,Varley Street at Daisy Street,Varley St at Daisy Street,5,0,2.4229,0.119,2.304,4.6377,0
+112,2,Mac Peak Crescent at Kinetic Cairns Depot,Smithfield Shopping Centre (Cattana Rd),5,0,6.4228,1.7102,4.7126,7.7436,0
+113,1,Dunne St near Sunbus Depot hail 'n' ride,Varley St at Grason Street,9,0,6.5254,2.1187,4.4068,7.8181,0
+113,2,Varley Street at Daisy Street,Dunne St near Sunbus Depot hail 'n' ride,9,0,6.5464,2.2323,4.3141,7.7167,0
+120,1,Smithfield Shopping Centre (Cattana Rd),Prior St at Phillips St,9,4,15.9342,6.087,9.8472,15.601,604.7143
+120,2,Captain Cook Hwy near Arnold St hail 'n' ride,Mount Milman Dr near Danbulan St hail 'n' ride,8,1,20.3882,6.2035,14.1847,20.8182,105.7143
+122,2,Aroona St near Red Peak Bvd hail 'n' ride,Lake Placid Rd at Brinsmead Kamerunga Rd,2,2,2.5061,0.8432,1.6629,3.0224,680.8571
+123,1,Redlynch Central Shopping Centre (Larsen St),Loridan Dr at Windsor Close,4,2,5.4963,1.5684,3.928,8.0242,2338.2857
+123,1,Reservoir Road at Enmore Street,Anderson St at English Street,6,2,3.3342,1.2223,2.1119,5.5974,350.0
+123,2,Anderson St at English Street,Reservoir Rd at Enmore Street,5,2,3.3564,1.332,2.0244,5.1149,350.0
+123,2,Loridan Dr near Banning Av hail 'n' ride,Redlynch Shopping Centre (Larsen St),2,1,5.4715,1.5573,3.9143,7.3341,1068.8571
+133,1,Earlville Shopping Town,Lennon St near Alfred St hail 'n' ride,9,8,8.0212,1.6274,6.3938,17.0789,5157.4286
+133,1,Hoare Street at Eureka Street (Trinity Bay SHS),"Cairns City bus station, platform 2",9,6,7.7371,2.3554,5.3817,14.8504,2712.2857
+133,2,Cairns Central Shopping Centre (Spence St),Trinity Bay High near Hoare St hail 'n' ride,10,8,6.6664,2.2756,4.3908,13.0017,2863.4286
+133,2,English St at Hoare Street,Balaclava Rd at Yarrum St,10,9,8.7206,2.3073,6.4133,17.4552,6503.5714
+140,1,Farmer St at Barney Street,Bicentennial Rd at Jones Access Road,11,0,7.4093,2.6496,4.7597,11.5026,0
+140,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,4.8891,0
+140,2,Bicentennial Road at Resolution Drive,Farmer St near Maren St hail 'n' ride,11,2,7.2278,2.4822,4.7456,11.4793,0
+141,1,Windarra St at Noela Close,Mulgrave Rd at Soure Street,8,0,6.1678,2.4354,3.7324,9.8595,0
+141,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,5.4957,0
+141,2,Mulgrave Rd at Marsh Street,Windarra St near Tracey Cl hail 'n' ride,8,0,6.3664,2.5446,3.8218,10.0317,0
+142,1,Wiseman Rd at Canecutter Road Park,Forest Gardens Bvd at Oakblue Drive,11,10,12.2532,4.7615,7.4916,18.2058,6722.4286
+142,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,5.525,0
+142,2,Forest Gardens Bvd at Oakblue Drive,Wiseman Rd near Canecutter Rd Park hail 'n' ride,11,9,12.354,4.7819,7.5721,18.3619,6801.2857
+143,1,Mt Sheridan Plaza (Barnard Dr) Stop A,Des Chalmers Drive at Anderson Road,11,0,10.6264,2.6435,7.9829,18.13,0
+143,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,5.2466,0
+143,2,George Cannon Drive at Benjamin Street hail 'n' ride,Mt Sheridan Plaza (Barnard Dr) Stop A,11,0,7.9045,1.2987,6.6058,15.6351,0
+150,1,Dempsey Street at Pyramid Estate (Gordonvale),Cairns Rd at Clarke Street,7,0,6.4778,1.3409,5.1369,10.1699,0
+150,1,Mulgrave Rd at Collinson St,Cairns Central Terminus,4,0,3.5358,1.3759,2.1599,4.6283,0
+150,2,Cairns Rd at Clarke Street,Dempsey Street at Pyramid Estate (Gordonvale),7,0,6.2116,1.3527,4.8589,9.7459,0

@@ -1,0 +1,27 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,13,"Drop 13: among the 20 routes with the fewest modelled riders per bus; its buses go to 7, 95, 24",83.2532,83.1853,0.0679,0.0
+2,drop,18,"Drop 18: among the 20 routes with the fewest modelled riders per bus; its buses go to 14, 8, 6",83.1853,83.126,0.0594,0.0
+3,drop,11,"Drop 11: among the 20 routes with the fewest modelled riders per bus; its buses go to 70, 6, 31",83.126,83.0694,0.0566,0.0
+4,merge,32,"Merge 32 into 32 (branch 1): 92% of its stops are also on 32 (branch 1); its buses go to 32 (branch 1), 31, 70",83.0694,83.0213,0.0481,0.0
+5,drop,35,"Drop 35: among the 20 routes with the fewest modelled riders per bus; its buses go to 14, 6, 6 (branch 1)",83.0213,82.9865,0.0348,0.0
+6,drop,19,"Drop 19: among the 20 routes with the fewest modelled riders per bus; its buses go to 92, 31, 30",82.9865,82.9412,0.0454,0.0
+7,straighten,23,"Straighten 23 direction 1 between Ribàs (parell) - Doctor Ruiz i Comes and Carrera del Riu - Entrada casa Rosquilla: 1.8 km shorter, 3 of its stops dropped",82.9412,82.8983,0.0428,0.0
+8,merge,62 [967],"Merge 62 [967] into 62 [1077]: 100% of its stops are also on 62 [1077]; its buses go to 62 [1077], 60 (branch 1), 60",82.8983,82.8591,0.0392,0.0
+9,drop,12,"Drop 12: among the 20 routes with the fewest modelled riders per bus; its buses go to 12 (Plaça d'Amèrica - Pont d'Aragó), 70, 10",82.8591,82.8326,0.0265,0.0
+10,drop,6,"Drop 6: among the 20 routes with the fewest modelled riders per bus; its buses go to 6 (branch 1), 6 (Torrefiel), 16",82.8326,82.7934,0.0392,0.0
+11,drop,94,"Drop 94: among the 20 routes with the fewest modelled riders per bus; its buses go to 95, 28, 16",82.7934,82.7589,0.0345,0.0
+12,merge,73 [963],"Merge 73 [963] into 73 [962]: 100% of its stops are also on 73 [962]; its buses go to 73 [962], 72, 95",82.7589,82.7288,0.0301,0.0
+13,drop,40,"Drop 40: among the 20 routes with the fewest modelled riders per bus; its buses go to 30, 71, 81",82.7288,82.7171,0.0116,0.0
+14,drop,C2 [651],"Drop C2 [651]: among the 20 routes with the fewest modelled riders per bus; its buses go to 92, 93, 12 (Plaça d'Amèrica - Pont d'Aragó)",82.7171,82.6939,0.0232,0.0
+15,drop,C2 [996],"Drop C2 [996]: among the 20 routes with the fewest modelled riders per bus; its buses go to 92, 93, 95",82.6939,82.6783,0.0156,0.0
+16,straighten,23 (Forn d'Alcedo),"Straighten 23 (Forn d'Alcedo) direction 1 between Carrera del Riu - Camí dels Anouers and Ribàs (imparell) - Doctor Ruiz i Comes: 1.8 km shorter, 3 of its stops dropped",82.6783,82.6585,0.0198,0.0
+17,merge,60 (branch 1),"Merge 60 (branch 1) into 60: 97% of its stops are also on 60; its buses go to 60, 62 [1077], 92",82.6585,82.6346,0.024,0.0
+18,drop,81,"Drop 81: among the 20 routes with the fewest modelled riders per bus; its buses go to 31, 71, 30",82.6346,82.6155,0.0191,0.0
+19,drop,30,"Drop 30: among the 20 routes with the fewest modelled riders per bus; its buses go to 4, 92, 71",82.6155,82.5861,0.0294,315.4286
+20,straighten,62 [1077],"Straighten 62 [1077] direction 1 between Felipe Valls - Lluís Cano and Camp de Túria (imparell) - Beniferri.: 1.5 km shorter, 1 of its stops dropped",82.5861,82.5628,0.0233,0.0
+21,straighten,26 (Moncada - Alfara),"Straighten 26 (Moncada - Alfara) direction 1 between Camí de Moncada - Alqueria Ballester and Camí de Moncada (parell) - Alqueria Senent: 1.9 km shorter, 3 of its stops dropped",82.5628,82.5508,0.012,0.0
+22,stops,,"Remove 240 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",82.5508,82.1231,0.4278,0.0
+23,shift,,"Move 18 buses from the 10 routes where a bus saves riders the least waiting (73 [962], 31, 6 (branch 1), 7, 6 (Torrefiel), 4, 60, 12 (Plaça d'Amèrica - Pont d'Aragó), 16, 62 [1077]) to the 10 where it saves the most (23, 23 (Forn d'Alcedo), 24, 25, 26, 26 (Moncada - Alfara), 9, 99, 59, 67)",82.1231,81.4161,0.7069,0.0
+24,shift,,"Move 17 buses from the 10 routes where a bus saves riders the least waiting (73 [962], 7, 31, 6 (branch 1), 60, 95, 4, 6 (Torrefiel), 10, 71) to the 10 where it saves the most (25, 24, 9, 26 (Moncada - Alfara), 26, 99, 23 (Forn d'Alcedo), 59, 98, 72)",81.4161,81.2166,0.1996,0.0
+25,shift,,"Move 15 buses from the 10 routes where a bus saves riders the least waiting (73 [962], 7, 31, 6 (branch 1), 6 (Torrefiel), 95, 10, 26, 92, 60) to the 10 where it saves the most (25, 9, 24, 99, 32 (branch 1), 14, 23 (Forn d'Alcedo), 27, 98, 67)",81.2166,81.137,0.0796,0.0
+26,shift,,"Move 11 buses from the 10 routes where a bus saves riders the least waiting (73 [962], 7, 31, 6 (branch 1), 6 (Torrefiel), 67, 10, 95, 26 (Moncada - Alfara), 23 (Forn d'Alcedo)) to the 10 where it saves the most (25, 99, 9, 26, 92, 23, 28, 98, 16, C1)",81.137,81.0984,0.0386,0.0

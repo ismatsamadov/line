@@ -127,8 +127,8 @@ into `data/cities/<city>/` and writes the settings file `cities/<city>.toml`:
 | Input | Where it comes from |
 |---|---|
 | The city's GTFS feed, a zip file | `--feed`: the agency's open-data page, or the [Mobility Database](https://mobilitydatabase.org), which listed about 3,600 feeds in October 2026 |
-| A population grid | Kontur Population for the country (`--country`, its two-letter code), the same source as Azerbaijan's in `data/external/kontur/` |
-| Places people go | OpenStreetMap: the five destination queries of `data/fetch_external.py` through the Overpass API, in the box of the feed's served stops plus 2 km; or, with `--osm geofabrik`, the same kinds cut out of the country's extract from [Geofabrik](https://download.geofabrik.de) |
+| A population grid | Kontur Population for the country (`--country`, its two-letter code), the same source as Azerbaijan's in `data/external/kontur/`, cut to the box of the feed's served stops plus 5 km, which keeps a city's file under a megabyte (the model reads it to 2 km) |
+| Places people go | OpenStreetMap: the five destination queries of `data/fetch_external.py` through the Overpass API, in the box of the feed's served stops plus 2 km; or, with `--osm geofabrik`, the same kinds cut out of an extract from [Geofabrik](https://download.geofabrik.de): the region `CITIES` names for the city, or else the country's |
 
 ```sh
 python3 data/fetch_city.py my_city --feed https://example.org/gtfs.zip --country XX
@@ -137,12 +137,14 @@ python3 redesign.py --config cities/my_city.toml --out output/cities/my_city/red
 ```
 
 The public Overpass servers are sometimes overloaded for hours; when a query fails, run
-the script again with `--osm geofabrik --refresh`. It downloads the country's extract
-(Latvia's is 142 MB), reads it in a few minutes with `data/osm_pbf.py` and keeps it
-nowhere. An extract gives nodes and ways, as Overpass's `out center` does, a way at the
-centre of the box around its nodes, but not relations, so a few large sites mapped only
-as relations are missed. Riga's destinations came this way on 21 November 2026, when no
-Overpass server answered.
+the script again with `--osm geofabrik --refresh`. It downloads the extract of the city's
+region or country (Latvia's is 142 MB, Québec's 1.1 GB), reads it with `data/osm_pbf.py`
+and keeps it nowhere; with `--osm-cache DIR` it keeps it in `DIR` and uses it again for the
+next city in the same region. An extract gives nodes and ways, as Overpass's `out center`
+does, a way at the centre of the box around its nodes, but not relations, so a few large
+sites mapped only as relations are missed. Riga's destinations came this way on 21
+November 2026, when no Overpass server answered, and so did those of the world pilot's
+cities.
 
 The settings file names the inputs, sets `service_hours` to the feed's hours of service
 and resets what `busnet.toml` sets for Baku alone; the script never overwrites it, so
@@ -175,8 +177,26 @@ to the settings
 `cost_per_bus_hour`, `value_of_time`, `daily_journeys` and `days_per_year`, the table adds
 money, riders' hours and a year
 ([configuration.md](configuration.md#what-the-redesign-is-worth-impact)). Before
-publishing another city's data, check its licence: this repository commits every input
-it uses, and a feed's terms may not allow that. Riga's feed is CC0.
+publishing another city's data, check its licence: a feed's terms may not allow that.
+Riga's feed is CC0.
+
+## The world pilot
+
+The same two runs on 25 cities and Baku, gathered into one table by `world.py`
+([world.md](world.md)). The cities' inputs, and the two feeds and the map `redesign.py`
+writes for each, come to 351 MB, so they are not in git but in a Hugging Face dataset;
+`data/fetch_world.py` downloads them and checks each against its SHA-256 in
+`data/world_files.csv`:
+
+```sh
+python3 data/fetch_world.py                  # 351 MB, the files the results were made from
+python3 world.py                             # output/world/: the table and its totals, in a second
+python3 world.py --run --force --jobs 4      # measure and redesign every city again first (about half an hour)
+```
+
+`world.py` alone reads the results already in `output/cities/`, which are in git, so it
+needs no download. `data/fetch_city.py <city>` fetches a city's inputs from their
+publishers instead; feeds change, so the results will differ from the committed ones.
 
 ## Refresh the public data
 

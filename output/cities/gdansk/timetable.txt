@@ -1,0 +1,92 @@
+106 d1: 1 other stop sequence(s) with 2 of 15 departures left out; 1 stops they call at are on no pattern of the route
+107 d1: a branch with 15 of 31 departures runs as route 107 (Pruszcz Gdański Pruszcz Gdański Dworzec)
+107 d2: a branch with 15 of 32 departures runs as route 107 (Pruszcz Gdański Pruszcz Gdański Dworzec)
+110 d2: 1 other stop sequence(s) with 1 of 54 departures left out; 1 stops they call at are on no pattern of the route
+111 d1: 1 other stop sequence(s) with 3 of 47 departures left out; 1 stops they call at are on no pattern of the route
+112 d1: 1 other stop sequence(s) with 1 of 26 departures left out; 1 stops they call at are on no pattern of the route
+113 d2: 2 other stop sequence(s) with 8 of 25 departures left out; 1 stops they call at are on no pattern of the route
+115 d1: 1 other stop sequence(s) with 2 of 60 departures left out; 1 stops they call at are on no pattern of the route
+115 d2: 3 other stop sequence(s) with 12 of 61 departures left out; 4 stops they call at are on no pattern of the route
+117 d1: 1 other stop sequence(s) with 5 of 33 departures left out; 5 stops they call at are on no pattern of the route
+117 d2: 1 other stop sequence(s) with 5 of 32 departures left out; 5 stops they call at are on no pattern of the route
+120 d1: a branch with 17 of 45 departures runs as route 120 (branch 1)
+120 d2: a branch with 12 of 44 departures runs as route 120 (branch 1)
+124 d1: 1 other stop sequence(s) with 1 of 43 departures left out; 5 stops they call at are on no pattern of the route
+124 d2: 1 other stop sequence(s) with 1 of 42 departures left out; 1 stops they call at are on no pattern of the route
+126 d1: a branch with 8 of 21 departures runs as route 126 (Żukowo Urząd Gminy)
+126 d2: a branch with 8 of 22 departures runs as route 126 (Żukowo Urząd Gminy)
+127 d1: 2 other stop sequence(s) with 13 of 76 departures left out; 4 stops they call at are on no pattern of the route
+127 d2: 2 other stop sequence(s) with 15 of 73 departures left out; 4 stops they call at are on no pattern of the route
+130 d2: 1 other stop sequence(s) with 4 of 53 departures left out; 1 stops they call at are on no pattern of the route
+131 d2: 1 other stop sequence(s) with 3 of 21 departures left out; 1 stops they call at are on no pattern of the route
+132 d1: a branch with 7 of 25 departures runs as route 132 (branch 1)
+132 d2: a branch with 8 of 25 departures runs as route 132 (branch 1)
+136 d2: 1 other stop sequence(s) with 1 of 31 departures left out; 1 stops they call at are on no pattern of the route
+138 d2: 1 other stop sequence(s) with 1 of 10 departures left out; 1 stops they call at are on no pattern of the route
+143 d1: 2 other stop sequence(s) with 6 of 29 departures left out; 2 stops they call at are on no pattern of the route
+143 d2: 1 other stop sequence(s) with 5 of 28 departures left out; 1 stops they call at are on no pattern of the route
+154 d1: 2 other stop sequence(s) with 2 of 80 departures left out; 2 stops they call at are on no pattern of the route
+156 d2: a branch with 8 of 24 departures runs as route 156 (Ujeścisko)
+157 d1: a branch with 10 of 40 departures runs as route 157 (branch 1)
+158 d2: a branch with 11 of 47 departures runs as route 158 (Stogi)
+158 d1: 4 other stop sequence(s) with 21 of 52 departures left out; 8 stops they call at are on no pattern of the route
+162 d1: 1 other stop sequence(s) with 1 of 58 departures left out; 1 stops they call at are on no pattern of the route
+166 d1: a branch with 7 of 20 departures runs as route 166 (branch 1)
+166 d2: a branch with 10 of 21 departures runs as route 166 (branch 1)
+166 d1: a branch with 5 of 20 departures runs as route 166 (branch 2)
+169 d1: a branch with 13 of 28 departures runs as route 169 (branch 1)
+169 d2: a branch with 6 of 28 departures runs as route 169 (branch 1)
+174 d1: a branch with 8 of 23 departures runs as route 174 (Stara Piła)
+174 d2: a branch with 8 of 23 departures runs as route 174 (Stara Piła)
+175 d1: 1 other stop sequence(s) with 2 of 57 departures left out; 1 stops they call at are on no pattern of the route
+175 d2: 1 other stop sequence(s) with 1 of 58 departures left out; 1 stops they call at are on no pattern of the route
+178 d1: 1 other stop sequence(s) with 1 of 28 departures left out; 1 stops they call at are on no pattern of the route
+179 d1: a branch with 9 of 37 departures runs as route 179 (branch 1)
+179 d2: a branch with 10 of 41 departures runs as route 179 (branch 1)
+179 d2: 1 other stop sequence(s) with 1 of 41 departures left out; 1 stops they call at are on no pattern of the route
+183 d1: a branch with 5 of 20 departures runs as route 183 (Uniwersytet Medyczny)
+183 d1: 2 other stop sequence(s) with 3 of 20 departures left out; 1 stops they call at are on no pattern of the route
+184 d1: 2 other stop sequence(s) with 2 of 48 departures left out; 1 stops they call at are on no pattern of the route
+186 d1: 2 other stop sequence(s) with 5 of 31 departures left out; 2 stops they call at are on no pattern of the route
+186 d2: 1 other stop sequence(s) with 1 of 31 departures left out; 1 stops they call at are on no pattern of the route
+189 d1: 1 other stop sequence(s) with 5 of 47 departures left out; 1 stops they call at are on no pattern of the route
+189 d2: 2 other stop sequence(s) with 6 of 49 departures left out; 2 stops they call at are on no pattern of the route
+199 d1: a branch with 30 of 87 departures runs as route 199 (Wrzeszcz PKP)
+199 d2: a branch with 31 of 85 departures runs as route 199 (Wrzeszcz PKP)
+199 d1: 1 other stop sequence(s) with 1 of 87 departures left out; 0 stops they call at are on no pattern of the route
+199 d2: 1 other stop sequence(s) with 1 of 85 departures left out; 1 stops they call at are on no pattern of the route
+208 d1: 1 other stop sequence(s) with 1 of 25 departures left out; 1 stops they call at are on no pattern of the route
+208 d2: 1 other stop sequence(s) with 1 of 25 departures left out; 1 stops they call at are on no pattern of the route
+210 d1: 3 other stop sequence(s) with 5 of 39 departures left out; 24 stops they call at are on no pattern of the route
+213 d1: a branch with 25 of 76 departures runs as route 213 (Kowale Szkoła Metropolitalna)
+213 d2: a branch with 27 of 76 departures runs as route 213 (Kowale Szkoła Metropolitalna)
+262 d1: a branch with 14 of 45 departures runs as route 262 (Łostowice Świętokrzyska)
+262 d2: 1 other stop sequence(s) with 2 of 46 departures left out; 1 stops they call at are on no pattern of the route
+267 d1: 1 other stop sequence(s) with 1 of 3 departures left out; 2 stops they call at are on no pattern of the route
+268 d2: a branch with 6 of 16 departures runs as route 268 (Jasień PKM)
+269 d2: 3 other stop sequence(s) with 9 of 34 departures left out; 1 stops they call at are on no pattern of the route
+289 d1: 1 other stop sequence(s) with 9 of 51 departures left out; 1 stops they call at are on no pattern of the route
+289 d2: 1 other stop sequence(s) with 9 of 51 departures left out; 1 stops they call at are on no pattern of the route
+307 d1: a branch with 14 of 33 departures runs as route 307 (Będzieszyn Panattoni)
+307 d2: a branch with 14 of 32 departures runs as route 307 (Będzieszyn Panattoni)
+M32 d1: a branch with 25 of 77 departures runs as route M32 (branch 1)
+M32 d2: a branch with 24 of 80 departures runs as route M32 (branch 1)
+M32 d2: 1 other stop sequence(s) with 2 of 80 departures left out; 1 stops they call at are on no pattern of the route
+507 d1: 1 other stop sequence(s) with 1 of 32 departures left out; 0 stops they call at are on no pattern of the route
+512 d2: 1 other stop sequence(s) with 3 of 16 departures left out; 1 stops they call at are on no pattern of the route
+T8 d1: a branch with 54 of 140 departures runs as route T8 (Stogi Plaża)
+T8 d2: a branch with 55 of 138 departures runs as route T8 (Stogi Plaża)
+911 d1: a branch with 10 of 41 departures runs as route 911 (Stogi)
+911 d2: a branch with 10 of 41 departures runs as route 911 (Stogi)
+N1: runs at night, 19 of its 19 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N2: runs at night, 11 of its 12 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N3: runs at night, 13 of its 14 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N4: runs at night, 15 of its 16 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N5: runs at night, 12 of its 13 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N6: runs at night, 17 of its 17 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N8: runs at night, 15 of its 16 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N9: runs at night, 5 of its 5 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N14: runs at night, 10 of its 12 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N16: runs at night, 9 of its 9 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N78: runs at night, 5 of its 5 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N89: runs at night, 12 of its 12 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

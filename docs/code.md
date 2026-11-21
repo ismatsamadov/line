@@ -20,7 +20,9 @@ paper/figures.py      the manuscript's figures, drawn from output/ as SVG and PD
 paper/check.py        word counts, highlight lengths and citation checks of paper/manuscript.md
 paper/build.py        the submission files (Word, preprint PDF) from the Markdown -> paper/submission/
 busnet.toml           settings: data paths and every assumption
+world.py              the world pilot's cities in one table, with totals -> output/world/ (--run measures and redesigns them first)
 cities/riga.toml      settings for Riga, read from its GTFS feed (written by data/fetch_city.py)
+cities/<city>.toml    the same for the world pilot's other cities; cities/baku.toml reads Baku from its own feed
 busnet/
   assumptions.py      Assumptions: the default value of every assumption
   bicycle.py          read AYNA's bicycle lanes and parking files (KMZ); a line index; the measures against the network
@@ -54,11 +56,14 @@ animations/
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
   buses.gif, riders.gif, redesign.gif, travel-time.gif   written by build.py
 .nojekyll             tells GitHub Pages to serve the files as they are
-data/                 every input, committed (see data.md)
+data/                 every input, committed (see data.md), except the world pilot's, which are in a Hugging Face dataset
   ayna_scraper.py     the bus network from AYNA's map API -> ayna.db (run in a folder outside the repository)
   fetch_external.py   the public datasets -> data/external/
   fetch_city.py       another city's feed, population grid and destinations -> data/cities/<city>/, and cities/<city>.toml
   cities/riga/        Riga's inputs
+  cities/<city>/      the world pilot's inputs, not in git: fetch_world.py downloads them from the Hugging Face dataset
+  fetch_world.py      the world pilot's inputs, and its redesigns' feeds and maps, from the Hugging Face dataset, checked against world_files.csv
+  world_files.csv     every file of that dataset with its size and SHA-256
   osm_pbf.py          reads OpenStreetMap PBF extracts (standard library); cuts the walking network out of Geofabrik's,
                       and a city's destinations (places) for fetch_city.py --osm geofabrik
   metro_scraper.py    the metro's own API -> data/external/metro_api/
@@ -143,7 +148,7 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `geo` | `haversine_m`, `PROJ` (a `LocalProjection`; `centre_on(lat, lon)` moves it to another city, as `read_gtfs` does), `Polyline` (`cum`, `project_all`, `point_at`, `slice_latlon`, `max_jump_m`, `reversed`), `match_stops`, `fit_score` | `match_stops` is the dynamic program in [methodology.md](methodology.md#1-loading-and-repairing-the-network) |
 | `model` | `load_network(db_path, repair=True)` | Repairs are detected from the data, not hard-coded per route, so they still apply after a new scrape |
 | `service` | `run_time_s(pattern, network, a)`, `fuel_l(pattern, a)`, `load_headways(path)`, `route_headways(network, a, observed, supplied, timetable)`, `operations(network, a, headways)` | `operations` returns (per route, totals) |
-| `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)` | Reads GeoPackage (no GIS library) or CSV |
+| `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)`, `cut_gpkg(src, dst, bbox)` | Reads GeoPackage (no GIS library) or CSV. `cut_gpkg` copies a GeoPackage keeping only the cells whose centre is in a box, for `data/fetch_city.py` |
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
 | `bicycle` | `placemarks(path)`, `load_lanes(path, folder)`, `load_parking(path)`, `LineIndex(lines)` (`nearest`, `nearest_any`), `along(path, index, within_m)`, `stops_near`, `measure(network, a, zones, observed, lanes, lanes_2025, parking, exits)`, `geojson` | Reads KMZ with the standard library; `measure` returns the summary and every table `bicycle.py` writes ([methodology.md](methodology.md#13-bicycle-lanes-and-parking)). Used by `bicycle.py` and `site/build.py` |

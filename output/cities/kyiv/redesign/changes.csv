@@ -1,0 +1,13 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,1т,Drop 1т: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,107.1226,107.0246,0.098,0.0
+2,drop,43к,Drop 43к: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,107.0246,107.0128,0.0118,73.4286
+3,drop,95,Drop 95: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,107.0128,107.001,0.0117,264.4286
+4,drop,52,Drop 52: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,107.001,106.9895,0.0115,496.4286
+5,drop,14,Drop 14: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,106.9895,106.979,0.0105,0.0
+6,drop,10,Drop 10: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,106.979,106.9714,0.0076,21.1429
+7,drop,90к,Drop 90к: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,106.9714,106.9641,0.0073,0.0
+8,drop,36,Drop 36: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,106.9641,106.957,0.0071,0.0
+9,shift,,"Move 15 buses from the 20 routes where a bus saves riders the least waiting (3т, 104, 43Ка, 37, 23тр, 11, 102А, 3М, 27т, 26тр, 56, 99, 38тр, 27тр, 1МД, 28т, 49, 33т, 48, 37Д) to the 20 where it saves the most (7, 14тр, 78, 98, 45, 38, 6, 5, 46, 44, 8тр, 62, 70Д, 47тр, 55, 24, 18, 5т, 73, 29тр)",106.957,106.5704,0.3866,0.0
+10,shift,,"Move 12 buses from the 20 routes where a bus saves riders the least waiting (3т, 104, 11, 37, 23тр, 3М, 102А, 27т, 99, 38тр, 28т, 33т, 1М, 35т, 22Тд, 24тр, 32тр, 48, 41тр, 81) to the 20 where it saves the most (5, 14тр, 45, 78, 38, 6, 44, 20, 8тр, 47тр, 55, 62, 29тр, 33, 87, 46, 45тр, 17тр, 73, 51)",106.5704,106.3622,0.2082,0.0
+11,shift,,"Move 16 buses from the 20 routes where a bus saves riders the least waiting (3т, 11, 3М, 27т, 99, 28т, 22Тд, 1М, 35т, 6тр, 101, 11тр, 41тр, 81, 69, 109, 110, 114, 22Тл, 91Т) to the 20 where it saves the most (5, 14тр, 45, 29тр, 78, 38, 18, 8тр, 20, 51, 62, 87, 6, 24, 98, 118д, 70Д, 47тр, 55, 54)",106.3622,106.2384,0.1238,0.0
+12,shift,,"Move 5 buses from the 10 routes where a bus saves riders the least waiting (3т, 3М, 99, 54, 101, 6тр, 18, 35, 24, 70Д) to the 10 where it saves the most (29тр, 45, 14тр, 78, 17тр, 91Т, 6, 40, 73, 7)",106.2384,106.2064,0.0321,0.0

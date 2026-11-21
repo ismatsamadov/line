@@ -1,0 +1,18 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+AB018,2,Keranio Bridge,Degu Hotel,5,0,4.6449,1.7415,2.9034,20.8923,0
+AB110,1,Belay Ab Moters,Tulu Dimtu,5,0,6.4053,1.9377,4.4677,18.5781,0
+AB110,2,Tulu Dimtu Unisa,Belay Ab Moters,6,0,6.8086,2.0181,4.7905,20.1334,0
+AB041,1,Ras Mekonene Bridge (Seba Dereja),6 Kilo,3,0,2.8161,1.1082,1.7079,8.4973,0
+AB041,2,Education Bureau (6 Kilo),Ras Mekonene Bridge (Seba Dereja),2,0,2.5995,0.9416,1.658,7.9449,0
+D46,2,Kela,Bole Arabsa,1,1,2.3947,0.8824,1.5123,4.6865,2472.8571
+AB048,1,Bole Mikael,Wollo Sefer,8,2,4.0446,1.4758,2.5688,10.8234,3785.0
+AB048,2,Wollo Sefer,Bole Mickael,3,2,3.6213,1.3183,2.303,8.3128,0
+AB005,1,Mekanisa Kore,Bisrate Gebrael,2,0,4.856,1.3913,3.4647,14.1994,0
+AB005,2,Mechare Meda,Mekanisa Kore,2,0,5.465,1.9995,3.4654,14.2023,0
+AB063,1,Atena Tera,Mikili Land,1,0,4.771,1.8846,2.8864,13.9962,0
+AB113,2,Kilinto Right (Heniken),Koye Feche,1,0,4.1196,1.3508,2.7689,6.9517,0
+AB013,2,Ras Mekonene Bridge (Seba Dereja),Education Bureau (6 Kilo),4,0,2.6985,0.982,1.7165,8.7382,0
+AB051,1,Old Airport (Mobil),Tabot Maderya,2,0,3.0315,1.164,1.8676,7.7724,0
+AB051,2,Weyra Sefer,Old Airport (Mobil),3,0,4.0962,1.4213,2.6748,11.1771,0
+SH071,2,Tor Hailoch,Weyra Sefer,3,0,4.9398,1.4437,3.4961,13.7372,0
+SH076,2,Keranio Bridge,Degu Hotel,5,0,4.6449,1.7415,2.9034,20.8923,0
