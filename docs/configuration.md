@@ -11,8 +11,8 @@ their sources so they can be read and changed in one place.
 - The `[data]` table holds file paths. Relative paths are read relative to the folder of
   the settings file.
 - Every other table only groups settings for readers: `[walking]`, `[service]`, `[speed]`,
-  `[fuel]`, `[demand]` and `[redesign]` are flattened, so their keys must be setting names
-  (the names in the tables below).
+  `[fuel]`, `[demand]`, `[redesign]`, `[gtfs]` and `[impact]` are flattened, so their keys
+  must be setting names (the names in the tables below).
 - Three settings are tables themselves: `[headway_by_zone]`, `[cruise_kmh]` and
   `[destination_weights]`. Values given there are merged with the defaults, so you can
   change one zone or one destination kind and keep the rest.
@@ -30,7 +30,8 @@ their sources so they can be read and changed in one place.
 
 | Key | Default in busnet.toml | Contents |
 |---|---|---|
-| `db` | `data/ayna.db` | The AYNA network snapshot (required) |
+| `db` | `data/ayna.db` | The AYNA network snapshot (required unless `gtfs` is set) |
+| `gtfs` | not set (a commented example) | A GTFS feed, a zip file or a folder, measured instead of `db`: another city's network, with headways and speeds from its timetable ([below](#a-gtfs-feed-instead-of-the-ayna-snapshot-gtfs)) |
 | `population` | `data/external/kontur/kontur_population_AZ_20231101.gpkg` | Population grid (.gpkg or a CSV with latitude, longitude, population) |
 | `ridership` | `data/external/opendata/bakubus_passenger-2026.csv` | Daily boardings per route |
 | `headways` | `data/headways.csv` | Real headways: `route,headway_min[,source]` |
@@ -45,7 +46,9 @@ A missing file is reported (`missing ...: (using assumptions instead)`) and the 
 without it: no population means no coverage, access or redesign; no ridership means
 headways come from the zone table; no destinations means trips end at homes only; no
 walking network means `robustness.py` skips the walking check. `bicycle.py` needs both
-bicycle files and stops with a message when one is missing.
+bicycle files and stops with a message when one is missing. A `gtfs` path that does not
+exist stops the run (`Settings error: no GTFS feed at ...`), since there is no network
+without it.
 
 ## Walking (`[walking]`)
 
@@ -60,16 +63,17 @@ bicycle files and stops with a message when one is missing.
 ## Service frequency and transfers (`[service]`, `[headway_by_zone]`)
 
 Each route's headway (minutes between buses) is the first of: a row in `data/headways.csv`;
-an estimate from observed boardings when `headway_from_ridership` is on; the value for its
-working zone in `[headway_by_zone]`; `default_headway_min`.
+the timetable, when the network comes from a GTFS feed; an estimate from observed
+boardings when `headway_from_ridership` is on; the value for its working zone in
+`[headway_by_zone]`; `default_headway_min`.
 
 | Setting | Default | Meaning | Source or reason |
 |---|---|---|---|
 | `default_headway_min` | 12 | Headway for a route with no better information | Assumption |
 | `headway_from_ridership` | true | Estimate BakuBus headways from their observed boardings | Uses the opendata.az counts |
 | `boardings_per_trip` | 60 | Average boardings on one one-way trip of a 12 m bus, used for that estimate | Assumption; checked through the fleet total |
-| `service_hours` | 17 | Hours of service a day (06:00 to 23:00) | Assumption |
-| `min_headway_min` | 3 | Shortest headway allowed | Assumption |
+| `service_hours` | 17 | Hours of service a day (06:00 to 23:00) | Assumption; for a GTFS feed, the hours between its first and last departures, which the run reports |
+| `min_headway_min` | 3 | Shortest headway allowed for estimates and in the redesign's plans | Assumption; a feed whose routes run more often (the run counts them) needs it lower |
 | `max_headway_min` | 30 | Longest headway allowed for estimates, and the floor of service the redesign keeps on every route | Assumption; the TCQSM's 31–60 minute band is a lower level of service |
 | `transfer_penalty_min` | 5 | Extra minutes a rider perceives for each change, on top of waiting | The value used in the Mandl and Mumford benchmark studies ([research.md](research.md#5-designing-a-network-by-computer)) |
 | `layover_share` | 0.15 | Recovery time at terminals as a share of running time (for fleet size) | Assumption |
@@ -125,6 +129,48 @@ similar CO₂ per km, so diesel-equivalent litres are a fair common unit.
 | `redesign_protect_boardings` | 1000 | A route with at least this many counted weekday boardings is never dropped, because the model cannot tell where its riders would go. Merging it into a route that serves 85% of its stops is still allowed |
 | `redesign_protected_routes` | `["180"]` | Route numbers the search leaves as they are: never merged, dropped, straightened, stop-balanced or thinned out (they can still gain buses). 180 serves Pirallahı, whose connecting routes have no stops in the data, so the model cannot see its riders |
 
+## A GTFS feed instead of the AYNA snapshot (`[gtfs]`)
+
+When `[data]` names a feed (`gtfs = "..."`), the network comes from it: the stops, each
+route direction's stop sequence and shape, and from its timetable each route's trips a
+day (its headway) and its moving speed, the scheduled running time less `stop_loss_s` at
+every stop. A route whose timetable gives a speed outside 5 to 90 km/h, or none, uses
+`cruise_kmh` and `default_cruise_kmh` instead; `measure.py` notes which in
+`output/timetable.txt`. How the feed's trips become one stop pattern per direction is in
+[methodology.md](methodology.md#1-loading-and-repairing-the-network).
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `gtfs_date` | `""` | The service day to read, `YYYY-MM-DD`. Empty: the weekday with the most trips of the route types read (the first if several), after the holidays and extra days of `calendar_dates.txt` |
+| `gtfs_route_types` | `[3]` | GTFS route types to read. 3 is bus, and takes in the extended bus (700 to 799) and coach (200 to 299) types; add 11 for trolleybuses or 0 for trams. Other modes are counted in the summary and left out |
+
+The Baku settings are tuned to Baku, so a city's settings file should also set
+`service_hours` to the hours the run reports, `redesign_protected_routes = []`,
+`reference_fleet = 0` (or the city's own fleet) and `headway_from_ridership = false` unless
+the city has counts in the format of `data/external/opendata/bakubus_passenger-2026.csv`
+([getting-started.md](getting-started.md#another-city-from-its-gtfs-feed)).
+
+## What the redesign is worth (`[impact]`)
+
+`redesign.py` writes `output/redesign/impact.csv`: minutes per trip, people near a stop,
+buses, bus-hours, bus-km, fuel and CO₂ a day for today's network, the redesign with
+today's buses, and the redesign with fewer buses
+([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)). These
+settings add rows to it; at 0 a value is unknown, and the rows that need it are left out
+rather than guessed. No public source gives them for Baku, so `busnet.toml` leaves them
+at 0.
+
+| Setting | Default | Meaning |
+|---|---|---|
+| `daily_journeys` | 0 | Door-to-door bus journeys on a weekday. Turns minutes per trip into riders' hours a day |
+| `fuel_price` | 0 | Price of a diesel-equivalent litre, in `currency` |
+| `cost_per_bus_hour` | 0 | Running cost of a bus-hour besides fuel (driver, upkeep), in `currency` |
+| `value_of_time` | 0 | What an hour of riders' time is worth, in `currency`; needs `daily_journeys` |
+| `currency` | `""` | The name to print with money, e.g. `"AZN"` |
+| `days_per_year` | 0 | Weekday equivalents in a year; adds a year's fuel, CO₂, riders' hours and money |
+
+They change only `impact.csv` and the `impact` rows of `summary.json`, never the search.
+
 ## Which results depend on which settings
 
 | Results | Depend on |
@@ -133,9 +179,10 @@ similar CO₂ per km, so diesel-equivalent litres are a fair common unit.
 | Coverage | `coverage_radius_m`, population |
 | Run times, stop-time share, detour minutes | `cruise_kmh`, `stop_loss_s` |
 | Fuel and CO₂ | `fuel_l_per_km`, `fuel_l_per_stop`, `co2_kg_per_l`, plus headways for daily totals |
-| Headways, daily trips, bus-hours, bus-km, fleet | The `[service]` settings, `data/headways.csv`, ridership |
+| Headways, daily trips, bus-hours, bus-km, fleet | The `[service]` settings, `data/headways.csv`, ridership; from a GTFS feed, its timetable, `[gtfs]` and `service_hours` |
 | Door-to-door access, transfers, ridership check | Walking, service, speed and demand settings, population, destinations |
 | Redesign | All of the above plus `[redesign]` |
+| Money, riders' hours and a year in `impact.csv` | `[impact]` |
 
 ## Examples
 
@@ -157,4 +204,11 @@ python3 redesign.py --set 'redesign_protected_routes=["180", "519"]'
 
 # the redesign under fourteen other settings at once, plus other trip samples
 python3 robustness.py
+
+# another city: its settings file names its GTFS feed, population grid and destinations
+python3 measure.py --config my_city.toml --out output/my_city
+python3 redesign.py --config my_city.toml --out output/my_city/redesign
+
+# what the redesign is worth in money and a year, once prices are known
+python3 redesign.py --set fuel_price=1.0 --set cost_per_bus_hour=15 --set currency=AZN --set days_per_year=300
 ```

@@ -100,8 +100,9 @@ otherwise. Blank cells mean "not defined" (for example the circuity of a loop ro
 | `network.ridership_fit` | `routes_compared`, `spearman`, `pearson_of_log_shares` |
 | `inputs` | The file used for each input, or null if it was missing |
 | `settings` | Every setting used |
-| `headway_sources` | Routes by headway source |
+| `headway_sources` | Routes by headway source: `supplied`, `ridership`, `zone`, `default`, and `timetable` for a network read from a GTFS feed |
 | `repairs` | The data repairs applied |
+| `timetable` | Only for a network read from a GTFS feed: the `feed`, the `day` and `weekday` read, the `route_types`, the routes of those types in the feed and running that day, `routes_of_other_types` by mode, `routes_running_one_way`, the day's `departures` with those on route patterns, on part of one (short turns) and left out (branches), `share_of_departures_modelled`, `stops_served` and `stops_only_on_departures_left_out`, how many speeds came from the timetable and from the settings, `routes_more_often_than_min_headway`, and the `first_departure`, `last_departure` and `hours_of_departures` |
 
 ## output/scenario.json and output/scenario_removed_stops.csv
 
@@ -112,7 +113,16 @@ above. `scenario_removed_stops.csv` lists each removed stop: `stop_id`, `name`, 
 
 ## output/repairs.txt
 
-One line per data repair applied when loading `ayna.db` ([data.md](data.md#defects-repaired-automatically)).
+One line per data repair applied when loading `ayna.db` ([data.md](data.md#defects-repaired-automatically)),
+or, for a network read from a GTFS feed, per shape reversed or replaced by straight lines.
+
+## output/timetable.txt
+
+Written only for a network read from a GTFS feed. First any warning about the feed (stops
+without a position, hours of departures that differ from `service_hours`), then one line
+per route direction whose other stop sequences were left out, with their departures and
+the stops only they call at, and one per route whose timetable speed fell outside 5 to
+90 km/h and gave way to the settings.
 
 ## output/redesign/changes.csv — each change the search kept
 
@@ -138,7 +148,11 @@ One line per data repair applied when loading `ayna.db` ([data.md](data.md#defec
 | `headway_min_before`, `headway_min_after` | Minutes between buses |
 | `one_way_km_before`, `one_way_km_after` | Length, averaged over directions |
 
-The `_after` headway and length are blank for merged and dropped routes.
+The `_after` headway and length are blank for merged and dropped routes. When no route has
+counted boardings, as for most cities read from a GTFS feed, the model's riders have no
+count to be scaled to, so `boardings_per_day` and `boardings_source` give way to
+`share_of_modelled_boardings`, each route's share of the boardings the model gives today's
+network.
 
 ## output/redesign/summary.json
 
@@ -150,9 +164,37 @@ The `_after` headway and length are blank for merged and dropped routes.
 | `search_sample` | Origins, seed, and the average minutes and share of impossible trips before and after on the search sample |
 | `minutes_counting_impossible_trips_at_limit` | The same average on the independent check, before and after |
 | `share_of_fleet_for_todays_travel_time` | Share of the fleet that gives today's average trip with the new plan, on the independent check and on the search sample |
-| `fleet_saving_option` | Bus-equivalents and daily service (`operations`) for that smaller fleet |
-| `independent_check.before`, `independent_check.after` | `accessibility` and `operations` as in network.json, plus `served_stops`, `route_km_one_way_total`, `corridor_km`, `duplication_ratio`, `median_stop_gap_m`, `share_stop_gaps_under_300m`, `share_population_covered`. Here every headway comes from the plan's buses, so `headway_sources` counts them under `plan`, and `modelled_boardings` is left out |
+| `fleet_saving_option` | Bus-equivalents, daily service (`operations`) and door-to-door results (`accessibility`) for that smaller fleet |
+| `independent_check.before`, `independent_check.after` | `accessibility` and `operations` as in network.json, plus `served_stops`, `route_km_one_way_total`, `corridor_km`, `duplication_ratio`, `median_stop_gap_m`, `share_stop_gaps_under_300m`, `share_population_covered`, `population_within_coverage_radius`. Here every headway comes from the plan's buses, so `headway_sources` counts them under `plan`, and `modelled_boardings` is left out |
+| `impact` | The rows of `impact.csv` |
 | `settings`, `inputs` | As in network.json |
+
+## output/redesign/impact.csv — what the redesign is worth
+
+Today's network beside two ways to take the redesign, all three measured on the
+independent check's sample of trips: `same_buses`, the redesign with today's fleet, and
+`fewer_buses`, the redesign with the fleet scaled down until the average trip is no longer
+than today's (`share_of_fleet_for_todays_travel_time`). Each `_change` column is the value
+after less today's, so a saving is negative. Written by `busnet/impact.py`; every value is
+a model estimate.
+
+| Column | Meaning |
+|---|---|
+| `measure`, `unit` | What the row measures, and in what (`min`, `share`, `people`, `buses`, `h`, `km`, `L`, `t`, or the `currency` setting) |
+| `today` | Today's network |
+| `same_buses`, `same_buses_change` | The redesign with today's buses |
+| `fewer_buses`, `fewer_buses_change` | The redesign with the smaller fleet |
+
+The rows, always: the average door-to-door trip counting trips that cannot be made at
+`max_trip_min` (the measure the search minimises) and over the trips that can be made; the
+share of trips that can be made within 45 minutes and within `max_trip_min`; people with
+a stop within `coverage_radius_m`; buses in service; bus-hours, bus-km, fuel and CO₂ a day;
+and riders' hours per 100,000 journeys, the minutes per trip on a scale that needs no
+count of journeys. Then, only where `[impact]` gives the values
+([configuration.md](configuration.md#what-the-redesign-is-worth-impact)): riders' hours a
+day (`daily_journeys`) and their value (`value_of_time`), fuel cost (`fuel_price`), the
+running cost besides fuel (`cost_per_bus_hour`), and with `days_per_year` the same a year,
+with fuel and CO₂.
 
 ## output/redesign/network.geojson
 
@@ -176,7 +218,9 @@ dates are nominal, since the network is AYNA's map as scraped on 23 October 2026
 to the end of 2027 because the Mobility Database marks a feed inactive once its last day
 has passed. Stop and route ids are AYNA's. Stop times come from the travel model, so the
 feeds describe the model, not an official timetable; `feed_info.txt` names the network
-(`feed_version` is `today` or `redesign`) and the repository as publisher.
+(`feed_version` is `today` or `redesign`) and the repository as publisher. For a network
+read from another city's GTFS feed, the ids are that feed's, and `agency.txt` and
+`feed_info.txt` carry its agency's web address, time zone and language.
 
 The shapes are the repaired route lines with two changes the validator below asks for: a
 point that repeats the one before it is written once (the repaired lines repeat a point

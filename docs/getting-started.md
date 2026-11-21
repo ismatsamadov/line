@@ -23,7 +23,7 @@ python3 robustness.py
 |---|---|---|
 | `python3 measure.py` | `output/` measures of today's network | about 8 s |
 | `python3 measure.py --scenario stop-balancing --min-gap 250` | the same, plus `output/scenario.json` and `output/scenario_removed_stops.csv` | about 12 s |
-| `python3 redesign.py` | `output/redesign/` | about 2 minutes |
+| `python3 redesign.py` | `output/redesign/`, with `impact.csv`: what the redesign is worth in minutes, buses, fuel and CO₂ | about 2 minutes |
 | `python3 robustness.py` | `output/robustness/`: the results on other trip samples and under other assumptions | about 15 minutes (8 processes) |
 | `python3 bicycle.py` | `output/bicycle/`: AYNA's bicycle lanes and parking points beside the bus network | about 4 s |
 | `python3 site/build.py` | `site/data.js` and `site/checklist.xlsx`, the page's data, from `output/`; with `--og` also `site/og.png` (needs Chrome) | about 3 s |
@@ -109,6 +109,56 @@ python3 redesign.py --set redesign_max_people_losing_stop=0 --out output/redesig
 `--set` can be repeated. `--config none` ignores `busnet.toml` and uses the built-in
 defaults (and then finds no data files except `data/ayna.db`).
 
+## Another city, from its GTFS feed
+
+The measurements and the redesign search run on any city that publishes a GTFS feed.
+The feed replaces the AYNA snapshot, and its timetable gives every route its headway and
+its speed, which Baku's data cannot. Three inputs are needed, and they exist for most of
+the world:
+
+| Input | Where it comes from |
+|---|---|
+| The city's GTFS feed, a zip file | The agency's open-data page, or the [Mobility Database](https://mobilitydatabase.org), which listed about 3,600 feeds in October 2026 |
+| A population grid | Kontur Population for the country on [HDX](https://data.humdata.org/organization/kontur), the same source as Azerbaijan's in `data/external/kontur/`; unzip the `.gpkg.gz` |
+| Destinations, optional | OpenStreetMap through the Overpass API: the five `osm_*.json` queries in `data/fetch_external.py`, with the city's box in place of `BBOX` |
+
+A settings file for the city names them and resets what is tuned to Baku. Relative paths
+are read from the file's own folder:
+
+```toml
+# my_city.toml
+[data]
+gtfs = "my_city/gtfs.zip"
+population = "my_city/kontur_population_XX_20231101.gpkg"
+destinations = ["my_city/osm_education.json", "my_city/osm_health.json", "my_city/osm_shopping.json",
+                "my_city/osm_offices.json", "my_city/osm_transport.json"]
+
+[service]
+service_hours = 18.5             # the hours of departures measure.py reports for the feed
+headway_from_ridership = false   # no counts in BakuBus's format
+reference_fleet = 0              # or the city's buses in service
+
+[redesign]
+redesign_protected_routes = []   # 180 is a Baku route
+```
+
+```sh
+python3 measure.py --config my_city.toml --out output/my_city
+python3 redesign.py --config my_city.toml --out output/my_city/redesign
+```
+
+`measure.py` prints the day it read (the weekday with the most bus trips, or
+`gtfs_date`), the share of that day's departures on the route patterns, the hours between
+the first and last departures, and any warning about the feed; `timetable.txt` lists the
+branches left out and the routes whose speed fell back to the settings
+([configuration.md](configuration.md#a-gtfs-feed-instead-of-the-ayna-snapshot-gtfs)).
+`redesign.py` then writes the redesign and its `impact.csv`. With `--set fuel_price=...`,
+`cost_per_bus_hour`, `value_of_time`, `daily_journeys` and `days_per_year`, the table adds
+money, riders' hours and a year
+([configuration.md](configuration.md#what-the-redesign-is-worth-impact)). Before
+publishing another city's data, check its licence: this repository commits every input
+it uses, and a feed's terms may not allow that.
+
 ## Refresh the public data
 
 ```sh
@@ -136,6 +186,9 @@ later. Nothing reads `data/metro/` yet, so the metro scripts do not change the r
 | `metro stations without exit coordinates: ...` | A metro station name could not be matched to an exit | Check the names in the two metro files |
 | `ModuleNotFoundError: No module named 'tomllib'` | Python older than 3.11 | Use Python 3.11 or newer |
 | `The redesign needs population data` | `redesign.py` without a population file | Restore the Kontur file |
+| `Settings error: no GTFS feed at ...` | `[data] gtfs` names a file that is not there | Fix the path; relative paths are read from the settings file's folder |
+| `Settings error: no trips of route types [3] run on ...` | Nothing of those types runs on `gtfs_date` | Leave `gtfs_date` empty for the busiest weekday, or add types to `gtfs_route_types` |
+| `departures run from ... set it to ...` | The feed's hours of departures differ from `service_hours` by more than an hour | Set `service_hours` as the message says, so waiting times match the timetable |
 
 ## Where to go next
 

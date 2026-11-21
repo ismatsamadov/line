@@ -1,6 +1,6 @@
 # Roadmap
 
-Where I think the work stands on 11 November 2026, and what I would do next. This page is
+Where I think the work stands on 21 November 2026, and what I would do next. This page is
 about what is missing, not what has been built.
 
 ## What I would do next
@@ -66,6 +66,18 @@ rank correlation against counted boardings is the only check the demand has, and
 instance files would say so. Christine Mumford suggested the instances in October 2026,
 and they would credit her; two researchers have been told to expect them.
 
+The code now runs on any city that publishes a GTFS feed. The feed replaces the snapshot,
+and its timetable gives every route the headway and speed Baku's data lacks
+([getting-started.md](getting-started.md#another-city-from-its-gtfs-feed)). Read back,
+Baku's own feed reproduces the snapshot's results to within 0.1%. No other city's feed
+has been through it yet, and that is the next test. It needs a city whose feed,
+population grid and OpenStreetMap destinations can be committed under their licences.
+That city's network would be measured and redesigned, and its `impact.csv` sent to
+someone there who would read it. Real feeds would also show whether two changes to the
+reader are worth making. One is placing stops by `shape_dist_traveled` where a feed gives
+it. The other is keeping a route's large branches as routes of their own instead of
+leaving them out.
+
 Everything else can wait, because it would make the method look more serious without
 changing the answer much: generating new candidate routes (k-shortest paths between
 busy terminals, metro stations and destinations, splitting long routes, cutting loops),
@@ -112,15 +124,18 @@ dates, which end on 31 December 2027, move forward by 24 December 2027
   ([benchmark.md](benchmark.md)).
 - Fuel is in diesel-equivalent litres; CNG and electric buses are not modelled
   separately.
-- The loader reads only AYNA's tables, so another city needs a reader for its own map
-  format (GTFS, for example) before anything else runs; the service types that key the
-  headway and speed settings are AYNA's names too.
+- Another city runs from its GTFS feed, but as one service day, one stop pattern per
+  route direction (short turns counted, branches left out and listed in
+  `timetable.txt`) and one all-day frequency per route. The reader has been checked on
+  Baku's own feed and on a small made-up one, not yet on another city's.
 
 ## Questions that are not mine to answer
 
 Several settings are really policy choices, and I have only picked defaults for them.
 Whether the redesign's gain should be taken as faster trips with today's fleet or as
-today's trip times with about 12% fewer buses is the first; the results report both.
+today's trip times with about 12% fewer buses is the first; the results report both,
+and `output/redesign/impact.csv` puts each in buses, bus-hours, fuel and CO₂ a day, and
+in money once prices are set.
 How many people may lose a stop within walking distance so that the rest travel faster
 is the second: today the limits are 500 per change and 3,000 in total, at 500 m
 (`redesign_max_people_losing_stop`, `redesign_max_people_losing_stop_total`,

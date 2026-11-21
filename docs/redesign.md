@@ -120,6 +120,12 @@ The run takes about two minutes and is deterministic: the same inputs give the s
   buses, headway and length before and after.
 - `output/redesign/summary.json`: the independent check, the fleet option, settings and
   inputs.
+- `output/redesign/impact.csv`: what the result is worth, measured on the independent
+  check: today's network beside the redesign with today's buses and the redesign with
+  the fleet cut until trips are no longer than today's. It gives minutes per trip,
+  people near a stop, buses, bus-hours, bus-km, fuel and CO₂ a day, and money and a
+  year's worth when the `[impact]` settings give prices
+  ([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)).
 - `output/redesign/network.geojson`: the redesigned network on a map. GitHub draws it;
   blue lines are kept, green straightened, red dropped or merged.
 - `output/redesign/gtfs_today.zip` and `gtfs_redesign.zip`: both networks as GTFS feeds,
@@ -157,6 +163,25 @@ python3 redesign.py --set redesign_protect_boardings=0             # let the sea
 ```
 
 Use `--out output/redesign_<name>` to keep variants side by side.
+
+## Another city
+
+Nothing in the search is Baku's. Given a settings file whose `[data]` names a city's GTFS
+feed, `redesign.py` runs the same search on that network, with each route's frequency
+and speed from the feed's timetable instead of estimates
+([getting-started.md](getting-started.md#another-city-from-its-gtfs-feed)). Without
+counted boardings, riders per route come from the model alone. They are only used to rank
+routes for dropping and for moving buses, so the search runs the same. In `routes.csv`
+they appear as each route's share of the modelled boardings, since there is no count to
+scale them to a day. The protected routes and the fleet reference in `busnet.toml` are
+Baku's, so a city's file should reset them. A feed does not say which routes are express
+routes, which AYNA's service types do. So merge candidates there include express routes
+whose stops a local route also serves, and a city's express routes belong in
+`redesign_protected_routes`. Run on the feed this repository writes for Baku, the search
+keeps 27 changes as it does from the snapshot, 20 of them the same. The others include
+merging express routes 121E and 140E. Trips get 0.76 minutes shorter on the independent
+check, as from the snapshot, and 88% of the buses (1,791 rather than 1,796) give today's
+trip times.
 
 ## Limitations
 

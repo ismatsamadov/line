@@ -1,6 +1,6 @@
 # Code
 
-Python 3.11 or newer, standard library only. The `busnet` package has about 3,600 lines,
+Python 3.11 or newer, standard library only. The `busnet` package has about 4,100 lines,
 the six scripts about 1,100 more, and the tests about 1,700. The page in `index.html` and
 `site/` adds about 3,000 lines of Python, JavaScript, CSS and HTML ([The page](#the-page)),
 and the animations at the top of the README about 1,200 lines of Python
@@ -10,8 +10,8 @@ and the animations at the top of the README about 1,200 lines of Python
 ## Layout
 
 ```text
-measure.py            measure today's network            -> output/
-redesign.py           search for a better network        -> output/redesign/
+measure.py            measure today's network (Baku's, or a city's from its GTFS feed) -> output/
+redesign.py           search for a better network, and what it is worth -> output/redesign/
 robustness.py         the results under other trip samples and assumptions -> output/robustness/
 validate_gtfs.py      check the GTFS feeds with MobilityData's validator (needs Java) -> output/gtfs_validation/
 benchmark.py          the redesign's straightening on the published route sets of the Mandl and Mumford benchmark networks -> output/benchmark/
@@ -24,7 +24,7 @@ busnet/
   assumptions.py      Assumptions: the default value of every assumption
   bicycle.py          read AYNA's bicycle lanes and parking files (KMZ); a line index; the measures against the network
   config.py           read busnet.toml and --set overrides into Assumptions + data paths
-  inputs.py           load every input the settings name (used by all three scripts)
+  inputs.py           load every input the settings name, the network from ayna.db or a GTFS feed (used by all three scripts)
   model.py            read ayna.db into Stop, Route, Pattern, Network; repair defects
   geo.py              distances, flat projection, polylines, stop-to-shape matching
   service.py          run time and fuel per trip; headways; daily service
@@ -35,7 +35,9 @@ busnet/
   metrics.py          geometry measures, output tables, door-to-door model, ridership check
   scenarios.py        stop balancing
   optimize.py         redesign: plans, scoring, kinds of change, search
-  gtfs.py             write a network as a GTFS feed; shape_points draws each direction's line to its end stops
+  impact.py           what a redesign is worth: the rows of impact.csv
+  gtfs.py             read a GTFS feed into a network, headways and speeds from its timetable; write a network
+                      as a GTFS feed, with shape_points drawing each direction's line to its end stops
   utrp.py             the benchmark networks: read the published route sets, score them, check the rules, straighten
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
@@ -77,6 +79,8 @@ flowchart TD
   cfg --> inp[inputs.load_inputs]
   db[(data/ayna.db)] --> model[model.load_network]
   model --> inp
+  feed[(a GTFS feed)] -. instead of ayna.db .-> rg[gtfs.read_gtfs]
+  rg --> inp
   ext[(data/external, data/headways.csv)] --> inp
   inp --> m[measure.py]
   inp --> r[redesign.py]
@@ -88,6 +92,7 @@ flowchart TD
   plan --> search[optimize.search:<br/>Drop, Straighten, BalanceStops, Shift]
   search --> summ
   r --> gtfs[gtfs.write_gtfs]
+  r --> imp[impact.impact_rows]
   inp --> rb[robustness.py]
   rb --> search
   rb --> od
@@ -108,29 +113,32 @@ flowchart TD
 | `headways` | `{route id: (minutes, source)}` for every route with stops |
 | `points` | Destination points `(lat, lon, weight, kind)` |
 | `found`, `data` | Which input files were found, and the data paths from the settings |
+| `timetable` | For a network read from a GTFS feed, its `gtfs.Timetable`; otherwise `None` |
 
 ## The core objects
 
 | Object | Module | What it holds |
 |---|---|---|
 | `Stop` | model | `id`, `code`, `name`, `lat`, `lon`, `is_hub` |
-| `Route` | model | `id`, `number` (as on the bus), `carrier`, `first_point`, `last_point`, `declared_length_km`, `zone`, `region`, `fare_azn`, `payment`, `card_since` |
+| `Route` | model | `id`, `number` (as on the bus), `carrier`, `first_point`, `last_point`, `declared_length_km`, `zone`, `region`, `fare_azn`, `payment`, `card_since`, and from a GTFS feed `speed_kmh` (its timetable's moving speed; `None` uses the zone's) and `runs_one_way` (a loop with one direction, not counted as if it ran back) |
 | `Pattern` | model | One direction of one route: `route_id`, `direction` (1 or 2), `stop_ids`, `chainage_m` (distance along the path at each stop, from 0), `path` (lat, lon points from the first stop to the last), `path_source` (`shape` or `stops`). `length_m` and `hops()` |
-| `Network` | model | `routes` {id: Route}, `stops` {id: Stop}, `patterns` {(route id, direction): Pattern}, `repairs` (list of text). `number(rid)`, `patterns_of(rid)`, `served_stop_ids()`, `routes_at_stop()`, `copy()` |
-| `Assumptions` | assumptions | A frozen dataclass with every setting; `cruise_mps(zone)`, `transfer_penalty_s` |
+| `Network` | model | `routes` {id: Route}, `stops` {id: Stop}, `patterns` {(route id, direction): Pattern}, `repairs` (list of text). `number(rid)`, `patterns_of(rid)`, `directions_run(rid)` (2, or 1 for a loop that runs one way), `served_stop_ids()`, `routes_at_stop()`, `copy()` |
+| `Assumptions` | assumptions | A frozen dataclass with every setting; `cruise_mps(zone)`, `speed_mps(route)` (the route's own speed if it has one, else its zone's), `transfer_penalty_s` |
+| `Timetable` | gtfs | What `read_gtfs` took from a feed: `day`, `trips_each_way` {route id: trips a day in each direction}, `summary` (written to `network.json`), `warnings` and `notes` (written to `timetable.txt`), `feed` (agency and language for `write_gtfs`) |
 | `Plan` | optimize | A `Network` plus `fleet` {route id: bus-equivalents}. `headways(a)`, `cycle_min(rid, a)`, `total_fleet()`, `stops_of(rid)`, `changed(patterns, drop, fleet)` returns a new plan |
 
-Route ids are AYNA's numeric bus ids; everything inside the code is keyed by them.
-`network.number(rid)` gives the number riders see (for example `"7A"`), which is what the
-output files show.
+Route ids are AYNA's numeric bus ids, or a GTFS feed's `route_id` text, and stop ids
+likewise; everything inside the code is keyed by them and nothing assumes they are
+numbers. `network.number(rid)` gives the number riders see (for example `"7A"`), which is
+what the output files show; a feed whose routes share a number gets `"1 [route_id]"`.
 
 ## Module reference
 
 | Module | Main functions | Notes |
 |---|---|---|
-| `geo` | `haversine_m`, `PROJ` (a `LocalProjection`), `Polyline` (`cum`, `project_all`, `point_at`, `slice_latlon`, `max_jump_m`, `reversed`), `match_stops`, `fit_score` | `match_stops` is the dynamic program in [methodology.md](methodology.md#1-loading-and-repairing-the-network) |
+| `geo` | `haversine_m`, `PROJ` (a `LocalProjection`; `centre_on(lat, lon)` moves it to another city, as `read_gtfs` does), `Polyline` (`cum`, `project_all`, `point_at`, `slice_latlon`, `max_jump_m`, `reversed`), `match_stops`, `fit_score` | `match_stops` is the dynamic program in [methodology.md](methodology.md#1-loading-and-repairing-the-network) |
 | `model` | `load_network(db_path, repair=True)` | Repairs are detected from the data, not hard-coded per route, so they still apply after a new scrape |
-| `service` | `run_time_s(pattern, network, a)`, `fuel_l(pattern, a)`, `load_headways(path)`, `route_headways(network, a, observed, supplied)`, `operations(network, a, headways)` | `operations` returns (per route, totals) |
+| `service` | `run_time_s(pattern, network, a)`, `fuel_l(pattern, a)`, `load_headways(path)`, `route_headways(network, a, observed, supplied, timetable)`, `operations(network, a, headways)` | `operations` returns (per route, totals) |
 | `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)` | Reads GeoPackage (no GIS library) or CSV |
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
@@ -140,7 +148,8 @@ output files show.
 | `scenarios` | `balance_stops(network, min_gap_m, max_gap_after_m, protect)` | Returns (new network, details); never edits its input |
 | `walking` | `walkable(tags)`, `load_overpass(path)`, `WalkNetwork(nodes, ways)` (`snap`, `distances_from`, `walk_distances`), `load_walk_network(path)` | Streets and paths from an Overpass answer as a graph; one multi-source Dijkstra from the stops gives the walk from every population point. Used by `robustness.py` only ([methodology.md](methodology.md#5-population-and-coverage)) |
 | `optimize` | `Plan`, `allocate`, `Evaluator` (`score`, `people_with_stop`), `Streets`, `straightened`, `Drop`, `Straighten`, `BalanceStops`, `Shift`, `Context` (`riders_for`), `candidates`, `search(plan, evaluator, ctx, say, kept)`, `fleet_for_same_time` | Explained in [redesign.md](redesign.md). Given `kept`, `search` calls it with each change it keeps and the plan that change makes, which is how `animations/build.py` draws every step |
-| `gtfs` | `write_gtfs(path, network, a, headways, version, start_hour=6)`, `shape_points(pattern, network)` | Frequency-based feed; `version` goes into `feed_info.txt`. `shape_points` writes a repeated point once and carries a line that stops short on to its end stops ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)) |
+| `gtfs` | `read_gtfs(path, a, repair=True)` returns (`Network`, `Timetable`); `Feed`, `Calendar` (`services(day)`, `busiest_weekday`), `basic_route_type`; `write_gtfs(path, network, a, headways, version, start_hour=6, feed=None)`, `shape_points(pattern, network)` | The reader takes one day of a feed and makes one stop pattern per route direction ([methodology.md](methodology.md#1-loading-and-repairing-the-network)). The writer makes a frequency-based feed; `version` goes into `feed_info.txt`, `feed` gives the agency and language (AYNA's by default). `shape_points` writes a repeated point once and carries a line that stops short on to its end stops ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)) |
+| `impact` | `impact_rows(today, same_buses, fewer_buses, a)`, `capped_minutes(acc, a)`, `COLUMNS` | The rows of `impact.csv` from three network summaries on one sample; a row needing an `[impact]` value left at 0 is left out ([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)) |
 | `utrp` | `Instance`, `RULES`, `load_instance(supplement, name)`, `published_route_sets(supplement)`, `published_scores(supplement)`, `LATER_SETS`, `husselmann_route_sets(path)`, `JIAO_FILE`, `JIAO_SCORES`, `jiao_route_sets(path)`, `evaluate(inst, routes)`, `route_time`, `problems(inst, routes)`, `quickest_paths`, `detours`, `Straighten`, `candidates`, `search(inst, routes, max_tries=80, min_gain=0.005, repeat=False)`, `matlab(routes)` | Scores and rules of the benchmark literature; `search` is the redesign's straightening under those rules ([methodology.md](methodology.md#12-the-benchmark-networks)). Used by `benchmark.py` only |
 | `config` | `load_config(path, overrides)`, `parse_value`, `DATA_KEYS` | |
 | `inputs` | `load_inputs(root, config, overrides, repair, split, say)` | |

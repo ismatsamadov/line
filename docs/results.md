@@ -395,6 +395,34 @@ by halving an interval six times, so it is accurate to about one percentage poin
 On the search sample the same calculation gives 79%, which overstates the saving for the
 same reason as above.
 
+### What the redesign is worth
+
+`output/redesign/impact.csv` sets the two ways of taking the gain beside each other, in
+the units a city and its operators count, all on the independent check:
+
+| Measure | Today | Same buses | Change | 88% of the buses | Change |
+|---|---|---|---|---|---|
+| Average trip, impossible trips counted at 120 min | 74.82 min | 74.06 min | −0.76 min | 74.77 min | −0.05 min |
+| Average trip, possible trips only | 51.82 min | 50.86 min | −0.97 min | 51.66 min | −0.16 min |
+| Riders' time per 100,000 journeys | 124,706 h | 123,437 h | −1,268 h | 124,618 h | −88 h |
+| People within 400 m of a stop | 2,007,349 | 2,002,313 | −5,036 | 2,002,313 | −5,036 |
+| Buses in service, rounded up per route | 2,015 | 2,017 | +2 | 1,796 | −219 |
+| Bus-hours a day | 28,327 | 28,327 | 0 | 25,007 | −3,320 |
+| Bus-km a day | 588,994 | 596,868 | +7,874 | 526,923 | −62,071 |
+| Fuel a day | 226,592 L | 226,708 L | +116 L | 200,140 L | −26,452 L |
+| CO₂ a day | 605 t | 605 t | 0 | 534 t | −71 t |
+
+With today's buses the gain goes to riders: every 100,000 journeys take about 1,270
+hours less, while fuel and CO₂ stay where they are. With 88% of the buses it goes to the
+operators: 219 fewer buses, 3,320 fewer bus-hours, 26,452 fewer litres of fuel and 71
+fewer tonnes of CO₂ a day, for trips no longer than today's. No public source gives
+Baku's bus journeys a day, what a bus-hour costs its operators or the price they pay
+for fuel, so the table stops at physical units. The `[impact]` settings add riders'
+hours, money and a year once those are known
+([configuration.md](configuration.md#what-the-redesign-is-worth-impact)). These are
+model estimates like the rest of this section, resting on estimated headways for 200 of
+the 201 routes.
+
 ### What changed from the first version
 
 My first run of the search (commit `15473b6`) ranked routes by modelled riders only. It
