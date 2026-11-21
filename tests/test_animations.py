@@ -200,7 +200,7 @@ class Committed(unittest.TestCase):
         m = build.Map()
         for name, frames in expected.items():
             data = (ROOT / "animations" / name).read_bytes()
-            self.assertLess(len(data), 5e6, name)            # light enough for the top of the README
+            self.assertLess(len(data), 5e6, name)            # light enough for the README
             w, h, loops, parts = read_gif(data, pixels=False)
             self.assertEqual((w, h, loops, len(parts)), (m.w, m.h, 0, frames), name)
 

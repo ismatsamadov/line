@@ -60,7 +60,7 @@ The break is sudden. On the ten weekdays after 15 August (17 to 28 August) the m
 counted 388,165 entries a day against 520,544 on the ten before (3 to 14 August), 25%
 fewer, and BakuBus 674,943 boardings a day against 567,592, 19% more; 45% of that rise
 was on M2 to M6, which went from 361 boardings a day (their first day, 14 August) to
-48,624. `animations/riders.gif`, at the top of the README, shows the counts day by day.
+48,624. `animations/riders.gif`, in the README's section on the counts, shows them day by day.
 When the API changes, a new scrape and a rerun of the three scripts
 ([roadmap.md](roadmap.md#when-new-data-arrives)) will show which findings survive; the
 repairs are detected from the data, so they adapt to it.

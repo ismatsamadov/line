@@ -3,7 +3,7 @@
 Python 3.11 or newer, standard library only. The `busnet` package has about 3,600 lines,
 the six scripts about 1,100 more, and the tests about 1,700. The page in `index.html` and
 `site/` adds about 3,000 lines of Python, JavaScript, CSS and HTML ([The page](#the-page)),
-and the animations at the top of the README about 1,200 lines of Python
+and the animations in the README about 1,200 lines of Python
 ([The animations](#the-animations)).
 `python3 -m unittest` runs the tests; see [Checking a change](#checking-a-change).
 
@@ -297,7 +297,7 @@ Cyrillic look-alikes some names use. The address bar keeps the state
 
 ## The animations
 
-`animations/build.py` draws the four GIFs at the top of the README, and `draw.py` beside it
+`animations/build.py` draws the four GIFs in the README, and `draw.py` beside it
 holds all the drawing they need, in the standard library. A `Canvas` is three byte arrays,
 red, green and blue. A shape becomes a mask first, pixel to coverage: a segment covers a
 pixel by its half-width plus half a pixel minus the distance from the pixel's centre,

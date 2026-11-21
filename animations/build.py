@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Draw the animations at the top of the README as GIFs, from the committed data and outputs.
+Draw the README's animations as GIFs, from the committed data and outputs.
 
   buses.gif        a modelled hour: every route of today's network run at its estimated
                    headway and modelled speed, as the GTFS feed describes them

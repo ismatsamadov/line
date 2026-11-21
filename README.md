@@ -2,30 +2,13 @@
 
 <p align="center"><img src="animations/buses.gif" width="100%" alt="A map of Baku and the Absheron peninsula with about 1,670 dots moving along the bus routes: today's 201 routes run for an hour as the model runs them, blue where a route's frequency rests on counted boardings or a published headway and orange where it is assumed"></p>
 
-<p align="center">
-<img src="animations/riders.gif" width="32%" alt="BakuBus routes drawn as wide as their boardings and metro stations as circles as large as their entries, for every day from 1 January to 30 September 2026, with a chart of the daily totals">
-<img src="animations/redesign.gif" width="32%" alt="The redesign search replayed on the map: each of its 27 changes in colour, then the network after it, with the average door-to-door time on the search's sample falling from 79.66 to 78.31 minutes">
-<img src="animations/travel-time.gif" width="32%" alt="Stops lighting up minute by minute, from 0 to 120, as the travel model reaches them by bus from Q.Qarayev pr. 102, the stop with the most routes">
-</p>
-
-Below the hour of buses, from the left: the counted riders of every day from January to
-September 2026, the redesign search one change at a time, and how far the buses take you,
-minute by minute. `python3 animations/build.py` draws all four
+An hour of Baku's buses as my model runs them. AYNA publishes no timetables and no bus
+positions, so this is today's GTFS feed played for an hour: every route at one frequency
+all day, estimated from counted boardings on 55 BakuBus routes and from H1's published
+headway (blue) and assumed from the type of service on the other 145 (orange), at speeds
+set by the type of service. The other animations sit in the sections they illustrate, and
+`python3 animations/build.py` draws them all from the committed data
 ([docs/code.md](docs/code.md#the-animations)).
-
-Only the counts are measured. AYNA publishes no timetables and no bus positions, so the
-buses at the top run the way my model runs them: today's GTFS feed played for an hour,
-every route at one frequency all day, estimated from counted boardings on 55 BakuBus
-routes and from H1's published headway (blue) and assumed from the type of service on
-the other 145 (orange), at speeds set by the type of service. The counts are the daily
-boardings on each BakuBus route and entries at each metro station that Bakı
-Metropoliteni publishes on opendata.az. In the two weeks after 15 August, when the metro
-works closed the line between 28 May and Nizami, weekday metro entries were a quarter
-lower than in the two weeks before and BakuBus boardings a fifth higher, almost half of
-the rise on the express buses M2 to M6 that AYNA runs for the works
-([docs/data.md](docs/data.md#when-the-data-is-from)). The redesign search replays the 27
-changes `redesign.py` keeps, and the last animation spreads the travel model's minutes out
-from the stop with the most routes, as the page's Travel time view does.
 
 Release v1.1.0 is archived on Zenodo: https://doi.org/10.5281/zenodo.23604370
 
@@ -52,11 +35,29 @@ Nothing here needs the internet: every input is under `data/` (see
 python3 data/fetch_external.py --refresh
 ```
 
+## What the counts show
+
+<p align="center"><img src="animations/riders.gif" width="100%" alt="BakuBus routes drawn as wide as their boardings and metro stations as circles as large as their entries, for every day from 1 January to 30 September 2026, with a chart of the daily totals"></p>
+
+The counts are the only measured numbers in these animations: the daily boardings on
+each BakuBus route and entries at each metro station that Bakı Metropoliteni publishes
+on opendata.az, from 1 January to 30 September 2026. In the two weeks after 15 August,
+when the metro works closed the line between 28 May and Nizami, weekday metro entries
+were a quarter lower than in the two weeks before and BakuBus boardings a fifth higher,
+almost half of the rise on the express buses M2 to M6 that AYNA runs for the works
+([docs/data.md](docs/data.md#when-the-data-is-from)). The model uses the counts to set
+the frequency of the 55 BakuBus routes and to check its estimated riders.
+
 ## Search for a better network
 
 ```sh
 python3 redesign.py          # writes output/redesign/, about two minutes
 ```
+
+<p align="center"><img src="animations/redesign.gif" width="100%" alt="The redesign search replayed on the map: each of its 27 changes in colour, then the network after it, with the average door-to-door time on the search's sample falling from 79.66 to 78.31 minutes"></p>
+
+The animation replays the 27 changes `redesign.py` keeps, one at a time, with the average
+door-to-door time on the search's sample of trips.
 
 The search keeps today's fleet and tries the changes other cities' redesigns used:
 merging near-duplicate routes, dropping little-used ones, straightening detours, stop
@@ -157,7 +158,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `bicycle.py` | Puts AYNA's bicycle lanes and parking points beside the bus network; writes `output/bicycle/` |
 | `tests/` | Unit tests and a regression test: `python3 -m unittest` |
 | `index.html`, `site/` | The page for readers: `site/build.py` writes its data (`data.js`), the checklist (`checklist.xlsx`) and, from `og.html`, the link-preview picture (`og.png`); `app.js` and `style.css` draw it |
-| `animations/` | The animations at the top of this page: `build.py` draws them as GIFs from the data, `output/` and a rerun of the redesign search, with `draw.py`, a small drawing library and GIF writer |
+| `animations/` | The animations on this page: `build.py` draws them as GIFs from the data, `output/` and a rerun of the redesign search, with `draw.py`, a small drawing library and GIF writer |
 | `paper/` | The manuscript and its title page; `figures.py` draws the manuscript's figures from `output/` as SVG and PDF, `check.py` checks its length, highlights and citations, and `build.py` writes the submission files (Word and a preprint PDF) to `paper/submission/` |
 | `output/` | Results, regenerated by the three scripts (`output/gtfs_validation/` by `validate_gtfs.py`, `output/benchmark/` by `benchmark.py`, `output/bicycle/` by `bicycle.py`) |
 | `LICENSE`, `CITATION.cff` | The MIT licence for the code, and how to cite the repository |
@@ -185,6 +186,11 @@ The AYNA snapshot `data/ayna.db` is also published on Kaggle, with its five tabl
 CSV and the known defects described: https://doi.org/10.34740/KAGGLE/DSV/21173689.
 
 ## The page for readers who will not open the code
+
+<p align="center"><img src="animations/travel-time.gif" width="100%" alt="Stops lighting up minute by minute, from 0 to 120, as the travel model reaches them by bus from Q.Qarayev pr. 102, the stop with the most routes"></p>
+
+The animation spreads the travel model's minutes out from the stop with the most routes,
+as the page's Travel time view does from any stop.
 
 [index.html](index.html), the **Baku Bus Atlas**, presents the published snapshot as an
 interactive research page. A guided tour flies the map through nine findings. The map has

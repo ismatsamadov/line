@@ -2,8 +2,8 @@
 
 `measure.py` writes `output/`; `redesign.py` writes `output/redesign/`; `robustness.py`
 writes `output/robustness/`; `site/build.py` writes the page's files in `site/`
-([below](#sitedatajs-and-the-checklist-workbook)); `animations/build.py` writes the GIFs at
-the top of the README ([below](#animations--the-four-animations-at-the-top-of-the-readme)). CSV files are UTF-8 with a byte-order mark, so Excel shows
+([below](#sitedatajs-and-the-checklist-workbook)); `animations/build.py` writes the GIFs in
+the README ([below](#animations--the-four-animations-in-the-readme)). CSV files are UTF-8 with a byte-order mark, so Excel shows
 Azerbaijani letters correctly. Shares are
 fractions between 0 and 1; distances are km or m as named; times are minutes unless named
 otherwise. Blank cells mean "not defined" (for example the circuity of a loop route).
@@ -437,10 +437,12 @@ Bicycles view and the tour quote). Lines are encoded polylines with
 | Bicycle lanes | 54 streets, longest first | street, lane km, segments, km beside a bus route, bus routes along it and their numbers, stops within 100 m, MPV and MPS points within 100 m |
 | Bicycle parking | 834 | point, kind, coordinates, nearest bus stop and metres to it, routes at that stop, nearest lane and metres, nearest metro exit and metres |
 
-## animations/ — the four animations at the top of the README
+## animations/ — the four animations in the README
 
 `animations/build.py` writes four GIFs, 960 × 566 pixels, that loop for ever; no script
-reads them. All four show the crop of the manuscript's figures over the population
+reads them. `buses.gif` heads the README, and each of the others sits in the section it
+illustrates: `riders.gif` in the one on the counts, `redesign.gif` in the search's, and
+`travel-time.gif` in the page's, beside the view it mirrors. All four show the crop of the manuscript's figures over the population
 hexagons, and say on the picture what they rest on; [code.md](code.md#the-animations)
 explains how they are drawn.
 
