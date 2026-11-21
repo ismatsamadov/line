@@ -92,20 +92,28 @@ Azerbaijan. The database downloads it from this repository every day, so
 ## Another city, from its GTFS feed
 
 ```sh
-python3 measure.py --config my_city.toml --out output/my_city
-python3 redesign.py --config my_city.toml --out output/my_city/redesign
+python3 data/fetch_city.py my_city --feed https://example.org/gtfs.zip --country XX
+python3 measure.py --config cities/my_city.toml --out output/cities/my_city
+python3 redesign.py --config cities/my_city.toml --out output/cities/my_city/redesign
 ```
 
-Nothing in the measurements or the search is Baku's. A settings file whose `[data]` table
-names a city's GTFS feed (`gtfs = "my_city/gtfs.zip"`), a population grid for its country
-and, if wanted, OpenStreetMap destinations runs both on that city. The feed's timetable
+Nothing in the measurements or the search is Baku's. `data/fetch_city.py` downloads a
+city's GTFS feed, Kontur's population grid for its country and OpenStreetMap's
+destinations in the box of its stops, and writes a settings file whose `[data]` table
+names them; `measure.py` and `redesign.py` then run on that city. The feed's timetable
 gives every route the frequency and speed Baku's data lacks. The reader takes the
 weekday with the most bus trips and makes one stop pattern per route direction. Short
 turns count towards its frequency, large branches run as routes of their own and small
-ones are left out and listed, and express routes are told apart by their names and their
-stops. It then moves the map projection to the city. Read back, the feed this repository writes for Baku reproduces
-the snapshot's results to within 0.1%. [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
-shows the settings file and where each input comes from.
+ones are left out and listed, express routes are told apart by their names and their
+stops, and night routes are named so the redesign leaves them alone. It then moves the
+map projection to the city. Read back, the feed this repository writes for Baku
+reproduces the snapshot's results to within 0.1%.
+
+Riga is in the repository as the worked example, from Rīgas satiksme's timetable on
+Latvia's open data portal (CC0): `cities/riga.toml`, its inputs in `data/cities/riga/`
+and its results in `output/cities/riga/`. [docs/cities.md](docs/cities.md) sets it beside
+Baku, and [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
+explains the settings file.
 
 ## Check how much the results depend on the sample and the assumptions
 
@@ -165,10 +173,12 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `data/ayna.db`, `data/ayna_scraper.py` | Bus network snapshot from the AYNA map API, and the script that builds it |
 | `data/external/` | Public datasets: population, ridership, metro, statistics, OpenStreetMap, Wikidata, the answers of the metro's own API, AYNA's bicycle lanes and parking points, the benchmark networks of Mumford (2013) and the route sets later studies published on them |
 | `data/headways.csv` | Real headways where known |
-| `data/fetch_external.py`, `data/osm_pbf.py` | Downloads the public datasets again; the reader of OpenStreetMap PBF extracts that cuts the walking network out of Geofabrik's |
+| `data/fetch_external.py`, `data/osm_pbf.py` | Downloads the public datasets again; the reader of OpenStreetMap PBF extracts that cuts the walking network out of Geofabrik's, and another city's destinations |
+| `data/cities/`, `data/fetch_city.py` | Another city's inputs (Riga's: its GTFS feed, Kontur's grid for Latvia, OpenStreetMap destinations), and the script that downloads them for any city and writes its settings file |
 | `data/metro/`, `data/metro_scraper.py`, `data/build_metro.py` | The metro network (stations, train services, running times, departures), not yet used by the model; the scripts that read the metro's API and build the tables |
 | `data/metro_headways.csv` | Metro train intervals the operator has published, with sources |
 | `busnet.toml` | Settings: data paths and every assumption |
+| `cities/` | Settings files for other cities, read from their GTFS feeds: `cities/riga.toml` |
 | `busnet/` | The package: load and repair the network or read it from a GTFS feed, headways and daily service, demand, metrics, scenarios, the redesign search and what it is worth, GTFS export |
 | `measure.py` | Measures the network and writes `output/` |
 | `redesign.py` | Searches for a better network and writes `output/redesign/` |
@@ -180,7 +190,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `index.html`, `site/` | The page for readers: `site/build.py` writes its data (`data.js`), the checklist (`checklist.xlsx`) and, from `og.html`, the link-preview picture (`og.png`); `app.js` and `style.css` draw it |
 | `animations/` | The animations at the top of this page: `build.py` draws them as GIFs from the data, `output/` and a rerun of the redesign search, with `draw.py`, a small drawing library and GIF writer |
 | `paper/` | The manuscript and its title page; `figures.py` draws the manuscript's figures from `output/` as SVG and PDF, `check.py` checks its length, highlights and citations, and `build.py` writes the submission files (Word and a preprint PDF) to `paper/submission/` |
-| `output/` | Results, regenerated by the three scripts (`output/gtfs_validation/` by `validate_gtfs.py`, `output/benchmark/` by `benchmark.py`, `output/bicycle/` by `bicycle.py`) |
+| `output/` | Results, regenerated by the three scripts (`output/gtfs_validation/` by `validate_gtfs.py`, `output/benchmark/` by `benchmark.py`, `output/bicycle/` by `bicycle.py`, `output/cities/riga/` by `measure.py` and `redesign.py` with `cities/riga.toml`) |
 | `LICENSE`, `CITATION.cff` | The MIT licence for the code, and how to cite the repository |
 
 ## Outputs
@@ -253,7 +263,7 @@ published, and its data is a snapshot that is not updated automatically.
 
 The code is mine and is under the MIT License ([LICENSE](LICENSE)): `busnet/`,
 `measure.py`, `redesign.py`, `robustness.py`, `bicycle.py`, `paper/figures.py`, `paper/check.py`, `paper/build.py`, `tests/`, `data/ayna_scraper.py`,
-`data/fetch_external.py`, `data/osm_pbf.py`, `data/metro_scraper.py`, `data/build_metro.py`, `busnet.toml`, `index.html`, `site/build.py`, `site/app.js`,
+`data/fetch_external.py`, `data/fetch_city.py`, `data/osm_pbf.py`, `data/metro_scraper.py`, `data/build_metro.py`, `busnet.toml`, `index.html`, `site/build.py`, `site/app.js`,
 `site/style.css`, `site/og.html`, `animations/build.py` and `animations/draw.py`. The page loads Leaflet 1.9.4 (BSD-2-Clause) from cdnjs and draws its
 base map from OpenStreetMap's tiles, credited on the map. The documentation in `docs/` is under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). [CITATION.cff](CITATION.cff)
@@ -278,6 +288,10 @@ The data keep their own terms, listed file by file in [data/SOURCES.md](data/SOU
   `data/metro/` is built from it and from OpenStreetMap, whose part (coordinates, track
   geometry, distances) is under the ODbL.
 - `data/external/wikidata/`: Wikidata, CC0.
+- `data/cities/riga/`: Rīgas satiksme's GTFS feed from Latvia's open data portal (CC0
+  1.0), Kontur Population for Latvia (CC BY) and OpenStreetMap extracts (ODbL, ©
+  OpenStreetMap contributors). `output/cities/riga/` is derived from them and carries the
+  same terms.
 
 The results in `output/` are derived from those data and carry the same terms: the
 files that contain AYNA's routes and stops (the GTFS feeds, `network.geojson` and the
