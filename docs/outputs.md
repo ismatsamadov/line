@@ -412,8 +412,8 @@ them without this repository and describes every file; in short, for each instan
 `routes.csv` gives each route of each instance with its nodes, its minutes one way and
 the AYNA routes it stands for. `summary.json` holds, for each instance, its circle, nodes,
 links, rules (`routes`, `min_nodes`, `max_nodes`), trips, today's scores (`att`, `d0` to
-`dun`, `route_time`) and what straightening does to them (one pass, and passes repeated
-except on BakuFull); and how they were cut, the demand model's check against counted
+`dun`, `route_time`) and what straightening does to them (one pass, and passes
+repeated); and how they were cut, the demand model's check against counted
 boardings, the settings and the inputs.
 
 ## output/bicycle/ — the bicycle lanes and parking beside the bus network

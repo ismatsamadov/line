@@ -63,10 +63,7 @@ the quickest path between its ends when that lowers ATT (`docs/benchmark.md` the
 | Baku1 | 22 | 15.9356 → 14.7310 | 1,181 → 1,091 | 34 | 14.4857 | 1,040 |
 | Baku2 | 23 | 18.6832 → 17.3771 | 1,806 → 1,683 | 47 | 16.9123 | 1,594 |
 | Baku3 | 26 | 19.7930 → 18.3972 | 1,976 → 1,828 | 51 | 17.8796 | 1,741 |
-| BakuFull | 30 | 34.8690 → 33.7601 | 9,284 → 8,961 | not run |  |  |
-
-On BakuFull it makes one pass only, which takes about three minutes; the passes were not
-repeated there.
+| BakuFull | 30 | 34.8690 → 33.7601 | 9,284 → 8,961 | 50 | 33.2328 | 8,827 |
 
 ## Files
 

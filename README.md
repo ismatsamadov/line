@@ -161,7 +161,7 @@ rather than designing one ([docs/benchmark.md](docs/benchmark.md)).
 ## Run your own method on Baku
 
 ```sh
-python3 instances.py         # writes output/instances/, about four minutes
+python3 instances.py         # writes output/instances/, about twelve minutes
 ```
 
 The test also runs the other way. `instances.py` cuts the Baku network into five

@@ -23,7 +23,7 @@ and for all five:
                           straightening does to today's routes, and how the instances were cut
   README.md               the instances explained for the researchers who use them
 
-Standard library only, about four minutes. Usage:
+Standard library only, about twelve minutes. Usage:
   python3 instances.py
 """
 
@@ -122,13 +122,10 @@ def node_rows(network, clusters, nodes, latlon, xy, people, pull):
     return rows
 
 
-def straighten(inst, routes, repeated=True):
-    """What the redesign's straightening does to today's routes, as benchmark.py runs it. With
-    repeated=False only one pass, as on the whole network, where one pass takes minutes."""
+def straighten(inst, routes):
+    """What the redesign's straightening does to today's routes, as benchmark.py runs it."""
     out = {}
     for kind, repeat in SEARCHES.items():
-        if repeat and not repeated:
-            continue
         final, before, after, log, tried = utrp.search(inst, routes, repeat=repeat)
         assert not utrp.problems(inst, final), utrp.problems(inst, final)
         out[kind] = {**tried, "changes": len(log), "att_after": after["att"], "route_time_after": after["route_time"],
@@ -156,10 +153,9 @@ def readme(summary):
     found = table([[n, inst[n]["straightening"]["one_pass"]["changes"],
                     f"{inst[n]['today']['att']:.4f} → {inst[n]['straightening']['one_pass']['att_after']:.4f}",
                     f"{inst[n]['today']['route_time']:,.0f} → {inst[n]['straightening']['one_pass']['route_time_after']:,.0f}",
-                    *([inst[n]["straightening"]["repeated"]["changes"],
-                       f"{inst[n]['straightening']['repeated']['att_after']:.4f}",
-                       f"{inst[n]['straightening']['repeated']['route_time_after']:,.0f}"]
-                      if "repeated" in inst[n]["straightening"] else ["not run", "", ""])] for n in names],
+                    inst[n]["straightening"]["repeated"]["changes"],
+                    f"{inst[n]['straightening']['repeated']['att_after']:.4f}",
+                    f"{inst[n]['straightening']['repeated']['route_time_after']:,.0f}"] for n in names],
                   ["Instance", "Changes, one pass", "ATT", "Route time", "Changes, passes repeated", "ATT", "Route time"])
     full = inst[FULL]
     speeds = summary["settings"]["cruise_kmh"].values()
@@ -211,9 +207,6 @@ one way. The repository's straightening search, which replaces a stretch of a ro
 the quickest path between its ends when that lowers ATT (`docs/benchmark.md` there), gives:
 
 {found}
-
-On {FULL} it makes one pass only, which takes about three minutes; the passes were not
-repeated there.
 
 ## Files
 
@@ -336,7 +329,7 @@ def main():
         broken = utrp.problems(inst, today)
         assert not broken, (name, broken)
         score = utrp.evaluate(inst, today)
-        searched = straighten(inst, today, repeated=name != FULL)
+        searched = straighten(inst, today)
         n = inst.n
         left_out = sorted(inside - set(nodes))
         minutes = [inst.time[i][j] for i in range(n) for j in range(i + 1, n) if inst.time[i][j] < math.inf]
@@ -368,9 +361,8 @@ def main():
         print(f"{name:8s} {'whole network' if radius is None else f'{radius / 1000:.1f} km':>13s}  {n:4d} nodes  "
               f"{len(minutes):5d} links  {inst.routes:3d} routes of {inst.min_nodes}-{inst.max_nodes} nodes  "
               f"ATT {score['att']:6.2f}  d0 {score['d0']:5.2f}  route time {score['route_time']:6,.0f}  "
-              f"straightening {searched['one_pass']['changes']} / "
-              f"{searched['repeated']['changes'] if 'repeated' in searched else '-'} changes, "
-              f"ATT {searched.get('repeated', searched['one_pass'])['att_after']:6.2f}  ({time.time() - t1:.0f} s)")
+              f"straightening {searched['one_pass']['changes']} / {searched['repeated']['changes']} changes, "
+              f"ATT {searched['repeated']['att_after']:6.2f}  ({time.time() - t1:.0f} s)")
 
     summary = {
         "instances": summary_instances,

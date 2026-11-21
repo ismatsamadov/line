@@ -7,7 +7,7 @@ networks, and none of them has been run on Baku. So I cut the Baku network into 
 of the same problem, in the format of Mumford's (2013) files, for anyone with such a
 method to run it on a real city's network without my travel model. Christine Mumford
 suggested them in October 2026. `python3 instances.py` writes them to `output/instances/`
-in about four minutes ([outputs.md](outputs.md#outputinstances--baku-in-the-benchmarks-format)),
+in about twelve minutes ([outputs.md](outputs.md#outputinstances--baku-in-the-benchmarks-format)),
 and the folder's own `README.md` explains them to people who download it without this
 repository.
 
@@ -91,7 +91,7 @@ pass and then with the passes repeated until one keeps nothing:
 | Baku1 | 15.94 | 58.28 | 36.54 | 4.88 | 0.30 | 1,181 | 14.73, 1,091 (22) | 14.49, 1,040 (34) |
 | Baku2 | 18.68 | 53.17 | 39.80 | 6.51 | 0.52 | 1,806 | 17.38, 1,683 (23) | 16.91, 1,594 (47) |
 | Baku3 | 19.79 | 50.27 | 41.46 | 7.52 | 0.75 | 1,976 | 18.40, 1,828 (26) | 17.88, 1,741 (51) |
-| BakuFull | 34.87 | 31.71 | 43.59 | 19.24 | 5.47 | 9,284 | 33.76, 8,961 (30) | not run |
+| BakuFull | 34.87 | 31.71 | 43.59 | 19.24 | 5.47 | 9,284 | 33.76, 8,961 (30) | 33.23, 8,827 (50) |
 
 On the four circles, one pass lowers ATT by 6.1 to 7.6% and route time by 6.8 to 7.6%, and
 repeated passes by 6.6 to 9.7% and 9.0 to 11.9%. On Mumford's published route sets the
@@ -100,8 +100,8 @@ ATT. So today's Baku routes hold far more stretches whose replacement by a quick
 helps the trips, but not all of that gain is real. An instance has no one-way streets, no turns and no terminals, and every link runs both
 ways, so a stretch that a bus drives because of a one-way street, or to reach its
 terminal, looks like a detour. On BakuFull a pass may try only 80 stretches, those that
-save the most route time, across 196 routes, so its 3.2% is the cap's as much as the
-network's. There I ran one pass only, which takes about three minutes.
+save the most route time, across 196 routes, so its 3.2% with one pass and 4.7% with the
+passes repeated are the cap's as much as the network's.
 
 These are gains in the benchmark's terms, with no walking, waiting or frequencies. They
 are not the redesign's result for Baku, which is measured door to door in the travel

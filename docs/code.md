@@ -405,7 +405,7 @@ On one Python version a rebuild gives the same files byte for byte.
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
    demand comes back from the published nodes; with `BUSNET_SLOW_TESTS=1` it cuts the
-   instances again (about four minutes).
+   instances again (about twelve minutes).
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.

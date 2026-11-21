@@ -264,6 +264,19 @@
      "d1_after": 44.83498061222212,
      "d2_after": 18.82209015874906,
      "dun_after": 4.540656653989566
+    },
+    "repeated": {
+     "passes": 5,
+     "candidates": 400,
+     "breaking_a_rule": 94,
+     "better_alone": 71,
+     "changes": 50,
+     "att_after": 33.23275948363761,
+     "route_time_after": 8827,
+     "d0_after": 31.43316054270893,
+     "d1_after": 45.15219033513691,
+     "d2_after": 19.208599093500442,
+     "dun_after": 4.2060500286537215
     }
    }
   }

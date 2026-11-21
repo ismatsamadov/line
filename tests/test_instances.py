@@ -4,7 +4,7 @@ The pieces that cut them are checked on made-up sequences and on the two-route t
 network; the committed files must read back the way Mumford's files are read, keep their
 rules under today's routes, score as summary.json says and give back their demand from
 the coordinates, people and pull they publish. With BUSNET_SLOW_TESTS=1, instances.py runs
-again (about four minutes) and must give the committed folder again."""
+again (about twelve minutes) and must give the committed folder again."""
 
 import csv
 import json
@@ -192,7 +192,7 @@ class CommittedInstances(unittest.TestCase):
                 stops = [s for r in csv.DictReader(f) for s in r["stop_ids"].split()]
             self.assertEqual(len(stops), len(set(stops)), name)
 
-    @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to cut the instances again (about four minutes)")
+    @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to cut the instances again (about twelve minutes)")
     def test_instances_regenerate_output(self):
         with tempfile.TemporaryDirectory() as tmp:
             regenerate("instances.py", tmp)
