@@ -127,8 +127,8 @@ into `data/cities/<city>/` and writes the settings file `cities/<city>.toml`:
 | Input | Where it comes from |
 |---|---|
 | The city's GTFS feed, a zip file | `--feed`: the agency's open-data page, or the [Mobility Database](https://mobilitydatabase.org), which listed about 3,600 feeds in October 2026 |
-| A population grid | Kontur Population for the country (`--country`, its two-letter code), the same source as Azerbaijan's in `data/external/kontur/` |
-| Places people go | OpenStreetMap: the five destination queries of `data/fetch_external.py` through the Overpass API, in the box of the feed's served stops plus 2 km; or, with `--osm geofabrik`, the same kinds cut out of the country's extract from [Geofabrik](https://download.geofabrik.de) |
+| A population grid | Kontur Population for the country (`--country`, its two-letter code), the same source as Azerbaijan's in `data/external/kontur/`, cut to the box of the feed's served stops plus 5 km, which keeps a city's file under a megabyte (the model reads it to 2 km) |
+| Places people go | OpenStreetMap: the five destination queries of `data/fetch_external.py` through the Overpass API, in the box of the feed's served stops plus 2 km; or, with `--osm geofabrik`, the same kinds cut out of an extract from [Geofabrik](https://download.geofabrik.de): the region `CITIES` names for the city, or else the country's |
 
 ```sh
 python3 data/fetch_city.py my_city --feed https://example.org/gtfs.zip --country XX
@@ -137,12 +137,13 @@ python3 redesign.py --config cities/my_city.toml --out output/cities/my_city/red
 ```
 
 The public Overpass servers are sometimes overloaded for hours; when a query fails, run
-the script again with `--osm geofabrik --refresh`. It downloads the country's extract
-(Latvia's is 142 MB), reads it in a few minutes with `data/osm_pbf.py` and keeps it
-nowhere. An extract gives nodes and ways, as Overpass's `out center` does, a way at the
-centre of the box around its nodes, but not relations, so a few large sites mapped only
-as relations are missed. Riga's destinations came this way on 21 November 2026, when no
-Overpass server answered.
+the script again with `--osm geofabrik --refresh`. It downloads the extract of the city's
+region or country (Latvia's is 142 MB, Québec's 1.1 GB), reads it with `data/osm_pbf.py`
+and keeps it nowhere; with `--osm-cache DIR` it keeps it in `DIR` and uses it again for the
+next city in the same region. An extract gives nodes and ways, as Overpass's `out center`
+does, a way at the centre of the box around its nodes, but not relations, so a few large
+sites mapped only as relations are missed. Riga's destinations came this way on 21
+November 2026, when no Overpass server answered.
 
 The settings file names the inputs, sets `service_hours` to the feed's hours of service
 and resets what `busnet.toml` sets for Baku alone; the script never overwrites it, so
