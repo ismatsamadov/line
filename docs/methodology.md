@@ -271,7 +271,10 @@ The last step uses the same boardings it is checked against, so 0.58 is the fair
 measure of how well the model predicts (`python3 measure.py --set headway_from_ridership=false`).
 In that run the model overrates express routes such as E1, 120E and 72, and underrates
 several suburban routes such as 139, 141E, 189 and 163. `output/robustness/fit_ladder.csv`
-holds the four steps (section 10).
+holds the four steps (section 10). Each step samples 300 origins once, and 0.58 was a lucky
+sample: over five samples of 2,000 origins the fair step gives 0.53 ± 0.01, and fitting the
+demand settings to the counts raises it only by making trips unrealistically short
+([calibration.md](calibration.md)).
 
 ## 9. Stop balancing
 

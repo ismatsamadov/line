@@ -44,6 +44,7 @@ buses in the networks their operators publish ([world.md](world.md)).
 | Understand the redesign algorithm and how to tune it | [redesign.md](redesign.md) |
 | See how the search does on the benchmark networks of the literature, where the answers are known | [benchmark.md](benchmark.md) |
 | Run your own method on Baku: five instances in the format of Mumford's benchmark networks | [instances.md](instances.md) |
+| See how well the demand model can be fitted to the counted boardings, and how far to trust the fit | [calibration.md](calibration.md) |
 | Read any output file, column by column | [outputs.md](outputs.md) |
 | Change or extend the code | [code.md](code.md) |
 | See the research and other cities' experience behind the approach | [research.md](research.md) |

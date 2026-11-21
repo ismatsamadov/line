@@ -575,8 +575,11 @@ The 976 people the default run leaves without a stop buy nothing; see
 
 Each input improves the ranking of the 56 counted routes. Headways by service type add
 most (0.41 to 0.56), destinations a little more (0.58); the last step uses the counts
-themselves and is not a fair test. 0.58 is the figure I quote for the model
-(`fit_ladder.csv`).
+themselves and is not a fair test. 0.58 is the figure I have quoted for the model
+(`fit_ladder.csv`), but each step samples 300 origins once, and over five samples of 2,000
+origins the fair step gives 0.53 ± 0.01: 0.58 was a lucky sample. Fitting the demand
+settings to the counts raises the fit only by making trips much shorter than the
+statistics say they are, so the settings stay as they are ([calibration.md](calibration.md)).
 
 ### Coverage by distance, straight and walked
 

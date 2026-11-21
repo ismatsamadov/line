@@ -16,6 +16,7 @@ robustness.py         the results under other trip samples and assumptions -> ou
 validate_gtfs.py      check the GTFS feeds with MobilityData's validator (needs Java) -> output/gtfs_validation/
 benchmark.py          the redesign's straightening on the published route sets of the Mandl and Mumford benchmark networks -> output/benchmark/
 instances.py          Baku cut into instances in the format of Mumford's benchmark networks -> output/instances/
+calibrate.py          the demand model's settings fitted to the counted boardings, and cross-validated -> output/calibration/
 bicycle.py            AYNA's bicycle lanes and parking points beside the bus network -> output/bicycle/
 paper/figures.py      the manuscript's figures, drawn from output/ as SVG and PDF -> paper/figures/
 paper/check.py        word counts, highlight lengths and citation checks of paper/manuscript.md
@@ -45,6 +46,7 @@ busnet/
   utrp.py             the benchmark networks: read the published route sets, score them, check the rules, straighten;
                       read and write instances in the format of Mumford's files
   instances.py        Baku's stops merged into nodes, the links between them, today's routes as paths, the gravity demand
+  calibration.py      the trips' paths found once and spread again for any demand settings
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
 site/
@@ -164,6 +166,7 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `impact` | `impact_rows(today, same_buses, fewer_buses, a)`, `capped_minutes(acc, a)`, `COLUMNS` | The rows of `impact.csv` from three network summaries on one sample; a row needing an `[impact]` value left at 0 is left out ([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)) |
 | `utrp` | `Instance`, `RULES`, `load_instance(supplement, name)`, `published_route_sets(supplement)`, `published_scores(supplement)`, `LATER_SETS`, `husselmann_route_sets(path)`, `JIAO_FILE`, `JIAO_SCORES`, `jiao_route_sets(path)`, `evaluate(inst, routes)`, `route_time`, `problems(inst, routes)`, `quickest_paths`, `detours`, `Straighten`, `candidates`, `search(inst, routes, max_tries=80, min_gain=0.005, repeat=False)`, `matlab(routes)`, `matrix_text`, `coords_text`, `routes_text`, `read_instance(folder, name, routes, min_nodes, max_nodes)`, `read_coords`, `read_routes` | Scores and rules of the benchmark literature; `search` is the redesign's straightening under those rules ([methodology.md](methodology.md#12-the-benchmark-networks)). Used by `benchmark.py` and `instances.py` |
 | `instances` | `cluster_stops(network, radius_m)`, `positions`, `network_links(network, a, cluster_of)`, `erase_loops`, `split_at_repeats`, `stretches_within`, `route_path`, `todays_routes(routes, inside)`, `node_people(network, a, zones, attraction, cluster_of, n)`, `gravity(xy, people, pull, decay_m, scale)`, `metres` | Cuts Baku into instances of the urban transit routing problem ([instances.md](instances.md)). Used by `instances.py` only |
+| `calibration` | `trip_paths(network, a, zones, n_origins=300, seed=7, headways=None)`, `decay_weights(distances, decay_km)`, `spread(origins, rides, decay, pull, distances=None)`, `boardings(origins, rides, decay, pull)` | The part of `metrics.evaluate_od` that does not depend on the demand settings, done once: `spread` then gives exactly `evaluate_od`'s boardings and average trip length for any `trip_decay_km` and pull of the zones ([calibration.md](calibration.md)). Used by `calibrate.py` only |
 | `config` | `load_config(path, overrides)`, `parse_value`, `DATA_KEYS` | |
 | `inputs` | `load_inputs(root, config, overrides, repair, split, say)` | |
 
@@ -410,7 +413,10 @@ On one Python version a rebuild gives the same files byte for byte.
    to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
-   picture size and the number of frames its data gives. `tests/test_instances.py` checks
+   picture size and the number of frames its data gives. `tests/test_calibration.py` holds
+   `busnet/calibration.py` to exactly the boardings and trip lengths `metrics.evaluate_od`
+   gives on the made-up network, checks the rank correlation, and checks that the committed
+   `output/calibration/` agrees with itself. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
