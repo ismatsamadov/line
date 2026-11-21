@@ -72,10 +72,12 @@ and its timetable gives every route the headway and speed Baku's data lacks
 Baku's own feed reproduces the snapshot's results to within 0.1%. Riga's feed has been
 through it too ([cities.md](cities.md)): its timetable is CC0, so the feed, Kontur's grid
 for Latvia and OpenStreetMap's destinations are committed, and its bus network is
-measured and redesigned. What it needs next is a reader in Riga, someone at Rīgas
-satiksme or the city who would look at its `impact.csv`. After that, a feed with
-`shape_dist_traveled` and express routes, which Riga's does not have, would exercise the
-two parts of the reader only made-up feeds have tried.
+measured and redesigned. So are 24 more cities on five continents and Baku's own feed, in
+the world pilot ([world.md](world.md)), which also put the reader's two untried parts to
+work: six feeds place their stops by `shape_dist_traveled`, and thirteen have express
+routes. What they need next is readers: someone at Rīgas satiksme, at each operator of the
+pilot or in each city, who would look at its `impact.csv`, and the counts by route that
+would replace the modelled demand.
 
 Everything else can wait, because it would make the method look more serious without
 changing the answer much: generating new candidate routes (k-shortest paths between

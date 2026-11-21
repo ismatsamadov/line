@@ -115,6 +115,19 @@ and its results in `output/cities/riga/`. [docs/cities.md](docs/cities.md) sets 
 Baku, and [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
 explains the settings file.
 
+## The world pilot: 25 cities and Baku
+
+The same measurements and search ran on 25 more cities on five continents, each read from
+the GTFS feed its operator, city or a mapping project publishes, with the same settings for
+all, and on Baku read from its own feed. With the same buses, the average trip gets shorter
+in every city, by 2.83 minutes in the middle one (0.75 to 8.32). Kept to today's trip times
+instead, the 23 networks their operators or cities publish need 1,466 fewer of their 7,410
+buses, 20%, which saves 140,105 litres of fuel and 374 tonnes of CO₂ a weekday; with the
+three networks mapped from OpenStreetMap it comes to 3,872 fewer buses and 379,529 litres.
+All of it rests on modelled demand, since no city but Baku publishes counts the model can
+use. [docs/world.md](docs/world.md) has the table, how the cities were chosen and how far to
+trust it; `output/world/` has the numbers, and `python3 world.py` regenerates them.
+
 ## Check how much the results depend on the sample and the assumptions
 
 ```sh

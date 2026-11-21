@@ -5,7 +5,9 @@ The measurements and the redesign search read any city's GTFS feed
 Riga first. Its timetable is in the public domain. Its bus network is about a quarter
 the size of Baku's. And its feed gives what Baku's data cannot: every route's real
 frequency and speed. This page sets Riga beside Baku and says what a redesign would be
-worth there. Every number is in `output/cities/riga/`, which two commands regenerate:
+worth there. The world pilot then ran 24 more cities the same way
+([world.md](world.md)). Every number here is in `output/cities/riga/`, which two commands
+regenerate:
 
 ```sh
 python3 measure.py --config cities/riga.toml --out output/cities/riga

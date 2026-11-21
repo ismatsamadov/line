@@ -22,6 +22,9 @@ changes as candidates for review, not a plan; [results.md](results.md#check-thes
 lists what to check first. The same measurements and search now run on any city that
 publishes a GTFS feed, where the timetable gives the headways and speeds Baku's data
 lacks, and each redesign comes with what it is worth in minutes, buses, fuel and CO₂.
+Run on 25 cities on five continents and on Baku's own feed, the search shortens trips in
+every one, by 2.8 minutes in the middle city, or keeps today's trip times with a fifth fewer
+buses in the networks their operators publish ([world.md](world.md)).
 
 ## Where to read
 
@@ -30,6 +33,7 @@ lacks, and each redesign comes with what it is worth in minutes, buses, fuel and
 | Run the tools and regenerate every result | [getting-started.md](getting-started.md) |
 | Measure and redesign another city from its GTFS feed | [getting-started.md](getting-started.md#another-city-from-its-gtfs-feed) |
 | See a second city measured and redesigned from its feed, Riga, beside Baku | [cities.md](cities.md) |
+| See the same search on 25 cities and Baku from their own feeds, and what it would save across them | [world.md](world.md) |
 | See what a redesign is worth: minutes per trip, buses, bus-hours, fuel, CO₂ and money | [outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth), [results.md](results.md#what-the-redesign-is-worth) |
 | See the latest findings and the redesign | [results.md](results.md) |
 | See how much the results depend on the trip sample and the assumptions | [results.md](results.md#how-robust-the-results-are) |
