@@ -20,7 +20,9 @@ paper/figures.py      the manuscript's figures, drawn from output/ as SVG and PD
 paper/check.py        word counts, highlight lengths and citation checks of paper/manuscript.md
 paper/build.py        the submission files (Word, preprint PDF) from the Markdown -> paper/submission/
 busnet.toml           settings: data paths and every assumption
+world.py              the world pilot's cities in one table, with totals -> output/world/ (--run measures and redesigns them first)
 cities/riga.toml      settings for Riga, read from its GTFS feed (written by data/fetch_city.py)
+cities/<city>.toml    the same for the world pilot's other cities; cities/baku.toml reads Baku from its own feed
 busnet/
   assumptions.py      Assumptions: the default value of every assumption
   bicycle.py          read AYNA's bicycle lanes and parking files (KMZ); a line index; the measures against the network

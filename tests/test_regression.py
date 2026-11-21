@@ -1,8 +1,10 @@
 """Regenerate the committed results and compare them with the committed files.
 
 The measurement runs, Baku's (about 12 seconds) and Riga's from its GTFS feed (a few
-seconds), always run. The redesigns (about two minutes each), the benchmark (about three)
-and the robustness checks (about ten) run only with BUSNET_SLOW_TESTS=1 in the environment.
+seconds), and the world table, gathered from the cities' results, always run. The redesigns
+(about two minutes each), the measurement of every city of the world pilot (a few minutes),
+the benchmark (about three) and the robustness checks (about ten) run only with
+BUSNET_SLOW_TESTS=1 in the environment.
 
 Files must match byte for byte, with one allowance: Python 3.12 changed how sum() adds
 floats, so an older Python can differ in the last digits. A CSV or JSON file that is not
@@ -23,6 +25,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SLOW = os.environ.get("BUSNET_SLOW_TESTS") == "1"
 CITY = ROOT / "cities" / "riga.toml"                 # another city, read from its GTFS feed
 CITY_OUT = ROOT / "output" / "cities" / "riga"
+WORLD_CITIES = sorted(p.stem for p in (ROOT / "cities").glob("*.toml"))
 
 
 def regenerate(script, out, *args):
@@ -88,6 +91,21 @@ class CommittedResults(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             regenerate("measure.py", tmp, "--config", str(CITY))
             self.assertEqual(differences(CITY_OUT, Path(tmp)), [])
+
+    def test_world_table_regenerates_output(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            regenerate("world.py", tmp)
+            self.assertEqual(differences(ROOT / "output" / "world", Path(tmp)), [])
+
+    @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to measure every city of the world pilot again")
+    def test_world_cities_measure_regenerates_output(self):
+        missing = [c for c in WORLD_CITIES if c != "baku" and not (ROOT / "data" / "cities" / c / "gtfs.zip").exists()]
+        if missing:
+            self.skipTest(f"no inputs for {len(missing)} cities here: python3 data/fetch_world.py downloads them")
+        for city in WORLD_CITIES:
+            with self.subTest(city=city), tempfile.TemporaryDirectory() as tmp:
+                regenerate("measure.py", tmp, "--config", str(ROOT / "cities" / f"{city}.toml"))
+                self.assertEqual(differences(ROOT / "output" / "cities" / city, Path(tmp)), [])
 
     @unittest.skipUnless(SLOW, "set BUSNET_SLOW_TESTS=1 to run the two-minute redesign of Riga")
     def test_city_redesign_regenerates_output(self):
