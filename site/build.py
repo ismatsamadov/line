@@ -277,7 +277,7 @@ def shorter_path(net, streets, a, p, i, j):
     if not path:
         return None
     new = sum(h for _, h, _ in path)
-    speed = a.cruise_mps(net.routes[p.route_id].zone)
+    speed = a.speed_mps(net.routes[p.route_id])
     saved_s = (along - new) / speed + max(0, (j - i - 1) - (len(path) - 2)) * a.stop_loss_s
     kept = {s for s, _, _ in path}
     return {"line": line(streets.geometry(path)), "km": new / 1000, "saved_km": (along - new) / 1000,
@@ -431,7 +431,7 @@ def build(out_dir):
             "pop": num(row["population_within_radius"]), "pop_only": num(row["population_only_this_route"]),
             "boardings": num(row["weekday_boardings"]),
             "headway": num(row["headway_min"]), "headway_source": row["headway_source"],
-            "speed": round(a.cruise_mps(route.zone), 9),
+            "speed": round(a.speed_mps(route), 9),
             "straight": [p.direction for p in pats if p.path_source == "stops"],
             "dirs": [{"d": p.direction, "line": line(p.path), "stops": [stop_ix[s] for s in p.stop_ids],
                       "hops": [round(h, 3) for _, _, h in p.hops()]}

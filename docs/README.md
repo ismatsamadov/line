@@ -19,13 +19,17 @@ off. The redesign shortens the average trip from 51.8 to 50.9 minutes with the s
 buses, or matches today's trip times with about 12% fewer buses and 12% less fuel, and
 the gain holds on ten samples of trips and under fourteen other assumptions. I treat its
 changes as candidates for review, not a plan; [results.md](results.md#check-these-before-acting)
-lists what to check first.
+lists what to check first. The same measurements and search now run on any city that
+publishes a GTFS feed, where the timetable gives the headways and speeds Baku's data
+lacks, and each redesign comes with what it is worth in minutes, buses, fuel and CO₂.
 
 ## Where to read
 
 | If you want to... | Read |
 |---|---|
 | Run the tools and regenerate every result | [getting-started.md](getting-started.md) |
+| Measure and redesign another city from its GTFS feed | [getting-started.md](getting-started.md#another-city-from-its-gtfs-feed) |
+| See what a redesign is worth: minutes per trip, buses, bus-hours, fuel, CO₂ and money | [outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth), [results.md](results.md#what-the-redesign-is-worth) |
 | See the latest findings and the redesign | [results.md](results.md) |
 | See how much the results depend on the trip sample and the assumptions | [results.md](results.md#how-robust-the-results-are) |
 | See AYNA's bicycle lanes and parking points beside the bus network | [results.md](results.md#bicycle-lanes-and-parking) |

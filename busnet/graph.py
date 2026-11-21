@@ -71,7 +71,7 @@ class TransitGraph:
             self.pattern_base[key] = nxt
             nxt += len(network.patterns[key].stop_ids)
         self.n_nodes = nxt
-        self.node_route = [-1] * nxt              # on-board node -> route id
+        self.node_route = [None] * nxt            # on-board node -> route id; None elsewhere
         for key, base in self.pattern_base.items():
             for i in range(len(network.patterns[key].stop_ids)):
                 self.node_route[base + i] = key[0]
@@ -89,7 +89,7 @@ class TransitGraph:
 
         for key, p in network.patterns.items():
             base = self.pattern_base[key]
-            speed = assumptions.cruise_mps(network.routes[p.route_id].zone)
+            speed = assumptions.speed_mps(network.routes[p.route_id])
             headway = headways[p.route_id][0] if headways and p.route_id in headways else assumptions.default_headway_min
             board_s = headway * 60 / 2 + assumptions.transfer_penalty_s
             last = len(p.stop_ids) - 1

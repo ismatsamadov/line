@@ -6,6 +6,9 @@ Settings in `code` font are in `busnet.toml` ([configuration.md](configuration.m
 ```mermaid
 flowchart LR
   db[(ayna.db)] --> repair[Load and repair<br/>model.py]
+  feed[(or a GTFS feed)] -.-> rg[Read one day<br/>gtfs.py]
+  rg --> geo
+  rg --> svc
   repair --> geo[Geometry measures<br/>metrics.py]
   repair --> svc[Headways and daily service<br/>service.py]
   rid[(BakuBus boardings)] --> svc
@@ -52,10 +55,77 @@ Repairs, applied in this order (each is logged to `output/repairs.txt`):
    absorbs the occasional stop matched slightly out of order. The stored path runs from the
    first stop to the last.
 
+### From a GTFS feed
+
+When the settings name a GTFS feed instead of `ayna.db`, `gtfs.read_gtfs` builds the same
+routes, stops and patterns from it, for one service day:
+
+1. **The day.** `gtfs_date`, or else the weekday with the most trips of the route types
+   read (`gtfs_route_types`, buses by default), the first such day if several tie. A day's
+   services are those `calendar.txt` runs that weekday, with the holidays and extra days
+   of `calendar_dates.txt`. A trip in `frequencies.txt` counts as many departures as its
+   windows hold.
+2. **Directions.** From `direction_id`: 0 becomes direction 1 and 1 becomes 2. When a
+   route's trips lack it, each trip is compared with the route's most-run stop sequence,
+   by the order of the stops the two share or, if that does not decide, by which of their
+   ends lie nearer each other.
+3. **Patterns.** The stop sequence with the most departures is the route's pattern in
+   that direction. A sequence that is an in-order part of a pattern (a short turn) adds its
+   departures to it in proportion to the share of the pattern's length it covers. Any other
+   sequence is a branch. A branch with at least a fifth of its direction's departures, and
+   at least three, runs as a route of its own, named after its trips' headsign: route
+   number, then the headsign in brackets. Its two directions are paired when at least half
+   the stops of each lie within 150 m of the other's. A smaller branch is left out, and
+   `timetable.txt` lists it with the stops only it calls at. A route, or branch, with one
+   direction only is a loop that runs one way, and its daily service is not doubled
+   (section 4).
+4. **Shapes.** The shape most of the pattern's trips use. Where the feed gives
+   `shape_dist_traveled` for the shape and for every stop of one of those trips, each stop
+   is placed at its distance along the line, so a line that passes a stop twice is placed
+   on the pass the bus stops on; the distances are kept only if the stops then lie, at the
+   median, within 60 m of the line. Otherwise the stops are matched to the line as in step
+   3 above. A shape that fits better reversed is reversed; one with more than max(2, 10%
+   of its stops) order breaks, or a median offset over 60 m, gives way to straight lines.
+   The 5 km straight-segment test is not applied, because in a feed a long straight is a
+   sparsely drawn road rather than a fault.
+5. **Speed.** The route's length divided by its timetable's moving time: the median
+   scheduled time from first departure to last arrival of each direction's pattern trips,
+   summed over its directions, less `stop_loss_s` at every stop. A speed outside 5 to
+   90 km/h gives way to `cruise_kmh`.
+6. **Frequency.** Each direction's departures, averaged over the route's directions, are
+   its trips a day each way (section 4). The hours of service are the hours in which buses
+   leave at least a quarter as often as in the busiest hour, from the first such hour to
+   the end of the last; a night bus or an early depot run does not stretch them, and
+   `service_hours` should be set to them. A route with most of its departures outside
+   them runs at night, and is left out as a small branch is: one all-day frequency cannot
+   stand for it, and the redesign would take it for a little-used day route, merge the
+   day route it shadows into it, or hand it a day route's buses. `timetable.txt` names it,
+   and its departures count among those left out.
+7. **Express routes.** A feed has no service types, so a route is marked express when its
+   name says so ("express", "ekspres", "экспресс"), or when at least 85% of its stops lie
+   on one direction of another route that calls at more than two stops for every one of
+   its own (it stops at fewer than 60% of them) along the same stretch. The near-duplicate
+   check leaves express routes out, as it does AYNA's, so the redesign never merges one
+   into the local route it runs along.
+
+The flat projection (section 2) moves to the median of the feed's stops. Read back, the
+feed `redesign.py` writes for Baku gives the same 201 routes, 402 directions and 3,456
+stops, headways within 0.2% and speeds equal to the zone speeds. Every network-wide
+figure in `network.json` is within 0.1% of the snapshot's: 51.84 against 51.82 minutes
+door to door, and the same 2,015 buses. The one exception is the small share of trips
+with three or more changes (1.43% against 1.45%). Two directions out of 402 change length
+by more than 1%. On direction 1 of route 525 the reader matches one stop to a different
+pass of the line than the snapshot does, and the direction comes out 21% shorter. Where a
+line passes a stop twice, matching alone cannot tell which pass the bus stops on. The
+feed this repository writes has no `shape_dist_traveled`, which would settle it. The
+reader finds 121E and 140E express, two of the nine routes AYNA's service types call
+express; the other seven share too few stops with a local route to look like one.
+
 ## 2. Geometry measures
 
 All distances are great-circle (haversine). Grids and buffers use a flat projection
-centred on Baku, accurate to better than 1% across the area.
+centred on Baku (or on the median of a GTFS feed's stops), accurate to better than 1%
+across a city.
 
 | Measure | Definition |
 |---|---|
@@ -76,7 +146,9 @@ centred on Baku, accurate to better than 1% across the area.
 
 For one trip in one direction (`service.py`):
 
-- running time = length ÷ `cruise_kmh` for the route's zone + (stops − 1) × `stop_loss_s`
+- running time = length ÷ the route's moving speed + (stops − 1) × `stop_loss_s`, where the
+  speed is `cruise_kmh` for the route's zone, or the timetable's for a network read from a
+  GTFS feed (section 1)
 - fuel = length in km × `fuel_l_per_km` + (stops − 1) × `fuel_l_per_stop`
 - CO₂ = fuel × `co2_kg_per_l`
 
@@ -88,11 +160,13 @@ With the defaults, total route-km divided by total running time over all directi
 Each route's headway is the first of (`service.route_headways`):
 
 1. **supplied**: a row in `data/headways.csv`;
-2. **ridership**, when `headway_from_ridership` is on and the route has observed boardings:
+2. **timetable**, for a network read from a GTFS feed: headway = `service_hours` × 60 ÷ the
+   route's trips a day each way, not clamped, so the model runs the timetable's trips;
+3. **ridership**, when `headway_from_ridership` is on and the route has observed boardings:
    trips per direction = weekday boardings ÷ 2 ÷ `boardings_per_trip`, and
    headway = `service_hours` × 60 ÷ trips, kept between `min_headway_min` and `max_headway_min`;
-3. **zone**: `headway_by_zone` for the route's working zone;
-4. **default**: `default_headway_min`.
+4. **zone**: `headway_by_zone` for the route's working zone;
+5. **default**: `default_headway_min`.
 
 Today: 1 supplied (H1), 55 from ridership, 145 by zone. Daily service per route
 (`service.operations`), with both directions:
@@ -101,6 +175,9 @@ Today: 1 supplied (H1), 55 from ridership, 145 by zone. Daily service per route
 - bus-hours a day = trips a day ÷ 2 × round-trip running time
 - bus-km a day and fuel a day follow the same way from length and fuel per trip
 - buses needed = round-trip running time × (1 + `layover_share`) ÷ headway, rounded up per route
+
+A route stored with one direction counts as if it ran back, except a loop from a GTFS
+feed that runs one way, whose trips, bus-hours and buses count that one direction.
 
 The network totals are compared with `reference_fleet`: 2,015 buses, 88% of 2,300.
 

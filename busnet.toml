@@ -8,6 +8,8 @@
 
 [data]
 db = "data/ayna.db"
+# gtfs = "feed.zip"                                 # a GTFS feed instead of db: another city's network,
+                                                    # with headways and speeds from its timetable
 population = "data/external/kontur/kontur_population_AZ_20231101.gpkg"
 ridership = "data/external/opendata/bakubus_passenger-2026.csv"
 headways = "data/headways.csv"                      # route,headway_min[,source]; add real values here
@@ -97,6 +99,24 @@ redesign_protect_boardings = 1000            # never drop a route with at least 
 redesign_protected_routes = ["180"]          # never merged, dropped, straightened, thinned or stop-balanced
                                              # (they can still gain buses). 180 serves Pirallahı, whose
                                              # connecting routes 150A and 446 have no stops in the data
+
+[gtfs]
+# Read only when [data] names a GTFS feed (gtfs = "...") instead of the AYNA snapshot; the
+# feed's timetable then gives every route its headway and its moving speed (busnet/gtfs.py).
+gtfs_date = ""                               # service day to read, YYYY-MM-DD; empty: the weekday with the most bus trips
+gtfs_route_types = [3]                       # GTFS route types read: 3 is bus, with the extended bus and coach
+                                             # types; add 11 for trolleybuses, 0 for trams
+
+[impact]
+# What the redesign is worth (redesign.py writes impact.csv). 0 means unknown, and the rows
+# that need the value are left out rather than guessed. No public source gives Baku's bus
+# journeys a day, its operators' costs or a value of riders' time, so all stay at 0 here.
+daily_journeys = 0                           # door-to-door bus journeys on a weekday, to turn minutes into hours
+fuel_price = 0                               # per diesel-equivalent litre, in currency
+cost_per_bus_hour = 0                        # running cost of a bus-hour besides fuel (driver, upkeep), in currency
+value_of_time = 0                            # what an hour of riders' time is worth, in currency
+currency = ""                                # e.g. "AZN"
+days_per_year = 0                            # weekday equivalents in a year, to turn a day into a year
 
 [destination_weights]            # pull of one OpenStreetMap feature of each kind
 office = 1

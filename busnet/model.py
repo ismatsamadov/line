@@ -42,6 +42,8 @@ class Route:
     fare_azn: float
     payment: str                  # Kart (card) or Nəğd (cash)
     card_since: str
+    speed_kmh: float = None       # moving speed read from a timetable (gtfs.py); None: the zone's
+    runs_one_way: bool = False    # a loop that runs one way only (gtfs.py); see Network.directions_run
 
 
 @dataclass
@@ -76,6 +78,11 @@ class Network:
 
     def patterns_of(self, route_id):
         return [p for (r, _), p in sorted(self.patterns.items()) if r == route_id]
+
+    def directions_run(self, route_id):
+        """Directions a bus covers in one cycle: one for a loop that runs one way, otherwise
+        two, so a route stored with one direction counts as if it ran the same way back."""
+        return 1 if self.routes[route_id].runs_one_way else 2
 
     def served_stop_ids(self):
         return {s for p in self.patterns.values() for s in p.stop_ids}
@@ -251,14 +258,23 @@ def _assign_shapes(number, dirs, pts, lines, log):
     chosen = {}
     for d, sd in best.items():
         breaks, median, line, match, reversed_ = fits[(d, sd)]
-        n = len(pts[d])
-        if breaks > max(2, 0.1 * n) or median > 60 or line.max_jump_m() > 5_000:
-            why = (f"{breaks} stops out of order" if breaks > max(2, 0.1 * n)
-                   else f"median offset {median:.0f} m" if median > 60
-                   else f"straight jump of {line.max_jump_m() / 1000:.1f} km")
+        why = _shape_problem(breaks, median, line, len(pts[d]))
+        if why:
             log.append(f"{number} d{d}: shape cannot explain its stops ({why}); using straight lines between stops")
             continue
         if reversed_:
             log.append(f"{number} d{d}: shape was stored backwards; reversed")
         chosen[d] = (line, match)
     return chosen
+
+
+def _shape_problem(breaks, median, line, n, max_jump_m=5_000):
+    """Why a shape cannot explain its n stops (many order breaks, a line far from the stops,
+    a straight jump longer than max_jump_m unless that is None), or None if it can."""
+    if breaks > max(2, 0.1 * n):
+        return f"{breaks} stops out of order"
+    if median > 60:
+        return f"median offset {median:.0f} m"
+    if max_jump_m is not None and line.max_jump_m() > max_jump_m:
+        return f"straight jump of {line.max_jump_m() / 1000:.1f} km"
+    return None

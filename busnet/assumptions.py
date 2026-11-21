@@ -87,8 +87,27 @@ class Assumptions:
     redesign_protected_routes: list = field(default_factory=lambda: ["180"])   # left as they are; 180 (Pirallahı):
                                                  # its connecting routes are missing from the data
 
+    # A GTFS feed instead of the AYNA snapshot ([data] gtfs; see gtfs.py). The feed's timetable
+    # then gives each route its headway and its moving speed.
+    gtfs_date: str = ""                          # service day to read, YYYY-MM-DD; empty: the weekday with most bus trips
+    gtfs_route_types: list = field(default_factory=lambda: [3])   # GTFS route types read: 3 is bus, with the extended
+                                                 # bus and coach types; add 11 for trolleybuses, 0 for trams
+
+    # What the redesign is worth (redesign.py, impact.csv). A value left at 0 is unknown, and the
+    # rows that need it are left out rather than guessed.
+    daily_journeys: float = 0                    # door-to-door bus journeys on a weekday, to turn minutes into hours
+    fuel_price: float = 0                        # per diesel-equivalent litre, in currency
+    cost_per_bus_hour: float = 0                 # running cost of a bus-hour besides fuel (driver, upkeep), in currency
+    value_of_time: float = 0                     # what an hour of riders' time is worth, in currency
+    currency: str = ""
+    days_per_year: float = 0                     # weekday equivalents in a year, to turn a day into a year
+
     def cruise_mps(self, zone):
         return self.cruise_kmh.get(zone, self.default_cruise_kmh) / 3.6
+
+    def speed_mps(self, route):
+        """A route's moving speed: its own, read from a timetable, or else its zone's."""
+        return route.speed_kmh / 3.6 if route.speed_kmh else self.cruise_mps(route.zone)
 
     @property
     def transfer_penalty_s(self):

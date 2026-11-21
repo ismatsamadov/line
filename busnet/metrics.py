@@ -133,11 +133,12 @@ def hop_route_sets(network):
 def near_duplicates(network, min_share=0.85, min_stops=10):
     """Pairs where most of one route's stops are also served by one other route.
 
-    Express routes are left out: skipping stops of a local route is their purpose."""
+    Express routes are left out: skipping stops of a local route is their purpose. AYNA's zones
+    say "ekspres"; routes read from a GTFS feed say "express" when gtfs.py finds them to be."""
     stops_of = defaultdict(set)
     for p in network.patterns.values():
         stops_of[p.route_id] |= set(p.stop_ids)
-    local = [r for r in stops_of if "ekspres" not in network.routes[r].zone]
+    local = [r for r in stops_of if "ekspres" not in network.routes[r].zone and "express" not in network.routes[r].zone]
     rows = []
     for a in local:
         for b in local:
@@ -276,9 +277,9 @@ def route_table(network, a, zones=None, ridership=None, headways=None):
             "detour_excess_km": sum(d["excess_m"] for m in ms for d in m["detours"]) / 1000,
             "shared_share": avg("shared_share"),
             "heavy_shared_share": avg("heavy_shared_share"),
-            "round_trip_min": sum(m["run_min"] for m in ms) * (2 / len(ms)),
+            "round_trip_min": sum(m["run_min"] for m in ms) * (network.directions_run(rid) / len(ms)),
             "stop_time_share": avg("stop_time_share"),
-            "fuel_l_round_trip": sum(m["fuel_l"] for m in ms) * (2 / len(ms)),
+            "fuel_l_round_trip": sum(m["fuel_l"] for m in ms) * (network.directions_run(rid) / len(ms)),
         }
         row["co2_kg_round_trip"] = row["fuel_l_round_trip"] * a.co2_kg_per_l
         if pop_cov:
@@ -309,7 +310,7 @@ def detour_table(network, a, zones=None):
     for key, p in sorted(network.patterns.items()):
         stops = network.stops
         pts = [(stops[s].lat, stops[s].lon) for s in p.stop_ids]
-        speed = a.cruise_mps(network.routes[p.route_id].zone)
+        speed = a.speed_mps(network.routes[p.route_id])
         for d in find_detours(p, pts):
             inner = p.stop_ids[d["from_index"] + 1:d["to_index"]]
             row = {
@@ -414,7 +415,7 @@ def evaluate_od(network, a, zones, n_origins=300, seed=7, headways=None, attract
                     continue
                 p = pred[n]
                 flow[p] = flow.get(p, 0.0) + f
-                if graph.node_route[n] >= 0 and graph.is_departure(p):
+                if graph.node_route[n] is not None and graph.is_departure(p):
                     boardings[graph.node_route[n]] += f
     n = acc["demand"] or 1
     reach = acc["reachable"] or 1

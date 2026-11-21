@@ -35,7 +35,9 @@ anyone makes them. It is Python 3.11 or newer with the standard library only. Ev
 input is committed, every result regenerates from three commands, and the documentation
 in [docs/](docs/README.md) explains the data and its defects, every setting, how each
 number is computed, the redesign algorithm, every output column, the latest results,
-the research behind the approach and what I would do next.
+the research behind the approach and what I would do next. The same code reads any
+city's GTFS feed, so the measurements and the redesign search run wherever a timetable is
+published ([below](#another-city-from-its-gtfs-feed)).
 
 ## Regenerate the results
 
@@ -71,6 +73,7 @@ trips than the search used. Its settings are in the `[redesign]` table of `busne
 | `changes.csv` | Every change kept, in order, and what it did to average door-to-door time |
 | `routes.csv` | Each route before and after: kept, straightened, merged or dropped; buses, headway, length |
 | `summary.json` | Riders, operator and network measures before and after, and the fleet that would match today's travel times |
+| `impact.csv` | What the redesign is worth, with today's buses and with fewer: minutes per trip, people near a stop, buses, bus-hours, bus-km, fuel and CO₂ a day, and money once prices are set |
 | `network.geojson` | The redesigned and dropped routes; GitHub draws this file as a map |
 | `gtfs_today.zip`, `gtfs_redesign.zip` | Both networks as GTFS, for other transit tools |
 
@@ -85,6 +88,24 @@ Today's feed is in the Mobility Database as a community feed,
 Azerbaijan. The database downloads it from this repository every day, so
 `output/redesign/gtfs_today.zip` keeps its path on `main`
 ([docs/outputs.md](docs/outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)).
+
+## Another city, from its GTFS feed
+
+```sh
+python3 measure.py --config my_city.toml --out output/my_city
+python3 redesign.py --config my_city.toml --out output/my_city/redesign
+```
+
+Nothing in the measurements or the search is Baku's. A settings file whose `[data]` table
+names a city's GTFS feed (`gtfs = "my_city/gtfs.zip"`), a population grid for its country
+and, if wanted, OpenStreetMap destinations runs both on that city. The feed's timetable
+gives every route the frequency and speed Baku's data lacks. The reader takes the
+weekday with the most bus trips and makes one stop pattern per route direction. Short
+turns count towards its frequency, large branches run as routes of their own and small
+ones are left out and listed, and express routes are told apart by their names and their
+stops. It then moves the map projection to the city. Read back, the feed this repository writes for Baku reproduces
+the snapshot's results to within 0.1%. [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
+shows the settings file and where each input comes from.
 
 ## Check how much the results depend on the sample and the assumptions
 
@@ -148,7 +169,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `data/metro/`, `data/metro_scraper.py`, `data/build_metro.py` | The metro network (stations, train services, running times, departures), not yet used by the model; the scripts that read the metro's API and build the tables |
 | `data/metro_headways.csv` | Metro train intervals the operator has published, with sources |
 | `busnet.toml` | Settings: data paths and every assumption |
-| `busnet/` | The package: load and repair the network, headways and daily service, demand, metrics, scenarios, the redesign search, GTFS export |
+| `busnet/` | The package: load and repair the network or read it from a GTFS feed, headways and daily service, demand, metrics, scenarios, the redesign search and what it is worth, GTFS export |
 | `measure.py` | Measures the network and writes `output/` |
 | `redesign.py` | Searches for a better network and writes `output/redesign/` |
 | `robustness.py` | Repeats the results under other trip samples and assumptions and writes `output/robustness/` |
@@ -174,6 +195,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `network.json` | Network-wide results, the inputs found and the settings used |
 | `scenario.json` | The same results before and after a scenario |
 | `repairs.txt` | Data defects fixed automatically before measuring |
+| `timetable.txt` | From a GTFS feed only: branches run as routes or left out, express routes, and speeds that fell back to the settings |
 | `robustness/` | The redesign on other trip samples and under other assumptions, the model's fit as inputs are added, coverage by radius |
 | `benchmark/` | The published benchmark route sets scored here beside their published scores, and what straightening does to them |
 | `gtfs_validation/` | What MobilityData's GTFS validator says about the two feeds |

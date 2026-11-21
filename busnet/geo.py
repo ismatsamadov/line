@@ -1,5 +1,6 @@
-"""Geometry helpers: great-circle distance, a local metric projection for Baku,
-polylines with distance-along-line ("chainage"), and stop-to-shape matching."""
+"""Geometry helpers: great-circle distance, a local metric projection (centred on Baku
+unless a GTFS feed moves it to its own city), polylines with distance-along-line
+("chainage"), and stop-to-shape matching."""
 
 import math
 
@@ -18,12 +19,20 @@ class LocalProjection:
     """Flat (equirectangular) projection centred on Baku.
 
     Good to better than 1% across the Absheron peninsula, which is all we need
-    for nearest-point searches, buffers and grids."""
+    for nearest-point searches, buffers and grids. Another city needs its own
+    centre: gtfs.read_gtfs moves it to the median of the feed's stops."""
 
     def __init__(self, lat0=40.4, lon0=49.85):
         self.lat0, self.lon0 = lat0, lon0
         self.kx = math.radians(1) * EARTH_RADIUS_M * math.cos(math.radians(lat0))
         self.ky = math.radians(1) * EARTH_RADIUS_M
+
+    def centre_on(self, lat0, lon0):
+        """Move the centre, in place so every module's PROJ moves with it; returns the old one.
+        Lines built before the move keep coordinates in the old frame."""
+        old = (self.lat0, self.lon0)
+        self.__init__(lat0, lon0)
+        return old
 
     def to_xy(self, lat, lon):
         return (lon - self.lon0) * self.kx, (lat - self.lat0) * self.ky

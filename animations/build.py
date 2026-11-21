@@ -205,7 +205,7 @@ def bus_runs(net, a, headways):
     for key in sorted(net.patterns):
         p, rid = net.patterns[key], key[0]
         headway, source = headways[rid]
-        speed = a.cruise_mps(net.routes[rid].zone)
+        speed = a.speed_mps(net.routes[rid])
         times = [0.0]
         for i in range(1, len(p.stop_ids)):
             times.append(times[-1] + (p.chainage_m[i] - p.chainage_m[i - 1]) / speed + a.stop_loss_s)

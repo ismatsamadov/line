@@ -5,14 +5,15 @@ keys are Assumptions fields; the table names only group them for readers. Tables
 as headway_by_zone are merged with the defaults, so one entry can be changed alone.
 Unknown keys are an error, so a typo cannot be silently ignored."""
 
+import os
 import tomllib
 from dataclasses import fields, replace
 from pathlib import Path
 
 from .assumptions import Assumptions
 
-DATA_KEYS = ("db", "population", "ridership", "headways", "destinations", "metro_passengers", "metro_exits", "walk_network",
-             "bicycle_lanes", "bicycle_parking")
+DATA_KEYS = ("db", "gtfs", "population", "ridership", "headways", "destinations", "metro_passengers", "metro_exits",
+             "walk_network", "bicycle_lanes", "bicycle_parking")
 
 
 def parse_value(text):
@@ -57,6 +58,8 @@ def load_config(path=None, overrides=()):
     defaults = Assumptions()
     for key in _DICT_FIELDS & set(settings):
         settings[key] = {**getattr(defaults, key), **settings[key]}
+    for key in _TEXT_FIELDS & set(settings):          # TOML reads gtfs_date = 2026-11-25 as a date
+        settings[key] = str(settings[key])
     return replace(defaults, **settings), data
 
 
@@ -64,8 +67,9 @@ def _resolve(base, value):
     if isinstance(value, list):
         return [_resolve(base, v) for v in value]
     p = Path(value)
-    return str(p if p.is_absolute() else base / p)
+    return os.path.normpath(p if p.is_absolute() else base / p)       # a city's "../data/..." becomes ".../data/..."
 
 
 _FIELDS = {f.name for f in fields(Assumptions)}
 _DICT_FIELDS = {f.name for f in fields(Assumptions) if isinstance(getattr(Assumptions(), f.name), dict)}
+_TEXT_FIELDS = {f.name for f in fields(Assumptions) if isinstance(getattr(Assumptions(), f.name), str)}
