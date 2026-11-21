@@ -42,11 +42,13 @@ access and transfer walks, and into the redesign's coverage guard, would lengthe
 modelled trips and tighten the guard; the check measures the gap but does not yet close
 it.
 
-I would also calibrate the demand model properly: fit `trip_decay_km`,
-`destination_share` and `destination_weights` against the observed boardings, try a
-doubly constrained gravity model, and keep part of the routes aside for checking so the
-fit is not tuned to the data that judges it. That should raise the fair 0.58, but it
-would still be calibration against 56 routes of one carrier.
+The demand model's settings are now fitted to the counts and cross-validated
+([calibration.md](calibration.md)). The fit at today's settings is 0.53 rather than 0.58,
+which was a lucky sample, and no setting that keeps trips realistic ranks the counted
+routes better; the ones that do make trips a third as long as today's. What would move it
+is data rather than tuning: the average length of a Baku bus trip, from BakıKart or a
+survey, to fix how fast trips fall off with distance; counts by stop or by hour; and a
+doubly constrained gravity model, which is still to try.
 
 The benchmark test of 27 October 2026 ([benchmark.md](benchmark.md)) suggests one
 cheap change to the search itself: on Mumford1 to Mumford3, repeating the

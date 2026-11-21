@@ -27,6 +27,7 @@ python3 robustness.py
 | `python3 robustness.py` | `output/robustness/`: the results on other trip samples and under other assumptions | about 15 minutes (8 processes) |
 | `python3 bicycle.py` | `output/bicycle/`: AYNA's bicycle lanes and parking points beside the bus network | about 4 s |
 | `python3 instances.py` | `output/instances/`: Baku cut into five instances in the format of Mumford's benchmark networks ([instances.md](instances.md)) | about 12 minutes |
+| `python3 calibrate.py` | `output/calibration/`: the demand model's settings fitted to the counted boardings and cross-validated ([calibration.md](calibration.md)) | about 25 minutes |
 | `python3 site/build.py` | `site/data.js` and `site/checklist.xlsx`, the page's data, from `output/`; with `--og` also `site/og.png` (needs Chrome) | about 3 s |
 | `python3 animations/build.py` | `animations/*.gif`, the five animations in the README ([below](#redraw-the-animations)) | about 4 minutes |
 

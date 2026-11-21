@@ -1,0 +1,286 @@
+{
+ "routes_compared": 56,
+ "origins_per_sample": 2000,
+ "today": {
+  "trip_decay_km": 6.0,
+  "destination_share": 0.5,
+  "metro_weight_per_1000_entries": 2.0,
+  "mean_trip_km_straight_line": 8.392662011834826,
+  "spearman_on_grid_sample": 0.5427887901572113,
+  "spearman_over_samples": {
+   "mean": 0.5318523581681476,
+   "sd": 0.011033510523007202,
+   "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+   ],
+   "values": [
+    0.5252221462747778,
+    0.5207108680792891,
+    0.5483937115516063,
+    0.5277511961722487,
+    0.5371838687628161
+   ]
+  }
+ },
+ "best_on_all_routes": {
+  "trip_decay_km": 1.5,
+  "destination_share": 0.75,
+  "metro_weight_per_1000_entries": 0,
+  "mean_trip_km_straight_line": 2.6578736121273456,
+  "spearman": 0.6685577580314422
+ },
+ "cross_validated": {
+  "candidates": 420,
+  "folds": 5,
+  "repeats": 200,
+  "spearman_mean": 0.616811004784689,
+  "spearman_sd": 0.02439873834436219,
+  "settings_chosen_most": [
+   {
+    "trip_decay_km": 1.5,
+    "destination_share": 0.75,
+    "metro_weight_per_1000_entries": 0,
+    "mean_trip_km_straight_line": 2.6578736121273456,
+    "times": 214
+   },
+   {
+    "trip_decay_km": 3,
+    "destination_share": 0.6,
+    "metro_weight_per_1000_entries": 8,
+    "mean_trip_km_straight_line": 5.000649185583443,
+    "times": 112
+   },
+   {
+    "trip_decay_km": 2,
+    "destination_share": 0.5,
+    "metro_weight_per_1000_entries": 0,
+    "mean_trip_km_straight_line": 3.4006212032671006,
+    "times": 92
+   },
+   {
+    "trip_decay_km": 1,
+    "destination_share": 0.4,
+    "metro_weight_per_1000_entries": 0,
+    "mean_trip_km_straight_line": 1.7990249643044298,
+    "times": 63
+   },
+   {
+    "trip_decay_km": 1,
+    "destination_share": 0,
+    "metro_weight_per_1000_entries": 0,
+    "mean_trip_km_straight_line": 1.7793436340815771,
+    "times": 57
+   }
+  ]
+ },
+ "cross_validated_realistic": {
+  "candidates": 194,
+  "folds": 5,
+  "repeats": 200,
+  "spearman_mean": 0.5217409432672591,
+  "spearman_sd": 0.007526497981100705,
+  "settings_chosen_most": [
+   {
+    "trip_decay_km": 6,
+    "destination_share": 0.5,
+    "metro_weight_per_1000_entries": 2,
+    "mean_trip_km_straight_line": 8.392662011834826,
+    "times": 382
+   },
+   {
+    "trip_decay_km": 6,
+    "destination_share": 1.0,
+    "metro_weight_per_1000_entries": 4,
+    "mean_trip_km_straight_line": 8.75423853009635,
+    "times": 236
+   },
+   {
+    "trip_decay_km": 6,
+    "destination_share": 0.6,
+    "metro_weight_per_1000_entries": 0,
+    "mean_trip_km_straight_line": 8.40228926428784,
+    "times": 140
+   },
+   {
+    "trip_decay_km": 6,
+    "destination_share": 0.75,
+    "metro_weight_per_1000_entries": 8,
+    "mean_trip_km_straight_line": 8.589058533647805,
+    "times": 103
+   },
+   {
+    "trip_decay_km": 6,
+    "destination_share": 0.4,
+    "metro_weight_per_1000_entries": 8,
+    "mean_trip_km_straight_line": 8.40848460882281,
+    "times": 80
+   }
+  ],
+  "rule": "settings whose average straight-line trip is at least today's"
+ },
+ "fitted": {
+  "trip_decay_km": 1.5,
+  "destination_share": 0.75,
+  "metro_weight_per_1000_entries": 0,
+  "mean_trip_km_straight_line": 2.6578736121273456
+ },
+ "fitted_realistic": {
+  "trip_decay_km": 6,
+  "destination_share": 0.5,
+  "metro_weight_per_1000_entries": 2,
+  "mean_trip_km_straight_line": 8.392662011834826
+ },
+ "fresh_samples": [
+  {
+   "seed": 101,
+   "today": 0.521120984278879,
+   "today_trip_km": 8.342772535930047,
+   "fitted": 0.6414900888585099,
+   "fitted_trip_km": 2.648002529814221,
+   "fitted_realistic": 0.521120984278879,
+   "fitted_realistic_trip_km": 8.342772535930047
+  },
+  {
+   "seed": 102,
+   "today": 0.5564593301435407,
+   "today_trip_km": 8.298802101318179,
+   "fitted": 0.6591250854408749,
+   "fitted_trip_km": 2.6610335337799973,
+   "fitted_realistic": 0.5564593301435407,
+   "fitted_realistic_trip_km": 8.298802101318179
+  },
+  {
+   "seed": 103,
+   "today": 0.5250854408749146,
+   "today_trip_km": 8.359150162266598,
+   "fitted": 0.6548872180451127,
+   "fitted_trip_km": 2.649703578484776,
+   "fitted_realistic": 0.5250854408749146,
+   "fitted_realistic_trip_km": 8.359150162266598
+  }
+ ],
+ "official_average_bus_trip_km": {
+  "year": 2025,
+  "km": 15.6
+ },
+ "grid": {
+  "trip_decay_km": [
+   1,
+   1.5,
+   2,
+   3,
+   4,
+   5,
+   6,
+   8,
+   10,
+   15,
+   20,
+   30
+  ],
+  "destination_share": [
+   0,
+   0.25,
+   0.4,
+   0.5,
+   0.6,
+   0.75,
+   1.0
+  ],
+  "metro_weight_per_1000_entries": [
+   0,
+   1,
+   2,
+   4,
+   8
+  ],
+  "grid_seed": 7
+ },
+ "settings": {
+  "walk_speed_mps": 1.25,
+  "walk_detour": 1.3,
+  "max_access_walk_m": 500,
+  "max_transfer_walk_m": 300,
+  "coverage_radius_m": 400,
+  "default_headway_min": 12,
+  "headway_by_zone": {
+   "Şəhərdaxili": 10,
+   "Şəhərdaxili (ekspres)": 15,
+   "Şəhərətrafı": 15,
+   "Şəhərətrafı (ekspres)": 20,
+   "Qəsəbədaxili": 20,
+   "Qəsəbələrarası": 20,
+   "Şəhərlərarası": 30
+  },
+  "headway_from_ridership": false,
+  "boardings_per_trip": 60,
+  "service_hours": 17,
+  "min_headway_min": 3,
+  "max_headway_min": 30,
+  "transfer_penalty_min": 5,
+  "layover_share": 0.15,
+  "reference_fleet": 2300,
+  "cruise_kmh": {
+   "Şəhərdaxili": 22,
+   "Şəhərdaxili (ekspres)": 29,
+   "Şəhərətrafı": 29,
+   "Şəhərətrafı (ekspres)": 36,
+   "Qəsəbədaxili": 25,
+   "Qəsəbələrarası": 31,
+   "Şəhərlərarası": 40
+  },
+  "default_cruise_kmh": 25,
+  "stop_loss_s": 20,
+  "fuel_l_per_km": 0.3,
+  "fuel_l_per_stop": 0.05,
+  "co2_kg_per_l": 2.67,
+  "trip_decay_km": 6.0,
+  "max_trip_min": 120,
+  "destination_share": 0.5,
+  "destination_weights": {
+   "office": 1,
+   "townhall": 3,
+   "courthouse": 3,
+   "kindergarten": 1,
+   "school": 3,
+   "college": 5,
+   "university": 10,
+   "clinic": 2,
+   "hospital": 8,
+   "supermarket": 2,
+   "department_store": 4,
+   "mall": 10,
+   "marketplace": 8,
+   "station": 5,
+   "bus_station": 5
+  },
+  "metro_weight_per_1000_entries": 2.0,
+  "redesign_origins": 100,
+  "redesign_seed": 11,
+  "redesign_min_gain_min": 0.005,
+  "redesign_max_straighten": 80,
+  "redesign_max_drop": 20,
+  "redesign_max_people_losing_stop": 500,
+  "redesign_max_people_losing_stop_total": 3000,
+  "redesign_shift_share": 0.2,
+  "redesign_shift_rounds": 4,
+  "redesign_protect_boardings": 1000,
+  "redesign_protected_routes": [
+   "180"
+  ],
+  "gtfs_date": "",
+  "gtfs_route_types": [
+   3
+  ],
+  "daily_journeys": 0,
+  "fuel_price": 0,
+  "cost_per_bus_hour": 0,
+  "value_of_time": 0,
+  "currency": "",
+  "days_per_year": 0
+ }
+}
