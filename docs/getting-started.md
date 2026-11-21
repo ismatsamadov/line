@@ -28,7 +28,7 @@ python3 robustness.py
 | `python3 bicycle.py` | `output/bicycle/`: AYNA's bicycle lanes and parking points beside the bus network | about 4 s |
 | `python3 instances.py` | `output/instances/`: Baku cut into five instances in the format of Mumford's benchmark networks ([instances.md](instances.md)) | about 12 minutes |
 | `python3 site/build.py` | `site/data.js` and `site/checklist.xlsx`, the page's data, from `output/`; with `--og` also `site/og.png` (needs Chrome) | about 3 s |
-| `python3 animations/build.py` | `animations/*.gif`, the four animations at the top of the README ([below](#redraw-the-animations)) | about 4 minutes |
+| `python3 animations/build.py` | `animations/*.gif`, the five animations in the README ([below](#redraw-the-animations)) | about 4 minutes |
 
 The committed `output/` folder was produced by exactly these three commands. Running
 them again gives byte-identical files: random sampling uses fixed seeds and every list
@@ -65,11 +65,11 @@ deploy from the branch `main`, folder `/ (root)`.
 ## Redraw the animations
 
 ```sh
-python3 animations/build.py                  # all four, about 4 minutes
-python3 animations/build.py --only riders    # one of buses, riders, redesign and travel-time; repeatable
+python3 animations/build.py                  # all five, about 4 minutes
+python3 animations/build.py --only riders    # one of buses, riders, redesign, travel-time and bicycle; repeatable
 ```
 
-The four GIFs at the top of the README are drawn from the committed data and results with
+The five GIFs in the README, each in the section it illustrates, are drawn from the committed data and results with
 the standard library, like everything else ([code.md](code.md#the-animations)). Run
 `redesign.py` first after any change to the data or the settings: `redesign.gif` replays
 the search and stops with a message if it keeps other changes than
