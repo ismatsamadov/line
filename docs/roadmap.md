@@ -95,6 +95,33 @@ Azerbaijan. That asks two things of me: the file keeps its link, and its nominal
 dates, which end on 31 December 2027, move forward by 24 December 2027
 ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)).
 
+### A Mac desktop app
+
+Today the tool is three commands and a folder of CSV files, which suits someone who reads
+code and few of the people at a transit agency who would use the answers. A Mac app would
+put the same runs behind a window: pick a city from the Mobility Database or drop in a GTFS
+zip; let it fetch the population grid and the destinations as `data/fetch_city.py` does;
+see the network on a map with its long routes, duplicates and gaps; run the measurements
+and the redesign with a progress bar; read the change list and `impact.csv` beside a map of
+before and after; and export the report and the redesigned feed.
+
+I would keep the engine as it is, Python's standard library only, and wrap it rather than
+rewrite it. A SwiftUI shell would carry its own copy of Python inside the app, run
+`measure.py` and `redesign.py` as they run now, read their JSON and CSV, and draw the
+networks with MapKit. The page in `index.html` already draws a network, so a web view could
+stand in for the native map at first. The steps, in order:
+
+1. A command with a stable interface for the app to call: run a city, report progress as
+   lines of JSON, and write the results where the app expects them.
+2. The window: a city picker, the map, the change list and the impact table.
+3. The bundle: Python inside the app, signed and notarised with an Apple Developer account
+   ($99 a year) so that macOS opens it without warnings, as a `.dmg` and a Homebrew cask.
+4. Offline runs: the downloads cached, so that a city fetched once runs without the network.
+
+A first version is a few weeks of work. It would reach Mac users only; a web version, or
+the same shell built for Windows, would reach more of the people at agencies, and the
+command in step 1 serves all three.
+
 ## What this version cannot do
 
 - Headways are estimated for 200 of the 201 routes (55 from boardings, 145 by service
