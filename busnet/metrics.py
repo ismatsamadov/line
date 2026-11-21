@@ -133,11 +133,12 @@ def hop_route_sets(network):
 def near_duplicates(network, min_share=0.85, min_stops=10):
     """Pairs where most of one route's stops are also served by one other route.
 
-    Express routes are left out: skipping stops of a local route is their purpose."""
+    Express routes are left out: skipping stops of a local route is their purpose. AYNA's zones
+    say "ekspres"; routes read from a GTFS feed say "express" when gtfs.py finds them to be."""
     stops_of = defaultdict(set)
     for p in network.patterns.values():
         stops_of[p.route_id] |= set(p.stop_ids)
-    local = [r for r in stops_of if "ekspres" not in network.routes[r].zone]
+    local = [r for r in stops_of if "ekspres" not in network.routes[r].zone and "express" not in network.routes[r].zone]
     rows = []
     for a in local:
         for b in local:

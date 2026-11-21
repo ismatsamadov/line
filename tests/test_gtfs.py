@@ -2,7 +2,9 @@
 with route 1's outbound line cut short after stop 3 and a repeated point, as AYNA's lines
 sometimes are; the reader reads that feed back, and a small feed made up to hold the cases
 real feeds have: holidays, extra days, short turns, branches, frequencies, trips without a
-direction, a loop, a tram, a number two routes share and a shape stored backwards."""
+direction, a loop, a tram, a number two routes share and a shape stored backwards. Three
+more feeds hold a branch large enough to run as a route, express routes, a night bus, and
+a line that passes a stop twice with shape_dist_traveled saying which pass the bus stops on."""
 
 import csv
 import io
@@ -12,8 +14,9 @@ import zipfile
 from pathlib import Path
 
 from busnet.assumptions import Assumptions
-from busnet.geo import PROJ
+from busnet.geo import PROJ, haversine_m
 from busnet.gtfs import read_gtfs, shape_points, write_gtfs
+from busnet.metrics import near_duplicates
 from busnet.model import Pattern
 from busnet.service import operations, route_headways
 
@@ -108,7 +111,7 @@ class ReadBackTest(unittest.TestCase):
         self.assertAlmostEqual(hw["2"][0], 15, places=6)
         self.assertAlmostEqual(self.back.routes["1"].speed_kmh, 22, delta=0.1)       # the urban zone's speed
         self.assertAlmostEqual(self.back.routes["2"].speed_kmh, 29, delta=0.1)       # suburban
-        self.assertEqual(self.table.summary["hours_of_departures"], 17)
+        self.assertEqual(self.table.summary["hours_of_service"], 17)
         self.assertEqual(self.table.warnings, [])
 
 
@@ -239,6 +242,120 @@ class ReadTest(unittest.TestCase):
     def test_the_projection_moves_to_the_feed(self):
         self.assertAlmostEqual(PROJ.lat0, LAT, delta=0.011)
         self.assertAlmostEqual(PROJ.lon0, LON + 0.03, delta=0.011)
+
+
+
+def zipped(folder, name, files):
+    """A feed from {file name: text}, as a zip file in folder."""
+    path = Path(folder) / name
+    with zipfile.ZipFile(path, "w") as z:
+        for file, text in files.items():
+            z.writestr(file, text)
+    return path
+
+
+def stop_times(rows, hop_s=HOP_S):
+    """stop_times.txt from [(trip, [stops], first departure, [shape_dist_traveled or None])]."""
+    out = "trip_id,arrival_time,departure_time,stop_id,stop_sequence,shape_dist_traveled\n"
+    for trip, stops, start, dist in rows:
+        for i, s in enumerate(stops):
+            t = clock(start, i * hop_s)
+            out += f"{trip},{t},{t},{s},{i + 1},{'' if dist is None else dist[i]}\n"
+    return out
+
+
+BASIC = {"agency.txt": "agency_id,agency_name,agency_url,agency_timezone\nA,Test Buses,https://example.org,Asia/Baku\n",
+         "calendar.txt": "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
+                         "WK,1,1,1,1,1,0,0,20261102,20261130\n"}
+STREET = {f"T{i}": (LAT, LON + STEP / 2 * (i - 1)) for i in range(1, 11)}         # ten stops 424 m apart
+STREET.update({"T11": (LAT + 0.01, LON + STEP), "T12": (LAT + 0.02, LON + STEP)})   # a branch north from T3
+LOCAL = [f"T{i}" for i in range(1, 11)]
+BRANCH = ["T1", "T2", "T3", "T11", "T12"]
+
+
+class BranchesAndExpressTest(unittest.TestCase):
+    """A route whose branch carries half its departures, an express along a local route, a route
+    named express, and a night bus."""
+
+    def setUp(self):
+        keep_projection(self)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        trips = [("L", "l_out_%d" % k, "0", "East", LOCAL, f"{6 + k:02d}:00:00") for k in range(4)]
+        trips += [("L", "l_back_%d" % k, "1", "West", LOCAL[::-1], f"{6 + k:02d}:30:00") for k in range(4)]
+        trips += [("L", "l_north_%d" % k, "0", "North", BRANCH, f"{6 + k:02d}:15:00") for k in range(4)]
+        trips += [("L", "l_south_%d" % k, "1", "Centre", BRANCH[::-1], f"{6 + k:02d}:45:00") for k in range(4)]
+        trips += [("X", "x_out", "0", "East", ["T1", "T4", "T7", "T10"], "07:05:00"),
+                  ("X", "x_back", "1", "West", ["T10", "T7", "T4", "T1"], "08:05:00"),
+                  ("A", "a_out", "0", "Airport", ["T10", "T12"], "07:10:00"),
+                  ("N", "n_night", "0", "East", ["T1", "T2"], "26:30:00")]
+        files = dict(BASIC)
+        files["stops.txt"] = "stop_id,stop_name,stop_lat,stop_lon\n" + "".join(
+            f"{k},stop {k},{lat:.6f},{lon:.6f}\n" for k, (lat, lon) in STREET.items())
+        files["routes.txt"] = ("route_id,agency_id,route_short_name,route_long_name,route_type\n"
+                               "L,A,5,,3\nX,A,5X,,3\nA,A,9,Airport Express,3\nN,A,N1,,3\n")
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id,trip_headsign\n" + "".join(
+            f"{r},WK,{t},{d},{h}\n" for r, t, d, h, _, _ in trips)
+        files["stop_times.txt"] = stop_times([(t, st, start, None) for _, t, _, _, st, start in trips])
+        self.net, self.table = read_gtfs(zipped(tmp.name, "branches.zip", files), Assumptions())
+
+    def test_a_large_branch_runs_as_a_route_of_its_own(self):
+        branch = self.net.routes["L~1"]
+        self.assertEqual(branch.number, "5 (North)")
+        self.assertEqual(self.net.patterns[("L~1", 1)].stop_ids, BRANCH)
+        self.assertEqual(self.net.patterns[("L~1", 2)].stop_ids, BRANCH[::-1])
+        self.assertFalse(branch.runs_one_way)
+        self.assertEqual((self.table.trips_each_way["L"], self.table.trips_each_way["L~1"]), (4, 4))
+        self.assertEqual(self.table.summary["branches_run_as_routes"], 1)
+        self.assertEqual(self.table.summary["departures_left_out"], 0)
+
+    def test_express_routes_are_found_by_their_stops_and_by_their_name(self):
+        self.assertEqual(self.net.routes["X"].zone, "Bus express")              # 4 of the local route's 10 stops
+        self.assertEqual(self.net.routes["A"].zone, "Bus express")              # "Airport Express"
+        self.assertEqual(self.net.routes["L"].zone, "Bus")
+        self.assertNotIn("5X", {r["route"] for r in near_duplicates(self.net, min_stops=4)})
+
+    def test_a_night_bus_does_not_stretch_the_hours_of_service(self):
+        s = self.table.summary
+        self.assertEqual((s["first_departure"], s["last_departure"]), ("06:00", "26:30"))
+        self.assertEqual((s["service_from"], s["service_to"], s["hours_of_service"]), ("06:00", "10:00", 4))
+
+
+class ShapeDistanceTest(unittest.TestCase):
+    """A line that passes a stop twice, with the bus stopping on the second pass, as the feed's
+    shape_dist_traveled says; matching alone takes the nearer, first pass."""
+
+    def setUp(self):
+        keep_projection(self)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        line = [(LAT, LON), (LAT, LON + 0.01), (LAT, LON + 0.02), (LAT + 0.01, LON + 0.02), (LAT + 0.01, LON + 0.01),
+                (LAT + 0.0002, LON + 0.01), (LAT + 0.0002, LON + 0.03)]
+        self.cum = [0.0]
+        for (a1, o1), (a2, o2) in zip(line, line[1:]):
+            self.cum.append(self.cum[-1] + haversine_m(a1, o1, a2, o2))
+        stops = {"P": line[0], "Q": (LAT + 0.00005, LON + 0.01), "R": line[-1]}       # Q: 6 m from the first pass
+        files = dict(BASIC)
+        files["stops.txt"] = "stop_id,stop_name,stop_lat,stop_lon\n" + "".join(
+            f"{k},stop {k},{lat:.6f},{lon:.6f}\n" for k, (lat, lon) in stops.items())
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_type\nR,A,7,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id,shape_id\nR,WK,t1,0,S\n"
+        files["shapes.txt"] = "shape_id,shape_pt_lat,shape_pt_lon,shape_pt_sequence,shape_dist_traveled\n" + "".join(
+            f"S,{lat:.6f},{lon:.6f},{k + 1},{self.cum[k] / 1000:.4f}\n" for k, (lat, lon) in enumerate(line))
+        self.with_dist = files | {"stop_times.txt": stop_times(
+            [("t1", ["P", "Q", "R"], "07:00:00", [0, f"{self.cum[5] / 1000:.4f}", f"{self.cum[6] / 1000:.4f}"])])}
+        self.without = files | {"stop_times.txt": stop_times([("t1", ["P", "Q", "R"], "07:00:00", None)])}
+        self.folder = tmp.name
+
+    def test_shape_dist_traveled_places_the_stop_on_its_pass(self):
+        net, table = read_gtfs(zipped(self.folder, "dist.zip", self.with_dist), Assumptions())
+        self.assertAlmostEqual(net.patterns[("R", 1)].chainage_m[1], self.cum[5], delta=5)   # kilometres, as metres
+        self.assertEqual(table.summary["directions_placed_by_shape_dist_traveled"], 1)
+
+    def test_without_it_the_nearer_pass_is_taken(self):
+        net, table = read_gtfs(zipped(self.folder, "plain.zip", self.without), Assumptions())
+        self.assertLess(net.patterns[("R", 1)].chainage_m[1], 1000)
+        self.assertEqual(table.summary["directions_placed_by_shape_dist_traveled"], 0)
 
 
 if __name__ == "__main__":

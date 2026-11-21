@@ -7,15 +7,21 @@ snapshot.
 Reading takes one service day: gtfs_date, or else the weekday with the most bus trips. Each
 route direction becomes one stop pattern, the sequence most of its departures run.
 Departures that run a part of it (short turns) count towards its frequency in proportion
-to the distance they cover; departures with stops it does not have (branches) are left out
-and counted in the timetable's summary and notes. The timetable then gives each route its
-trips a day in each direction (its headway; see service.route_headways) and its moving
-speed: the scheduled running time less stop_loss_s at every stop. Shapes are checked as
-the AYNA snapshot's are (model.py): one stored backwards is reversed, and one that cannot
-explain its stops (stops out of order, or far from the line) gives way to straight lines
-between them. A route that runs in one direction only is a loop, and is not counted as if
-it ran back. The summary gives the hours between the day's first and last departures,
-the value service_hours should have for this feed.
+to the distance they cover. A branch, a sequence with stops the pattern does not have,
+runs as a route of its own when it carries at least a fifth of its direction's departures
+(and three), its two directions paired when their stops lie along each other; a smaller
+one is left out and counted in the timetable's summary and notes. The timetable then
+gives each route its trips a day in each direction (its headway; see
+service.route_headways) and its moving speed: the scheduled running time less
+stop_loss_s at every stop. Stops are placed on their shape by the feed's
+shape_dist_traveled where it gives one, and otherwise matched to it as the AYNA snapshot's
+are (model.py): a shape stored backwards is reversed, and one that cannot explain its
+stops (stops out of order, or far from the line) gives way to straight lines between
+them. A route that runs in one direction only is a loop, and is not counted as if it ran
+back. A route is marked express when its name says so, or when nearly all its stops lie
+on another route that calls at many more stops along the way, so the redesign does not
+merge it into that route. The summary gives the hours in which buses leave at least a
+quarter as often as in the busiest hour, the value service_hours should have.
 
 Writing turns each route direction into one trip that repeats every headway between the
 start and end of service (frequencies.txt). Times between stops follow the same model as
@@ -27,9 +33,11 @@ for: a point that repeats the one before it is written once, and a line that end
 the last stops of its direction (or starts after the first) is carried on to them in
 straight lines, the way the model measures those hops."""
 
+import bisect
 import csv
 import datetime
 import io
+import math
 import re
 import statistics
 import zipfile
@@ -156,6 +164,11 @@ EXTENDED = ((100, 200, 2), (200, 300, 3), (400, 500, 1), (700, 800, 3), (800, 90
             (1000, 1100, 4), (1200, 1300, 4), (1300, 1400, 6), (1400, 1500, 7))
 SPEED_KMH = (5.0, 90.0)      # a timetable speed outside these gives way to the zone's (assumptions.py)
 WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+BRANCH_SHARE = 0.2           # a branch with this share of its direction's departures, and at least
+MIN_BRANCH_DEPARTURES = 3    # this many, runs as a route of its own; a smaller one is left out
+PAIR_M = 150.0               # a branch's two directions: most stops of each within this of the other's
+EXPRESS_WORDS = ("express", "ekspres", "expres", "экспресс", "экспрес")
+EXPRESS_SHARE, EXPRESS_CALLS = 0.85, 0.6   # see _express
 
 
 @dataclass
@@ -217,6 +230,11 @@ def _seconds(text):
     """Seconds after midnight of a GTFS time, which may pass 24:00:00."""
     h, m, s = text.split(":")
     return int(h) * 3600 + int(m) * 60 + int(s)
+
+
+def _number(text):
+    """A number from a feed, or None for an empty field."""
+    return float(text) if text else None
 
 
 class Calendar:
@@ -288,22 +306,96 @@ def _same_way(seq, ref, stops):
     return apart(seq[0], ref[0]) + apart(seq[-1], ref[-1]) <= apart(seq[0], ref[-1]) + apart(seq[-1], ref[0])
 
 
-def _pattern(rid, d, seq, stops, line_pts, repair, number, log):
-    """One route direction from its stop sequence and, if the feed has one, its shape."""
+def _near_share(seq, other, stops, within_m=PAIR_M):
+    """Share of seq's stops with a stop of other within within_m."""
+    near = sum(1 for s in seq if any(haversine_m(stops[s].lat, stops[s].lon, stops[t].lat, stops[t].lon) <= within_m
+                                     for t in other))
+    return near / len(seq)
+
+
+def _arrange(variants, dep):
+    """A direction's stop sequences as patterns and the rest. The most run sequence is the first
+    pattern; another becomes a pattern, a branch, when it is not an in-order piece of a pattern
+    and has at least MIN_BRANCH_DEPARTURES departures and BRANCH_SHARE of the direction's. Every
+    other sequence is folded into the first pattern it is a piece of (a short turn), or left out:
+    (patterns, {sequence: (pattern index, its positions there) or None})."""
+    floor = max(MIN_BRANCH_DEPARTURES, BRANCH_SHARE * sum(dep.values()))
+    kept, fate = [], {}
+    for v in sorted(variants, key=lambda v: (-dep[v], -len(v), v)):
+        host = next(((k, at) for k, s in enumerate(kept) if (at := _positions(v, s))), None)
+        if not kept or (host is None and dep[v] >= floor):
+            kept.append(v)
+        else:
+            fate[v] = host
+    return kept, fate
+
+
+def _by_distance(line, shape_dist, stop_dist):
+    """Each stop's place on the line from the feed's shape_dist_traveled, as matches for
+    model._pattern_from, or None when values are missing, run backwards or fall off the line."""
+    values = list(shape_dist) + list(stop_dist)
+    if not values or any(v is None for v in values) or any(b < a for a, b in zip(shape_dist, shape_dist[1:])) \
+            or any(b < a for a, b in zip(stop_dist, stop_dist[1:])):
+        return None
+    lo, hi = shape_dist[0], shape_dist[-1]
+    slack = 0.01 * (hi - lo)
+    out = []
+    for d in stop_dist:
+        if not lo - slack <= d <= hi + slack:
+            return None
+        i = min(max(bisect.bisect_right(shape_dist, d) - 1, 0), len(shape_dist) - 2)
+        seg = shape_dist[i + 1] - shape_dist[i]
+        t = min(1.0, max(0.0, (d - shape_dist[i]) / seg)) if seg > 0 else 0.0
+        out.append({"chainage_m": line.cum[i] + t * (line.cum[i + 1] - line.cum[i])})
+    return out
+
+
+def _pattern(rid, d, seq, stops, shape, repair, number, log, stop_dist=None):
+    """One route direction from its stop sequence and, if the feed has one, its shape: placed by
+    shape_dist_traveled where the feed gives it, otherwise matched to the line (geo.match_stops).
+    Returns (pattern, whether shape_dist_traveled placed the stops)."""
     pts = [(stops[s].lat, stops[s].lon) for s in seq]
-    if not line_pts or len(line_pts) < 2:
-        return _straight_pattern(rid, d, list(seq), pts)
-    line = Polyline(line_pts)
+    if not shape or len(shape) < 2:
+        return _straight_pattern(rid, d, list(seq), pts), False
+    line = Polyline([(lat, lon) for lat, lon, _ in shape])
+    placed = _by_distance(line, [x for _, _, x in shape], stop_dist) if stop_dist else None
+    if placed:
+        offsets = sorted(haversine_m(*pt, *line.point_at(m["chainage_m"])) for pt, m in zip(pts, placed))
+        if offsets[len(offsets) // 2] <= 60:                 # the distances agree with the line
+            return _pattern_from(rid, d, list(seq), pts, line, placed), True
     if not repair:
-        return _pattern_from(rid, d, list(seq), pts, line, fit_score(line, pts)[2])
+        return _pattern_from(rid, d, list(seq), pts, line, fit_score(line, pts)[2]), False
     breaks, median, line, match, reversed_ = _best_variant(line, pts)
     why = _shape_problem(breaks, median, line, len(pts), max_jump_m=None)     # a long straight is a sparse line, not a fault
     if why:
         log.append(f"{number} d{d}: shape cannot explain its stops ({why}); using straight lines between stops")
-        return _straight_pattern(rid, d, list(seq), pts)
+        return _straight_pattern(rid, d, list(seq), pts), False
     if reversed_:
         log.append(f"{number} d{d}: shape was stored backwards; reversed")
-    return _pattern_from(rid, d, list(seq), pts, line, match)
+    return _pattern_from(rid, d, list(seq), pts, line, match), False
+
+
+def _express(patterns):
+    """Routes whose stops nearly all (EXPRESS_SHARE) lie on one direction of another route that
+    calls at many more stops along the same stretch (they call at fewer than EXPRESS_CALLS of
+    them): express services, whose purpose is to skip a local route's stops."""
+    calling = defaultdict(set)                   # stop -> patterns that call there
+    for key, p in patterns.items():
+        for s in p.stop_ids:
+            calling[s].add(key)
+    out = set()
+    for key, p in sorted(patterns.items()):
+        mine = set(p.stop_ids)
+        if len(mine) < 4 or key[0] in out:
+            continue
+        shared = Counter(other for s in mine for other in calling[s] if other[0] != key[0])
+        for other, n in sorted(shared.items()):
+            if n >= EXPRESS_SHARE * len(mine):
+                at = [i for i, s in enumerate(patterns[other].stop_ids) if s in mine]
+                if n / (at[-1] - at[0] + 1) < EXPRESS_CALLS:
+                    out.add(key[0])
+                    break
+    return out
 
 
 def read_gtfs(path, a, repair=True):
@@ -324,26 +416,27 @@ def _read(feed, a, repair, source):
     agencies = {aid: (name, url, tz, lang) for aid, name, url, tz, lang in feed.columns(
         "agency.txt", "agency_id", "agency_name", "agency_url", "agency_timezone", "agency_lang")}
     kinds, other = {}, Counter()
-    for rid, aid, short, long_name, rtype in feed.columns(
-            "routes.txt", "route_id", "agency_id", "route_short_name", "route_long_name", "route_type"):
+    for rid, aid, short, long_name, desc, rtype in feed.columns(
+            "routes.txt", "route_id", "agency_id", "route_short_name", "route_long_name", "route_desc", "route_type"):
         mode = basic_route_type(rtype or 3)
         if mode in types:
-            kinds[rid] = (aid, short or long_name or rid, mode)
+            named_express = any(w in f"{short} {long_name} {desc}".lower() for w in EXPRESS_WORDS)
+            kinds[rid] = (aid, short or long_name or rid, mode, named_express)
         else:
             other[TYPE_NAMES.get(mode, str(mode))] += 1
 
     listed, per_service = [], Counter()
-    for rid, sid, tid, did, shp in feed.columns(
-            "trips.txt", "route_id", "service_id", "trip_id", "direction_id", "shape_id"):
+    for rid, sid, tid, did, shp, sign in feed.columns(
+            "trips.txt", "route_id", "service_id", "trip_id", "direction_id", "shape_id", "trip_headsign"):
         if rid in kinds:
-            listed.append((tid, rid, sid, did if did in ("0", "1") else None, shp))
+            listed.append((tid, rid, sid, did if did in ("0", "1") else None, shp, sign))
             per_service[sid] += 1
     calendar = Calendar(feed)
     day = _date(a.gtfs_date) if a.gtfs_date else calendar.busiest_weekday(per_service)
     if day is None:
         raise ValueError(f"no day in the feed's calendar has trips of route types {sorted(types)}")
     running = calendar.services(day)
-    trips = {tid: (rid, did, shp) for tid, rid, sid, did, shp in listed if sid in running}
+    trips = {tid: (rid, did, shp, sign) for tid, rid, sid, did, shp, sign in listed if sid in running}
     if not trips:
         raise ValueError(f"no trips of route types {sorted(types)} run on {day}")
 
@@ -355,12 +448,13 @@ def _read(feed, a, repair, source):
                   for tid in trips}
 
     calls, first, last = defaultdict(list), {}, {}
-    for tid, sid, seq, arr, dep in feed.columns(
-            "stop_times.txt", "trip_id", "stop_id", "stop_sequence", "arrival_time", "departure_time"):
+    for tid, sid, seq, arr, dep, dist in feed.columns(
+            "stop_times.txt", "trip_id", "stop_id", "stop_sequence", "arrival_time", "departure_time",
+            "shape_dist_traveled"):
         if tid not in trips:
             continue
         q = int(float(seq))
-        calls[tid].append((q, sid))
+        calls[tid].append((q, sid, _number(dist)))
         t = dep or arr
         if t and (tid not in first or q < first[tid][0]):
             first[tid] = (q, t)
@@ -368,7 +462,7 @@ def _read(feed, a, repair, source):
         if t and (tid not in last or q > last[tid][0]):
             last[tid] = (q, t)
 
-    used = {sid for cs in calls.values() for _, sid in cs}
+    used = {sid for cs in calls.values() for _, sid, _ in cs}
     stops = {}
     for sid, code, name, lat, lon in feed.columns("stops.txt", "stop_id", "stop_code", "stop_name", "stop_lat", "stop_lon"):
         if sid in used and lat and lon:
@@ -378,14 +472,15 @@ def _read(feed, a, repair, source):
     warnings, notes = [], []
     if len(stops) < len(used):
         warnings.append(f"{len(used) - len(stops)} stops called at in stop_times.txt have no position in stops.txt; "
-                     f"trips pass them by")
-    seqs = {}
+                        f"trips pass them by")
+    seqs, dists = {}, {}
     for tid, cs in calls.items():
-        seq = []
-        for _, sid in sorted(cs):
+        seq, dist = [], []
+        for _, sid, d in sorted(cs, key=lambda c: c[0]):
             if sid in stops and (not seq or seq[-1] != sid):
                 seq.append(sid)
-        seqs[tid] = tuple(seq)
+                dist.append(d)
+        seqs[tid], dists[tid] = tuple(seq), dist
     PROJ.centre_on(statistics.median(s.lat for s in stops.values()), statistics.median(s.lon for s in stops.values()))
 
     def run_s(tid):
@@ -397,7 +492,7 @@ def _read(feed, a, repair, source):
     for tid in sorted(seqs):
         if len(seqs[tid]) >= 2:
             by_route[trips[tid][0]].append(tid)
-    plans = {}                                   # (route, direction) -> (its sequence, departures by sequence, its trips)
+    plans = {}                                   # (route, direction) -> ({sequence: its trips}, {sequence: departures})
     for rid, tids in sorted(by_route.items()):
         if all(trips[t][1] is not None for t in tids):
             direction = {t: 1 + int(trips[t][1]) for t in tids}
@@ -411,82 +506,134 @@ def _read(feed, a, repair, source):
         for t in tids:
             groups[direction[t]][seqs[t]].append(t)
         for d, variants in groups.items():
-            dep = {v: sum(departures[t] for t in ts) for v, ts in variants.items()}
-            main = max(variants, key=lambda v: (dep[v], len(v), v))
-            plans[(rid, d)] = (main, dep, variants[main])
+            plans[(rid, d)] = (dict(variants), {v: sum(departures[t] for t in ts) for v, ts in variants.items()})
+    layout = {key: _arrange(*plan) for key, plan in plans.items()}
 
-    shape_of = {}
-    for key, (_, _, main_trips) in plans.items():
-        common = Counter(trips[t][2] for t in main_trips if trips[t][2]).most_common(1)
-        shape_of[key] = common[0][0] if common else None
-    needed, raw = set(shape_of.values()), defaultdict(list)
-    for shp, lat, lon, seq in feed.columns("shapes.txt", "shape_id", "shape_pt_lat", "shape_pt_lon", "shape_pt_sequence"):
+    shape_of, needed = {}, set()
+    for key, (kept, _) in layout.items():
+        for seq in kept:
+            common = Counter(trips[t][2] for t in plans[key][0][seq] if trips[t][2]).most_common(1)
+            shape_of[(key, seq)] = common[0][0] if common else None
+            needed.add(shape_of[(key, seq)])
+    raw = defaultdict(list)
+    for shp, lat, lon, seq, dist in feed.columns(
+            "shapes.txt", "shape_id", "shape_pt_lat", "shape_pt_lon", "shape_pt_sequence", "shape_dist_traveled"):
         if shp in needed and lat and lon:
-            raw[shp].append((int(float(seq)), float(lat), float(lon)))
-    lines = {shp: [(lat, lon) for _, lat, lon in sorted(pts)] for shp, pts in raw.items()}
+            raw[shp].append((int(float(seq)), float(lat), float(lon), _number(dist)))
+    shapes = {shp: [(lat, lon, dist) for _, lat, lon, dist in sorted(pts, key=lambda p: p[0])] for shp, pts in raw.items()}
+
+    def stop_dist(key, seq):
+        """shape_dist_traveled at each stop of one of the sequence's trips on its shape, if any has them all."""
+        return next((dists[t] for t in plans[key][0][seq] if trips[t][2] == shape_of[(key, seq)]
+                     and all(d is not None for d in dists[t])), None)
+
+    def headsign(key, seq):
+        signs = Counter(trips[t][3] for t in plans[key][0][seq] if trips[t][3])
+        return signs.most_common(1)[0][0] if signs else ""
 
     numbers = Counter(kinds[rid][1] for rid in by_route)
     routes, patterns, log, trips_each_way = {}, {}, [], {}
     in_patterns = folded = left_out = 0.0
-    branch_stops, speeds = set(), Counter()
+    branch_stops, speeds, named_express, branch_routes, by_distance = set(), Counter(), set(), 0, 0
     for rid in sorted(by_route):
-        aid, number, mode = kinds[rid]
+        aid, number, mode, named = kinds[rid]
         if numbers[number] > 1:                  # the same number at two agencies or for two route ids
             number = f"{number} [{rid}]"
-        pats, each_way, run_times = {}, [], []
-        for d in sorted(d for r, d in plans if r == rid):
-            main, dep, main_trips = plans[(rid, d)]
-            p = pats[d] = _pattern(rid, d, main, stops, lines.get(shape_of[(rid, d)]), repair, number, log)
-            trips_d, out_n, out_v, out_stops = dep[main], 0.0, 0, set()
-            for v, n in dep.items():
-                if v == main:
-                    continue
-                at = _positions(v, main)
-                if at and p.length_m > 0:        # a short turn: counts for the distance it covers
-                    trips_d += n * (p.chainage_m[at[-1]] - p.chainage_m[at[0]]) / p.length_m
-                    folded += n
-                else:                            # a branch: left out
-                    out_n, out_v = out_n + n, out_v + 1
-                    out_stops |= set(v) - set(main)
-            in_patterns += dep[main]
-            left_out += out_n
-            if out_v:
-                branch_stops |= out_stops
-                notes.append(f"{number} d{d}: {out_v} other stop sequence(s) with {out_n:g} of "
-                             f"{sum(dep.values()):g} departures left out; {len(out_stops)} stops they call at "
-                             f"are not on the pattern")
-            each_way.append(trips_d)
-            times = sorted(r for r in (run_s(t) for t in main_trips) if r and r > 0)
-            run_times.append(statistics.median(times) if times else None)
-        speed = None
-        if all(run_times):
-            moving = sum(run_times) - sum((len(p.stop_ids) - 1) * a.stop_loss_s for p in pats.values())
-            speed = sum(p.length_m for p in pats.values()) / moving * 3.6 if moving > 0 else 0.0
-            if not SPEED_KMH[0] <= speed <= SPEED_KMH[1]:
-                notes.append(f"{number}: the timetable gives a moving speed of {speed:.1f} km/h; "
-                             f"using the setting for {TYPE_NAMES.get(mode, mode)} instead")
-                speed = None
-        speeds["timetable" if speed else "settings"] += 1
-        agency = agencies.get(aid) or (next(iter(agencies.values())) if len(agencies) == 1 else ("", "", "", ""))
-        first_p = pats[min(pats)]
-        routes[rid] = Route(rid, number, " ".join(agency[0].split()), stops[first_p.stop_ids[0]].name,
-                            stops[first_p.stop_ids[-1]].name, None, TYPE_NAMES.get(mode, str(mode)), "", None, "", "",
-                            speed_kmh=speed, runs_one_way=len(pats) == 1)
-        for d, p in pats.items():
-            patterns[(rid, d)] = p
-        trips_each_way[rid] = sum(each_way) / len(each_way)
+        dirs = sorted(d for r, d in plans if r == rid)
+        # The route: the most run sequence of each direction. Each branch beyond it is a route of
+        # its own, its two directions paired when their stops lie along each other.
+        members = [{d: layout[(rid, d)][0][0] for d in dirs}]
+        loose = [(d, seq) for d in dirs for seq in layout[(rid, d)][0][1:]]
+        while loose:
+            d, seq = loose.pop(0)
+            match = max(((min(_near_share(seq, s2, stops), _near_share(s2, seq, stops)), i)
+                         for i, (d2, s2) in enumerate(loose) if d2 != d), default=(0.0, None))
+            if match[1] is not None and match[0] >= 0.5:
+                members.append({d: seq, loose[match[1]][0]: loose.pop(match[1])[1]})
+            else:
+                members.append({d: seq})
+        main_sign = headsign((rid, dirs[0]), members[0][dirs[0]])
+        for j, member in enumerate(members):
+            route_id = rid if j == 0 else f"{rid}~{j}"
+            label = number
+            if j:
+                sign = headsign((rid, min(member)), member[min(member)])
+                label = f"{number} ({sign if sign and sign != main_sign else f'branch {j}'})"
+            pats, each_way, run_times = {}, [], []
+            for d in sorted(member):
+                key, seq = (rid, d), member[d]
+                variants, dep = plans[key]
+                kept, fate = layout[key]
+                p, placed = _pattern(route_id, d, seq, stops, shapes.get(shape_of[(key, seq)]), repair, label, log,
+                                     stop_dist(key, seq))
+                pats[d] = p
+                by_distance += placed
+                k = kept.index(seq)
+                trips_d = dep[seq]
+                for v, host in fate.items():
+                    if host and host[0] == k and p.length_m > 0:        # a short turn: counts for the distance it covers
+                        at = host[1]
+                        trips_d += dep[v] * (p.chainage_m[at[-1]] - p.chainage_m[at[0]]) / p.length_m
+                        folded += dep[v]
+                in_patterns += dep[seq]
+                if j:
+                    branch_routes += d == min(member)
+                    notes.append(f"{number} d{d}: a branch with {dep[seq]:g} of {sum(dep.values()):g} departures "
+                                 f"runs as route {label}")
+                each_way.append(trips_d)
+                times = sorted(r for r in (run_s(t) for t in variants[seq]) if r and r > 0)
+                run_times.append(statistics.median(times) if times else None)
+            speed = None
+            if all(run_times):
+                moving = sum(run_times) - sum((len(p.stop_ids) - 1) * a.stop_loss_s for p in pats.values())
+                speed = sum(p.length_m for p in pats.values()) / moving * 3.6 if moving > 0 else 0.0
+                if not SPEED_KMH[0] <= speed <= SPEED_KMH[1]:
+                    notes.append(f"{label}: the timetable gives a moving speed of {speed:.1f} km/h; "
+                                 f"using the setting for {TYPE_NAMES.get(mode, mode)} instead")
+                    speed = None
+            speeds["timetable" if speed else "settings"] += 1
+            agency = agencies.get(aid) or (next(iter(agencies.values())) if len(agencies) == 1 else ("", "", "", ""))
+            first_p = pats[min(pats)]
+            routes[route_id] = Route(route_id, label, " ".join(agency[0].split()), stops[first_p.stop_ids[0]].name,
+                                     stops[first_p.stop_ids[-1]].name, None, TYPE_NAMES.get(mode, str(mode)), "", None,
+                                     "", "", speed_kmh=speed, runs_one_way=len(pats) == 1)
+            for d, p in pats.items():
+                patterns[(route_id, d)] = p
+            trips_each_way[route_id] = sum(each_way) / len(each_way)
+            if named:
+                named_express.add(route_id)
+        for d in dirs:                           # what no pattern of the route carries
+            variants, dep = plans[(rid, d)]
+            out = [v for v, host in layout[(rid, d)][1].items() if host is None]
+            if out:
+                n = sum(dep[v] for v in out)
+                stops_out = set().union(*map(set, out)) - set().union(*map(set, layout[(rid, d)][0]))
+                left_out += n
+                branch_stops |= stops_out
+                notes.append(f"{number} d{d}: {len(out)} other stop sequence(s) with {n:g} of {sum(dep.values()):g} "
+                             f"departures left out; {len(stops_out)} stops they call at are on no pattern of the route")
+
+    express = named_express | _express(patterns)
+    for rid in sorted(express):
+        routes[rid].zone = f"{routes[rid].zone} express"
+        notes.append(f"{routes[rid].number}: express" + (" (its name says so)" if rid in named_express
+                                                         else ", skipping most stops of a route it runs along"))
 
     alone = sum(departures[t] for t in trips if len(seqs.get(t, ())) < 2)      # trips with fewer than two stops
     leaving = []                                 # every departure time of the day
     for tid in trips:
         if tid in windows:
-            leaving += [t for s, e, _ in windows[tid] for t in (s, e)]
+            for s, e, h in windows[tid]:
+                leaving += [s + k * h for k in range(int(math.ceil((e - s) / h)))]
         elif tid in first:
             leaving.append(_seconds(first[tid][1]))
-    window_h = (max(leaving) - min(leaving)) / 3600 if leaving else None
-    if window_h and abs(window_h - a.service_hours) > 1:
-        warnings.append(f"departures run from {_hms(min(leaving))[:5]} to {_hms(max(leaving))[:5]}, {window_h:.1f} hours; "
-                     f"service_hours is {a.service_hours:g}, so set it to {window_h:.1f} for waiting times to match")
+    per_hour = Counter(int(t // 3600) for t in leaving)
+    busy = sorted(h for h, n in per_hour.items() if n >= max(per_hour.values()) / 4) if per_hour else []
+    service = (busy[0], busy[-1] + 1) if busy else None
+    if service and abs(service[1] - service[0] - a.service_hours) > 1:
+        warnings.append(f"buses leave at least a quarter as often as in the busiest hour from {service[0]:02d}:00 to "
+                        f"{service[1]:02d}:00, {service[1] - service[0]} hours; service_hours is {a.service_hours:g}, "
+                        f"so set it to {service[1] - service[0]} for waiting times to match")
     served = {s for p in patterns.values() for s in p.stop_ids}
     total = sum(departures.values())
     summary = {
@@ -494,9 +641,12 @@ def _read(feed, a, repair, source):
         "day": day.isoformat(), "weekday": WEEKDAYS[day.weekday()],
         "route_types": sorted(types),
         "routes_of_these_types": len(kinds),
-        "routes_running": len(routes),
+        "routes_running": len(by_route),
         "routes_of_other_types": dict(sorted(other.items())),
+        "branches_run_as_routes": branch_routes,
+        "routes_in_the_model": len(routes),
         "routes_running_one_way": sum(r.runs_one_way for r in routes.values()),
+        "routes_express": len(express),
         "departures": total,
         "departures_on_patterns": in_patterns,
         "departures_on_part_of_a_pattern": folded,
@@ -504,13 +654,16 @@ def _read(feed, a, repair, source):
         "share_of_departures_modelled": (in_patterns + folded) / total if total else None,
         "stops_served": len(served),
         "stops_only_on_departures_left_out": len(branch_stops - served),
+        "directions_placed_by_shape_dist_traveled": by_distance,
         "speeds_from_timetable": speeds["timetable"],
         "speeds_from_settings": speeds["settings"],
         "routes_more_often_than_min_headway": sum(1 for n in trips_each_way.values()
                                                   if n and a.service_hours * 60 / n < a.min_headway_min),
         "first_departure": _hms(min(leaving))[:5] if leaving else None,
         "last_departure": _hms(max(leaving))[:5] if leaving else None,
-        "hours_of_departures": window_h,
+        "service_from": f"{service[0]:02d}:00" if service else None,
+        "service_to": f"{service[1]:02d}:00" if service else None,
+        "hours_of_service": service[1] - service[0] if service else None,
     }
     names = sorted({" ".join(ag[0].split()) for ag in agencies.values() if ag[0]})
     lang = (next((v for (v,) in feed.columns("feed_info.txt", "feed_lang") if v), "")
