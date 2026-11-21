@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Search for a better Baku bus network with today's fleet, and report what changed.
+Search for a better bus network with today's fleet, and report what changed: Baku's, or
+any city's read from its GTFS feed.
 
-Reads the same settings and data as measure.py (busnet.toml; search settings are in its
-[redesign] table). The search keeps a change only if it shortens the average door-to-door
-trip without cutting people off from bus service; the result is then checked on a
-different, finer sample of trips than the search used.
+Reads the same settings and data as measure.py (busnet.toml, or a city's settings file;
+search settings are in its [redesign] table). The search keeps a change only if it
+shortens the average door-to-door trip without cutting people off from bus service; the
+result is then checked on a different, finer sample of trips than the search used.
 
 Writes to ./output/redesign/ (or --out):
   changes.csv        every change kept, in order, with its effect on average door-to-door time
@@ -53,11 +54,14 @@ def write_csv(path, rows):
 
 
 def route_rows(before, after, a, log, riders, counted, protected):
+    """With no counted boardings at all, riders are in the model's own units: the column gives
+    each route's share of them instead of boardings a day."""
     kinds = {}
     for change in log:
         for n in change["routes"].split():
             kinds.setdefault(n, []).append(change["kind"])
     hb, ha = before.headways(a), after.headways(a)
+    total = sum(riders.values()) or 1.0
     rows = []
     for rid in sorted(before.fleet, key=lambda r: (len(before.network.number(r)), before.network.number(r))):
         n = before.network.number(rid)
@@ -68,8 +72,8 @@ def route_rows(before, after, a, log, riders, counted, protected):
             "route": n,
             "status": ("merged" if "merge" in kinds.get(n, []) else "dropped") if dropped else ("straightened" if straight else "kept"),
             "protected": rid in protected,
-            "boardings_per_day": riders.get(rid, 0.0),
-            "boardings_source": "counted" if rid in counted else "estimated",
+            **({"boardings_per_day": riders.get(rid, 0.0), "boardings_source": "counted" if rid in counted else "estimated"}
+               if counted else {"share_of_modelled_boardings": riders.get(rid, 0.0) / total}),
             "buses_before": before.fleet[rid], "buses_after": 0.0 if dropped else after.fleet[rid],
             "headway_min_before": hb[rid][0], "headway_min_after": None if dropped else ha[rid][0],
             "one_way_km_before": km(before), "one_way_km_after": None if dropped else km(after),
@@ -107,7 +111,7 @@ def main():
     t0 = time.time()
     try:
         inp = load_inputs(ROOT, config, args.set, split=False)
-    except (ValueError, TypeError) as e:
+    except (ValueError, TypeError, FileNotFoundError) as e:
         sys.exit(f"Settings error: {e}")
     a, net = inp.a, inp.network
     if not inp.zones:
@@ -177,8 +181,9 @@ def main():
     write_csv(out / "routes.csv", route_rows(today, plan, a, log, riders_today, ctx.observed, ctx.protected))
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     (out / "network.geojson").write_text(json.dumps(geojson(today, plan), ensure_ascii=False), encoding="utf-8")
-    write_gtfs(out / "gtfs_today.zip", today.network, a, today.headways(a), "today")
-    write_gtfs(out / "gtfs_redesign.zip", plan.network, a, plan.headways(a), "redesign")
+    feed = inp.timetable.feed if inp.timetable else None
+    write_gtfs(out / "gtfs_today.zip", today.network, a, today.headways(a), "today", feed=feed)
+    write_gtfs(out / "gtfs_redesign.zip", plan.network, a, plan.headways(a), "redesign", feed=feed)
 
     b, f = check_before["accessibility"], check_after["accessibility"]
     print(f"\nIndependent check, before -> after:")

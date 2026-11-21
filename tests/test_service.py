@@ -12,8 +12,14 @@ class Headways(unittest.TestCase):
         self.a = Assumptions()
 
     def test_supplied_beats_everything(self):
-        hw = route_headways(self.net, self.a, observed={"2A": 6120}, supplied={"2A": 7.5})
+        hw = route_headways(self.net, self.a, observed={"2A": 6120}, supplied={"2A": 7.5}, timetable={2: 100})
         self.assertEqual(hw[2], (7.5, "supplied"))
+
+    def test_a_timetable_beats_boardings_and_is_not_clamped(self):
+        # 680 trips each way over 17 hours: every 1.5 minutes, faster than min_headway_min allows an estimate
+        hw = route_headways(self.net, self.a, observed={"1": 6120}, timetable={1: 680, 2: 51})
+        self.assertEqual(hw[1], (1.5, "timetable"))
+        self.assertEqual(hw[2], (20.0, "timetable"))
 
     def test_ridership_headway_from_boardings(self):
         # 6,120 boardings a day, 60 per trip: 51 trips each way over 17 hours = every 20 minutes

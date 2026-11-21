@@ -2,11 +2,13 @@
 
 The AYNA data has no timetables, so each route's headway comes from the first of:
   1. a headways file you supply (real data from AYNA or the operators),
-  2. observed boardings, when headway_from_ridership is on: enough trips in each
+  2. a timetable, when the network comes from a GTFS feed (gtfs.py): the trips the
+     route runs in each direction on the feed's chosen day, spread over service_hours,
+  3. observed boardings, when headway_from_ridership is on: enough trips in each
      direction for each to carry boardings_per_trip riders over service_hours,
      kept between min_headway_min and max_headway_min,
-  3. headway_by_zone for the route's working zone,
-  4. default_headway_min.
+  4. headway_by_zone for the route's working zone,
+  5. default_headway_min.
 Every headway carries its source, so results show what rests on assumptions."""
 
 import csv
@@ -36,8 +38,11 @@ def load_headways(path):
     return out
 
 
-def route_headways(network, a, observed=None, supplied=None):
-    """{route id: (headway minutes, source)} for every route that has stops."""
+def route_headways(network, a, observed=None, supplied=None, timetable=None):
+    """{route id: (headway minutes, source)} for every route that has stops.
+
+    timetable maps route id to trips a day in each direction (gtfs.Timetable.trips_each_way);
+    the headway that runs as many trips over service_hours is the timetable's, unclamped."""
     out = {}
     for rid, route in network.routes.items():
         if not network.patterns_of(rid):
@@ -45,6 +50,8 @@ def route_headways(network, a, observed=None, supplied=None):
         n = route.number
         if supplied and n in supplied:
             out[rid] = (supplied[n], "supplied")
+        elif timetable and timetable.get(rid, 0) > 0:
+            out[rid] = (a.service_hours * 60 / timetable[rid], "timetable")
         elif a.headway_from_ridership and observed and observed.get(n, 0) > 0:
             trips = observed[n] / 2 / a.boardings_per_trip
             out[rid] = (min(a.max_headway_min, max(a.min_headway_min, a.service_hours * 60 / trips)), "ridership")

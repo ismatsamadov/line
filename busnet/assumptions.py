@@ -87,6 +87,12 @@ class Assumptions:
     redesign_protected_routes: list = field(default_factory=lambda: ["180"])   # left as they are; 180 (Pirallahı):
                                                  # its connecting routes are missing from the data
 
+    # A GTFS feed instead of the AYNA snapshot ([data] gtfs; see gtfs.py). The feed's timetable
+    # then gives each route its headway and its moving speed.
+    gtfs_date: str = ""                          # service day to read, YYYY-MM-DD; empty: the weekday with most bus trips
+    gtfs_route_types: list = field(default_factory=lambda: [3])   # GTFS route types read: 3 is bus, with the extended
+                                                 # bus and coach types; add 11 for trolleybuses, 0 for trams
+
     def cruise_mps(self, zone):
         return self.cruise_kmh.get(zone, self.default_cruise_kmh) / 3.6
 

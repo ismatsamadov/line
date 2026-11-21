@@ -11,8 +11,8 @@ from pathlib import Path
 
 from .assumptions import Assumptions
 
-DATA_KEYS = ("db", "population", "ridership", "headways", "destinations", "metro_passengers", "metro_exits", "walk_network",
-             "bicycle_lanes", "bicycle_parking")
+DATA_KEYS = ("db", "gtfs", "population", "ridership", "headways", "destinations", "metro_passengers", "metro_exits",
+             "walk_network", "bicycle_lanes", "bicycle_parking")
 
 
 def parse_value(text):
@@ -57,6 +57,8 @@ def load_config(path=None, overrides=()):
     defaults = Assumptions()
     for key in _DICT_FIELDS & set(settings):
         settings[key] = {**getattr(defaults, key), **settings[key]}
+    for key in _TEXT_FIELDS & set(settings):          # TOML reads gtfs_date = 2026-11-25 as a date
+        settings[key] = str(settings[key])
     return replace(defaults, **settings), data
 
 
@@ -69,3 +71,4 @@ def _resolve(base, value):
 
 _FIELDS = {f.name for f in fields(Assumptions)}
 _DICT_FIELDS = {f.name for f in fields(Assumptions) if isinstance(getattr(Assumptions(), f.name), dict)}
+_TEXT_FIELDS = {f.name for f in fields(Assumptions) if isinstance(getattr(Assumptions(), f.name), str)}

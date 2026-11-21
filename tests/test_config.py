@@ -15,7 +15,7 @@ class Settings(unittest.TestCase):
     def test_the_repository_settings_file_repeats_the_defaults(self):
         a, data = load_config(ROOT / "busnet.toml")
         self.assertEqual(a, Assumptions())
-        self.assertEqual(set(data), set(DATA_KEYS))
+        self.assertEqual(set(data), set(DATA_KEYS) - {"gtfs"})          # a feed replaces db, for another city
         for key, path in data.items():
             for p in (path if isinstance(path, list) else [path]):
                 self.assertTrue(Path(p).exists(), f"{key}: {p} is missing")

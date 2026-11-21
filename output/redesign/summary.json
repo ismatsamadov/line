@@ -201,6 +201,10 @@
   "redesign_protect_boardings": 1000,
   "redesign_protected_routes": [
    "180"
+  ],
+  "gtfs_date": "",
+  "gtfs_route_types": [
+   3
   ]
  },
  "inputs": {

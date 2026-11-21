@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 """
-Measure the efficiency of the Baku bus network from the AYNA snapshot.
+Measure the efficiency of a bus network: Baku's from the AYNA snapshot, or any city's from
+its GTFS feed.
 
 Settings and data paths come from busnet.toml; every input it names is committed under
 data/, so `python3 measure.py` regenerates every result in output/. A missing input is
-reported and the matching assumption is used instead.
+reported and the matching assumption is used instead. A settings file whose [data] table
+names a GTFS feed (gtfs = "...") measures that feed's network instead, with headways and
+speeds from its timetable (docs/getting-started.md#another-city-from-its-gtfs-feed).
 
 Writes to ./output/ (or --out):
   repairs.txt          data defects that were fixed automatically before measuring
@@ -16,12 +19,14 @@ Writes to ./output/ (or --out):
   duplicates.csv       routes whose stops are mostly served by one other route (merge candidates)
   ridership_check.csv  observed against modelled boardings per BakuBus route
   network.json         network-wide indicators, the settings used and which inputs were found
+  timetable.txt        from a GTFS feed: stop sequences left out and speeds that fell back
+                       to the settings (its summary is in network.json)
   scenario.json        with --scenario: the same indicators before and after a change
 
 Standard library only. Usage:
   python3 measure.py                                   # everything, as configured in busnet.toml
   python3 measure.py --set default_headway_min=10      # change one assumption for this run
-  python3 measure.py --config other.toml               # another settings file
+  python3 measure.py --config other.toml               # another settings file, e.g. another city's
   python3 measure.py --scenario stop-balancing --min-gap 250
 """
 
@@ -37,6 +42,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet.inputs import load_inputs                                          # noqa: E402
+from busnet.service import SOURCES                                             # noqa: E402
 from busnet.metrics import (compare_ridership, detour_table, near_duplicates,  # noqa: E402
                             network_summary, route_table, trunk_corridors)
 from busnet.scenarios import balance_stops                                     # noqa: E402
@@ -90,16 +96,29 @@ def main():
     print(f"Settings: {config or 'built-in defaults'}" + (f" with {len(args.set)} override(s)" if args.set else ""))
     try:
         inp = load_inputs(ROOT, config, args.set, repair=not args.no_repair)
-    except (ValueError, TypeError) as e:
+    except (ValueError, TypeError, FileNotFoundError) as e:
         sys.exit(f"Settings error: {e}")
     a, net, zones, observed, headways, attraction = inp.a, inp.network, inp.zones, inp.observed, inp.headways, inp.attraction
     (out / "repairs.txt").write_text("\n".join(net.repairs) + "\n", encoding="utf-8")
     print(f"Loaded {len(net.routes)} routes, {len(net.patterns)} route directions; {len(net.repairs)} repairs")
+    if inp.timetable:
+        t = inp.timetable.summary
+        print(f"Timetable of {t['weekday']} {t['day']}: {t['departures']:,.0f} departures, "
+              f"{t['share_of_departures_modelled']:.1%} of them on the route patterns; "
+              f"departures from {t['first_departure']} to {t['last_departure']}")
+        notes = inp.timetable.warnings + inp.timetable.notes
+        (out / "timetable.txt").write_text("".join(n + "\n" for n in notes), encoding="utf-8")
+        for n in inp.timetable.warnings:
+            print(f"  {n}")
+        if inp.timetable.notes:
+            print(f"  {len(inp.timetable.notes)} notes on single routes in timetable.txt")
     if zones:
         print(f"Population zones: {len(zones):,} with {sum(z[2] for z in zones):,.0f} people")
     if observed:
         print(f"Ridership: {len(observed)} routes, weekday means for {inp.observed_month}")
-    sources = {s: sum(1 for h in headways.values() if h[1] == s) for s in ("supplied", "ridership", "zone", "default")}
+    sources = {s: 0 for s in SOURCES}
+    for _, s in headways.values():
+        sources[s] = sources.get(s, 0) + 1
     print(f"Headways by source: {sources}")
     if inp.points:
         print(f"Destinations: {len(inp.points):,} points" + ("" if attraction else " (not used: no population zones)"))
@@ -116,6 +135,8 @@ def main():
         summary["ridership_fit"] = fit
     report = {"network": summary, "inputs": inp.found, "settings": asdict(a),
               "headway_sources": sources, "repairs": net.repairs}
+    if inp.timetable:
+        report["timetable"] = inp.timetable.summary
     (out / "network.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     show("Network", summary)
 

@@ -491,8 +491,11 @@ def candidates(plan, ctx):
                  and ctx.observed.get(r, 0.0) < a.redesign_protect_boardings]
     per_bus = sorted((ctx.riders.get(r, 0.0) / plan.fleet[r], r) for r in droppable)
     for rate, rid in per_bus[:a.redesign_max_drop]:
-        source = "counted" if rid in ctx.observed else "estimated"
-        out.append(Drop(rid, "drop", f"Drop {net.number(rid)}: {rate:,.0f} boardings a day per bus ({source})"))
+        if ctx.observed:
+            why = f"{rate:,.0f} boardings a day per bus ({'counted' if rid in ctx.observed else 'estimated'})"
+        else:                                    # no counts to scale the model's riders to a day
+            why = f"among the {a.redesign_max_drop} routes with the fewest modelled riders per bus"
+        out.append(Drop(rid, "drop", f"Drop {net.number(rid)}: {why}"))
     straight = []
     for key in sorted(net.patterns):
         if key[0] in ctx.protected:
