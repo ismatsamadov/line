@@ -9,7 +9,8 @@ Tables 9 and 10 (data/external/utrp/husselmann2024/), and Jiao (2026), whose arc
 holds the sets with the lowest average travel times reported so far
 (data/external/utrp/jiao2026/). This module reads all of them, scores a route set the way
 that literature does, and runs the redesign's straightening on a published route set under
-the benchmark's rules (benchmark.py).
+the benchmark's rules (benchmark.py). It also reads and writes loose files in Mumford's
+format, for the instances cut from the Baku network (busnet/instances.py).
 
 A route set is scored on the network's link times, with every route ridden both ways. Each
 trip takes its quickest path, where every change of route costs PENALTY_MIN minutes; of
@@ -72,6 +73,60 @@ def load_instance(supplement, name):
         time = _matrix(z.read(f"Instances/{name}TravelTimes.txt").decode("ascii"))
         demand = _matrix(z.read(f"Instances/{name}Demand.txt").decode("ascii"))
     return Instance(name, time, demand, *RULES[name])
+
+
+# ---------------------------------------------------------------- files in Mumford's format
+
+# Her files right-align every value in six characters: the node count alone on the first
+# line of <name>Coords.txt and then "x y" for each node, and in <name>TravelTimes.txt and
+# <name>Demand.txt one row of the n x n matrix per line, with Inf where there is no link.
+WIDTH = 6
+
+
+def matrix_text(rows):
+    """Rows of whole numbers in her layout; math.inf is written Inf. A value of six digits
+    would touch its neighbour, so it is refused."""
+    lines = []
+    for row in rows:
+        if any(v != math.inf and v != int(v) for v in row):
+            raise ValueError("the format holds whole numbers only")
+        cells = ["Inf" if v == math.inf else str(int(v)) for v in row]
+        if any(len(c) >= WIDTH for c in cells):
+            raise ValueError(f"a value is too wide for {WIDTH} characters: {max(cells, key=len)}")
+        lines.append("".join(c.rjust(WIDTH) for c in cells))
+    return "\n".join(lines) + "\n"
+
+
+def coords_text(points):
+    return f"{len(points)}\n" + matrix_text(points)
+
+
+def routes_text(routes):
+    """One route per line, its nodes numbered from 1 and separated by spaces."""
+    return "".join(" ".join(str(v + 1) for v in r) + "\n" for r in routes)
+
+
+def read_instance(folder, name, routes, min_nodes, max_nodes):
+    """An instance from <name>TravelTimes.txt and <name>Demand.txt in a folder, read as
+    load_instance reads the supplement's; the rules are not in the files."""
+    folder = Path(folder)
+    time = _matrix((folder / f"{name}TravelTimes.txt").read_text(encoding="ascii"))
+    demand = _matrix((folder / f"{name}Demand.txt").read_text(encoding="ascii"))
+    return Instance(name, time, demand, routes, min_nodes, max_nodes)
+
+
+def read_coords(path):
+    lines = [line.split() for line in Path(path).read_text(encoding="ascii").splitlines() if line.split()]
+    n = int(lines[0][0])
+    points = [(float(x), float(y)) for x, y in lines[1:]]
+    if len(points) != n:
+        raise ValueError(f"{path}: {len(points)} nodes after a count of {n}")
+    return points
+
+
+def read_routes(path):
+    """Routes written by routes_text, nodes numbered from 0."""
+    return [[int(v) - 1 for v in line.split()] for line in Path(path).read_text(encoding="ascii").splitlines() if line.split()]
 
 
 def _document(supplement, path):

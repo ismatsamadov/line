@@ -393,6 +393,29 @@ the change.
 Mumford's supplement (`routeset(1).route = [30 11 17 ...];`) under two comment lines with
 its scores, so that other software can read and score it.
 
+## output/instances/ — Baku in the benchmark's format
+
+Written by `instances.py` ([instances.md](instances.md)): five instances of the urban
+transit routing problem cut from the Baku network, Baku0 to Baku3 and BakuFull, in the
+layout of Mumford's files. The folder's own `README.md` is written for people who use
+them without this repository and describes every file; in short, for each instance
+`<Name>`:
+
+| File | Contents |
+|---|---|
+| `<Name>Coords.txt` | The number of nodes, then `x y` per node: whole metres east and north of 39.9° N, 49.4° E |
+| `<Name>TravelTimes.txt` | The minutes along each link, `Inf` where there is none, 0 on the diagonal; symmetric |
+| `<Name>Demand.txt` | The trips between each pair of nodes, ten times over; 0 on the diagonal; symmetric |
+| `<Name>Routes.txt` | Today's routes, one per line, as node numbers from 1 |
+| `<Name>Nodes.csv` | One row per node: `node`, `cluster`, `x`, `y`, `lat`, `lon`, `name`, `stops`, `stop_ids`, `people`, `pull` |
+
+`routes.csv` gives each route of each instance with its nodes, its minutes one way and
+the AYNA routes it stands for. `summary.json` holds, for each instance, its circle, nodes,
+links, rules (`routes`, `min_nodes`, `max_nodes`), trips, today's scores (`att`, `d0` to
+`dun`, `route_time`) and what straightening does to them (one pass, and passes
+repeated); and how they were cut, the demand model's check against counted
+boardings, the settings and the inputs.
+
 ## output/bicycle/ — the bicycle lanes and parking beside the bus network
 
 Written by `bicycle.py` from AYNA's two files ([data.md](data.md#bicycle-lanes-and-parking)),

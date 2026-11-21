@@ -15,6 +15,7 @@ redesign.py           search for a better network, and what it is worth -> outpu
 robustness.py         the results under other trip samples and assumptions -> output/robustness/
 validate_gtfs.py      check the GTFS feeds with MobilityData's validator (needs Java) -> output/gtfs_validation/
 benchmark.py          the redesign's straightening on the published route sets of the Mandl and Mumford benchmark networks -> output/benchmark/
+instances.py          Baku cut into instances in the format of Mumford's benchmark networks -> output/instances/
 bicycle.py            AYNA's bicycle lanes and parking points beside the bus network -> output/bicycle/
 paper/figures.py      the manuscript's figures, drawn from output/ as SVG and PDF -> paper/figures/
 paper/check.py        word counts, highlight lengths and citation checks of paper/manuscript.md
@@ -41,7 +42,9 @@ busnet/
   impact.py           what a redesign is worth: the rows of impact.csv
   gtfs.py             read a GTFS feed into a network, headways and speeds from its timetable; write a network
                       as a GTFS feed, with shape_points drawing each direction's line to its end stops
-  utrp.py             the benchmark networks: read the published route sets, score them, check the rules, straighten
+  utrp.py             the benchmark networks: read the published route sets, score them, check the rules, straighten;
+                      read and write instances in the format of Mumford's files
+  instances.py        Baku's stops merged into nodes, the links between them, today's routes as paths, the gravity demand
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
 site/
@@ -159,7 +162,8 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `optimize` | `Plan`, `allocate`, `Evaluator` (`score`, `people_with_stop`), `Streets`, `straightened`, `Drop`, `Straighten`, `BalanceStops`, `Shift`, `Context` (`riders_for`), `candidates`, `search(plan, evaluator, ctx, say, kept)`, `fleet_for_same_time` | Explained in [redesign.md](redesign.md). Given `kept`, `search` calls it with each change it keeps and the plan that change makes, which is how `animations/build.py` draws every step |
 | `gtfs` | `read_gtfs(path, a, repair=True)` returns (`Network`, `Timetable`); `Feed`, `Calendar` (`services(day)`, `busiest_weekday`), `basic_route_type`; `write_gtfs(path, network, a, headways, version, start_hour=6, feed=None)`, `shape_points(pattern, network)` | The reader takes one day of a feed and makes one stop pattern per route direction ([methodology.md](methodology.md#1-loading-and-repairing-the-network)). The writer makes a frequency-based feed; `version` goes into `feed_info.txt`, `feed` gives the agency and language (AYNA's by default). `shape_points` writes a repeated point once and carries a line that stops short on to its end stops ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)) |
 | `impact` | `impact_rows(today, same_buses, fewer_buses, a)`, `capped_minutes(acc, a)`, `COLUMNS` | The rows of `impact.csv` from three network summaries on one sample; a row needing an `[impact]` value left at 0 is left out ([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)) |
-| `utrp` | `Instance`, `RULES`, `load_instance(supplement, name)`, `published_route_sets(supplement)`, `published_scores(supplement)`, `LATER_SETS`, `husselmann_route_sets(path)`, `JIAO_FILE`, `JIAO_SCORES`, `jiao_route_sets(path)`, `evaluate(inst, routes)`, `route_time`, `problems(inst, routes)`, `quickest_paths`, `detours`, `Straighten`, `candidates`, `search(inst, routes, max_tries=80, min_gain=0.005, repeat=False)`, `matlab(routes)` | Scores and rules of the benchmark literature; `search` is the redesign's straightening under those rules ([methodology.md](methodology.md#12-the-benchmark-networks)). Used by `benchmark.py` only |
+| `utrp` | `Instance`, `RULES`, `load_instance(supplement, name)`, `published_route_sets(supplement)`, `published_scores(supplement)`, `LATER_SETS`, `husselmann_route_sets(path)`, `JIAO_FILE`, `JIAO_SCORES`, `jiao_route_sets(path)`, `evaluate(inst, routes)`, `route_time`, `problems(inst, routes)`, `quickest_paths`, `detours`, `Straighten`, `candidates`, `search(inst, routes, max_tries=80, min_gain=0.005, repeat=False)`, `matlab(routes)`, `matrix_text`, `coords_text`, `routes_text`, `read_instance(folder, name, routes, min_nodes, max_nodes)`, `read_coords`, `read_routes` | Scores and rules of the benchmark literature; `search` is the redesign's straightening under those rules ([methodology.md](methodology.md#12-the-benchmark-networks)). Used by `benchmark.py` and `instances.py` |
+| `instances` | `cluster_stops(network, radius_m)`, `positions`, `network_links(network, a, cluster_of)`, `erase_loops`, `split_at_repeats`, `stretches_within`, `route_path`, `todays_routes(routes, inside)`, `node_people(network, a, zones, attraction, cluster_of, n)`, `gravity(xy, people, pull, decay_m, scale)`, `metres` | Cuts Baku into instances of the urban transit routing problem ([instances.md](instances.md)). Used by `instances.py` only |
 | `config` | `load_config(path, overrides)`, `parse_value`, `DATA_KEYS` | |
 | `inputs` | `load_inputs(root, config, overrides, repair, split, say)` | |
 
@@ -396,7 +400,12 @@ On one Python version a rebuild gives the same files byte for byte.
    to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
-   picture size and the number of frames its data gives.
+   picture size and the number of frames its data gives. `tests/test_instances.py` checks
+   the pieces that cut the Baku instances on made-up sequences and the made-up network,
+   reads the committed `output/instances/` back as Mumford's files are read, and checks
+   that today's routes keep the rules and score as `summary.json` says and that the
+   demand comes back from the published nodes; with `BUSNET_SLOW_TESTS=1` it cuts the
+   instances again (about twelve minutes).
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.

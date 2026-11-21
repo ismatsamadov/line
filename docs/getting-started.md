@@ -26,6 +26,7 @@ python3 robustness.py
 | `python3 redesign.py` | `output/redesign/`, with `impact.csv`: what the redesign is worth in minutes, buses, fuel and CO₂ | about 2 minutes |
 | `python3 robustness.py` | `output/robustness/`: the results on other trip samples and under other assumptions | about 15 minutes (8 processes) |
 | `python3 bicycle.py` | `output/bicycle/`: AYNA's bicycle lanes and parking points beside the bus network | about 4 s |
+| `python3 instances.py` | `output/instances/`: Baku cut into five instances in the format of Mumford's benchmark networks ([instances.md](instances.md)) | about 12 minutes |
 | `python3 site/build.py` | `site/data.js` and `site/checklist.xlsx`, the page's data, from `output/`; with `--og` also `site/og.png` (needs Chrome) | about 3 s |
 | `python3 animations/build.py` | `animations/*.gif`, the four animations at the top of the README ([below](#redraw-the-animations)) | about 4 minutes |
 
@@ -39,14 +40,15 @@ committed files in the last digits of some numbers; the regression test allows t
 
 ```sh
 python3 -m unittest                            # about 35 s
-BUSNET_SLOW_TESTS=1 python3 -m unittest        # also regenerates the redesign and the robustness checks, about 20 minutes
+BUSNET_SLOW_TESTS=1 python3 -m unittest        # also regenerates the redesign, the robustness checks and the Baku instances, about 30 minutes
 ```
 
 The tests check the geometry, the headway and daily-service rules, the settings reader
 and the redesign's plan arithmetic on a small made-up network, read a small bicycle
 file in the shape of AYNA's, regenerate `output/` and `output/bicycle/` to compare them
-with the committed files, and rebuild the page's data and checklists to compare them
-with the committed ones ([code.md](code.md#checking-a-change)).
+with the committed files, read the Baku instances back as Mumford's files are read and
+check their rules, scores and demand, and rebuild the page's data and checklists to
+compare them with the committed ones ([code.md](code.md#checking-a-change)).
 
 ## See the page
 
