@@ -50,6 +50,7 @@ def load_inputs(root, config=None, overrides=(), repair=True, split=True, say=pr
             raise FileNotFoundError(f"no GTFS feed at {data['gtfs']}")
         available(data["gtfs"], "gtfs")
         net, timetable = read_gtfs(data["gtfs"], a, repair=repair)
+        timetable.summary["feed"] = found["gtfs"]        # as the inputs are recorded: from the repository, if in it
     else:
         db = data.get("db", str(root / "data" / "ayna.db"))
         available(db, "db")
