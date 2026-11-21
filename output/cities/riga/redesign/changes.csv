@@ -1,0 +1,29 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,63,"Drop 63: among the 20 routes with the fewest modelled riders per bus; its buses go to 4, 21, 46",85.3643,85.1341,0.2302,3.7143
+2,merge,25,"Merge 25 into 25 (Tīraine): 100% of its stops are also on 25 (Tīraine); its buses go to 25 (Tīraine), 55, 10",85.1341,84.9188,0.2153,0.0
+3,drop,37,"Drop 37: among the 20 routes with the fewest modelled riders per bus; its buses go to 41, 21, 46",84.9188,84.7346,0.1842,0.0
+4,drop,31,"Drop 31: among the 20 routes with the fewest modelled riders per bus; its buses go to 45, 49, 33",84.7346,84.5241,0.2105,0.0
+5,merge,56 (branch 1),"Merge 56 (branch 1) into 56: 96% of its stops are also on 56; its buses go to 56, 36, 36 (Imanta)",84.5241,84.3702,0.1539,0.0
+6,drop,30,"Drop 30: among the 20 routes with the fewest modelled riders per bus; its buses go to 3, 54, 56",84.3702,84.1462,0.224,0.0
+7,merge,11 (Jaunciema kapi),"Merge 11 (Jaunciema kapi) into 11: 97% of its stops are also on 11; its buses go to 11, 24, 29",84.1462,84.0001,0.1461,0.0
+8,drop,39,"Drop 39: among the 20 routes with the fewest modelled riders per bus; its buses go to 38, 21, 4",84.0001,83.8765,0.1236,215.0
+9,drop,44,"Drop 44: among the 20 routes with the fewest modelled riders per bus; its buses go to 8, 46, 53",83.8765,83.7694,0.1071,0.0
+10,straighten,21,"Straighten 21 direction 2 between Jugla and Alfa: 4.1 km shorter, 5 of its stops dropped",83.7694,83.6556,0.1138,0.0
+11,drop,53,"Drop 53: among the 20 routes with the fewest modelled riders per bus; its buses go to 8, 56, 46",83.6556,83.4584,0.1972,0.0
+12,straighten,45,"Straighten 45 direction 2 between Varavīksnes gatve and Sociālās aprūpes centrs ""Mežciems"": 1.9 km shorter, 6 of its stops dropped",83.4584,83.4096,0.0488,-3.7143
+13,straighten,29,"Straighten 29 direction 2 between Ozolkalni and Juglas iela: 2.5 km shorter, 3 of its stops dropped",83.4096,83.3596,0.05,0.0
+14,merge,36 (Imanta),"Merge 36 (Imanta) into 36: 100% of its stops are also on 36; its buses go to 36, 56, 3",83.3596,83.3223,0.0373,0.0
+15,merge,32,"Merge 32 into 43: 86% of its stops are also on 43; its buses go to 43, 22, 4",83.3223,83.2802,0.042,0.0
+16,straighten,10,"Straighten 10 direction 2 between Mārupes novada dome and Sējas iela: 1.9 km shorter, 3 of its stops dropped",83.2802,83.2494,0.0308,0.0
+17,straighten,29,"Straighten 29 direction 1 between Juglas iela and Ozolkalni: 2.5 km shorter, 3 of its stops dropped",83.2494,83.2327,0.0166,276.2857
+18,straighten,50,"Straighten 50 direction 2 between Daugavas stadions and Abrenes iela: 1.1 km shorter, 8 of its stops dropped",83.2327,83.2078,0.0249,0.0
+19,straighten,25 (Tīraine),"Straighten 25 (Tīraine) direction 2 between Ģimnastikas iela and Uzvaras parks /pagaidu/: 1.9 km shorter, 5 of its stops dropped",83.2078,83.1052,0.1027,0.0
+20,straighten,46,"Straighten 46 direction 1 between Kleistu iela and Anniņmuižas iela: 1.2 km shorter, 5 of its stops dropped",83.1052,83.0955,0.0096,0.0
+21,straighten,50,"Straighten 50 direction 1 between Abrenes iela and Vietalvas iela: 1.2 km shorter, 6 of its stops dropped",83.0955,83.0798,0.0157,0.0
+22,straighten,56,"Straighten 56 direction 1 between Zasulauka iela and Paula Stradiņa slimnīca: 1.9 km shorter, 7 of its stops dropped",83.0798,83.0689,0.0109,0.0
+23,straighten,25 (Tīraine),"Straighten 25 (Tīraine) direction 1 between Uzvaras parks and Ārlavas iela: 1.8 km shorter, 4 of its stops dropped",83.0689,83.0139,0.055,0.0
+24,stops,,"Remove 18 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",83.0139,82.971,0.0429,0.0
+25,shift,,"Move 14 buses from the 10 routes where a bus saves riders the least waiting (3, 8, 51, 46, 41, 49, 21, 24, 18, 4) to the 10 where it saves the most (57, 60, 50, 12, 7, 11, 47, 23, 13, 25 (Tīraine))",82.971,81.7214,1.2497,0.0
+26,shift,,"Move 10 buses from the 10 routes where a bus saves riders the least waiting (57, 8, 3, 46, 24, 49, 41, 45, 7, 12) to the 10 where it saves the most (54, 38, 9, 11, 50, 10, 23, 13, 48, 2)",81.7214,81.2685,0.4529,0.0
+27,shift,,"Move 7 buses from the 10 routes where a bus saves riders the least waiting (8, 54, 38, 57, 3, 46, 58, 9, 47, 41) to the 10 where it saves the most (48, 7, 12, 50, 11, 56, 4, 45, 33, 13)",81.2685,81.0863,0.1821,0.0
+28,shift,,"Move 4 buses from the 5 routes where a bus saves riders the least waiting (8, 12, 54, 3, 7) to the 5 where it saves the most (9, 33, 47, 56, 18)",81.0863,81.074,0.0123,0.0

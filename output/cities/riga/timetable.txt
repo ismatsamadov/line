@@ -1,0 +1,26 @@
+10 d1: 1 other stop sequence(s) with 2 of 17 departures left out; 6 stops they call at are on no pattern of the route
+10 d2: 1 other stop sequence(s) with 1 of 16 departures left out; 2 stops they call at are on no pattern of the route
+11 d1: a branch with 8 of 29 departures runs as route 11 (Jaunciema kapi)
+11 d2: a branch with 8 of 29 departures runs as route 11 (Jaunciema kapi)
+16 d1: 1 other stop sequence(s) with 2 of 26 departures left out; 3 stops they call at are on no pattern of the route
+16 d2: 1 other stop sequence(s) with 2 of 27 departures left out; 4 stops they call at are on no pattern of the route
+18 d1: 2 other stop sequence(s) with 7 of 77 departures left out; 16 stops they call at are on no pattern of the route
+2 d2: 1 other stop sequence(s) with 1 of 59 departures left out; 15 stops they call at are on no pattern of the route
+21 d2: 1 other stop sequence(s) with 1 of 58 departures left out; 1 stops they call at are on no pattern of the route
+25 d1: a branch with 17 of 40 departures runs as route 25 (Tīraine)
+25 d2: a branch with 18 of 40 departures runs as route 25 (Tīraine)
+3 d1: 2 other stop sequence(s) with 3 of 125 departures left out; 6 stops they call at are on no pattern of the route
+3 d2: 1 other stop sequence(s) with 2 of 123 departures left out; 4 stops they call at are on no pattern of the route
+34 d1: 1 other stop sequence(s) with 2 of 6 departures left out; 1 stops they call at are on no pattern of the route
+34 d2: 1 other stop sequence(s) with 2 of 7 departures left out; 1 stops they call at are on no pattern of the route
+36 d2: a branch with 10 of 32 departures runs as route 36 (Imanta)
+36 d1: 1 other stop sequence(s) with 1 of 31 departures left out; 1 stops they call at are on no pattern of the route
+43 d1: 1 other stop sequence(s) with 1 of 18 departures left out; 4 stops they call at are on no pattern of the route
+51 d1: 1 other stop sequence(s) with 10 of 52 departures left out; 3 stops they call at are on no pattern of the route
+51 d2: 1 other stop sequence(s) with 10 of 56 departures left out; 3 stops they call at are on no pattern of the route
+52 d1: 1 other stop sequence(s) with 1 of 53 departures left out; 1 stops they call at are on no pattern of the route
+52 d2: 1 other stop sequence(s) with 1 of 57 departures left out; 1 stops they call at are on no pattern of the route
+56 d1: a branch with 7 of 16 departures runs as route 56 (branch 1)
+56 d2: a branch with 6 of 17 departures runs as route 56 (branch 1)
+6 d1: 1 other stop sequence(s) with 3 of 38 departures left out; 3 stops they call at are on no pattern of the route
+N22: runs at night, 10 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
