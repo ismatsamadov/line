@@ -161,6 +161,10 @@ uncertainty: waiting times from estimated headways, walking, and a demand model 
 ranks routes at 0.58 against counted boardings. Those cannot be tested on a network
 whose demand is given.
 
+The test also runs the other way. [instances.md](instances.md) cuts Baku into instances in
+the format of these networks, so that the methods that beat straightening here can be run
+on a real city's network.
+
 ## References
 
 - Ahmed, L., Mumford, C. & Kheiri, A. (2019). Solving urban transit route design problem

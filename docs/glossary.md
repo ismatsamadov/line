@@ -44,6 +44,7 @@ Terms as they are used in this repository. Setting names are in `code` font
 | Hub | A stop the AYNA data flags as a transport hub; stop balancing never removes one |
 | Impact table | `output/redesign/impact.csv`: today's network beside the redesign with today's buses and with the fleet that keeps today's trip times, in minutes per trip, people near a stop, buses, bus-hours, bus-km, fuel and CO₂, and money where `[impact]` gives prices |
 | Independent check | Scoring the redesign on a different, larger sample of trips than the search used, so the reported gain is not tuned to the search sample |
+| Instance | A network given as the benchmark literature gives one: nodes with coordinates, the minutes along the links, the trips between every pair of nodes, and rules for the routes. `instances.py` cuts five from Baku, Baku0–3 and BakuFull ([instances.md](instances.md)) |
 | Kontur Population | The population grid used here: people per H3 hexagon, release November 2023 |
 | Layover | Recovery time at the end of a trip before the next one, as a share of running time (`layover_share`) |
 | Link | The path between two consecutive stops of a route direction |

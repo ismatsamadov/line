@@ -54,17 +54,14 @@ straightening passes until one keeps nothing adds 34 to 53% to the gain in trave
 of a single pass, and `redesign.py` makes a single pass. Repeating its passes, and checking the gain on the
 independent sample as before, would show whether Baku's minute is an underestimate.
 
-One piece of work is promised rather than merely planned: smaller instances cut from
-the Baku network, in the format of Mumford's (2013) benchmark files, so that other
-researchers can run their own methods on a network like this one and compare them with
-the greedy search. Each instance would be a sub-network of the 3,456 stops given as node
-coordinates, link times and a demand matrix, with its number of routes and node bounds
-stated and the code that cuts it published beside it. Its link times would come from
-distances at the model's speed and its demand from the gravity model, both labelled as
-modelled rather than measured, since Baku has no origin-destination counts; the 0.58
-rank correlation against counted boardings is the only check the demand has, and the
-instance files would say so. Christine Mumford suggested the instances in October 2026,
-and they would credit her; two researchers have been told to expect them.
+The instances I promised in October 2026 are made ([instances.md](instances.md)): the
+Baku network cut into five instances in the format of Mumford's (2013) benchmark files,
+four circles round the centre the size of her four networks and the whole network, each
+with today's routes, their scores and what straightening does to them. Their link times
+and demand are labelled as modelled, with the 0.58 rank correlation against counted
+boardings stated as the demand's only check. Christine Mumford suggested them, and they
+credit her. What they need now is other people's methods run on them; the two
+researchers who were told to expect them are the first to ask.
 
 The code now runs on any city that publishes a GTFS feed. The feed replaces the snapshot,
 and its timetable gives every route the headway and speed Baku's data lacks
