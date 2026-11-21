@@ -102,7 +102,7 @@ otherwise. Blank cells mean "not defined" (for example the circuity of a loop ro
 | `settings` | Every setting used |
 | `headway_sources` | Routes by headway source: `supplied`, `ridership`, `zone`, `default`, and `timetable` for a network read from a GTFS feed |
 | `repairs` | The data repairs applied |
-| `timetable` | Only for a network read from a GTFS feed: the `feed`, the `day` and `weekday` read, the `route_types`, the routes of those types in the feed and running that day, `routes_of_other_types` by mode, `branches_run_as_routes` and `routes_in_the_model`, `routes_running_one_way`, `routes_express`, the day's `departures` with those on route patterns, on part of one (short turns) and left out (small branches), `share_of_departures_modelled`, `stops_served` and `stops_only_on_departures_left_out`, `directions_placed_by_shape_dist_traveled`, how many speeds came from the timetable and from the settings, `routes_more_often_than_min_headway`, the `first_departure` and `last_departure`, and the hours of service: `service_from`, `service_to` and `hours_of_service`, the hours in which buses leave at least a quarter as often as in the busiest hour |
+| `timetable` | Only for a network read from a GTFS feed: the `feed`, the `day` and `weekday` read, the `route_types`, the routes of those types in the feed and running that day, `routes_of_other_types` by mode, `branches_run_as_routes` and `routes_in_the_model`, `routes_running_one_way`, `routes_express`, `routes_at_night`, the day's `departures` with those on route patterns, on part of one (short turns) and left out (small branches), `share_of_departures_modelled`, `stops_served` and `stops_only_on_departures_left_out`, `directions_placed_by_shape_dist_traveled`, how many speeds came from the timetable and from the settings, `routes_more_often_than_min_headway`, the `first_departure` and `last_departure`, and the hours of service: `service_from`, `service_to` and `hours_of_service`, the hours in which buses leave at least a quarter as often as in the busiest hour |
 
 ## output/scenario.json and output/scenario_removed_stops.csv
 
@@ -122,8 +122,9 @@ Written only for a network read from a GTFS feed. First any warning about the fe
 without a position, hours of service that differ from `service_hours`), then a line for
 each branch that runs as a route of its own, for each route direction whose other stop
 sequences were left out (with their departures and the stops only they call at), for each
-route whose timetable speed fell outside 5 to 90 km/h and gave way to the settings, and
-for each express route, with what marked it.
+route whose timetable speed fell outside 5 to 90 km/h and gave way to the settings, for
+each express route, with what marked it, and for each route that runs at night, which
+`redesign_protected_routes` should hold.
 
 ## output/redesign/changes.csv — each change the search kept
 

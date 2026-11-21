@@ -320,6 +320,10 @@ class BranchesAndExpressTest(unittest.TestCase):
         self.assertEqual((s["first_departure"], s["last_departure"]), ("06:00", "26:30"))
         self.assertEqual((s["service_from"], s["service_to"], s["hours_of_service"]), ("06:00", "10:00", 4))
 
+    def test_a_night_bus_is_named_for_protection(self):
+        self.assertEqual((self.table.night, self.table.summary["routes_at_night"]), (["N1"], 1))
+        self.assertTrue(any(n.startswith("N1: runs at night, 1 of its 1 departures") for n in self.table.notes))
+
 
 class ShapeDistanceTest(unittest.TestCase):
     """A line that passes a stop twice, with the bus stopping on the second pass, as the feed's

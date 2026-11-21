@@ -96,7 +96,10 @@ routes, stops and patterns from it, for one service day:
    its trips a day each way (section 4). The hours of service are the hours in which buses
    leave at least a quarter as often as in the busiest hour, from the first such hour to
    the end of the last; a night bus or an early depot run does not stretch them, and
-   `service_hours` should be set to them.
+   `service_hours` should be set to them. A route with most of its departures outside
+   them runs at night. One all-day frequency cannot see what such a route is for, so the
+   redesign would only find it little used; `timetable.txt` names it, to be put in
+   `redesign_protected_routes`.
 7. **Express routes.** A feed has no service types, so a route is marked express when its
    name says so ("express", "ekspres", "экспресс"), or when at least 85% of its stops lie
    on one direction of another route that calls at more than two stops for every one of

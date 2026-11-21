@@ -21,7 +21,9 @@ them. A route that runs in one direction only is a loop, and is not counted as i
 back. A route is marked express when its name says so, or when nearly all its stops lie
 on another route that calls at many more stops along the way, so the redesign does not
 merge it into that route. The summary gives the hours in which buses leave at least a
-quarter as often as in the busiest hour, the value service_hours should have.
+quarter as often as in the busiest hour, the value service_hours should have; a route
+with most of its departures outside them runs at night, which an all-day model cannot
+value, and the notes say to protect it from the redesign.
 
 Writing turns each route direction into one trip that repeats every headway between the
 start and end of service (frequencies.txt). Times between stops follow the same model as
@@ -183,6 +185,7 @@ class Timetable:
     warnings: list
     notes: list
     feed: dict
+    night: list = None          # numbers of the routes that run mostly outside the hours of service
 
 
 def basic_route_type(value):
@@ -620,16 +623,26 @@ def _read(feed, a, repair, source):
                                                          else ", skipping most stops of a route it runs along"))
 
     alone = sum(departures[t] for t in trips if len(seqs.get(t, ())) < 2)      # trips with fewer than two stops
-    leaving = []                                 # every departure time of the day
+    starts = defaultdict(list)                   # route -> every departure time of the day
     for tid in trips:
         if tid in windows:
             for s, e, h in windows[tid]:
-                leaving += [s + k * h for k in range(int(math.ceil((e - s) / h)))]
+                starts[trips[tid][0]] += [s + k * h for k in range(int(math.ceil((e - s) / h)))]
         elif tid in first:
-            leaving.append(_seconds(first[tid][1]))
+            starts[trips[tid][0]].append(_seconds(first[tid][1]))
+    leaving = [t for times in starts.values() for t in times]
     per_hour = Counter(int(t // 3600) for t in leaving)
     busy = sorted(h for h, n in per_hour.items() if n >= max(per_hour.values()) / 4) if per_hour else []
     service = (busy[0], busy[-1] + 1) if busy else None
+    night = []                                   # an all-day model cannot see what these are for
+    for rid in sorted(by_route):
+        times = starts[rid]
+        out = sum(1 for t in times if service and not service[0] * 3600 <= t < service[1] * 3600)
+        if out > len(times) / 2:
+            night += sorted(r.number for k, r in routes.items() if k == rid or k.startswith(f"{rid}~"))
+            notes.append(f"{kinds[rid][1]}: runs at night, {out} of its {len(times)} departures outside the hours "
+                         f"of service; an all-day model cannot see what it is for, so redesign_protected_routes "
+                         f"should hold it")
     if service and abs(service[1] - service[0] - a.service_hours) > 1:
         warnings.append(f"buses leave at least a quarter as often as in the busiest hour from {service[0]:02d}:00 to "
                         f"{service[1]:02d}:00, {service[1] - service[0]} hours; service_hours is {a.service_hours:g}, "
@@ -647,6 +660,7 @@ def _read(feed, a, repair, source):
         "routes_in_the_model": len(routes),
         "routes_running_one_way": sum(r.runs_one_way for r in routes.values()),
         "routes_express": len(express),
+        "routes_at_night": len(night),
         "departures": total,
         "departures_on_patterns": in_patterns,
         "departures_on_part_of_a_pattern": folded,
@@ -674,4 +688,5 @@ def _read(feed, a, repair, source):
             "agency_url": next((ag[1] for ag in agencies.values() if ag[1]), FEED_URL),
             "timezone": next((ag[2] for ag in agencies.values() if ag[2]), "UTC"),
             "lang": lang}
-    return Network(routes, stops, patterns, log), Timetable(day.isoformat(), trips_each_way, summary, warnings, notes, meta)
+    return Network(routes, stops, patterns, log), Timetable(day.isoformat(), trips_each_way, summary, warnings, notes,
+                                                            meta, night)

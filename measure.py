@@ -105,7 +105,8 @@ def main():
         t = inp.timetable.summary
         print(f"Timetable of {t['weekday']} {t['day']}: {t['departures']:,.0f} departures, "
               f"{t['share_of_departures_modelled']:.1%} of them on the route patterns; {t['branches_run_as_routes']} "
-              f"branches run as routes, {t['routes_express']} routes are express; buses run from {t['service_from']} "
+              f"branches run as routes, {t['routes_express']} are express, {t['routes_at_night']} run at night; "
+              f"buses run from {t['service_from']} "
               f"to {t['service_to']} (first departure {t['first_departure']}, last {t['last_departure']})")
         notes = inp.timetable.warnings + inp.timetable.notes
         (out / "timetable.txt").write_text("".join(n + "\n" for n in notes), encoding="utf-8")
