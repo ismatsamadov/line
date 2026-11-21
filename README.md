@@ -123,6 +123,12 @@ rather than designing one ([docs/benchmark.md](docs/benchmark.md)).
 python3 bicycle.py           # writes output/bicycle/, about 4 s
 ```
 
+<p align="center"><img src="animations/bicycle.gif" width="100%" alt="A map of central Baku with the bus routes in grey: AYNA's bicycle lanes of January 2025 in dark green, then those of September 2026 with the 13.2 km of new lanes in light green, then the 170 bus stops within 100 m of a lane in blue and the 185 parking points in orange"></p>
+
+The animation steps through AYNA's lanes as drawn in January 2025 and in its file of
+September 2026, the new ones marked, then the bus stops within 100 m of a lane and the
+parking points.
+
 AYNA publishes its bicycle lanes and bicycle parking points on opendata.az. The lanes
 run for 57.1 km on 54 streets of central Baku (44.2 km in January 2025), 47.5 km of them
 beside a bus route; 45 routes run at least 0.5 km along a lane, but only 170 of the
@@ -268,5 +274,5 @@ files that contain AYNA's routes and stops (the GTFS feeds, `network.geojson` an
 CSV tables) are covered by the note on `data/ayna.db`, and the maps and tables that
 draw on OpenStreetMap carry its attribution. The same holds for the page's
 `site/data.js`, `site/checklist.xlsx` and `site/og.png`, which carry AYNA's routes and stops
-and the Kontur population grid, and for the GIFs in `animations/`, which carry the same
-and Bakı Metropoliteni's counts (CC BY).
+and the Kontur population grid, and for the GIFs in `animations/`, which carry the same,
+Bakı Metropoliteni's counts (CC BY) and AYNA's bicycle lanes and parking points (CC0).

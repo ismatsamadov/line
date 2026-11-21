@@ -3,7 +3,7 @@
 Python 3.11 or newer, standard library only. The `busnet` package has about 3,600 lines,
 the six scripts about 1,100 more, and the tests about 1,700. The page in `index.html` and
 `site/` adds about 3,000 lines of Python, JavaScript, CSS and HTML ([The page](#the-page)),
-and the animations in the README about 1,200 lines of Python
+and the animations in the README about 1,300 lines of Python
 ([The animations](#the-animations)).
 `python3 -m unittest` runs the tests; see [Checking a change](#checking-a-change).
 
@@ -47,9 +47,9 @@ site/
   app.js              the page's logic: tour, map views, route cards, reach, issues, tables
   style.css           the page's styles and its print layout
 animations/
-  build.py            the README's four animations, from the data, output/ and a rerun of the search
+  build.py            the README's five animations, from the data, output/ and a rerun of the search
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
-  buses.gif, riders.gif, redesign.gif, travel-time.gif   written by build.py
+  buses.gif, riders.gif, redesign.gif, travel-time.gif, bicycle.gif   written by build.py
 .nojekyll             tells GitHub Pages to serve the files as they are
 data/                 every input, committed (see data.md)
   ayna_scraper.py     the bus network from AYNA's map API -> ayna.db (run in a folder outside the repository)
@@ -297,7 +297,7 @@ Cyrillic look-alikes some names use. The address bar keeps the state
 
 ## The animations
 
-`animations/build.py` draws the four GIFs in the README, and `draw.py` beside it
+`animations/build.py` draws the five GIFs in the README, and `draw.py` beside it
 holds all the drawing they need, in the standard library. A `Canvas` is three byte arrays,
 red, green and blue. A shape becomes a mask first, pixel to coverage: a segment covers a
 pixel by its half-width plus half a pixel minus the distance from the pixel's centre,
@@ -317,9 +317,11 @@ rectangle that changed since the one before, with the unchanged pixels transpare
 the frame left in place for the next (disposal 1), coded with GIF's LZW (`lzw`). A frame
 identical to the one before only lengthens it, and the file loops for ever.
 
-All four use the crop of the manuscript's figures (`paper/figures.py`), the measurements'
-flat projection, the repaired network, the population hexagons of the Kontur grid in four
-light steps from 100 people, and the page's colours.
+The first four use the crop of the manuscript's figures (`paper/figures.py`), and
+`bicycle.gif` a closer crop of central Baku of the same size, around AYNA's bicycle lanes
+with a margin; all five use the measurements' flat projection, the repaired network, the
+population hexagons of the Kontur grid in four light steps from 100 people, and the
+page's colours.
 
 - `buses.gif`: `bus_runs` gives every route direction the times of the GTFS feed
   (`gtfs.write_gtfs`), each hop at the zone's cruise speed plus `stop_loss_s`, and its
@@ -354,6 +356,14 @@ light steps from 100 people, and the page's colours.
   each stop's minutes are the cost less one penalty per boarding. One frame per minute
   from 0 to 120, 80 ms each and the last held for 3 s; each stop takes the colour of the
   page's 15-minute bins when it is reached, with a white halo in that minute.
+- `bicycle.gif`: the lanes of September 2026 and of January 2025 come from
+  `busnet.bicycle.load_lanes`, the stops within 100 m of a lane from
+  `busnet.bicycle.stops_near` and the parking points within 100 m of a stop from
+  `graph.StopIndex`, so the counts are `bicycle.py`'s. A lane of September 2026 is new
+  where it runs more than `NEW_LANE_M` (30 m) from every January 2025 lane, measured with
+  `busnet.bicycle.along`; 13.2 km are. The crop is the lanes' box widened by 12% to the
+  other animations' size, with the text on the bay. Five frames, one per step, held 1.6
+  to 4 s.
 
 On one Python version a rebuild gives the same files byte for byte.
 
@@ -401,7 +411,7 @@ On one Python version a rebuild gives the same files byte for byte.
    width, run the tour (`#tour`) to its end, and open a route, a comparison and a stop's
    reach; the browser console must stay empty.
 9. **The animations.** After a change to the data, the settings or the search, run
-   `redesign.py` and then `python3 animations/build.py`, and look at the four GIFs.
+   `redesign.py` and then `python3 animations/build.py`, and look at the five GIFs.
 
 A new test goes in `tests/test_<module>.py` as a `unittest.TestCase`; `tests/helpers.py`
 builds the two-route network the tests share.

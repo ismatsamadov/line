@@ -42,7 +42,7 @@ lists what to check first.
 | Read the manuscript draft and its title page | [../paper/manuscript.md](../paper/manuscript.md), [../paper/title-page.md](../paper/title-page.md) |
 | Use the route planner built on the same data | [birjob.com/aletler/avtobus-marsrutu](https://www.birjob.com/aletler/avtobus-marsrutu) (in Azerbaijani) |
 | Show the findings to people who will act on them: a guided tour, a map with nine views, a card per route, the data defects, the checklist and tables of all routes and carriers | [../index.html](../index.html), served at [ismatsamadov.github.io/route_efficiency](https://ismatsamadov.github.io/route_efficiency/); how it is built: [code.md](code.md#the-page) |
-| Watch the network move: a modelled hour of buses, nine months of counted riders, the redesign one change at a time, and how far the buses take you | [../README.md](../README.md), each in the section it illustrates; how they are drawn: [code.md](code.md#the-animations), what each frame shows: [outputs.md](outputs.md#animations--the-four-animations-in-the-readme) |
+| Watch the network move: a modelled hour of buses, nine months of counted riders, the redesign one change at a time, how far the buses take you, and the bicycle lanes beside them | [../README.md](../README.md), each in the section it illustrates; how they are drawn: [code.md](code.md#the-animations), what each frame shows: [outputs.md](outputs.md#animations--the-animations-in-the-readme) |
 | Look up a term | [glossary.md](glossary.md) |
 
 ## Three commands
