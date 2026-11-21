@@ -457,6 +457,20 @@ def _read(feed, a, repair, source):
     trips = {tid: (rid, did, shp, sign) for tid, rid, sid, did, shp, sign in listed if sid in running}
     if not trips:
         raise ValueError(f"no trips of route types {sorted(types)} run on {day}")
+    # A line its feed splits into two routes, one for each direction, as Christchurch's does, runs
+    # as one route: the two have the same agency and name, and each runs one way, not the same one.
+    ways = defaultdict(set)
+    for rid, did, _, _ in trips.values():
+        ways[rid].add(did)
+    alike = defaultdict(list)
+    for rid in sorted(ways):
+        alike[kinds[rid][:2]].append(rid)
+    joined = {}                                  # the second direction's route -> the first's
+    for rids in alike.values():
+        if len(rids) == 2 and sorted(tuple(ways[r]) for r in rids) == [("0",), ("1",)]:
+            first, second = sorted(rids, key=lambda r: ways[r] != {"0"})
+            joined[second] = first
+    trips = {tid: (joined.get(rid, rid), did, shp, sign) for tid, (rid, did, shp, sign) in trips.items()}
 
     windows = defaultdict(list)                  # trip -> [(start, end, headway)] from frequencies.txt
     for tid, start, end, every in feed.columns("frequencies.txt", "trip_id", "start_time", "end_time", "headway_secs"):
@@ -488,6 +502,9 @@ def _read(feed, a, repair, source):
     if not stops:
         raise ValueError("none of the stops the trips call at has a position in stops.txt")
     warnings, notes = [], []
+    for second, first in sorted(joined.items()):
+        notes.append(f"{kinds[first][1]}: the feed's routes {first} and {second}, one for each direction, "
+                     f"read as one route")
     if len(stops) < len(used):
         warnings.append(f"{len(used) - len(stops)} stops called at in stop_times.txt have no position in stops.txt; "
                         f"trips pass them by")

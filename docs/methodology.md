@@ -72,7 +72,9 @@ routes, stops and patterns from it, for one service day:
 2. **Directions.** From `direction_id`: 0 becomes direction 1 and 1 becomes 2. When a
    route's trips lack it, each trip is compared with the route's most-run stop sequence,
    by the order of the stops the two share or, if that does not decide, by which of their
-   ends lie nearer each other.
+   ends lie nearer each other. Two routes of the same agency and name that each run one
+   way, and not the same way, are one line its feed splits by direction, as Christchurch's
+   does for 28 of its lines: they are read as one route, listed in `timetable.txt`.
 3. **Patterns.** The stop sequence with the most departures is the route's pattern in
    that direction. A sequence that is an in-order part of a pattern (a short turn) adds its
    departures to it in proportion to the share of the pattern's length it covers. Any other
