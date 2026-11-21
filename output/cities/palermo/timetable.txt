@@ -1,0 +1,21 @@
+101 d1: 1 other stop sequence(s) with 10 of 239 departures left out; 26 stops they call at are on no pattern of the route
+103 d2: 1 other stop sequence(s) with 1 of 42 departures left out; 1 stops they call at are on no pattern of the route
+106 d1: 1 other stop sequence(s) with 1 of 58 departures left out; 2 stops they call at are on no pattern of the route
+246 d1: 1 other stop sequence(s) with 15 of 104 departures left out; 11 stops they call at are on no pattern of the route
+246 d2: 1 other stop sequence(s) with 15 of 103 departures left out; 9 stops they call at are on no pattern of the route
+544 d1: 3 other stop sequence(s) with 7 of 50 departures left out; 15 stops they call at are on no pattern of the route
+544 d2: 2 other stop sequence(s) with 8 of 50 departures left out; 15 stops they call at are on no pattern of the route
+603 d2: a branch with 12 of 41 departures runs as route 603 (branch 1)
+625 d2: 1 other stop sequence(s) with 2 of 58 departures left out; 2 stops they call at are on no pattern of the route
+628 d1: a branch with 13 of 60 departures runs as route 628 (ISOLA DELLE FEMMINE)
+628 d2: 1 other stop sequence(s) with 13 of 66 departures left out; 3 stops they call at are on no pattern of the route
+731 d1: a branch with 16 of 72 departures runs as route 731 (VERGINE MARIA)
+731 d2: a branch with 16 of 73 departures runs as route 731 (VERGINE MARIA)
+812 d1: 1 other stop sequence(s) with 1 of 20 departures left out; 38 stops they call at are on no pattern of the route
+N1: runs at night, 20 of its 20 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N2: runs at night, 16 of its 16 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N3: runs at night, 29 of its 32 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N4: runs at night, 30 of its 30 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N5: runs at night, 42 of its 44 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N6: runs at night, 28 of its 28 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N7: runs at night, 23 of its 24 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

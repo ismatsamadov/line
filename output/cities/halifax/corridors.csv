@@ -1,0 +1,5 @@
+﻿from_stop,to_stop,via_stop,km,stops,mean_routes_per_link,max_routes_on_a_link,routes,stop_ids
+Barrington St Before Prince St (6084),Robie St After University Ave (8187),,1.9885,6,10.6,11,90 135 136 137 138 158 159 161 165 168A 168B,6084 6124 8885 7247 8410 8187
+Robie St After South St (8220),Barrington St Before Sackville St (6121),,1.824,7,10.3333,11,7B 90 135 136 137 138 158 159 161 165 168A 168B,8220 8883 8411 7246 8884 6123 6121
+Summer St After Bell Rd (8363),Barrington St Before Sackville St (6121),Spring Garden Rd Before Barrington St (8338),1.6142,5,11.25,16,1 8 9A 9B 10A 10B 10C 123 127 182 183 185 186 192 194 196,8363 8337 8336 8338 6121
+Barrington St Before Prince St (6084),Summer St After Veterans Memorial Ln (2304),Spring Garden Rd Before Summer St (8335),1.7416,5,9.5,11,9A 9B 123 127 182 183 185 186 192 194 196,6084 6122 8330 8335 2304

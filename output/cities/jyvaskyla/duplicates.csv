@@ -1,0 +1,22 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+3,3 (Nova),1.0,43,60,True
+Koiviston Auto [6672],Uuraisten Liikenne,1.0,42,43,False
+41 [9411] (PEURUNKA),41 [9414],1.0,53,60,True
+9,9K,0.9878,82,93,True
+Uuraisten Liikenne,Koiviston Auto [6672],0.9767,43,42,False
+14M,14M (VIITANIEMI),0.9756,41,51,True
+113 [6133],Koiviston Auto [6542],0.9706,34,48,True
+113 [6134],Koiviston Auto [6541],0.9706,34,48,True
+16 (branch 1),16,0.9636,55,109,True
+140 (Äänekoski),141,0.9474,19,193,True
+36 (branch 1),36,0.9474,57,104,True
+Matka Mäkelä [14],Matka Mäkelä [216],0.9333,90,93,True
+16M,16,0.9231,91,109,True
+Matka Mäkelä [15],Matka Mäkelä [216],0.9167,48,93,True
+22M (branch 1),22M,0.9143,35,64,True
+Matka Mäkelä [216],Matka Mäkelä [14],0.9032,93,90,True
+41 [9414],41 [9411] (PEURUNKA),0.8833,60,53,True
+Kouluv Äki,Kouluvuoro [6913],0.88,25,42,True
+9K,9,0.871,93,82,True
+41 [9411] (branch 1),141,0.866,97,193,True
+1M,S1,0.8605,43,93,True

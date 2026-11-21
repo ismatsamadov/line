@@ -1,0 +1,57 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+1,1,Tech Ridge Bay H,Lamar/Howard,1,0,2.3562,0.7468,1.6094,4.1076,0
+142,1,11609 Metric/Gold Wing,12016 Amherst/Eton,8,4,6.1653,2.458,3.7073,11.2964,2601.8571
+142,2,12001 Amherst/Duval,11212 Metric/Braker,11,6,8.3728,2.5885,5.7844,17.1312,3410.0
+171,1,6600 Silvermine/SH 71,6063 US 290/Old Fredericksburg,7,7,9.8027,3.6016,6.2012,16.2355,2952.0
+18,1,6401 FM 969/Craigwood,Expo Center Bay G,9,5,9.8782,3.5544,6.3239,16.1886,1154.2857
+18,2,Expo Center Bay G,6506 FM 969/Craigwood EB,7,4,9.5703,3.6026,5.9677,14.7791,1154.2857
+18,2,Enfield/Pease,Exposition/10th,9,8,4.9341,1.5709,3.3632,10.014,4370.5714
+2,1,1422 Rosewood/Angelina,1605 Cesar Chavez/Comal,11,7,5.2935,1.2507,4.0428,15.0555,599.7143
+2,2,1600 Cesar Chavez/Comal,1319 Rosewood/Angelina,11,8,5.1644,1.2034,3.961,14.8252,813.1429
+201,1,200 Turk/Cullen,1st/FM 1626 (Akins),1,0,5.3266,2.1233,3.2033,6.2589,0
+214,1,1st/Bronco,Bronco/1st,7,0,7.4179,0.0323,7.3856,10.8147,0
+214 (214 Lakeline Station EB),2,Bronco/Dodge Trace,Bronco/1st,6,0,6.7004,0.5431,6.1573,9.48,0
+217,1,603 Vargas/Ponca,5129 Eastside Bus Plaza Bay I,1,1,4.7641,1.8102,2.9539,7.1781,410.1429
+228,2,Metropolis/Veterans Clinic,6100 Oltorf/Montopolis,6,5,10.3886,2.3967,7.9919,15.9474,621.1429
+233,1,Johnny Morris/Point North,Eagles Landing Apt/Decker,2,2,5.5289,2.0111,3.5178,7.1457,447.5714
+233,2,Colony Loop/Shannon,Colony Park/Loyola,2,2,2.7533,0.3221,2.4312,5.1445,2050.5714
+243,1,Tech Ridge Bay E,1800 Wells Branch/Wells Port,4,4,5.9223,2.0009,3.9214,8.4796,2532.4286
+271,1,Del Valle ISD (Alt School),3103 SH 71/Cheviot,6,6,10.9929,4.3606,6.6324,13.0932,3829.7143
+271,2,SH 71/Cheviot (EB),Travis Correctional Facility,2,2,2.3501,0.7164,1.6337,3.3991,904.7143
+3,2,Braker/Mopac NE Corner,10051 Great Hills/Research (Target),6,3,3.2939,1.1723,2.1216,6.2045,589.7143
+30,1,Westgate Transit Center - F,1788 Spyglass/Barton Skyway,11,11,11.521,3.0853,8.4357,21.0509,3764.5714
+30,1,3536 Greystone/Wood Hollow,Steck/Shoal Creek,11,11,5.1093,1.5944,3.515,10.9103,5394.5714
+30,2,7921 Rockwood/Anderson,3615 Greystone/Hart,11,11,5.4687,1.6102,3.8585,11.6183,6108.2857
+30,2,Mopac/Nature Center,Westgate Transit Center - F,11,11,13.1038,4.4523,8.6516,21.4958,4065.1429
+315,1,2555 Western Trails/Sagebrush,1901 Ben White/Merle,3,1,2.7725,1.0857,1.6868,4.6115,0
+318,2,2501 Slaughter/Goodnight Ranch,1599 Slaughter/Orchard Ridge,1,1,2.6583,0.9795,1.6788,3.302,243.1429
+320,1,Manor at Rogge NB (Manor/Rogge),7000 Manor/Susquehanna,9,4,6.9695,1.8704,5.0991,11.9147,492.7143
+324,1,1649 Ohlen/Research,Rundberg/Slayton,11,8,5.1607,2.0632,3.0975,10.5814,3379.8571
+324,2,Georgian/Home Place,1624 Ohlen/Payton Gin,11,8,6.6947,2.0944,4.6003,13.9361,4637.1429
+333,1,7000 Brodie/Bannockburn,Convict Hill/Brush Country,8,8,4.0867,1.606,2.4807,6.7556,4734.7143
+333,2,Convict Hill/Latta/Brush Country,3421 William Cannon/Brodie,9,9,4.2197,1.6449,2.5748,7.244,4734.7143
+333,2,2203 Blue Meadow/Blue Dawn,Goodnight Ranch Bay D,11,0,8.7159,3.3886,5.3273,12.4475,0
+333 (333 Brush Country WB),2,2203 Blue Meadow/Blue Dawn,Goodnight Ranch Bay D,11,0,8.7159,3.3886,5.3273,12.8349,0
+337,1,Cameron/Glencrest,5789 Airport/Koenig,11,7,5.2165,1.6048,3.6117,10.6606,1238.8571
+337,2,5815 AIRPORT/KOENIG,6116 Cameron/Glencrest,11,6,5.1348,1.6275,3.5073,10.4584,1238.8571
+339,1,7000 Manor/Susquehanna,Fisher-Rosemount Systems,9,9,8.1856,3.0666,5.119,14.4506,2104.5714
+350,1,ACC Riverside  @ Grove,Airport/Shady,11,9,7.1249,2.7934,4.3316,11.5094,851.7143
+350,2,408 Shady/5th,ACC Riverside  @ Grove,11,6,6.3073,1.8247,4.4826,11.7828,659.5714
+383,1,4815 Braker/Jollyville,Research/Riata Apts,9,8,7.5884,2.9936,4.5948,12.0722,2648.5714
+383,1,10505 Lake Creek/Hickory Stick,Lakeline Station Bay H,10,4,6.7534,2.6877,4.0657,11.3609,3773.5714
+383,2,Lakeline Station Bay H,10504 Lake Creek/Mellow Meadows,10,10,7.1418,2.6987,4.443,12.1058,3563.7143
+392,2,Canyon Ridge/Tech Ridge,Braker/Lamar NE Corner,8,8,6.2376,2.4336,3.804,9.1974,5290.2857
+4,2,2425 7th/Pedernales,501 Pleasant Valley/5th,9,6,4.2918,0.4945,3.7973,13.8297,472.0
+466,1,11100 Burnet/Kramer,Esperanza Crossing/Domain,2,1,3.3398,0.5845,2.7553,7.6473,0
+492,1,SUNDAY,7401 Cameron/Coronado Hills,2,2,6.604,1.6987,4.9053,15.7397,0
+492,2,Camino La Costa/Calidad,Capital Plaza,1,1,3.3609,1.329,2.0319,6.5768,1004.5714
+5,1,1900 Lamar/Martin Luther King,Capitol/Waterloo NB (Trinity/11th),10,3,5.1857,1.9344,3.2513,10.9928,781.7143
+5,1,4609 12th/Springdale,Technicenter/Ed Bluestein,8,6,4.3187,1.6062,2.7125,9.0569,1525.1429
+5,2,Capitol/Waterloo SB (San Jacinto/10th),1117 Lamar/12th,7,2,3.6276,1.3248,2.3028,7.7583,781.7143
+50,1,College Park/University,Sunrise/Eagles Nest,5,5,6.3319,2.3958,3.9361,8.2763,3643.4286
+50,1,Sunrise/Greenfield,Main/Burnet,4,4,4.4669,1.7106,2.7563,5.9618,5096.7143
+50,2,Main/Burnet,Sunrise/Greenfield,4,4,4.4876,1.7051,2.7825,6.0059,5482.4286
+50,2,Sunrise/Old Settlers,9999 College Park/ACC Round Rock,9,9,11.1685,3.0452,8.1234,16.6412,6848.7143
+7,1,2332 Teri/Palo Blanco,Nelms/Bluff Springs,11,8,5.7303,1.8758,3.8545,13.9821,4854.5714
+7,2,6502 Bluff Springs/William Cannon,2008 Teri/Pepper,11,9,5.8342,1.9983,3.8358,13.9321,6204.5714
+800,2,Onion Creek SB (William Cannon/Pleasant Valley),Goodnight Ranch Bay A,1,1,9.3669,3.3289,6.038,11.7479,185.2857

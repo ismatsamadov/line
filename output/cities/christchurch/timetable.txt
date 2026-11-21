@@ -1,0 +1,55 @@
+100: the feed's routes 100_0432_1_3 and 100_0432_2_3, one for each direction, read as one route
+107: the feed's routes 107_8882_1_3 and 107_8882_2_3, one for each direction, read as one route
+110: the feed's routes 110_5358_1_3 and 110_5358_2_3, one for each direction, read as one route
+120: the feed's routes 120_6279_1_3 and 120_6279_2_3, one for each direction, read as one route
+125: the feed's routes 125_6143_1_3 and 125_6143_2_3, one for each direction, read as one route
+130: the feed's routes 130_9280_1_3 and 130_9280_2_3, one for each direction, read as one route
+135: the feed's routes 135_5805_1_3 and 135_5805_2_3, one for each direction, read as one route
+140: the feed's routes 140_2178_1_3 and 140_2178_2_3, one for each direction, read as one route
+155: the feed's routes 155_9188_1_3 and 155_9188_2_3, one for each direction, read as one route
+1: the feed's routes 1_0854_1_3 and 1_0854_2_3, one for each direction, read as one route
+27: the feed's routes 27_4175_1_3 and 27_4175_2_3, one for each direction, read as one route
+29: the feed's routes 29_1687_1_3 and 29_1687_2_3, one for each direction, read as one route
+3: the feed's routes 3_9076_1_3 and 3_9076_2_3, one for each direction, read as one route
+44: the feed's routes 44_6733_1_3 and 44_6733_2_3, one for each direction, read as one route
+5: the feed's routes 5_9122_1_3 and 5_9122_2_3, one for each direction, read as one route
+60: the feed's routes 60_0264_1_3 and 60_0264_2_3, one for each direction, read as one route
+7: the feed's routes 7_3740_1_3 and 7_3740_2_3, one for each direction, read as one route
+80: the feed's routes 80_3229_1_3 and 80_3229_2_3, one for each direction, read as one route
+81: the feed's routes 81_5272_1_3 and 81_5272_2_3, one for each direction, read as one route
+820: the feed's routes 820_2945_1_3 and 820_2945_2_3, one for each direction, read as one route
+84: the feed's routes 84_2916_1_3 and 84_2916_2_3, one for each direction, read as one route
+85: the feed's routes 85_2916_1_3 and 85_2916_2_3, one for each direction, read as one route
+86: the feed's routes 86_9018_1_3 and 86_9018_2_3, one for each direction, read as one route
+8: the feed's routes 8_8657_1_3 and 8_8657_2_3, one for each direction, read as one route
+91: the feed's routes 91_4187_1_3 and 91_4187_2_3, one for each direction, read as one route
+92: the feed's routes 92_6525_1_3 and 92_6525_2_3, one for each direction, read as one route
+95: the feed's routes 95_7946_1_3 and 95_7946_2_3, one for each direction, read as one route
+97: the feed's routes 97_1161_1_3 and 97_1161_2_3, one for each direction, read as one route
+100 d1: 1 other stop sequence(s) with 1 of 43 departures left out; 1 stops they call at are on no pattern of the route
+100 d2: 1 other stop sequence(s) with 1 of 44 departures left out; 1 stops they call at are on no pattern of the route
+130 d1: 1 other stop sequence(s) with 1 of 38 departures left out; 1 stops they call at are on no pattern of the route
+130 d2: 1 other stop sequence(s) with 1 of 37 departures left out; 1 stops they call at are on no pattern of the route
+1 d1: a branch with 27 of 73 departures runs as route 1 (Princess Margaret Hospital & Cashmere)
+1 d2: a branch with 23 of 75 departures runs as route 1 (Princess Margaret Hospital & Cashmere)
+1 d1: 2 other stop sequence(s) with 6 of 73 departures left out; 1 stops they call at are on no pattern of the route
+1 d2: 2 other stop sequence(s) with 8 of 75 departures left out; 1 stops they call at are on no pattern of the route
+3 d1: a branch with 34 of 91 departures runs as route 3 (branch 1)
+3 d2: a branch with 36 of 89 departures runs as route 3 (branch 1)
+3 d1: 2 other stop sequence(s) with 2 of 91 departures left out; 3 stops they call at are on no pattern of the route
+3 d2: 1 other stop sequence(s) with 1 of 89 departures left out; 2 stops they call at are on no pattern of the route
+5 d1: a branch with 28 of 73 departures runs as route 5 (branch 1)
+5 d2: a branch with 27 of 71 departures runs as route 5 (branch 1)
+5 d1: 1 other stop sequence(s) with 4 of 73 departures left out; 1 stops they call at are on no pattern of the route
+5 d2: 1 other stop sequence(s) with 4 of 71 departures left out; 1 stops they call at are on no pattern of the route
+80 d1: 2 other stop sequence(s) with 2 of 40 departures left out; 2 stops they call at are on no pattern of the route
+86 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+8 d1: a branch with 20 of 64 departures runs as route 8 (Lyttelton via City & Ara)
+8 d2: a branch with 22 of 66 departures runs as route 8 (Lyttelton via City & Ara)
+8 d1: 4 other stop sequence(s) with 6 of 64 departures left out; 9 stops they call at are on no pattern of the route
+8 d2: 4 other stop sequence(s) with 8 of 66 departures left out; 13 stops they call at are on no pattern of the route
+95 d1: 2 other stop sequence(s) with 2 of 16 departures left out; 9 stops they call at are on no pattern of the route
+95 d2: 2 other stop sequence(s) with 3 of 16 departures left out; 10 stops they call at are on no pattern of the route
+Oc d1: 1 other stop sequence(s) with 1 of 93 departures left out; 1 stops they call at are on no pattern of the route
+81: express, skipping most stops of a route it runs along
+91: express, skipping most stops of a route it runs along

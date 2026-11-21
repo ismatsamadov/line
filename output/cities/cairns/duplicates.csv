@@ -1,0 +1,5 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+141,143W,1.0,46,67,True
+150,150E,0.9839,62,86,True
+140,150E,0.9315,73,86,True
+143,143W,0.8889,54,67,True

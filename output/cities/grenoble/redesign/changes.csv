@@ -1,0 +1,14 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,merge,"67 (Eybens, Collège des Saules)","Merge 67 (Eybens, Collège des Saules) into 67: 96% of its stops are also on 67; its buses go to 67, 65, 65 (Vizille, Le Péage)",84.6922,84.4782,0.214,0.0
+2,merge,"65 (Vizille, Le Péage)","Merge 65 (Vizille, Le Péage) into 65: 88% of its stops are also on 65; its buses go to 65, 67, 291",84.4782,84.3425,0.1357,0.0
+3,merge,17,"Merge 17 into 17 (branch 1): 100% of its stops are also on 17 (branch 1); its buses go to 17 (branch 1), N62, 18",84.3425,84.231,0.1115,0.0
+4,merge,15 (branch 1),"Merge 15 (branch 1) into 15: 93% of its stops are also on 15; its buses go to 15, 141, 319",84.231,84.122,0.109,0.0
+5,merge,C14 (branch 1),"Merge C14 (branch 1) into C14: 90% of its stops are also on C14; its buses go to C14, 25, 73",84.122,84.0903,0.0317,0.0
+6,merge,"20 (Sassenage, Les Engenières)","Merge 20 (Sassenage, Les Engenières) into 20: 92% of its stops are also on 20; its buses go to 20, 191, 50 (Sassenage, La Dent du Loup)",84.0903,84.0612,0.0291,0.0
+7,merge,"59 (Gières, Le Chamandier)","Merge 59 (Gières, Le Chamandier) into 59: 100% of its stops are also on 59; its buses go to 59, 142, 23",84.0612,84.0519,0.0093,0.0
+8,merge,50,"Merge 50 into 50 (Sassenage, La Dent du Loup): 100% of its stops are also on 50 (Sassenage, La Dent du Loup); its buses go to 50 (Sassenage, La Dent du Loup), 20, 191",84.0519,84.0442,0.0077,0.0
+9,stops,,"Remove 136 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",84.0442,83.9888,0.0554,0.0
+10,shift,,"Move 14 buses from the 10 routes where a bus saves riders the least waiting (19, C14, C2, 21, C5, 22, C8, C3, C7, C4) to the 10 where it saves the most (67, 49, 66, 45, 44, 65, 59, 61, 17 (branch 1), 319)",83.9888,81.6567,2.3321,0.0
+11,shift,,"Move 13 buses from the 10 routes where a bus saves riders the least waiting (49, 19, 21, C2, C8, C5, C3, C1, 22, 18) to the 10 where it saves the most (59, 45, 65, 46, 60, 17 (branch 1), 66, 44, 319, 20)",81.6567,81.219,0.4376,0.0
+12,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (46, 49, 19, 44, 59, 23, 45, C3, C2, 24) to the 10 where it saves the most (C10, 25, 319, 15, 47, 54, 22, 20, 17 (branch 1), 16)",81.219,81.1139,0.1052,0.0
+13,shift,,"Move 2 buses from the 5 routes where a bus saves riders the least waiting (46, 47, 49, 22, C3) to the 5 where it saves the most (C10, 25, 15, 45, 61)",81.1139,81.0849,0.0289,0.0

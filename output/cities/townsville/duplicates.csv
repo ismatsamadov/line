@@ -1,0 +1,4 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+215,205,0.9231,91,98,True
+201,200,0.8906,64,128,True
+205,215,0.8571,98,91,True

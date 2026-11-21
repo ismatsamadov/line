@@ -1,0 +1,25 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,108,"Drop 108: among the 20 routes with the fewest modelled riders per bus; its buses go to 104, 118, 309",77.1447,76.9762,0.1685,0.0
+2,drop,462,"Drop 462: among the 20 routes with the fewest modelled riders per bus; its buses go to 534, 422, 100",76.9762,76.8351,0.1411,321.2857
+3,drop,210,"Drop 210: among the 20 routes with the fewest modelled riders per bus; its buses go to 100, 212, 209",76.8351,76.7529,0.0823,256.7143
+4,drop,103,"Drop 103: among the 20 routes with the fewest modelled riders per bus; its buses go to 134, 118, 104",76.7529,76.649,0.1038,0.0
+5,drop,234,"Drop 234: among the 20 routes with the fewest modelled riders per bus; its buses go to 109, 246, OSPED",76.649,76.5325,0.1165,0.0
+6,drop,731,"Drop 731: among the 20 routes with the fewest modelled riders per bus; its buses go to 603, 731 (VERGINE MARIA), 812",76.5325,76.4738,0.0587,0.0
+7,drop,C.R.,Drop C.R.: among the 20 routes with the fewest modelled riders per bus; its buses go to the whole network,76.4738,76.4292,0.0446,120.2857
+8,drop,ARANC,"Drop ARANC: among the 20 routes with the fewest modelled riders per bus; its buses go to 104, 118, 110",76.4292,76.3851,0.0442,0.0
+9,drop,603,"Drop 603: among the 20 routes with the fewest modelled riders per bus; its buses go to 806, 544, 107",76.3851,76.2445,0.1406,0.0
+10,straighten,307,"Straighten 307 direction 2 between CASTELLANA S ISIDORO and ROCCAZZO CASA DEL SOLE: 1.2 km shorter, 7 of its stops dropped",76.2445,76.2129,0.0316,0.0
+11,drop,675,"Drop 675: among the 20 routes with the fewest modelled riders per bus; its buses go to 628, 614, 619",76.2129,76.1754,0.0375,0.0
+12,straighten,513,"Straighten 513 direction 2 between TIEPOLO UDITORE and PIAZZALE JOHN LENNON 513: 0.7 km shorter, 2 of its stops dropped",76.1754,76.1446,0.0308,0.0
+13,straighten,422,"Straighten 422 direction 1 between PARCHEGGIO DEGLI EMIRI and DI BLASI SCUOLA CORRADINI: 1.4 km shorter, 4 of its stops dropped",76.1446,76.1225,0.0221,0.0
+14,straighten,124,"Straighten 124 direction 2 between ROMA VUCCIRIA and A AMEDEO LASCARIS: 0.7 km shorter, 2 of its stops dropped",76.1225,76.1041,0.0184,0.0
+15,straighten,243,"Straighten 243 direction 1 between ORSA MINORE and LEVRIERE ERMELLINO: 0.9 km shorter, 5 of its stops dropped",76.1041,76.0865,0.0177,0.0
+16,straighten,327,"Straighten 327 direction 1 between PITRE' 3 and PITRE' PALCHETTO: 0.7 km shorter, 1 of its stops dropped",76.0865,76.0709,0.0155,0.0
+17,straighten,380,"Straighten 380 direction 1 between BASILE BRASA and ALTOFONTE VILLANI: 2.0 km shorter, 9 of its stops dropped",76.0709,76.0585,0.0124,0.0
+18,straighten,209,"Straighten 209 direction 1 between REGIONE SICILIANA TROINA and ERMELLINO PAPA GIOVANNI XXIII: 2.7 km shorter, 11 of its stops dropped",76.0585,76.0506,0.0079,0.0
+19,straighten,645,"Straighten 645 direction 2 between PIAZZA DELLA SERENITA' and CAVARRETTA CASTELFORTE: 1.3 km shorter, 6 of its stops dropped",76.0506,76.0444,0.0063,0.0
+20,stops,,"Remove 550 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",76.0444,74.4385,1.6059,0.0
+21,shift,,"Move 23 buses from the 20 routes where a bus saves riders the least waiting (806, 209, 101, 102, 246, 118, 104, 110, 124, 237, 309, 619, 134, 380, 212, 230, 628, 614, 704, 106) to the 20 where it saves the most (241, 100, 625, 513, 516, 307, 721, 616, 304, 364, 224, 731 (VERGINE MARIA), 645, 226, 243, 327, 109, 603 (branch 1), OSPED, 107)",74.4385,73.5216,0.9169,0.0
+22,shift,,"Move 19 buses from the 20 routes where a bus saves riders the least waiting (380, 209, 806, 246, 101, OSPED, 102, 124, 534, 645, 237, 309, 118, 731 (VERGINE MARIA), 104, 110, 422, 704, 721, 107) to the 20 where it saves the most (100, 625, 307, 619, 230, 513, 616, 106, 516, 212, 364, 442, 134, 544, 304, 224, 109, 243, 614, 241)",73.5216,73.1414,0.3802,0.0
+23,shift,,"Move 8 buses from the 10 routes where a bus saves riders the least waiting (209, 806, 246, OSPED, 704, 237, 101, 102, 309, 124) to the 10 where it saves the most (603 (branch 1), 100, 107, 721, 307, 544, 625, 226, 327, 422)",73.1414,72.9452,0.1962,0.0
+24,shift,,"Move 5 buses from the 10 routes where a bus saves riders the least waiting (209, 806, 237, 124, 246, OSPED, 309, 102, 603 (branch 1), 645) to the 10 where it saves the most (100, 107, 212, 544, 307, 106, 226, 104, 616, 134)",72.9452,72.8238,0.1215,0.0

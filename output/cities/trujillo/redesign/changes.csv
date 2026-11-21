@@ -1,0 +1,37 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,"M-06 ""B""","Drop M-06 ""B"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-27 ""B"", C-28 ""C"", M-05 ""H""",54.3895,54.2899,0.0997,0.0
+2,merge,"C-43 ""A""","Merge C-43 ""A"" into C-13 ""D"" [17508505]: 92% of its stops are also on C-13 ""D"" [17508505]; its buses go to C-13 ""D"" [17508505], C-13 ""D"" [17508501], C-12 ""B""",54.2899,54.1937,0.0962,0.0
+3,merge,"M-34 ""A""","Merge M-34 ""A"" into M-34 ""A<3"": 89% of its stops are also on M-34 ""A<3""; its buses go to M-34 ""A<3"", C-07 ""Z1"", C-41 ""Z2""",54.1937,54.1109,0.0828,0.0
+4,drop,"C-28 ""C""","Drop C-28 ""C"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-27 ""B"", M-05 ""H"", M-05 ""H <3""",54.1109,54.089,0.0218,388.5714
+5,drop,"M-17 ""C2""","Drop M-17 ""C2"": among the 20 routes with the fewest modelled riders per bus; its buses go to M-18 ""C1"", M-32 ""A1"", M-33 ""B""",54.089,54.0018,0.0872,82.2857
+6,merge,"C-14 ""S""","Merge C-14 ""S"" into C-10 ""M"": 86% of its stops are also on C-10 ""M""; its buses go to C-10 ""M"", C-12 ""B"", M-22 ""F""",54.0018,53.9595,0.0423,388.2857
+7,drop,"M-22 ""F""","Drop M-22 ""F"": among the 20 routes with the fewest modelled riders per bus; its buses go to M-21 ""A"", C-12 ""B"", C-13 ""D"" [17508501]",53.9595,53.9161,0.0434,0.0
+8,drop,"C-20 ""UI"" [17463362]","Drop C-20 ""UI"" [17463362]: among the 20 routes with the fewest modelled riders per bus; its buses go to C-20 ""UI"" [17434332], C-22 ""M"" [17463385], C-18 ""P""",53.9161,53.871,0.0452,0.0
+9,drop,"M-13 ""C1""","Drop M-13 ""C1"": among the 20 routes with the fewest modelled riders per bus; its buses go to M-19 ""A"", C-22 ""M"" [17521119], C-22 ""M"" [17463385]",53.871,53.8326,0.0384,0.0
+10,drop,"C-09 ""E""","Drop C-09 ""E"": among the 20 routes with the fewest modelled riders per bus; its buses go to M-33 ""B<3"", M-33 ""B"", C-01 ""B""",53.8326,53.8101,0.0225,0.0
+11,merge,CT-10 B,"Merge CT-10 B into CT-10 A: 85% of its stops are also on CT-10 A; its buses go to CT-10 A, CT-19 H, CT-11 E",53.8101,53.7764,0.0337,0.0
+12,merge,"C-13 ""D"" [17508505]","Merge C-13 ""D"" [17508505] into C-13 ""D"" [17508501]: 93% of its stops are also on C-13 ""D"" [17508501]; its buses go to C-13 ""D"" [17508501], C-12 ""B"", M-21 ""A""",53.7764,53.7257,0.0507,0.0
+13,merge,"M-33 ""B<3""","Merge M-33 ""B<3"" into M-33 ""B"": 94% of its stops are also on M-33 ""B""; its buses go to M-33 ""B"", M-12 ""C"", C-01 ""B""",53.7257,53.7004,0.0254,0.0
+14,drop,"C-01 ""B""","Drop C-01 ""B"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-42 ""B2"", C-05 ""B1"", M-33 ""B""",53.7004,53.6081,0.0923,0.0
+15,drop,CT-25 B,"Drop CT-25 B: among the 20 routes with the fewest modelled riders per bus; its buses go to CT-26 B, CT-23 B, C-42 ""B2""",53.6081,53.5788,0.0293,0.0
+16,drop,CT-26 B,"Drop CT-26 B: among the 20 routes with the fewest modelled riders per bus; its buses go to CT-23 B, C-42 ""B2"", C-05 ""B1""",53.5788,53.5264,0.0524,0.0
+17,merge,"C-38 ""S4""","Merge C-38 ""S4"" into C-35 ""S3"": 94% of its stops are also on C-35 ""S3""; its buses go to C-35 ""S3"", C-23 ""S1"", C-25 ""S2""",53.5264,53.5103,0.0161,0.0
+18,merge,CT-28 T.S.,"Merge CT-28 T.S. into M-21 ""A"": 86% of its stops are also on M-21 ""A""; its buses go to M-21 ""A"", M-20 ""C"", C-03 ""JJ""",53.5103,53.4932,0.017,0.0
+19,merge,CT-22 A,"Merge CT-22 A into CT-22 C: 100% of its stops are also on CT-22 C; its buses go to CT-22 C, CT-22 B, M-23 ""B <3""",53.4932,53.4764,0.0169,0.0
+20,drop,"C-18 ""P""","Drop C-18 ""P"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-22 ""M"" [17463385], C-16 ""I"", C-22 ""M"" [17521119]",53.4764,53.464,0.0124,0.0
+21,merge,"C-23 ""S1""","Merge C-23 ""S1"" into C-35 ""S3"": 95% of its stops are also on C-35 ""S3""; its buses go to C-35 ""S3"", C-25 ""S2"", M-36 ""LV""",53.464,53.4137,0.0503,0.0
+22,drop,"C-11 ""T1"" [17434339]","Drop C-11 ""T1"" [17434339]: among the 20 routes with the fewest modelled riders per bus; its buses go to C-44 ""T2"" [17522705], C-03 ""JJ"", C-13 ""D"" [17508501]",53.4137,53.3989,0.0148,28.5714
+23,straighten,"C-03 ""JJ""","Straighten C-03 ""JJ"" direction 1 between Calle las Poncianas y Cajabamba y Avenida Pisacc and Avenida los Cipreses y Avenida los Pinos: 45.7 km shorter, 8 of its stops dropped",53.3989,53.3839,0.015,0.0
+24,merge,CT-16 F,"Merge CT-16 F into CT-17 H: 100% of its stops are also on CT-17 H; its buses go to CT-17 H, CT-09 A, C-16 ""I""",53.3839,53.373,0.011,0.0
+25,drop,"C-24 ""H1""","Drop C-24 ""H1"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-35 ""S3"", C-25 ""S2"", M-36 ""LV""",53.373,53.3595,0.0134,0.0
+26,drop,"C-24 ""H2""","Drop C-24 ""H2"": among the 20 routes with the fewest modelled riders per bus; its buses go to C-35 ""S3"", C-25 ""S2"", M-36 ""LV""",53.3595,53.3467,0.0128,0.0
+27,merge,CT-02 A,"Merge CT-02 A into CT-03 A: 100% of its stops are also on CT-03 A; its buses go to CT-04 A, CT-03 A, CT-01 A",53.3467,53.3352,0.0115,0.0
+28,merge,CT-05 V-A,"Merge CT-05 V-A into CT-06 V-A: 100% of its stops are also on CT-06 V-A; its buses go to CT-07 V-A, CT-06 V-A, M-31 ""A""",53.3352,53.3278,0.0074,0.0
+29,merge,CT-23 A,"Merge CT-23 A into CT-25 A: 100% of its stops are also on CT-25 A; its buses go to CT-26 A, CT-25 A, CT-24 A",53.3278,53.3136,0.0142,0.0
+30,merge,CT-24 AU,"Merge CT-24 AU into CT-26 AU: 100% of its stops are also on CT-26 AU; its buses go to CT-26 AU, CT-26 A, CT-25 A",53.3136,53.2896,0.024,0.0
+31,drop,CT-29 TA,"Drop CT-29 TA: among the 20 routes with the fewest modelled riders per bus; its buses go to C-07 ""Z1"", M-08 ""A"", M-01 ""C""",53.2896,53.2799,0.0096,277.5714
+32,stops,,"Remove 2672 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",53.2799,45.6798,7.6001,0.0
+33,shift,,"Move 64 buses from the 10 routes where a bus saves riders the least waiting (CT-27 L, CT-04 A, CT-07 V-A, CT-26 A, CT-25 A, M-23 ""B <3"", M-23 ""B"", C-16 ""I"", C-07 ""Z1"", CT-12 SL) to the 10 where it saves the most (CT-15 A, CT-08 AM, M-15 ""C2VR"", M-15 ""C2"", CT-22 D, M-20 ""C"", CT-17 H, M-31 ""A"", M-35 ""D"", M-35 ""D<3"")",45.6798,45.5054,0.1744,0.0
+34,shift,,"Move 49 buses from the 10 routes where a bus saves riders the least waiting (CT-27 L, CT-04 A, CT-12 SL, CT-07 V-A, CT-26 A, CT-25 A, M-23 ""B <3"", M-23 ""B"", M-19 ""A"", C-16 ""I"") to the 10 where it saves the most (M-15 ""C2VR"", M-31 ""A"", M-20 ""C"", M-15 ""C2"", M-35 ""D"", CT-17 H, CT-21 F, M-35 ""D<3"", M-01 ""C"", M-02 ""A"")",45.5054,45.4501,0.0552,0.0
+35,shift,,"Move 40 buses from the 10 routes where a bus saves riders the least waiting (CT-27 L, CT-04 A, CT-12 SL, CT-07 V-A, CT-26 A, CT-25 A, M-23 ""B"", C-16 ""I"", M-23 ""B <3"", M-19 ""A"") to the 10 where it saves the most (M-20 ""C"", M-15 ""C2VR"", M-31 ""A"", M-15 ""C2"", M-35 ""D"", M-35 ""D<3"", M-02 ""A"", M-32 ""A1"", M-07 ""V"", CT-21 F)",45.4501,45.4171,0.033,0.0
+36,shift,,"Move 33 buses from the 10 routes where a bus saves riders the least waiting (CT-27 L, CT-04 A, CT-12 SL, CT-07 V-A, CT-26 A, CT-25 A, C-16 ""I"", M-23 ""B"", C-07 ""Z1"", M-19 ""A"") to the 10 where it saves the most (M-20 ""C"", M-15 ""C2VR"", M-31 ""A"", M-15 ""C2"", M-35 ""D"", M-32 ""A1"", M-35 ""D<3"", M-21 ""A"", M-07 ""V"", M-34 ""A<3"")",45.4171,45.393,0.0241,0.0

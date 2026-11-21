@@ -1,0 +1,50 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,straighten,199,"Straighten 199 direction 1 between Beniowskiego 02 and Biblioteka Główna UG 02: 1.2 km shorter, 9 of its stops dropped",89.1569,88.9503,0.2066,0.0
+2,straighten,199,"Straighten 199 direction 2 between Przymorze SKM 01 and Oliwa PKP 01: 0.5 km shorter, 11 of its stops dropped",88.9503,88.7409,0.2093,0.0
+3,merge,M32 (branch 1),"Merge M32 (branch 1) into M32: 91% of its stops are also on M32; its buses go to M32, 132 (branch 1), 132",88.7409,88.591,0.1499,0.0
+4,merge,199 (Wrzeszcz PKP),"Merge 199 (Wrzeszcz PKP) into 199: 97% of its stops are also on 199; its buses go to 199, 262, 149",88.591,88.451,0.14,0.0
+5,merge,107 (Pruszcz Gdański Pruszcz Gdański Dworzec),"Merge 107 (Pruszcz Gdański Pruszcz Gdański Dworzec) into 107: 94% of its stops are also on 107; its buses go to 107, 507, 132 (branch 1)",88.451,88.3243,0.1267,0.0
+6,merge,120 (branch 1),"Merge 120 (branch 1) into 120: 97% of its stops are also on 120; its buses go to 120, 174 (Stara Piła), 174",88.3243,88.2148,0.1095,0.0
+7,drop,136,"Drop 136: among the 20 routes with the fewest modelled riders per bus; its buses go to 283, 157, 126 (Żukowo Urząd Gminy)",88.2148,88.1254,0.0894,0.0
+8,drop,116,"Drop 116: among the 20 routes with the fewest modelled riders per bus; its buses go to 227, 157, 126 (Żukowo Urząd Gminy)",88.1254,88.0389,0.0864,0.0
+9,drop,106,"Drop 106: among the 20 routes with the fewest modelled riders per bus; its buses go to 111, 138, 212",88.0389,87.9546,0.0843,0.0
+10,merge,T8,"Merge T8 into T8 (Stogi Plaża): 94% of its stops are also on T8 (Stogi Plaża); its buses go to T8 (Stogi Plaża), 111, 258",87.9546,87.8863,0.0684,0.0
+11,merge,911,"Merge 911 into 111: 100% of its stops are also on 111; its buses go to 111, 911 (Stogi), T9",87.8863,87.836,0.0503,0.0
+12,merge,132 (branch 1),"Merge 132 (branch 1) into 132: 98% of its stops are also on 132; its buses go to 132, 189, M32",87.836,87.6988,0.1372,0.0
+13,merge,256,"Merge 256 into 255: 89% of its stops are also on 255; its buses go to 255, 262, 155",87.6988,87.6305,0.0683,0.0
+14,drop,113,"Drop 113: among the 20 routes with the fewest modelled riders per bus; its buses go to 175, 213 (Kowale Szkoła Metropolitalna), 213",87.6305,87.6039,0.0266,0.0
+15,straighten,210,"Straighten 210 direction 1 between Firoga PKM 02 and Klukowo 03: 1.9 km shorter, 5 of its stops dropped",87.6039,87.5453,0.0585,0.0
+16,merge,213,"Merge 213 into 176: 100% of its stops are also on 176; its buses go to 213 (Kowale Szkoła Metropolitalna), 176, 295",87.5453,87.5162,0.0291,0.0
+17,merge,126,"Merge 126 into 126 (Żukowo Urząd Gminy): 100% of its stops are also on 126 (Żukowo Urząd Gminy); its buses go to 126 (Żukowo Urząd Gminy), 157, 110",87.5162,87.4433,0.0729,0.0
+18,merge,169,"Merge 169 into 169 (branch 1): 100% of its stops are also on 169 (branch 1); its buses go to 169 (branch 1), 179 (branch 1), 179",87.4433,87.3827,0.0607,0.0
+19,merge,212,"Merge 212 into 112: 97% of its stops are also on 112; its buses go to 112, 186, 166 (branch 1)",87.3827,87.3303,0.0524,62.8571
+20,drop,100,"Drop 100: among the 20 routes with the fewest modelled riders per bus; its buses go to 130, 208, 199",87.3303,87.2946,0.0357,475.4286
+21,straighten,127,"Straighten 127 direction 2 between Galeria Bałtycka 07 and Dywizjonu 303 01: 1.2 km shorter, 2 of its stops dropped",87.2946,87.2628,0.0318,0.0
+22,merge,262 (Łostowice Świętokrzyska),"Merge 262 (Łostowice Świętokrzyska) into 262: 100% of its stops are also on 262; its buses go to 262, 162, 127",87.2628,87.237,0.0258,0.0
+23,merge,268 (Jasień PKM),"Merge 268 (Jasień PKM) into 268: 100% of its stops are also on 268; its buses go to 268, 167, 168",87.237,87.2103,0.0267,0.0
+24,drop,267,"Drop 267: among the 20 routes with the fewest modelled riders per bus; its buses go to 167, 168, 120",87.2103,87.1846,0.0256,0.0
+25,merge,157 (branch 1),"Merge 157 (branch 1) into 157: 90% of its stops are also on 157; its buses go to 157, 126 (Żukowo Urząd Gminy), 110",87.1846,87.1642,0.0205,0.0
+26,merge,179 (branch 1),"Merge 179 (branch 1) into 179: 93% of its stops are also on 179; its buses go to 179, 169 (branch 1), 269",87.1642,87.1497,0.0145,342.1429
+27,merge,174,"Merge 174 into 174 (Stara Piła): 100% of its stops are also on 174 (Stara Piła); its buses go to 174 (Stara Piła), 115, 120",87.1497,87.1026,0.0471,0.0
+28,merge,158 (Stogi),"Merge 158 (Stogi) into 158: 91% of its stops are also on 158; its buses go to 258, 158, 127",87.1026,87.0807,0.0219,387.0
+29,straighten,175,"Straighten 175 direction 2 between Knyszyńska 01 and Płocka 03: 1.0 km shorter, 1 of its stops dropped",87.0807,87.06,0.0207,0.0
+30,drop,183,"Drop 183: among the 20 routes with the fewest modelled riders per bus; its buses go to 183 (Uniwersytet Medyczny), 123, 184",87.06,87.0404,0.0196,175.4286
+31,merge,307 (Będzieszyn Panattoni),"Merge 307 (Będzieszyn Panattoni) into 307: 88% of its stops are also on 307; its buses go to 307, M32, 132",87.0404,87.0237,0.0167,222.5714
+32,straighten,283,"Straighten 283 direction 1 between Niedźwiednik 02 and Potokowa 04: 1.4 km shorter, 5 of its stops dropped",87.0237,87.0111,0.0126,0.0
+33,straighten,107,"Straighten 107 direction 1 between Pruszcz Gdański Pruszcz Gdański Dworzec 03 and Pruszcz Gdański Wojska Polskiego 01: 4.0 km shorter, 9 of its stops dropped",87.0111,87.0026,0.0085,0.0
+34,straighten,283,"Straighten 283 direction 2 between Potokowa 03 and Niedźwiednik 02: 1.4 km shorter, 5 of its stops dropped",87.0026,86.9905,0.0121,0.0
+35,merge,156 (Ujeścisko),"Merge 156 (Ujeścisko) into 156: 94% of its stops are also on 156; its buses go to 156, 115, 155",86.9905,86.9831,0.0074,0.0
+36,merge,166,"Merge 166 into 166 (branch 1): 100% of its stops are also on 166 (branch 1); its buses go to 166 (branch 1), 186, 112",86.9831,86.9719,0.0112,0.0
+37,merge,166 (branch 1),"Merge 166 (branch 1) into 112: 93% of its stops are also on 112; its buses go to 186, 112, 138",86.9719,86.9559,0.016,0.0
+38,straighten,115,"Straighten 115 direction 2 between Piotrkowska 04 and Jaworzniaków 02: 0.6 km shorter, 3 of its stops dropped",86.9559,86.9443,0.0116,0.0
+39,straighten,175,"Straighten 175 direction 1 between Łostowice Świętokrzyska 06 and Topazowa 02: 1.0 km shorter, 1 of its stops dropped",86.9443,86.9333,0.011,0.0
+40,merge,911 (Stogi),"Merge 911 (Stogi) into 111: 88% of its stops are also on 111; its buses go to 111, T8 (Stogi Plaża), 258",86.9333,86.9152,0.0182,0.0
+41,straighten,184,"Straighten 184 direction 2 between Warneńska 01 and Kurpińskiego 01: 1.4 km shorter, 3 of its stops dropped",86.9152,86.9076,0.0075,0.0
+42,straighten,184,"Straighten 184 direction 1 between Kurpińskiego 02 and Warneńska 02: 1.4 km shorter, 3 of its stops dropped",86.9076,86.9014,0.0062,0.0
+43,straighten,107,"Straighten 107 direction 2 between Pruszcz Gdański Obrońców Westerplatte 02 and Pruszcz Gdański Dąbrowskiego 02: 1.0 km shorter, 4 of its stops dropped",86.9014,86.8933,0.0081,0.0
+44,straighten,195,"Straighten 195 direction 2 between Cmentarz Łostowicki 02 and Siedlce 04: 1.9 km shorter, 4 of its stops dropped",86.8933,86.8878,0.0055,0.0
+45,stops,,"Remove 43 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",86.8878,86.7783,0.1095,0.0
+46,shift,,"Move 13 buses from the 20 routes where a bus saves riders the least waiting (T9, 295, 289, 262, T8 (Stogi Plaża), 154, 155, 130, 184, 168, 175, 110, 189, 507, 127, 148, 213 (Kowale Szkoła Metropolitalna), 111, 115, 120) to the 20 where it saves the most (124, 208, 122, 143, 167, 118, 158, 117, 199, 210, 227, 131, 132, 107, 171, M32, 157, 149, 179, 123)",86.7783,85.876,0.9023,0.0
+47,shift,,"Move 3 buses from the 10 routes where a bus saves riders the least waiting (295, 154, 110, 131, 130, T8 (Stogi Plaża), 155, 184, 118, 123) to the 10 where it saves the most (167, 143, 122, 208, 115, 199, 158, 120, 210, 157)",85.876,85.6792,0.1968,0.0
+48,shift,,"Move 4 buses from the 10 routes where a bus saves riders the least waiting (154, 295, 189, 149, T8 (Stogi Plaża), 175, 127, 179, 118, M32) to the 10 where it saves the most (122, 167, 143, 208, 115, 199, 210, 107, 158, 227)",85.6792,85.562,0.1172,0.0
+49,shift,,"Move 2 buses from the 5 routes where a bus saves riders the least waiting (T8 (Stogi Plaża), 295, 154, 175, 162) to the 5 where it saves the most (M32, 118, 111, 167, 213 (Kowale Szkoła Metropolitalna))",85.562,85.4923,0.0697,0.0

@@ -1,0 +1,11 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+22,22 (branch 1),1.0,59,62,True
+63,63 (branch 1),0.973,37,50,True
+68,98,0.9697,33,65,True
+22 (branch 1),22,0.9516,62,59,True
+58,59,0.92,25,56,True
+69,70,0.8889,81,88,True
+46,49,0.8824,17,53,True
+21,22,0.8793,58,59,True
+21,22 (branch 1),0.8793,58,62,True
+22,21,0.8644,59,58,True

@@ -1,0 +1,97 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+106,1,Węzeł Elbląska 02,Sucharskiego - PKP 01,11,0,8.2527,3.1286,5.1241,14.0437,0
+106,2,Andruszkiewicza 02,Brama Żuławska 05,10,0,5.1726,2.022,3.1506,9.7138,0
+107,1,Pruszcz Gdański Powstańców Warszawy/Plater 06,Pruszcz Gdański Pruszcz Gdański Dworzec 03,10,0,7.4366,0.979,6.4576,17.9921,0
+107,1,Pruszcz Gdański Pruszcz Gdański Dworzec 03,Pruszcz Gdański Wojska Polskiego 01,10,0,5.6255,0.889,4.7364,14.0849,0
+107,2,Pruszcz Gdański Pogotowie Ratunkowe 01,Pruszcz Gdański Przemysłowa 04,8,0,7.0156,0.6816,6.334,17.0447,0
+107,2,Pruszcz Gdański Obrońców Westerplatte 02,Pruszcz Gdański Dąbrowskiego 02,8,0,5.3882,1.0168,4.3713,12.5895,0
+107 (Pruszcz Gdański Pruszcz Gdański Dworzec),1,Pruszcz Gdański Powstańców Warszawy/Plater 06,Pruszcz Gdański Pruszcz Gdański Dworzec 03,10,0,7.4366,0.979,6.4576,17.9736,0
+107 (Pruszcz Gdański Pruszcz Gdański Dworzec),1,Pruszcz Gdański Pruszcz Gdański Dworzec 03,Pruszcz Gdański Wojska Polskiego 01,10,0,5.6255,0.889,4.7364,14.0713,0
+107 (Pruszcz Gdański Pruszcz Gdański Dworzec),2,Pruszcz Gdański Pogotowie Ratunkowe 01,Pruszcz Gdański Osiedle Piastowskie 02,9,0,7.9526,1.1644,6.7882,18.3897,0
+107 (Pruszcz Gdański Pruszcz Gdański Dworzec),2,Pruszcz Gdański Osiedle Piastowskie 02,Pruszcz Gdański Dąbrowskiego 02,9,0,5.7622,1.0347,4.7275,13.7178,0
+111,1,Chłodna 02,Dickensa 01,10,1,6.0056,2.3694,3.6362,10.5204,0
+111,2,Siennicka 02,Ożdżyńskiego 01,11,0,5.8367,2.3314,3.5052,10.5948,0
+113,1,Olimpijska 01,Srebrna 01,7,2,3.2676,1.2814,1.9862,7.5182,234.4286
+113,2,Przebiśniegowa 02,Barzychowskiej 01,6,2,3.0437,1.1009,1.9429,7.0717,234.4286
+115,1,Jaworzniaków 02,Jeleniogórska 01,11,0,5.1503,1.492,3.6584,12.7731,0
+115,1,Emaus 04,Nad Jarem 01,4,0,2.5198,0.9647,1.5552,5.2045,0
+115,2,Pomorskie Szkoły Rzemiosł 04,Otwarta 02,4,0,2.3691,0.8473,1.5217,5.1212,0
+115,2,Piotrkowska 04,Jaworzniaków 02,11,0,5.6006,1.8549,3.7457,12.9906,0
+116,1,Potokowa 04,Potokowa - Matemblewska 02,3,0,2.4604,0.8428,1.6176,4.5326,0
+117,1,Piastowska 04,Sopot Kasztanowa 01,7,4,4.7721,1.7395,3.0327,10.3618,786.8571
+117,1,Sopot 3 Maja 01,Sopot Osiedle Mickiewicza 01,4,2,2.7078,1.062,1.6458,5.6904,1079.1429
+120 (branch 1),1,Piotrkowska 04,Ujeścisko 06,5,0,2.6078,0.9002,1.7076,5.192,0
+120 (branch 1),2,Ujeścisko 04,Piotrkowska 03,5,0,2.5749,0.8954,1.6795,5.1339,0
+127,1,Zaspa SKM 02,Galeria Bałtycka 04,3,2,2.4941,0.9274,1.5667,5.2296,0
+127,2,Galeria Bałtycka 07,Dywizjonu 303 01,4,1,3.0164,1.1004,1.916,6.5057,0
+132,1,Pruszcz Gdański Domeyki 01,Pruszcz Gdański Faktoria 02,7,0,3.8142,1.4371,2.3772,7.2446,0
+132,2,Pruszcz Gdański Faktoria 01,Pruszcz Gdański Domeyki 02,6,0,3.7669,1.3218,2.4451,7.0516,0
+132 (branch 1),1,Pruszcz Gdański Domeyki 01,Pruszcz Gdański Faktoria 02,7,0,3.8142,1.4371,2.3772,7.1976,0
+132 (branch 1),2,Pruszcz Gdański Faktoria 01,Pruszcz Gdański Domeyki 02,6,0,3.7669,1.3218,2.4451,7.0033,0
+136,2,Niedźwiednik 01,Góralska 01,5,0,2.2948,0.5679,1.7268,5.4766,0
+138,1,Długie Ogrody 02,Przejazd Kolejowy 01,9,2,6.2941,2.3757,3.9184,10.436,918.2857
+138,1,Kujawska 01,Pokładowa 91,4,0,6.5426,2.3467,4.1959,9.2959,0
+138,2,Muzeum Westerplatte – Terminal Promowy 01,Kujawska 02,7,1,7.8423,3.1152,4.7272,11.3041,0
+138,2,Przetoczna 02,Żabi Kruk 03,9,0,5.9312,2.0615,3.8696,10.3435,0
+149,1,Abrahama 02,Zabytkowa 01,9,9,5.1569,1.6613,3.4956,12.064,4315.0
+149,1,Ostroroga 01,Letnica Węzeł Harfa 01,3,3,3.1511,1.1784,1.9727,6.1152,1647.0
+149,2,Letnica Węzeł Harfa 01,Klonowicza 01,2,2,2.7302,0.9621,1.768,5.2512,844.5714
+154,1,Ptasia 02,Orunia Górna 01,4,0,2.4682,0.8488,1.6194,5.3786,0
+156,1,Szkoła Podstawowa nr 6 01,Czermińskiego 02,4,0,3.1178,0.9753,2.1425,6.7795,0
+156 (Ujeścisko),2,Leszczynowa 01,Ujeścisko 51,5,0,2.8047,0.9912,1.8135,6.8277,0
+157,1,Nowatorów 03,Centrostal 02,6,1,3.5986,1.4364,2.1622,5.7696,0
+157,2,Kokoszki Poczta 01,Matarnia PKM 01,9,0,6.678,2.0622,4.6157,11.0473,0
+158,1,Kaczeńce 03,Sucharskiego - PKP 01,1,0,4.7131,1.8125,2.9006,5.8639,0
+158 (Stogi),2,Galeria Bałtycka 07,AmberExpo 02,8,0,7.1242,2.4376,4.6866,11.8539,0
+167,2,Karczemki 01,Węzeł Karczemki 01,2,0,3.1368,1.0362,2.1006,4.5909,0
+168,1,Park Naukowo - Technologiczny 02,Pagórkowa 02,6,0,2.9109,1.1144,1.7965,5.6053,0
+168,1,Węzeł Karczemki 02,Kiełpino Górne 02,8,1,5.0673,1.9786,3.0887,8.8652,1104.8571
+168,2,Kiełpino Górne 02,Życzliwa 01,10,2,6.5715,2.4208,4.1507,11.6631,1796.8571
+169 (branch 1),1,Karwieńska 02,Rynarzewo 02,1,1,3.567,1.324,2.2429,4.1777,244.1429
+169 (branch 1),2,Rynarzewo 01,Karwieńska 01,1,1,3.5873,1.3661,2.2212,4.1405,244.1429
+171,1,Barniewicka 02,Gdynia Rdestowa - Kolonia 01,10,9,8.0952,3.1623,4.9329,11.2402,1956.7143
+171,2,Gdynia Leśna Polana 02,Iławska 01,11,11,7.497,2.5879,4.909,11.5353,1994.0
+175,1,Łostowice Świętokrzyska 06,Topazowa 02,7,0,4.0748,1.5431,2.5318,8.1957,0
+175,2,Knyszyńska 01,Płocka 03,9,1,4.4273,1.7129,2.7144,9.2853,0
+176,2,Borkowo Szkoła 01,Borkowo Słoneczna 02,5,5,2.0433,0.4813,1.5621,5.7319,567.4286
+178,1,Żabi Kruk 04,Stokrotki 01,9,2,5.2473,1.8008,3.4465,10.9122,149.2857
+178,1,Stokrotki 01,Olszynka Niwki 01,9,9,5.2247,0.808,4.4167,13.1395,1284.0
+178,2,Maki 01,Brama Żuławska 03,5,2,3.0844,0.4661,2.6183,7.6776,447.8571
+179 (branch 1),1,Osowa Obwodnica 02,Jednorożca 02,3,2,3.2861,1.2731,2.013,4.5557,342.1429
+179 (branch 1),2,Marsa 01,Osowa Obwodnica 01,5,2,3.5236,1.4041,2.1195,5.4104,342.1429
+183,2,Brama Nizinna 02,Olszynka Szkoła 02,6,5,3.7717,1.3417,2.43,7.5771,0
+184,1,Dworzec Główny 10,Wyczółkowskiego 02,10,0,5.5111,1.8159,3.6952,12.3189,0
+184,1,Kurpińskiego 02,Warneńska 02,4,0,2.4759,0.9386,1.5374,5.0717,0
+184,2,Warneńska 01,Kurpińskiego 01,4,0,2.5623,0.9515,1.6108,5.2503,0
+184,2,Wyczółkowskiego 01,Dworzec Główny 07,10,3,5.2884,1.6944,3.594,12.0728,0
+186,1,Płońska 02,Górki Wschodnie 02,11,9,7.0833,1.1704,5.913,14.0701,2212.8571
+186,2,Górki Wschodnie 02,Zagroble 01,11,9,6.3705,0.5659,5.8045,13.8793,2383.8571
+195,2,Cmentarz Łostowicki 02,Siedlce 04,5,4,3.1111,0.9587,2.1524,7.7461,2299.0
+199,1,Beniowskiego 02,Biblioteka Główna UG 02,11,0,5.6656,1.3481,4.3175,14.9823,0
+199,1,Matejki 02,Focha 01,11,0,5.4538,1.9157,3.5381,12.9397,0
+199,2,Focha 02,Uphagena 01,11,0,5.6822,2.0733,3.6089,13.1253,0
+199,2,Przymorze SKM 01,Oliwa PKP 01,11,0,5.303,1.1079,4.1951,14.6614,0
+199 (Wrzeszcz PKP),1,Bora-Komorowskiego 07,Krynicka 02,7,0,3.6069,0.5738,3.0331,9.689,0
+199 (Wrzeszcz PKP),2,Krynicka 01,Bora-Komorowskiego 04,7,0,3.4765,0.6294,2.8471,9.2379,0
+210,1,Firoga PKM 02,Klukowo 03,5,3,3.2084,1.2163,1.9921,6.0094,0
+210,2,Klukowo 04,Firoga PKM 01,5,1,3.1358,1.2335,1.9023,5.8136,0
+258,1,Polsat Plus Arena Gdańsk 03,Kaczeńce 04,9,2,12.7662,4.1927,8.5736,19.3464,0
+258,2,Stogi 01,Sucharskiego - PKP 01,9,0,8.357,2.6522,5.7049,13.8769,0
+268,1,Jasień PKM 01,Karczemki 04,11,0,8.9497,2.4341,6.5156,16.4207,0
+268,1,Fundamentowa 01,Czaple Bysewo 03,11,3,9.7433,3.383,6.3604,16.1168,0
+268,2,Grzybowa 01,Kokoszki PKP 01,9,0,7.2799,1.9718,5.3081,13.3905,0
+268,2,Karczemki Szkoła 01,Jasień PKM 01,9,0,7.3572,2.5477,4.8095,12.4144,0
+268 (Jasień PKM),2,Czaple Bysewo 03,Transportowców 01,11,0,9.1262,3.1889,5.9372,15.3896,0
+268 (Jasień PKM),2,Karczemki Szkoła 01,Jasieńska 03,11,0,9.7406,2.5426,7.198,17.879,0
+269,1,Osiedle Barniewice 01,Przesypownia 02,5,1,2.5525,0.722,1.8304,5.4552,519.4286
+269,2,Keplera 01,Osiedle Barniewice 01,5,1,2.8975,1.0758,1.8217,5.4372,519.4286
+283,1,Niedźwiednik 02,Potokowa 04,7,0,2.7419,0.9642,1.7777,6.7812,0
+283,1,Smoluchowskiego 01,Węzeł Kliniczna 05,4,3,3.0476,1.1697,1.878,6.0322,1691.7143
+283,2,Węzeł Kliniczna 05,Uniwersyteckie Centrum Kliniczne 01,4,2,2.7049,1.0629,1.642,5.4418,2037.5714
+283,2,Potokowa 03,Niedźwiednik 02,6,0,2.5996,0.8283,1.7712,6.4318,0
+507,1,Pruszcz Gdański Powstanców Warszawy/Drzymały 04,Pruszcz Gdański Słowackiego 02,5,4,2.9447,0.9404,2.0043,5.8091,952.0
+507,1,Pruszcz Gdański Słowackiego 02,Pruszcz Gdański Chopina/Żwirki i Wigury 31,4,2,2.5275,0.8659,1.6616,4.7675,870.4286
+507,2,Pruszcz Gdański Chopina/Żwirki i Wigury 31,Pruszcz Gdański Słowackiego 03,5,3,2.8441,0.8447,1.9994,5.7991,614.8571
+507,2,Pruszcz Gdański Słowackiego 03,Pruszcz Gdański Powstańców Warszawy/Plater 29,5,4,2.5659,0.7848,1.7811,5.3478,952.0
+T9,1,Miałki Szlak 02,Lenartowicza 01,2,0,2.9119,1.0341,1.8778,4.1327,0
+T9,2,Lenartowicza 02,Miałki Szlak 01,2,0,2.6579,1.0044,1.6535,3.7187,0

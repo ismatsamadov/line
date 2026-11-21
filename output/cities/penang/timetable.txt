@@ -1,0 +1,5 @@
+201 d1: 1 other stop sequence(s) with 5 of 73 departures left out; 1 stops they call at are on no pattern of the route
+CT13 d1: a branch with 4 of 14 departures runs as route CT13 (CAT BRIDGE - FIZ 1.2.3)
+CT13 d1: 1 other stop sequence(s) with 2 of 14 departures left out; 25 stops they call at are on no pattern of the route
+CT13 d2: 2 other stop sequence(s) with 6 of 16 departures left out; 54 stops they call at are on no pattern of the route
+CT13: express, skipping most stops of a route it runs along

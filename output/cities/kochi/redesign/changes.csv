@@ -1,0 +1,21 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,天王～長浜線,"Drop 天王～長浜線: among the 20 routes with the fewest modelled riders per bus; its buses go to 長浜～高岡線, 長浜線, 天王～南NT線 (Y2T3;南ニュータウン（朝倉・南はりまや橋 経由）)",104.9008,104.4434,0.4575,0.0
+2,merge,医大病院～高岡線 (G6Y4;高岡（比島・高知駅BT・堺町・朝倉駅前 経由）),"Merge 医大病院～高岡線 (G6Y4;高岡（比島・高知駅BT・堺町・朝倉駅前 経由）) into 医大病院～高岡線: 86% of its stops are also on 医大病院～高岡線; its buses go to 医大病院～高岡線, 長浜～高岡線, 医大病院線",104.4434,104.1589,0.2844,0.0
+3,merge,桂浜線,"Merge 桂浜線 into 桂浜線 (branch 1): 93% of its stops are also on 桂浜線 (branch 1); its buses go to 桂浜線 (branch 1), 長浜～高岡線, 長浜線",104.1589,104.0809,0.078,0.0
+4,drop,南NT線,"Drop 南NT線: among the 20 routes with the fewest modelled riders per bus; its buses go to 天王～南NT線, 長浜線, 長浜～高岡線",104.0809,103.9558,0.1251,0.0
+5,drop,潮見台・JA高知病院線,"Drop 潮見台・JA高知病院線: among the 20 routes with the fewest modelled riders per bus; its buses go to 潮見台・JA高知病院線 (K2;潮見台・JA病院（はりまや橋・南国バイパス・本江田橋・潮見台 経由）), 種崎線, パークタウン線 (branch 1)",103.9558,103.7328,0.223,75.7143
+6,drop,船岡～金田橋線 (G11W3;船岡南団地（金田橋・高知駅前・堺町・上町二丁目 経由）),"Drop 船岡～金田橋線 (G11W3;船岡南団地（金田橋・高知駅前・堺町・上町二丁目 経由）): among the 20 routes with the fewest modelled riders per bus; its buses go to 船岡～金田橋線, 医大病院～高岡線, 金田橋線",103.7328,103.4988,0.234,50.8571
+7,drop,鳥越線 [鳥越線_A] (D7;鳥越（南はりまや橋・堺町・あたご・宝町 経由）),"Drop 鳥越線 [鳥越線_A] (D7;鳥越（南はりまや橋・堺町・あたご・宝町 経由）): among the 20 routes with the fewest modelled riders per bus; its buses go to 鳥越線 [鳥越線_A], 鳥越線 [鳥越線_E], 医大病院～鳥越線",103.4988,103.3465,0.1523,0.0
+8,drop,船岡線,"Drop 船岡線: among the 20 routes with the fewest modelled riders per bus; its buses go to 長浜～高岡線, 天王～南NT線 (Y2T3;南ニュータウン（朝倉・南はりまや橋 経由）), みづき坂線",103.3465,103.2419,0.1046,0.0
+9,straighten,潮見台・JA高知病院線 (K2;潮見台・JA病院（はりまや橋・南国バイパス・本江田橋・潮見台 経由）),"Straighten 潮見台・JA高知病院線 (K2;潮見台・JA病院（はりまや橋・南国バイパス・本江田橋・潮見台 経由）) direction 1 between 介良野 and 潮見台二丁目: 2.6 km shorter, 8 of its stops dropped",103.2419,103.1453,0.0966,138.7143
+10,drop,直通イオンモール線,"Drop 直通イオンモール線: among the 20 routes with the fewest modelled riders per bus; its buses go to 鳥越線 [鳥越線_E], イオンモール高知線 (F3;イオンモール（北はりまや橋・高知駅BT・比島 経由）), 宇津野線",103.1453,103.0789,0.0664,0.0
+11,drop,医大病院～鳥越線,"Drop 医大病院～鳥越線: among the 20 routes with the fewest modelled riders per bus; its buses go to 医大病院～高岡線, 鳥越線 [鳥越線_A], 鳥越線 [鳥越線_E]",103.0789,102.8952,0.1837,0.0
+12,merge,パークタウン線 (branch 1),"Merge パークタウン線 (branch 1) into パークタウン線: 92% of its stops are also on パークタウン線; its buses go to パークタウン線, 種崎線, 種崎線 (P2C1;県庁前（中央市場前・知寄町二丁目・はりまや橋 経由）)",102.8952,102.7749,0.1204,0.0
+13,merge,医療センター線,"Merge 医療センター線 into 医療センター線 (J2G1;高知駅BT（県立大・医療センター・美術館通・はりまや橋 経由）): 100% of its stops are also on 医療センター線 (J2G1;高知駅BT（県立大・医療センター・美術館通・はりまや橋 経由）); its buses go to 医療センター線 (J2G1;高知駅BT（県立大・医療センター・美術館通・はりまや橋 経由）), 種崎線 (P2C1;県庁前（中央市場前・知寄町二丁目・はりまや橋 経由）), 種崎線",102.7749,102.7049,0.07,0.0
+14,straighten,イオンモール高知線,"Straighten イオンモール高知線 direction 1 between イオンモール高知 and 高知駅前: 2.2 km shorter, 10 of its stops dropped",102.7049,102.6342,0.0707,0.0
+15,drop,天王～南NT線,"Drop 天王～南NT線: among the 20 routes with the fewest modelled riders per bus; its buses go to 医大病院～高岡線, 長浜～高岡線, 長浜線",102.6342,102.5452,0.089,209.2857
+16,drop,種崎線,"Drop 種崎線: among the 20 routes with the fewest modelled riders per bus; its buses go to 種崎線 (P2C1;県庁前（中央市場前・知寄町二丁目・はりまや橋 経由）), パークタウン線, 鳥越線 [鳥越線_E]",102.5452,102.3243,0.2209,0.0
+17,merge,金田橋線,"Merge 金田橋線 into トーメン団地線: 100% of its stops are also on トーメン団地線; its buses go to トーメン団地線, 船岡～金田橋線, 医大病院線",102.3243,102.1913,0.1329,0.0
+18,straighten,宇津野線,"Straighten 宇津野線 direction 1 between 郷の谷 and 愛宕山: 1.9 km shorter, 6 of its stops dropped",102.1913,102.1646,0.0267,0.0
+19,drop,入明線,"Drop 入明線: among the 20 routes with the fewest modelled riders per bus; its buses go to 医大病院線, イオンモール高知線 (F3;イオンモール（北はりまや橋・高知駅BT・比島 経由）), 鳥越線 [鳥越線_E]",102.1646,102.1502,0.0144,0.0
+20,stops,,"Remove 187 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",102.1502,101.0793,1.0709,0.0

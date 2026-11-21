@@ -1,0 +1,8 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+6A,6B,1.0,34,88,True
+6A,6C,1.0,34,93,True
+10A,10B,1.0,48,68,True
+10A,10C,1.0,48,98,True
+10B,10C,1.0,68,98,True
+51A,51B,1.0,38,49,True
+9A,9B,0.9709,103,129,True

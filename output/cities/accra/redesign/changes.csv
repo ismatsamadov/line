@@ -1,0 +1,45 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,merge,425,"Merge 425 into 424: 93% of its stops are also on 424; its buses go to 424, 469, 118",92.4443,91.7622,0.6821,0.0
+2,drop,46,"Drop 46: among the 20 routes with the fewest modelled riders per bus; its buses go to 299, 48, 36",91.7622,91.6725,0.0897,0.0
+3,merge,435,"Merge 435 into 388: 100% of its stops are also on 388; its buses go to 388, 64, 301",91.6725,91.5974,0.0751,0.0
+4,merge,416,"Merge 416 into 173: 91% of its stops are also on 173; its buses go to 173, 456, 2",91.5974,91.5537,0.0437,0.0
+5,merge,64,"Merge 64 into 388: 96% of its stops are also on 388; its buses go to 388, 301, 18",91.5537,91.4925,0.0612,0.0
+6,merge,356,"Merge 356 into 103: 100% of its stops are also on 103; its buses go to 103, 61, 368",91.4925,91.439,0.0535,0.0
+7,merge,76,"Merge 76 into 118: 86% of its stops are also on 118; its buses go to 118, 31, 404",91.439,91.4032,0.0358,0.0
+8,drop,488,"Drop 488: among the 20 routes with the fewest modelled riders per bus; its buses go to 995, 166, 410",91.4032,91.3561,0.0471,0.0
+9,drop,212,"Drop 212: among the 20 routes with the fewest modelled riders per bus; its buses go to 202, 328, 373",91.3561,91.32,0.0361,0.0
+10,merge,402,"Merge 402 into 406: 86% of its stops are also on 406; its buses go to 406, 405, 401",91.32,91.2912,0.0287,0.0
+11,merge,228,"Merge 228 into 230: 94% of its stops are also on 230; its buses go to 230, 223, 227",91.2912,91.2626,0.0286,0.0
+12,merge,70,"Merge 70 into 82: 90% of its stops are also on 82; its buses go to 82, 256, 441",91.2626,91.2311,0.0315,0.0
+13,drop,21,"Drop 21: among the 20 routes with the fewest modelled riders per bus; its buses go to 15, 7, 9",91.2311,91.2017,0.0294,0.0
+14,merge,288,"Merge 288 into 284: 96% of its stops are also on 284; its buses go to 284, 29, 367",91.2017,91.176,0.0258,0.0
+15,straighten,383,"Straighten 383 direction 1 between Coca-Cola / Police Station and 18 Junction: 5.3 km shorter, 1 of its stops dropped",91.176,91.1558,0.0202,0.0
+16,straighten,15,"Straighten 15 direction 1 between Abeka Lapaz and Best Point: 7.8 km shorter, 1 of its stops dropped",91.1558,91.1298,0.0259,0.0
+17,straighten,92,"Straighten 92 direction 2 between Adehyeman and Mile 7: 0.7 km shorter, 1 of its stops dropped",91.1298,91.1126,0.0173,0.0
+18,merge,380,"Merge 380 into 377: 98% of its stops are also on 377; its buses go to 377, 102, 100",91.1126,91.0903,0.0223,0.0
+19,merge,226,"Merge 226 into 61: 92% of its stops are also on 61; its buses go to 61, 254, 298",91.0903,91.0707,0.0196,0.0
+20,drop,192,"Drop 192: among the 20 routes with the fewest modelled riders per bus; its buses go to 367, 286, 284",91.0707,91.0591,0.0116,0.0
+21,straighten,243,"Straighten 243 direction 2 between Family Friend and Sakaman Taxi Rank: 3.6 km shorter, 4 of its stops dropped",91.0591,91.0485,0.0106,0.0
+22,drop,404,"Drop 404: among the 20 routes with the fewest modelled riders per bus; its buses go to 408, 399, 118",91.0485,91.0231,0.0254,0.0
+23,merge,273,"Merge 273 into 291: 93% of its stops are also on 291; its buses go to 291, 301, 282",91.0231,91.0077,0.0154,0.0
+24,drop,423,"Drop 423: among the 20 routes with the fewest modelled riders per bus; its buses go to 274, 996, 222",91.0077,90.9943,0.0134,0.0
+25,merge,242,"Merge 242 into 243: 88% of its stops are also on 243; its buses go to 243, 237, 235",90.9943,90.9807,0.0135,0.0
+26,drop,71,"Drop 71: among the 20 routes with the fewest modelled riders per bus; its buses go to 82, 441, 256",90.9807,90.9697,0.011,0.0
+27,merge,99,"Merge 99 into 100: 100% of its stops are also on 100; its buses go to 100, 351, 102",90.9697,90.9505,0.0193,0.0
+28,merge,176,"Merge 176 into 177: 97% of its stops are also on 177; its buses go to 177, 174, 251",90.9505,90.9414,0.0091,0.0
+29,drop,210,"Drop 210: among the 20 routes with the fewest modelled riders per bus; its buses go to 207, 61, 308",90.9414,90.9313,0.0101,0.0
+30,drop,26,"Drop 26: among the 20 routes with the fewest modelled riders per bus; its buses go to 331, 20, 219",90.9313,90.9239,0.0073,0.0
+31,merge,441,"Merge 441 into 443: 94% of its stops are also on 443; its buses go to 443, 82, 442",90.9239,90.9105,0.0134,0.0
+32,merge,326,"Merge 326 into 230: 95% of its stops are also on 230; its buses go to 230, 324, 325",90.9105,90.9052,0.0053,0.0
+33,merge,207,"Merge 207 into 208: 91% of its stops are also on 208; its buses go to 208, 204, 61",90.9052,90.8926,0.0126,0.0
+34,straighten,237,"Straighten 237 direction 1 between Awoshie Amangoase and Tantua School: 1.1 km shorter, 1 of its stops dropped",90.8926,90.8867,0.0059,0.0
+35,merge,254,"Merge 254 into 298: 86% of its stops are also on 298; its buses go to 298, 61, 373",90.8867,90.8744,0.0123,0.0
+36,merge,293,"Merge 293 into 271: 97% of its stops are also on 271; its buses go to 271, 542, 291",90.8744,90.8688,0.0057,0.0
+37,merge,66,"Merge 66 into 393: 90% of its stops are also on 393; its buses go to 393, 417, 117",90.8688,90.8636,0.0052,0.0
+38,drop,281,"Drop 281: among the 20 routes with the fewest modelled riders per bus; its buses go to 166, 296, 301",90.8636,90.8577,0.0059,0.0
+39,merge,343,"Merge 343 into 56: 96% of its stops are also on 56; its buses go to 999, 56, 35",90.8577,90.8519,0.0058,0.0
+40,stops,,"Remove 562 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",90.8519,90.4873,0.3646,0.0
+41,shift,,"Move 22 buses from the 20 routes where a bus saves riders the least waiting (11, 278, 72, 454, 28, 58, 88, 98, 524, 522, 283, 286, 455, 431, 157, 391, 174, 193, 309, 336) to the 20 where it saves the most (480, 85, 394, 15, 383, 347, 467, 275, 388, 539, 436, 318, 3, 408, 92, 393, 419, 328, 445, 48)",90.4873,90.0975,0.3898,0.0
+42,shift,,"Move 22 buses from the 20 routes where a bus saves riders the least waiting (11, 278, 72, 58, 88, 98, 524, 522, 283, 286, 455, 431, 157, 391, 174, 193, 309, 348, 339, 333) to the 20 where it saves the most (383, 394, 15, 467, 388, 275, 347, 480, 539, 318, 3, 436, 408, 92, 419, 393, 328, 445, 48, 301)",90.0975,89.8497,0.2478,0.0
+43,shift,,"Move 16 buses from the 20 routes where a bus saves riders the least waiting (11, 72, 58, 88, 98, 522, 283, 286, 455, 431, 157, 391, 174, 193, 309, 348, 339, 333, 324, 313) to the 20 where it saves the most (383, 347, 15, 394, 388, 275, 467, 318, 539, 480, 408, 3, 419, 328, 393, 436, 48, 445, 237, 310)",89.8497,89.6938,0.1559,0.0
+44,shift,,"Move 11 buses from the 20 routes where a bus saves riders the least waiting (11, 72, 58, 98, 522, 283, 286, 455, 431, 157, 391, 174, 193, 309, 348, 344, 324, 313, 317, 274) to the 20 where it saves the most (347, 383, 388, 15, 275, 394, 467, 318, 539, 408, 480, 3, 419, 328, 48, 177, 31, 298, 445, 264)",89.6938,89.5987,0.0951,0.0

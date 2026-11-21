@@ -1,0 +1,18 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+6,305,1.0,10,128,True
+52 (branch 1),52,1.0,25,52,True
+30 [CB:30],30 [NB:30],0.9885,87,88,False
+64,63,0.9875,80,91,True
+30 [NB:30],30 [CB:30],0.9773,88,87,False
+63 (Radyr),63,0.9667,30,91,True
+63 (Radyr),64,0.9667,30,80,True
+606,604,0.9643,28,40,True
+96 (branch 1),96,0.9615,52,101,True
+58 (St. Edeyrns),58,0.9459,37,72,True
+6,603,0.9,10,46,True
+92,92B,0.9,60,60,True
+92B,92,0.9,60,60,True
+606,61,0.8929,28,50,True
+102,101,0.8714,241,242,True
+63,64,0.8681,91,80,True
+101,102,0.8678,242,241,True

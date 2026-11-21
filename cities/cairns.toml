@@ -1,0 +1,24 @@
+# Settings for Cairns, read from its GTFS feed (python3 data/fetch_city.py cairns wrote this file;
+# edit it freely, the script does not overwrite it). Every setting not named here keeps its
+# default in busnet/assumptions.py, as for Baku; see docs/configuration.md.
+#   python3 measure.py --config cities/cairns.toml --out output/cities/cairns
+#   python3 redesign.py --config cities/cairns.toml --out output/cities/cairns/redesign
+
+[data]
+gtfs = "../data/cities/cairns/gtfs.zip"
+population = "../data/cities/cairns/kontur_population_AU_20231101.gpkg"
+destinations = [
+    "../data/cities/cairns/osm_education.json",
+    "../data/cities/cairns/osm_health.json",
+    "../data/cities/cairns/osm_shopping.json",
+    "../data/cities/cairns/osm_offices.json",
+    "../data/cities/cairns/osm_transport.json",
+]
+
+[service]
+service_hours = 17                   # the hours of service the feed's timetable shows (measure.py reports them)
+headway_from_ridership = false       # no counts in the format of BakuBus's
+reference_fleet = 0                  # buses in daily service, if known
+
+[redesign]
+redesign_protected_routes = []       # route numbers the search must leave as they are

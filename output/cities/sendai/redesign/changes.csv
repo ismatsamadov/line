@@ -1,0 +1,60 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,drop,259,"Drop 259: among the 20 routes with the fewest modelled riders per bus; its buses go to 250, S161, S160",105.2503,105.174,0.0763,0.0
+2,merge,J200,"Merge J200 into X200: 97% of its stops are also on X200; its buses go to X200, J205, S207",105.174,105.113,0.061,0.0
+3,merge,S910,"Merge S910 into S910 (branch 1): 97% of its stops are also on S910 (branch 1); its buses go to S910 (branch 1), S911, S821",105.113,105.0549,0.0581,0.0
+4,merge,S851,"Merge S851 into S850: 100% of its stops are also on S850; its buses go to S850, S856, S855",105.0549,105.0014,0.0535,0.0
+5,merge,610,"Merge 610 into X610: 94% of its stops are also on X610; its buses go to X610, 601, 706",105.0014,104.9486,0.0528,0.0
+6,drop,159,"Drop 159: among the 20 routes with the fewest modelled riders per bus; its buses go to S250, S240, J240",104.9486,104.9,0.0485,0.0
+7,drop,240 (branch 1),"Drop 240 (branch 1): among the 20 routes with the fewest modelled riders per bus; its buses go to 240, 250, X233",104.9,104.8534,0.0467,0.0
+8,straighten,30 [10063],"Straighten 30 [10063] direction 2 between 国見ケ丘一丁目北 and 国見ケ丘一丁目北: 3.7 km shorter, 11 of its stops dropped",104.8534,104.8136,0.0397,0.0
+9,drop,200 (branch 1),"Drop 200 (branch 1): among the 20 routes with the fewest modelled riders per bus; its buses go to 200, 205, 207",104.8136,104.7772,0.0364,0.0
+10,merge,K516,"Merge K516 into K512: 89% of its stops are also on K512; its buses go to K512, K506, K501 [10241]",104.7772,104.7425,0.0347,0.0
+11,merge,910,"Merge 910 into X910: 97% of its stops are also on X910; its buses go to X910, 911, 810",104.7425,104.7177,0.0248,0.0
+12,merge,J701,"Merge J701 into J704: 100% of its stops are also on J704; its buses go to J706, J704, S701",104.7177,104.6934,0.0243,0.0
+13,merge,S240,"Merge S240 into J240: 93% of its stops are also on J240; its buses go to J240, S140, S250",104.6934,104.6532,0.0402,0.0
+14,merge,N10,"Merge N10 into 10 [10001]: 90% of its stops are also on 10 [10001]; its buses go to B10, 10 [10001], 15 [10016]",104.6532,104.6309,0.0223,0.0
+15,merge,N15,"Merge N15 into 15 [10016]: 91% of its stops are also on 15 [10016]; its buses go to B15, 15 [10016], 25 [10053]",104.6309,104.6158,0.0151,0.0
+16,merge,S844,"Merge S844 into S845: 95% of its stops are also on S845; its buses go to S845, S840, 844",104.6158,104.5961,0.0197,0.0
+17,merge,K506,"Merge K506 into K512: 100% of its stops are also on K512; its buses go to K512, K501 [10241], K500",104.5961,104.5463,0.0498,0.0
+18,merge,S601,"Merge S601 into K601: 94% of its stops are also on K601; its buses go to K601, 36 [10072], S701",104.5463,104.5197,0.0266,0.0
+19,straighten,A220,"Straighten A220 direction 2 between 鶴ケ谷団地入口 and 鶴ケ谷六丁目東小学校前: 1.6 km shorter, 9 of its stops dropped",104.5197,104.5054,0.0142,0.0
+20,merge,S161,"Merge S161 into S160: 94% of its stops are also on S160; its buses go to S160, S918, S917",104.5054,104.4715,0.0339,0.0
+21,merge,233,"Merge 233 into X233: 97% of its stops are also on X233; its buses go to X233, 230, X230",104.4715,104.4517,0.0198,0.0
+22,merge,S815,"Merge S815 into S825: 92% of its stops are also on S825; its buses go to S825, S817, S821",104.4517,104.4343,0.0173,0.0
+23,merge,15 [10016] (南仙台駅・四郎丸),"Merge 15 [10016] (南仙台駅・四郎丸) into 15 [10016]: 97% of its stops are also on 15 [10016]; its buses go to 15 [10019], 15 [10016], 25 [10053]",104.4343,104.4216,0.0128,0.0
+24,merge,S855,"Merge S855 into S856: 85% of its stops are also on S856; its buses go to S856, S850, S845",104.4216,104.4158,0.0058,0.0
+25,merge,S210,"Merge S210 into K210: 94% of its stops are also on K210; its buses go to K210, K211, 213",104.4158,104.4015,0.0143,0.0
+26,merge,516,"Merge 516 into 512: 89% of its stops are also on 512; its buses go to 512, 506, 501",104.4015,104.3875,0.014,0.0
+27,merge,B10,"Merge B10 into 10 [10001]: 87% of its stops are also on 10 [10001]; its buses go to 10 [10001], B15, 15 [10016]",104.3875,104.3612,0.0263,0.0
+28,merge,X210,"Merge X210 into 210: 100% of its stops are also on 210; its buses go to 210, 211, A220",104.3612,104.3467,0.0145,0.0
+29,merge,10 [10001] (南仙台駅・四郎丸),"Merge 10 [10001] (南仙台駅・四郎丸) into 10 [10001]: 90% of its stops are also on 10 [10001]; its buses go to 10 [10002], 10 [10001], 15 [10016]",104.3467,104.3338,0.0129,0.0
+30,merge,S870,"Merge S870 into S870 (branch 1): 100% of its stops are also on S870 (branch 1); its buses go to S870 (branch 1), S876, S875",104.3338,104.3099,0.0239,0.0
+31,merge,M70,"Merge M70 into R70: 94% of its stops are also on R70; its buses go to R70, J470, 73 [10127]",104.3099,104.2983,0.0116,0.0
+32,merge,506,"Merge 506 into 500: 97% of its stops are also on 500; its buses go to 512, 501, 500",104.2983,104.2838,0.0145,0.0
+33,merge,925,"Merge 925 into 905: 94% of its stops are also on 905; its buses go to 905, 926, 923",104.2838,104.2709,0.0129,0.0
+34,merge,825,"Merge 825 into 815: 100% of its stops are also on 815; its buses go to 815, X817, 911",104.2709,104.2621,0.0088,0.0
+35,merge,X230,"Merge X230 into X233: 94% of its stops are also on X233; its buses go to X233, 230, 210",104.2621,104.2279,0.0342,0.0
+36,merge,901,"Merge 901 into 900: 91% of its stops are also on 900; its buses go to 900, 905, 904",104.2279,104.2218,0.0061,0.0
+37,merge,20 [10034],"Merge 20 [10034] into 25 [10053]: 86% of its stops are also on 25 [10053]; its buses go to 25 [10053], 15 [10016], 10 [10001]",104.2218,104.216,0.0058,0.0
+38,merge,K500,"Merge K500 into K501 [10241]: 100% of its stops are also on K501 [10241]; its buses go to K501 [10241], K501 [10242], K512",104.216,104.1811,0.0349,0.0
+39,straighten,923,"Straighten 923 direction 2 between 川平小学校前 and 長命ケ丘二丁目: 2.1 km shorter, 4 of its stops dropped",104.1811,104.1703,0.0108,0.0
+40,merge,765,"Merge 765 into 760: 100% of its stops are also on 760; its buses go to 760, 766, 866",104.1703,104.1608,0.0095,0.0
+41,merge,K211,"Merge K211 into K210: 94% of its stops are also on K210; its buses go to K210, K215, 213",104.1608,104.1426,0.0182,427.1429
+42,merge,501,"Merge 501 into 500: 95% of its stops are also on 500; its buses go to 500, 512, 535",104.1426,104.0856,0.057,0.0
+43,drop,25 [10054],"Drop 25 [10054]: among the 20 routes with the fewest modelled riders per bus; its buses go to 71, 70 [10119], 26",104.0856,104.0777,0.0079,2.1429
+44,merge,K501 [10242],"Merge K501 [10242] into K501 [10241]: 100% of its stops are also on K501 [10241]; its buses go to K501 [10241], K512, K545",104.0777,104.0515,0.0262,0.0
+45,merge,S830,"Merge S830 into 739: 88% of its stops are also on 739; its buses go to 739, S831, S866",104.0515,104.0436,0.0079,0.0
+46,merge,R40,"Merge R40 into R70: 100% of its stops are also on R70; its buses go to R70, X30, 77 [10141]",104.0436,104.0342,0.0094,0.0
+47,straighten,15 [10021],"Straighten 15 [10021] direction 1 between 宮城県印刷会館前 and 狐塚: 1.1 km shorter, 4 of its stops dropped",104.0342,104.0203,0.0139,0.0
+48,drop,207,"Drop 207: among the 20 routes with the fewest modelled riders per bus; its buses go to 205, 200, 75 [10132]",104.0203,104.007,0.0132,0.0
+49,merge,S990,"Merge S990 into 899: 100% of its stops are also on 899; its buses go to 899, S925, S923",104.007,104.0018,0.0053,0.0
+50,merge,220,"Merge 220 into 220 (branch 1): 100% of its stops are also on 220 (branch 1); its buses go to 220 (branch 1), A220, 120",104.0018,103.995,0.0067,0.0
+51,drop,10 [10002],"Drop 10 [10002]: among the 20 routes with the fewest modelled riders per bus; its buses go to 10 [10001], 15 [10019], 15 [10016]",103.995,103.9798,0.0152,0.0
+52,drop,115,"Drop 115: among the 20 routes with the fewest modelled riders per bus; its buses go to S110, 110, X120",103.9798,103.9736,0.0062,0.0
+53,merge,S610,"Merge S610 into K610: 92% of its stops are also on K610; its buses go to K610 (野草園・交通局東北大学病院), K610, S620",103.9736,103.9668,0.0068,0.0
+54,merge,845,"Merge 845 into 844: 94% of its stops are also on 844; its buses go to 844, 843, 840",103.9668,103.96,0.0068,0.0
+55,drop,213,"Drop 213: among the 20 routes with the fewest modelled riders per bus; its buses go to K210, X200, 830",103.96,103.9299,0.0302,0.0
+56,merge,18 [10030],"Merge 18 [10030] into T18: 96% of its stops are also on T18; its buses go to T18, X75, S207",103.9299,103.9247,0.0051,0.0
+57,stops,,"Remove 383 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",103.9247,103.5035,0.4213,0.0
+58,shift,,"Move 2 buses from the 10 routes where a bus saves riders the least waiting (899, 999, S110, 900, 120, S120, X910, 815, S900, 110) to the 10 where it saves the most (K610, J205, B15, S160, S207, M40, 205, 15 [10021], X610, S701)",103.5035,103.1646,0.3389,0.0
+59,shift,,"Move 1 buses from the 10 routes where a bus saves riders the least waiting (900, 110, S110, 880, 701, 923, 535, 58, J308, S910 (branch 1)) to the 10 where it saves the most (S207, J205, B15, S160, T18, 15 [10021], K535, K501 [10241], 230, 30 [10063])",103.1646,103.0665,0.0981,0.0

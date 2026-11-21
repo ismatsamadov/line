@@ -1,0 +1,2 @@
+121E: express, skipping most stops of a route it runs along
+140E: express, skipping most stops of a route it runs along

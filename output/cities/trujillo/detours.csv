@@ -1,0 +1,71 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+"C-01 ""B""",1,Calle Toribio Rodriguez de Mendoza,Calle Rafael Sanzio y Avenida Blas Pascal,11,0,1.7529,0.1269,1.626,7.5691,0
+"C-06 ""K""",1,Jirón Unión,Jirón Unión y Avenida España,11,3,1.7757,0.2169,1.5588,4.7175,0
+"C-07 ""Z1""",1,Avenida 12 de Noviembre,Avenida 12 de Noviembre,11,0,1.9923,0.0,1.9923,5.979,0
+"C-09 ""E""",1,Avenida Miguel Grau,Avenida Miguel Grau,11,0,1.6831,0.0,1.6831,7.706,0
+"M-21 ""A""",1,Avenida Petro Peru,Calle Lambayeque,11,0,1.7135,0.1667,1.5468,7.379,0
+"M-34 ""A""",1,Avenida Victor Larco Herrera,Avenida Victor Larco Herrera,11,0,2.1992,0.0096,2.1896,8.9217,0
+"M-20 ""C""",1,Avenida 12 de Noviembre,Avenida 12 de Noviembre,11,0,1.6517,0.0111,1.6406,7.6042,0
+"C-10 ""M""",1,Calle Entrada a la Campiña,Calle Entrada a la Campiña,11,5,1.9679,0.1571,1.8108,9.9682,0
+"C-14 ""S""",1,Tupac Yupanqui y Delfin Corcuera y Avenida los Incas,Avenida los Incas y Tupac Yupanqui,11,0,1.6381,0.008,1.6301,9.5836,0
+"M-23 ""B <3""",1,Jirón Desamparados,Jirón Desamparados,11,0,2.0673,0.0,2.0673,13.2985,0
+"M-23 ""B <3""",1,Prolongación Avenida 12 de Noviembre,Prolongación Avenida 12 de Noviembre,11,0,2.0054,0.0465,1.959,12.7936,0
+"M-23 ""B""",1,Jirón Desamparados,Jirón Desamparados,11,0,2.0673,0.0,2.0673,11.3487,0
+"C-03 ""JJ""",1,Calle las Poncianas y Cajabamba y Avenida Pisacc,Avenida los Cipreses y Avenida los Pinos,11,5,46.9672,0.8188,46.1484,106.7351,0
+"C-03 ""JJ""",1,Avenida Ricardo Palma,Avenida Ricardo Palma,11,5,1.9044,0.0,1.9044,7.9199,472.8571
+"C-12 ""B""",1,Avenida Independencia,Avenida Independencia,11,3,2.3125,0.0318,2.2806,7.3354,77.8571
+"C-13 ""D"" [17508501]",1,Avenida Independencia,Avenida Independencia,11,2,1.7139,0.038,1.676,6.5543,0
+"C-13 ""D"" [17508505]",1,Avenida Independencia,Avenida Independencia,11,1,1.7139,0.038,1.676,7.689,77.8571
+"C-16 ""I""",1,innominada,innominada,11,0,1.7196,0.0,1.7196,12.0383,0
+"C-23 ""S1""",1,Avenida Jesús de Nazareth,Avenida España,11,2,1.7657,0.2565,1.5092,7.2888,0
+"C-27 ""B""",1,Carretera Industrial y Avenida Federico Villarreal Sur,Avenida Federico Villarreal Sur,11,0,1.615,0.0977,1.5174,5.7557,0
+"C-27 ""B""",1,Carretera Industrial y Avenida Federico Villarreal Sur,Avenida Federico Villarreal Sur,11,0,1.615,0.0977,1.5174,5.7557,0
+"C-28 ""C""",1,Carretera Industrial y Avenida Federico Villarreal Sur,Avenida Federico Villarreal Sur,11,0,1.615,0.0977,1.5174,7.3083,0
+"C-28 ""C""",1,Carretera Industrial y Avenida Federico Villarreal Sur,Avenida Federico Villarreal Sur,11,0,1.615,0.0977,1.5174,7.3083,0
+"C-35 ""S3""",1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,4.7551,0
+"C-38 ""S4""",1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,5.4109,0
+"C-42 ""B2""",1,Avenida Pesqueda,Avenida Pesqueda,11,3,1.7078,0.0142,1.6936,5.3033,0
+CT-23 AC,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,4.9473,0
+CT-23 BC,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,4.7531,0
+CT-24 A,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.1233,0
+CT-24 B,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,4.8425,0
+CT-24 B,1,Avenida José Gabriel Condorcanqui,Avenida José Gabriel Condorcanqui,11,0,1.5864,0.0693,1.5171,4.8559,0
+CT-23 A,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.6733,0
+CT-23 B,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,7.2668,0
+CT-23 B,1,innominada,innominada,11,0,2.0077,0.3199,1.6878,7.7174,0
+"M-12 ""C""",1,Carretera Panamericana Norte,Carretera Panamericana Norte,11,0,2.1727,0.0797,2.093,7.124,0
+"M-12 ""C""",1,Avenida Victor Larco Herrera y Prolongación Avenida Bolivia,Prolongación Avenida Bolivia,11,4,1.6383,0.1042,1.5342,6.2009,0
+"M-15 ""C2""",1,Calle Capirona,Calle Capirona,11,0,4.8513,0.0,4.8513,24.5719,0
+"M-15 ""C2VR""",1,Avenida Metropolitana 1,Avenida Metropolitana 1,11,11,1.7108,0.0,1.7108,9.3609,795.5714
+"M-18 ""C1""",1,Avenida Jesús de Nazareth,Calle 8,11,9,1.788,0.2435,1.5445,9.7574,0
+"M-31 ""A""",1,Prolongación Avenida Bolivia,Calle Callao,11,4,1.7466,0.1984,1.5482,6.6306,0
+"M-32 ""A1""",1,Calle Alexander Pettion,Calle Alexander Pettion,11,1,1.7552,0.0,1.7552,7.8792,0
+"M-34 ""A<3""",1,Avenida Victor Larco Herrera,Avenida Victor Larco Herrera,11,0,2.1992,0.0096,2.1896,8.9217,0
+"M-36 ""LV""",1,Avenida Nuevo San Carlos,Avenida el Ángel y Avenida Nuevo San Carlos,11,11,2.1823,0.1193,2.063,6.868,682.7143
+CT-02 A,1,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,11,0,1.8718,0.0,1.8718,6.9595,0
+CT-19 H,1,Avenida Perú,Avenida Perú,11,0,1.7034,0.0978,1.6055,6.3329,0
+CT-26 BU,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,5.0977,0
+CT-29 TA,1,Avenida Miguel Grau,Avenida Miguel Grau,11,7,2.0905,0.0221,2.0684,9.029,277.4286
+CT-09 A,1,Avenida Revolución y Calle Ricardo Palma,Calle Ricardo Palma y Avenida Revolución,11,0,1.9502,0.0157,1.9345,6.3028,0
+CT-10 A,1,Prolongación Calle 50,Calle 50,11,1,2.2697,0.5994,1.6702,5.8341,0
+CT-21 F,1,Calle Alexander Pettion,Calle Alexander Pettion,11,9,2.1405,0.0,2.1405,9.8656,0
+CT-22 B,1,Prolongación Avenida 12 de Noviembre y Avenida Dos,Prolongación Avenida 12 de Noviembre y Avenida Dos,11,1,2.7325,0.0099,2.7227,7.96,0
+CT-22 D,1,Avenida Wichanzao y Calle 9,Avenida Wichanzao y Calle 9,11,11,1.9201,0.0,1.9201,7.2821,0
+CT-05 V-A,1,Avenida Manuel Seoane,Avenida Manuel Seoane,11,0,2.1173,0.0822,2.0351,7.2358,0
+CT-26 AU,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.3871,0
+CT-03 A,1,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,11,0,1.8718,0.0,1.8718,6.9595,0
+CT-04 A,1,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,Avenida Victor Larco Herrera y Jirón Nicolás de Piérola y Jirón Lima,11,0,1.8718,0.0,1.8718,6.9595,0
+CT-12 SL,1,Avenida Perú,Avenida Perú,11,0,1.7034,0.0978,1.6055,7.8979,0
+CT-10 B,1,Avenida Perú,Avenida Perú,11,0,1.7034,0.0978,1.6055,6.967,0
+CT-11 E,1,Avenida Perú,Avenida Perú,11,0,1.7034,0.0978,1.6055,6.1461,0
+"C-41 ""Z2""",1,Avenida 12 de Noviembre,Avenida 12 de Noviembre,11,0,2.1439,0.0,2.1439,5.113,0
+"C-43 ""A""",1,Avenida La Marina,Jirón Ascenso Segura y Avenida La Marina,11,1,2.2876,0.088,2.1996,8.9457,0
+CT-06 V-A,1,Avenida Manuel Seoane,Avenida Manuel Seoane,11,0,2.1173,0.0822,2.0351,7.2358,0
+CT-07 V-A,1,Avenida Manuel Seoane,Avenida Manuel Seoane,11,0,2.1173,0.0822,2.0351,7.2358,0
+CT-25 A,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.6733,0
+CT-26 A,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.6733,0
+CT-25 B,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,7.2668,0
+CT-25 B,1,innominada,innominada,11,0,2.0077,0.3199,1.6878,7.7174,0
+CT-26 B,1,Avenida Jesús de Nazareth y Avenida España,Avenida España,11,0,1.5333,0.0332,1.5001,7.2668,0
+CT-26 B,1,innominada,innominada,11,0,2.0077,0.3199,1.6878,7.7174,0
+CT-24 AU,1,Avenida España,Avenida España y Calle Agricultura,11,0,1.5791,0.0093,1.5698,5.3871,0

@@ -1,0 +1,6 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+5,5 (branch 1),0.9907,107,160,True
+3 (branch 1),3,0.9514,144,147,True
+8 (Lyttelton via City & Ara),8,0.944,125,131,True
+3,3 (branch 1),0.932,147,144,True
+8,8 (Lyttelton via City & Ara),0.9008,131,125,True

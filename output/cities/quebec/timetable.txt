@@ -1,0 +1,23 @@
+1 d1: 1 other stop sequence(s) with 5 of 42 departures left out; 1 stops they call at are on no pattern of the route
+16 d1: a branch with 4 of 18 departures runs as route 16 (branch 1)
+16 d2: a branch with 4 of 19 departures runs as route 16 (branch 1)
+28 d1: a branch with 12 of 42 departures runs as route 28 (branch 1)
+28 d2: a branch with 13 of 43 departures runs as route 28 (branch 1)
+3 d1: a branch with 21 of 44 departures runs as route 3 (branch 1)
+32 d1: 1 other stop sequence(s) with 3 of 16 departures left out; 6 stops they call at are on no pattern of the route
+32 d2: 1 other stop sequence(s) with 3 of 17 departures left out; 6 stops they call at are on no pattern of the route
+54 d1: 1 other stop sequence(s) with 4 of 35 departures left out; 14 stops they call at are on no pattern of the route
+54 d2: 1 other stop sequence(s) with 4 of 37 departures left out; 13 stops they call at are on no pattern of the route
+630 d1: a branch with 3 of 7 departures runs as route 630 (branch 1)
+630 d2: a branch with 3 of 7 departures runs as route 630 (branch 1)
+79 d1: a branch with 6 of 22 departures runs as route 79 (branch 1)
+79 d2: a branch with 6 of 22 departures runs as route 79 (branch 1)
+82 d2: 2 other stop sequence(s) with 5 of 22 departures left out; 2 stops they call at are on no pattern of the route
+91 d1: a branch with 10 of 21 departures runs as route 91 (branch 1)
+91 d2: a branch with 9 of 23 departures runs as route 91 (branch 1)
+93 d1: a branch with 11 of 37 departures runs as route 93 (branch 1)
+93 d2: a branch with 10 of 36 departures runs as route 93 (branch 1)
+331: express, skipping most stops of a route it runs along
+5: express, skipping most stops of a route it runs along
+531: express, skipping most stops of a route it runs along
+570: express, skipping most stops of a route it runs along

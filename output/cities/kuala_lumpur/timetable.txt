@@ -1,0 +1,4 @@
+P104: the timetable gives a moving speed of 223.9 km/h; using the setting for Bus instead
+SA08: the timetable gives a moving speed of 120.3 km/h; using the setting for Bus instead
+T786: the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+590: the timetable gives a moving speed of 184.2 km/h; using the setting for Bus instead

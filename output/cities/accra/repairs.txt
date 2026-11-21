@@ -1,0 +1,27 @@
+211 d2: shape cannot explain its stops (median offset 24624 m); using straight lines between stops
+19 d1: shape cannot explain its stops (median offset 7748 m); using straight lines between stops
+21 d2: shape cannot explain its stops (median offset 1703 m); using straight lines between stops
+84 d1: shape cannot explain its stops (median offset 4147 m); using straight lines between stops
+88 d1: shape cannot explain its stops (median offset 3641 m); using straight lines between stops
+470 d2: shape cannot explain its stops (6 stops out of order); using straight lines between stops
+290 d2: shape cannot explain its stops (median offset 3563 m); using straight lines between stops
+295 d1: shape cannot explain its stops (median offset 1673 m); using straight lines between stops
+296 d1: shape cannot explain its stops (median offset 1173 m); using straight lines between stops
+428 d2: shape cannot explain its stops (median offset 7199 m); using straight lines between stops
+414 d1: shape cannot explain its stops (4 stops out of order); using straight lines between stops
+398 d1: shape cannot explain its stops (median offset 3242 m); using straight lines between stops
+188 d2: shape cannot explain its stops (median offset 1654 m); using straight lines between stops
+167 d2: shape cannot explain its stops (median offset 1539 m); using straight lines between stops
+114 d1: shape cannot explain its stops (median offset 139 m); using straight lines between stops
+333 d2: shape cannot explain its stops (4 stops out of order); using straight lines between stops
+272 d1: shape cannot explain its stops (median offset 826 m); using straight lines between stops
+269 d2: shape cannot explain its stops (median offset 997 m); using straight lines between stops
+176 d1: shape cannot explain its stops (3 stops out of order); using straight lines between stops
+225 d2: shape cannot explain its stops (median offset 5934 m); using straight lines between stops
+266 d1: shape cannot explain its stops (3 stops out of order); using straight lines between stops
+104 d1: shape cannot explain its stops (median offset 6078 m); using straight lines between stops
+105 d1: shape cannot explain its stops (median offset 7086 m); using straight lines between stops
+203 d2: shape cannot explain its stops (median offset 464 m); using straight lines between stops
+995 d2: shape cannot explain its stops (median offset 3105 m); using straight lines between stops
+383 d2: shape cannot explain its stops (median offset 1669 m); using straight lines between stops
+394 d1: shape cannot explain its stops (median offset 16964 m); using straight lines between stops

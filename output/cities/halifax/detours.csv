@@ -1,0 +1,117 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+10A,1,Lemarchant St Before University Ave (7144),South Park St Before Spring Garden Rd (8312),9,0,2.6501,0.9922,1.6579,7.7312,0
+10B,1,Lemarchant St Before University Ave (7144),South Park St Before Spring Garden Rd (8312),9,0,2.6307,0.9922,1.6385,7.1264,0
+10C,1,Lemarchant St Before University Ave (7144),South Park St Before Spring Garden Rd (8312),9,0,2.6277,0.9922,1.6355,6.8661,0
+10C,1,Woodlawn Rd Before Main St (8598),Raymoor Dr At Civic 22 (8161),11,10,3.0862,0.4234,2.6628,9.9609,929.2857
+123,2,Maplewood Dr After Eisener St (7179),Charles Rd Before Dixon Ct (2012),11,0,3.0801,0.6657,2.4144,8.0562,0
+127,1,Cowie Hill Rd After Civic 455 (2208),Ridgevalley Rd After Cavendish Rd (8166),11,2,3.7675,0.5177,3.2498,13.3846,582.7143
+127,2,Highfield St Before Punch Bowl Dr (6916),Cowie Hill Rd Before Civic 455 (2226),10,2,3.464,0.4826,2.9814,12.2486,582.7143
+135,1,Flamingo Dr After Dove St (2303),Lacewood Dr Before Cedarbrae Ln (7076),11,5,3.9933,0.7906,3.2027,11.6285,0
+135,2,Lacewood Dr Before Braemount Dr (2361),Flamingo Dr Before Meadowlark Cr (6702),11,5,4.1607,0.8013,3.3594,12.018,0
+136,1,Farnham Gate Rd Before Ross St (6652),Lacewood Dr Before Willett St (7082),11,0,3.4,1.3539,2.046,8.8577,0
+137,2,Willett St After Dunbrack St (8491),Regency Park Dr Before Lacewood Dr (9091),10,0,3.56,1.3243,2.2357,9.4145,0
+158,1,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3569,2.1268,3.2301,9.469,0
+158,1,Ellenvale Ave After Anderson St (6630),Collins Grv After Spring Ave (2267),11,0,3.0644,0.5136,2.5508,10.3547,0
+158,2,Collins Grv Before Spring Ave (2257),Ellenvale Ave Opposite Anderson St (6629),11,0,3.1047,0.5541,2.5506,10.3541,0
+158,2,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2815,1.984,3.2975,9.3124,0
+159,1,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3569,2.1268,3.2301,8.9399,0
+159,2,Ashgrove Ave Before Ancaster Ct (6046),Cumberland Dr Before Cole Harbour Rd (6542),11,0,3.3096,0.523,2.7866,10.5163,0
+159,2,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2824,1.984,3.2984,8.7745,0
+161,1,North Preston Rd Before Upper Governor St (7102),North Preston Rd After Ernie Ln (7118),9,0,2.2982,0.5018,1.7964,6.5613,0
+161,1,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2815,1.984,3.2975,7.204,0
+161,2,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3569,2.1268,3.2301,7.4036,0
+165,1,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3863,2.1268,3.2595,9.5617,0
+165,2,Astral Dr Before Brookfield Ave (6054),Astral Dr Before Grenadier Dr (6057),11,0,2.9376,0.2303,2.7073,10.7779,0
+165,2,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2861,1.984,3.3022,9.3404,0
+168A,1,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3569,2.1268,3.2301,8.1112,0
+168A,1,Merrimac Dr After Forest Hills Pkwy (7198),John Stewart Dr Before Tamara Dr (6993),11,0,2.9602,0.8153,2.1448,8.3887,0
+168A,2,John Stewart Dr After Tamara Dr (6992),Cole Harbour Rd Before Hugh Allen Dr (6480),11,0,3.7257,1.3111,2.4145,8.9824,0
+168A,2,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2815,1.984,3.2975,7.9263,0
+168B,1,Barrington St Before Sackville St (6121),Alderney Gate Ferry Terminal Bay 2 (6063),3,0,5.3569,2.1268,3.2301,7.639,0
+168B,1,Merrimac Dr After Forest Hills Pkwy (7198),John Stewart Dr Before Tamara Dr (6993),11,0,2.9602,0.8153,2.1448,8.0751,0
+168B,2,John Stewart Dr After Tamara Dr (6992),Cole Harbour Rd Before Hugh Allen Dr (6480),11,0,3.7257,1.3111,2.4145,8.6294,0
+168B,2,Opposite Alderney Gate Ferry Terminal Bay 1 (6030),Barrington St Before Prince St (6084),2,0,5.2815,1.984,3.2975,7.4442,0
+182,1,Summer St After Bell Rd (8363),Barrington St Before North St (2021),6,0,3.4611,1.3791,2.082,5.5765,0
+183,1,Summer St After Bell Rd (8363),Barrington St Before North St (2021),6,0,3.4611,1.3791,2.082,5.5298,0
+185,1,Summer St After Bell Rd (8363),Barrington St Before North St (2021),6,0,3.4611,1.3791,2.082,5.5979,0
+185,2,Millwood Dr At Civic 65 (7225),Beaver Bank Cross Rd At Civic 190 (2119),11,0,3.4094,0.4905,2.9188,8.7107,0
+186,1,Summer St After Bell Rd (8363),Barrington St Before North St (2021),6,0,3.4611,1.3791,2.082,5.3387,0
+192,1,Summer St After Bell Rd (8363),Gottingen St After North St (6769),7,0,3.8456,1.377,2.4686,6.5194,0
+192,1,Starboard Dr At Civic 530 (2134),Southgate Dr Before Ravines Dr (2190),9,0,2.9789,0.7593,2.2196,6.7639,0
+192,2,Southgate Dr Before Windridge Ln (2196),Starboard Dr Opposite Civic 530 (2145),9,0,3.0737,0.7374,2.3363,6.9617,0
+192,2,Gottingen St Before Cogswell St (6771),Summer St After Veterans Memorial Ln (2304),5,0,2.6764,0.7237,1.9527,4.9779,0
+194,1,Gottingen St Before Cogswell St (6771),Summer St After Veterans Memorial Ln (2304),5,0,2.6764,0.7237,1.9527,5.3786,0
+194,2,Summer St After Bell Rd (8363),Gottingen St After North St (6769),7,0,3.8456,1.377,2.4686,7.026,0
+196,1,Summer St After Bell Rd (8363),Gottingen St After North St (6769),7,0,3.8456,1.377,2.4686,6.5474,0
+196,1,Bedford Hwy Before Dartmouth Rd (6237),Rockmanor Dr Before Rocky Lake Dr (8228),8,7,2.5453,0.933,1.6123,5.419,491.4286
+196,2,Rockmanor Dr After Rocky Lake Dr (8227),Bedford Hwy Before Union St (6228),8,7,2.5935,0.9877,1.6058,5.4078,491.4286
+196,2,Gottingen St Before Cogswell St (6771),Summer St After Veterans Memorial Ln (2304),5,0,2.6764,0.7237,1.9527,5.0,0
+2,2,Main Ave After Willett St (7158),Joseph Howe Dr Before Mumford Rd (2278),11,0,3.4405,1.3211,2.1194,8.8183,0
+21,2,Maplewood Dr After Eisener St (7179),Charles Rd Before Dixon Ct (2012),11,0,3.0758,0.6657,2.41,6.1347,0
+24,1,Ridgevalley Rd After Limerick Rd (8167),Osborne St Before Sullivan Terr (8578),11,8,2.6465,0.6462,2.0004,6.5727,142.2857
+24,1,Herring Cove Rd Before Purcells Cove Rd (6903),Chebucto Rd Before Newton Ave (6407),11,3,3.4413,1.3331,2.1082,6.7294,0
+24,2,Chebucto Rd Before Connaught Ave (6404),Herring Cove Rd Before Melwood Ave (6901),10,3,4.114,1.5565,2.5574,7.0487,0
+24,2,Osborne St After Sullivan Terr (8579),Ridgevalley Rd Before Bromley Rd (8168),11,8,2.6814,0.6699,2.0115,6.589,142.2857
+25,1,Pine Grove Dr Before Theakston Ave (2161),Titanium Cr Before Alabaster Way (2189),8,8,2.7628,1.0558,1.707,4.4661,1528.5714
+25,2,Alabaster Way Before Drysdale Rd (2173),Williams Lake Rd After Birchview Dr (2180),7,6,2.4962,0.9853,1.5109,3.926,1345.0
+28,1,Mumford Terminal Bay 3 (8641),Rosedale Ave At Civic 23 (8244),9,1,3.1386,1.252,1.8866,6.8416,0
+28,1,Washmill Lake Dr Before Bently Dr (7446),Lacewood Terminal Bay 5 (9105),11,6,5.9767,1.3234,4.6533,13.142,582.5714
+28,2,Lacewood Dr After Stratford Way (7064),Washmill Lake Dr After Bently Dr (6719),11,6,5.4447,1.3742,4.0705,11.9553,494.2857
+29,1,Desmond Ave Before Bayers Rd (6564),Connaught Ave After Chisholm Ave (6499),11,3,3.2296,0.8344,2.3952,8.6661,792.0
+29,2,Connaught Ave After Chisholm Ave (6492),Scot St Before Desmond Ave (8262),11,3,3.2942,0.7486,2.5457,8.9802,792.0
+3,1,Wright Ave Opposite McCurdy Ave (8611),Highfield Park Dr After True North Cr (6927),11,5,4.5701,1.7176,2.8525,10.0237,14.5714
+30A,1,Lacewood Terminal Bay 12 (9112),Parkland Dr After Bethany Way (2188),7,0,2.7084,0.6146,2.0939,5.2018,0
+4,1,Lemarchant St Before University Ave (7144),Spring Garden Rd Before Carlton St (8329),11,1,3.0677,0.6203,2.4474,9.4325,0
+4,2,Robie St Before Bliss St (8194),Lemarchant St Before University Ave (7144),11,1,3.2479,0.577,2.671,9.9591,0
+401,1,Porters Lake Park & Ride (8394),Hwy 7 Before Narrows Ln (8914),6,6,4.5882,1.8016,2.7866,4.7856,818.0
+401,2,Hwy 7 After West Porters Lake Rd (8784),Porters Lake Park & Ride (8394),6,6,4.8111,1.8871,2.924,4.923,813.4286
+433,1,Hammonds Plains Rd After Crestfield Dr (6812),Larry Uteck Blvd After Brookline Dr (2310),11,9,7.2195,2.3079,4.9116,9.5618,299.7143
+433,2,Larry Uteck Blvd Before Bluewater Rd (7014),Hammonds Plains Rd After Gatehouse Run (6830),11,9,6.955,2.0488,4.9062,9.5553,267.1429
+5,1,Barrington St After Cogswell St Bay 3 (6105),Alderney Dr Before Prince St (6028),10,1,5.4267,1.6072,3.8195,11.0539,0
+5,2,Alderney Dr Before Prince St (6029),Barrington St Before Upper Water St (2346),7,1,5.1017,1.6007,3.501,9.4101,0
+51B,1,Windmill Rd Before Nootka Ave (8534),Windmill Rd Before Waddell Ave (8511),11,0,3.4974,0.4985,2.999,8.3206,0
+51B,2,Windmill Rd After Waddell Ave (8527),Windmill Rd Before Nootka Ave (8512),10,0,3.2823,0.2895,2.9928,7.9777,0
+53,1,Alderney Gate Ferry Terminal Bay 3 (6064),Wyse Rd Before Boland Rd (8616),5,0,2.9479,1.1398,1.8081,5.597,0
+53,1,Albro Lake Rd After Chapman St (6018),Highfield Terminal Bay 1 (8140),7,5,2.2395,0.7086,1.5309,5.6611,0
+54,1,Bridge Terminal Bay 7 (7607),Crichton Ave After Oakdale Cr (6530),10,0,3.1392,1.1561,1.983,6.5609,0
+54,2,Crichton Ave After Lakeview Ave (6531),Bridge Terminal Bay 7 (7607),9,0,3.0099,1.1945,1.8154,5.9547,0
+55,1,Bridge Terminal Bay 1 (7601),Crichton Ave After Oakdale Cr (6530),10,0,3.1713,1.1746,1.9966,6.0499,0
+55,1,Glen Manor Dr Before Brookdale Cr (6736),Braemar Dr After Braeside Ct (8460),2,0,2.7939,1.0887,1.7051,2.9866,0
+56,1,Micmac Blvd Before Horizon Ct (7211),Finlay Dr After Shubie Dr (8855),11,4,7.5024,2.3467,5.1557,11.3828,5.2857
+56,2,Shubie Dr Before Kiltearn Row (8894),Micmac Terminal Bay 1 (8171),11,3,7.0648,2.4226,4.6423,10.6144,3.0
+58,1,Belle Vista Dr After Spring Ave (6294),Collins Grv After Spring Ave (2267),9,0,2.775,0.5559,2.219,5.984,0
+58,2,Dorothea Dr After Spring Ave (2258),Belle Vista Dr Before Spring Ave (2266),8,0,2.4754,0.3477,2.1277,5.5278,0
+59,2,Colby Dr Before Autumn Pl (6467),Colby Dr Before Deerbrooke Dr (6472),8,0,2.356,0.4559,1.9002,4.9531,0
+61,2,North Preston Rd Before Upper Governor St (7102),Johnson Rd Before North Preston Rd (7000),11,3,2.1697,0.392,1.7777,5.3392,0
+62,1,Bridge Terminal Bay 1 (7601),Sinclair St Before Highwood St (8284),11,2,3.4638,1.3415,2.1223,7.353,0
+62,1,Sinclair St Before Highwood St (8284),Portland St Before Joffre St (8028),11,11,4.2831,1.3594,2.9237,8.745,2257.4286
+62,2,Portland St After Chestnut Ln (8036),Sinclair St After Prince Albert Rd (8285),11,11,3.6524,1.3839,2.2685,7.6069,1783.7143
+62,2,Hawthorne St After Prince Albert Rd (6837),Bridge Terminal Bay 1 (7601),8,0,2.5428,1.0128,1.5301,5.3244,0
+63,1,Cranberry Cr After Valkyrie Cr (6521),Cole Harbour Rd After Otago Dr (6478),11,5,4.3917,1.0941,3.2976,8.2771,1072.2857
+63,2,Cole Harbour Rd Before Cumberland Dr (6482),Cranberry Cr Before Valkyrie Cr (6525),11,5,3.8618,1.2341,2.6277,7.3405,1072.2857
+64,1,Commodore Dr Before Brownlow Ave (6490),Garland Ave Before Wright Ave (2087),11,10,3.1965,0.8588,2.3378,7.6416,90.8571
+64,1,Garland Ave Before Wright Ave (2087),Akerley Blvd After Joseph Zatzman Dr (6002),10,10,3.9902,1.5176,2.4726,7.5375,66.1429
+64,2,Akerley Blvd Before Joseph Zatzman Dr (6011),Garland Ave After Wright Ave (2096),11,11,3.9341,1.459,2.4751,7.875,80.8571
+64,2,Garland Ave At Civic 110 (2097),Highfield Park Dr At Civic 10 (6925),10,8,4.2527,1.6566,2.596,7.7474,44.0
+65,2,Astral Dr At Civic 243 (2351),Brookfield Ave Before Willowdale Dr (6322),8,0,2.0715,0.345,1.7265,4.1598,0
+67,1,Hartlen St After Main St (6834),Penhorn Terminal Bay 2 (8941),11,0,3.15,1.2208,1.9292,6.9549,0
+67,1,Penhorn Terminal Bay 2 (8941),Acadia St After Ragus Rd (8889),8,8,4.1923,1.6467,2.5457,7.0056,1578.1429
+67,2,Acadia St After Pleasant St (7271),Penhorn Terminal Bay 2 (8941),9,9,4.5733,1.8244,2.7488,7.6852,1889.5714
+67,2,Penhorn Terminal Bay 2 (8941),Hartlen St After Tacoma Dr (6835),10,0,3.0357,1.1626,1.873,6.5258,0
+68,1,Merrimac Dr After Forest Hills Pkwy (7198),John Stewart Dr Before Tamara Dr (6993),11,0,2.9602,0.8153,2.1448,5.6183,0
+68,2,John Stewart Dr After Tamara Dr (6992),Cole Harbour Rd Before Hugh Allen Dr (6480),11,0,3.7257,1.3111,2.4145,5.8637,0
+72,1,Sea King Dr After Lancaster Dr (8263),Ilsley Ave Opposite Halifax Transit (6949),11,3,4.1114,1.1628,2.9486,8.4311,42.7143
+72,1,Finlay Dr After Shubie Dr (8855),Jennett Ave After Guildford Ave (2289),11,9,5.4657,1.0154,4.4503,10.8575,18.8571
+72,2,Jennett Ave Before Wilkinson Ave (2290),Commodore Dr Before John Savage (2357),11,7,5.5503,1.3126,4.2378,10.514,18.8571
+72,2,Highfield Park Dr At Civic 10 (6925),Lancaster Dr After Sea King Dr (2323),11,3,2.8825,1.0672,1.8153,6.5998,0
+84,2,Windmill Rd After Akerley Blvd (8533),Barrington St After Hanover St (2273),8,1,11.11,4.3332,6.7768,11.5243,3.2857
+85,2,Millwood Dr At Millwood High School (9005),Beaver Bank Cross Rd At Civic 222 (2118),9,0,2.814,0.3191,2.4949,6.4182,0
+88,1,Cobequid Rd After Park Ave (6433),Damascus Rd At Turning Loop (8505),6,4,3.5126,1.3254,2.1873,4.792,119.2857
+88,2,Damascus Rd At Turning Loop (8505),Cobequid Terminal Bay 2 (6299),5,3,3.5868,1.3585,2.2283,4.511,34.1429
+91,1,Larry Uteck Blvd Before Bedros Ln (7125),Southgate Dr At Civic 204 (2191),11,0,3.8125,1.1681,2.6443,6.9154,0
+91,2,Southgate Dr Before Windstone Cl (2194),Starboard Dr Before Larry Uteck Blvd (8352),11,0,3.9832,1.4355,2.5477,6.7967,0
+9A,1,Quinpool Rd Before Poplar St (8146),Chebucto Rd After Phillip St (6398),7,0,2.7716,1.0935,1.6781,5.6159,0
+9A,2,Herring Cove Rd Before Purcells Cove Rd (6903),Quinpool Rd After Connaught Ave (8135),11,0,3.6524,1.4079,2.2445,8.0571,0
+9B,1,Quinpool Rd Before Poplar St (8146),Chebucto Rd After Phillip St (6398),7,0,2.7716,1.0935,1.6781,4.9755,0
+9B,2,Herring Cove Rd Before Oceanbreeze Ave (6902),Herring Cove Rd Before Glen Baker Dr (6896),11,11,3.2523,0.9311,2.3212,7.3213,992.1429
+9B,2,Herring Cove Rd Before Purcells Cove Rd (6903),Quinpool Rd After Connaught Ave (8135),11,0,3.613,1.4079,2.2051,7.1385,0

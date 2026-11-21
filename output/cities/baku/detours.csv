@@ -1,0 +1,272 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+12,1,4 nömrəli Vərəm Əleyhinə Dispanser,Q.Qarayev pr. 102,10,1,5.1466,1.6156,3.5311,12.9648,0
+12,2,Q.Qarayev pr. 57,4 nömrəli Vərəm Əleyhinə Dispanser,11,2,5.519,1.9096,3.6094,13.5118,0
+148,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,2.956,1.1759,1.7801,4.3506,0
+157,2,Bakı-Sumqayıt şosesi YDM,R.Allahverdiyev küç.,10,0,5.8785,2.1568,3.7216,11.033,0
+159,1,Bakı-Şamaxı şos. Şamaxı küç. ilə kəs.,Sulutәpә qəs. yeni y/m,4,0,3.7733,1.4991,2.2742,6.039,0
+160,1,Ə.İsazadə küç. Şəhidlər Xiyabanı,Binə qәs. Əli İsazadə,4,0,3.4048,1.3095,2.0953,5.6682,0
+161,2,Hövsan Olimpiya İdman Kompleksi,Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə,8,0,3.3253,1.2639,2.0614,6.6566,0
+162,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,4.0022,1.2126,2.7896,7.1057,0
+13,1,Moskva pr. 254,Bakı Beynəlxalq Avtovağzal Kompleksi,3,0,2.4131,0.8112,1.6019,5.3689,0
+13,2,Bakı Beynəlxalq Avtovağzal Kompleksi,Moskva pr. 45A,4,0,2.5296,0.9473,1.5823,5.6487,0
+163,2,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.1133,1.2126,1.9007,4.5991,0
+163,2,BDYPİ Müayinə Mərkəzi,M.Ə.Sabir küç. 169,11,8,8.7948,3.1844,5.6103,15.2744,2221.7143
+164,1,4 nömrəli Doğum Evi,Qaradağ Rayon Polis İdarəsi,5,0,3.1603,1.1951,1.9651,5.4699,0
+164,2,294 nömrəli tam orta məktəb,253 nömrəli tam orta məktəb,7,1,19.7031,7.7201,11.983,25.5246,35.5714
+164,2,Qaradağ Rayon Polis İdarəsi,Lökbatan qəs. 139 nömrəli tam orta məkt,4,0,2.953,1.1067,1.8463,4.9066,0
+165,1,Mehdiabad qəs.,Novxanı yolu YDM,1,0,2.3237,0.778,1.5458,3.531,0
+166,1,145 nömrəli tam orta məktəb,Səfərbərlik üzrə Sabunçu r. dövlət idarəsi,8,0,8.709,3.3345,5.3745,13.7873,0
+166,2,311 nömrəli tam orta məktəb,Nizami rayon qeydiyyat şöbəsi,9,0,8.7845,3.5068,5.2777,13.9203,0
+168,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,4.0457,1.2534,2.7923,7.1104,0
+168,1,Milli Aviasiya Akademiyası,Binə atçılıq y/m 292 nömrəli tam orta m,6,0,10.1866,3.977,6.2096,14.847,0
+169,1,Koroğlu NMM,Bakı Olimpiya Stadionu,3,0,4.0171,1.2288,2.7883,6.7688,0
+169,1,Bakı Ekspo Mərkəzi,Binə Atçılıq qəsəbəsi,7,0,15.824,5.6271,10.1969,23.4304,0
+169,2,Binə Atçılıq qəsəbəsi,Heydər Əliyev pr. 441,7,0,16.499,6.5948,9.9041,22.8246,0
+172,1,Azərbaycan qadını küç. 416,Bilgəh kardioloji sanatoriyası,11,11,4.4102,1.6614,2.7487,9.3536,1883.8571
+172,2,Respublika küç. 155,Azadlıq küç. 5,11,11,3.8549,1.4268,2.4281,8.6902,1920.5714
+174,1,Sədərək Ticarət Mərkəzi,8 saylı notariat ofisi,3,0,5.1412,1.9072,3.234,8.7627,0
+176,2,Heybət Dəmiryolu Stansiyası,Sәdәrәk t/m Zona 1,4,0,4.4938,1.1829,3.3109,7.7418,0
+14,1,12 saylı notariat ofisi,28 May m/st,11,0,6.2661,2.4807,3.7854,13.9471,0
+14,2,2 nömrəli Bakı Baza Tibb Kolleci,Bakı Beynəlxalq Avtovağzal Kompleksi,8,0,5.1081,2.0051,3.103,11.0939,0
+177,2,Maştağa parkı,59 saylı poçt şöbəsi,5,2,21.184,7.8276,13.3564,27.5188,53.1429
+179,1,Pirşağı qəs. 14 saylı TYS,Pirşağı yolu Yanğınsöndürmə Xidməti,2,0,2.4076,0.9041,1.5035,3.7778,0
+179,2,Pirşağı yolu Yanğınsöndürmə Xidməti,Qızıl Qum sanatoriyası,3,0,4.2344,1.6133,2.6211,6.4236,0
+180,1,Zirə qəs. S.Ə.Şirvani küç. 28,Ə.Babayev küç. döngə 5,4,4,3.5866,1.0855,2.5011,6.1748,801.0
+182,1,Mərdəkan yolu 123,326 nömrəli tam orta məktəb,8,0,12.4093,3.2533,9.156,20.3883,0
+182,2,Ə.İsazadə - İlqar Əhmədov küç. kəs.,Xəzər rayon DYP şöbəsi,7,0,8.7753,3.4977,5.2776,12.5482,0
+183,1,Qum adası y/m,Gəncə pr. 649,10,0,8.7978,3.2605,5.5373,14.7875,0
+184,1,5 saylı ASAN Xidmət mərkəzi,Koroğlu Nəqliyyat Mübadilə Mərkəzi,1,0,2.8671,1.0047,1.8624,4.187,0
+184,2,56-cı Yeni Suraxanı küçəsi 319,Tibbi Yardım Stansiyasının 11 saylı Bölməsi,4,1,3.2258,1.1457,2.0802,5.6376,103.0
+185,1,Zabrat-Kürdəxanı şos. 171,Zabrat-Kürdəxanı yolu,3,1,4.3926,1.7553,2.6373,6.4562,21.5714
+185,2,Q.Qarayev pr. 102,Gənclik küç. 120,11,0,4.4278,1.58,2.8479,9.5585,0
+185,2,Zabrat-Kürdəxanı şos. 116,Zabrat-Kürdəxanı şos. 268,4,1,3.9786,1.3687,2.6099,6.7329,21.5714
+186,2,Q.Qarayev pr. 102,Gənclik küç. 120,11,0,4.4278,1.58,2.8479,9.5591,0
+186,2,Bakıxanov Dәmiryol Stansiyası,Sabunçu Dәmiryol Stansiyası,11,0,4.9015,1.7521,3.1494,10.183,0
+189,2,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.0964,1.2192,1.8772,4.5504,0
+190,2,Ə.İsazadə küç. Şəhidlər Xiyabanı,Binə qәs. Əli İsazadə,4,0,3.4048,1.3095,2.0953,6.3613,0
+15,1,Koroğlu NMM,Qara Qarayev m/st,7,0,4.7246,1.8451,2.8795,10.1866,0
+194,1,Qobu yolu (Qaz idarəsi),Sәdәrәk Ticarət Mərkəzi Zona 3,10,0,7.2897,2.8653,4.4243,12.4883,0
+194,2,Bakı Dairəvi Avtomobil yolu (Yol qovşağ,Qobu park y/m,9,0,12.3765,4.6919,7.6846,18.901,0
+195,1,14 nömrəli Bakı Peşə Məktəbi,Bakı-Ələt-Qazax şos.,4,4,5.5812,2.1073,3.4739,8.0571,1729.4286
+197,2,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,4.0022,1.2126,2.7896,7.105,0
+198,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,3.845,1.1759,2.6691,6.8569,0
+198,1,Babək küç. 142,İpək Emalı Zavodu,4,0,3.4717,1.2451,2.2267,5.9413,0
+198,2,İpək Emalı Zavodu,15 saylı Bakı Peşə Liseyi,5,0,3.1617,1.0023,2.1595,6.1357,0
+199,1,Ceyhun Səlimov küçəsi 19,Ziya Bünyadov prospekti 3,4,0,2.7544,1.0317,1.7227,4.8973,0
+17,1,Bakı Avrasiya Universiteti,200 nömrəli Məktəb-Lisey Kompleksi,11,2,4.484,0.8062,3.6778,13.6976,0
+17,1,Tibb Universitetinin Tədris Cərrahiyyə Klini*,A.Abbasov küç. 17,9,1,4.4381,1.7065,2.7316,10.4503,0
+17,2,A.Abbasov küç. 68,54 saylı uşaq bağçası,11,0,6.3191,1.2064,5.1128,17.6113,0
+17,2,Dədə Qorqud parkı,Qərb Universiteti (2 saylı korpus),11,2,5.941,1.8541,4.0869,14.8134,0
+205,1,Azərbaycan Respublikasının Milli Məclis,Neftçi Qurban küç. 84,7,0,3.4755,1.2384,2.2371,6.9616,0
+205,1,20-ci sahə dairəsi,Abşeron ticarət mərkəzi,11,1,13.3481,4.7319,8.6163,21.4925,0
+205,2,Abşeron ticarət mərkəzi,Bakı Ali Neft Məktəbi,11,1,12.8117,5.0109,7.8008,19.8055,0
+205,2,118 saylı yarımstansiya,Səbail r. Dövlət Yanğından Mühafizə,11,0,7.3081,2.4361,4.872,13.7461,0
+205,2,Səbail r. Dövlət Yanğından Mühafizə,Mәrkәzi Klinik Xәstәxana,7,0,3.6824,1.1641,2.5183,7.5434,0
+206,1,D.Bəkirov adına uşaq bağçası,Binə ticarət mərkəzi,11,0,5.7775,2.2126,3.5649,11.0422,0
+206,1,İpək Yolu Yanacaq Doldurma Məntəqəsi,Mərkəzi Nəbatat Bağı,3,3,5.287,2.0937,3.1932,7.6065,3943.2857
+206,2,Elmlər Akademiyası m/st,Bakı Dairəvi Avtomobil yolu (Yol qovşağ,9,4,5.7179,2.1593,3.5586,10.3625,3943.2857
+206,2,Binə ticarət mərkəzi,D.Bəkirov adına uşaq bağçası,10,0,6.6135,2.6304,3.9831,11.5741,0
+208,2,Zığ şos. 289,Suraxanı Rayon Qaz İstismar Sahəsi,4,0,2.8022,0.9826,1.8196,4.8558,0
+210,1,Hövsan Olimpiya İdman Kompleksi,89 saylı poçt şöbəsi,2,0,2.2527,0.6705,1.5822,4.4637,0
+210,2,Hövsan - Türkan şos. dayanacaq 10,Yeni Türkan qәs.,10,0,7.3193,1.6304,5.6889,16.9857,0
+211,1,Sədərək Ticarət Mərkəzi,Sәdәrәk Ticarət Mərkəzi Zona 1,3,0,2.8266,1.1125,1.7141,4.5465,0
+211,1,Əsəd Əhmədov küçəsi 7,Abdulvahab Salamzadə küçəsi 140,10,2,4.7029,1.8124,2.8905,9.3138,0
+211,1,Nərimanov Rayon Prokurorluğu,DİN Respublika Hospitalı,11,1,6.535,1.151,5.384,14.806,0
+211,2,7 saylı ASAN xidmət mərkəzi,Ayna Sultanova parkı,11,0,6.4425,0.7895,5.653,15.3625,0
+212,1,Hövsan kəndi dayanacaq 20,Hövsan kəndi dayanacaq 21,7,7,2.9369,0.5998,2.3371,7.9426,1094.4286
+212,2,43-cü Hövsan küç. 144,Hövsan kəndi dayanacaq 8,7,6,3.2015,0.8273,2.3742,8.0315,1094.4286
+214,1,26 nömrəli Şəhər Poliklinikası,Neftçilər m/st,4,0,2.1615,0.6414,1.5201,4.478,0
+214,1,Neftçilər m/st,Yeni Ramana küç. 24,11,3,9.9283,3.6917,6.2366,16.5683,0
+214,2,86 saylı uşaq bağçası,Qara Qarayev m/st,11,0,9.3613,2.9687,6.3926,16.891,0
+18,1,Respublika Klinik Uroloji Xəstəxana,Elmlər Akademiyası m/st,10,0,4.5191,1.6867,2.8324,11.0576,0
+18,1,Mir Cəlal küç. 308,H.Babaşov küç. 29Q,6,2,2.5625,0.9329,1.6296,6.4441,1187.1429
+18,2,Azərbaycan Respublikasının Milli Məclis,İçərişəhər m/st,11,1,6.0193,0.815,5.2043,17.8593,0
+215,1,Hövsan - Türkan şos. Xanlar küçəsi kəs.,119 nömrəli tam orta məktəb,4,3,5.2389,1.7929,3.446,8.0023,276.5714
+215,2,Hövsan Olimpiya İdman Kompleksi,89 saylı poçt şöbəsi,2,0,2.2527,0.6705,1.5822,3.7287,0
+216,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.0967,1.2288,1.8679,4.5315,0
+217,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.1109,1.2288,1.8821,4.5608,0
+118A,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,3.8667,1.1578,2.7089,6.9381,0
+118B,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,3.8667,1.1578,2.7089,6.9385,0
+20,1,267 saylı uşaq bağçası,Ə.Şıxlinski küç. 149,11,0,5.1747,1.0165,4.1582,15.0079,0
+20,1,Ə.Şıxlinski küç. 149,Həzi Aslanov m/st,4,0,2.6917,1.0565,1.6352,5.7933,0
+20,2,Həzi Aslanov m/st,Ə.Şıxlinski küç. 246,5,0,2.5243,1.0033,1.521,5.8151,0
+20,2,Ə.Şıxlinski küç. 246,24 nömrəli Birləşmiş Şəhər Xəstəxanası,11,0,4.9567,1.0409,3.9158,14.3467,0
+141E,1,Azərişıq ASC-nin yarımstansiyası,Mərdəkan yolu 123,2,0,2.9689,1.1819,1.787,4.3642,0
+160A,2,Mərdəkan yolu 72,Binə Atçılıq qəsəbəsi,4,0,11.0384,4.1646,6.8738,17.8304,0
+173A,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.0641,1.1803,1.8837,4.5643,0
+173A,1,T.Məmmədov küç. 140,H.Əliyev küç. 8,4,0,7.0255,2.8005,4.225,10.0752,0
+173B,2,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.053,1.1803,1.8726,4.5412,0
+21,1,249 nömrəli tam orta mәktәb,63 nömrəli tam orta mәktәb,11,0,5.0001,1.605,3.3951,12.9252,0
+21,2,63 nömrəli tam orta mәktәb,Gəncə pr. 39,11,0,4.3548,1.2697,3.0852,12.0801,0
+7A,1,Bakı Beynəlxalq Avtovağzal Kompleksi,Moskva pr. 45A,4,0,2.5311,0.9523,1.5789,5.6391,0
+7A,1,Ceyhun Səlimov küçəsi 19,Ziya Bünyadov prospekti 3,4,0,2.7544,1.0317,1.7227,6.0313,0
+7A,2,Moskva pr. 254,Bakı Beynəlxalq Avtovağzal Kompleksi,3,0,2.398,0.8184,1.5796,5.3077,0
+7B,2,2 saylı poçt filialının 12 saylı poçt şöbəsi,Abdulvahab Salamzadə küçəsi 140,7,0,3.6589,1.3368,2.322,8.6655,0
+88A,2,X.Rüstəmov küç.,Mərkəzi Bulvar küç. 123,4,1,2.655,1.0353,1.6197,5.7507,0
+E1,1,Səbail Rayonu Dövlət Yol Polisi İdarəsi,Abşeron ticarət mərkəzi,4,0,15.8271,5.9406,9.8865,21.7899,0
+E1,2,Abşeron ticarət mərkəzi,6 nömrəli Bakı Peşə Məktəbi,4,0,13.1779,5.1806,7.9973,17.8808,0
+M8,1,Fətəli Xan Xoyski küçəsi 134,Dövlət Neft Şirkəti (ARDNŞ),7,0,4.7645,1.7863,2.9782,8.4944,0
+M8,1,5 saylı ASAN Xidmət mərkəzi,Koroğlu Nəqliyyat Mübadilə Mərkəzi,1,0,2.9764,1.0069,1.9695,4.4078,0
+M8,2,Atletlər kəndi,5 saylı ASAN Xidmət mərkəzi,1,1,2.2867,0.6199,1.6668,3.7816,0
+22,1,Babək pr. 415,R.Məmmədov küç. 40,9,0,3.9301,1.4813,2.4488,9.6788,0
+22,2,R.Məmmədov küç. 40,Babək pr. 64,8,0,2.8976,1.0839,1.8137,7.6133,0
+22,2,Babək pr. 472,Nizami Rayon İcra Hakimiyyəti,10,0,5.6647,2.2539,3.4108,12.6359,0
+506,1,Park Solero yaşayış kompleksi,"Əliağa Vahid küçəsi, giriş 1047A",11,0,3.497,1.2181,2.2789,8.3821,0
+506,2,Masazır Qəsəbə Poliklinikası,Park Solero yaşayış kompleksi,10,0,3.7102,1.4095,2.3007,8.0938,0
+509,1,8 saylı notariat ofisi,Xocasən şosesi,11,0,11.6655,4.0781,7.5874,19.3642,0
+509,2,Xocasən şosesi,Cırtdan uşaq əyləncə parkı,11,0,11.3544,4.2838,7.0706,18.2949,0
+511,2,Güzdək qəsəbəsi Həzi Cavadov  küçəsi,Bakı-Şamaxı şos. YDM,10,2,5.8996,2.3326,3.567,10.7124,155.7143
+517,1,4 nömrəli tam orta məktəb,Xırdalan şəhəri Polad Həşimov küçəsi 9,8,4,5.968,1.8669,4.1011,11.1507,1298.5714
+517,1,Xırdalan şəhər H.Əliyev pr. 545,Abşeron DOST mərkəzi,11,0,6.2315,1.3507,4.8809,13.7638,0
+517,2,Xırdalan şəhəri 3 nömrəli tam orta məktəb,Heydər Əliyev pr. 894,11,0,6.0524,1.2637,4.7887,13.5732,0
+24,1,Bakı Olimpiya Stadionu,Z.Bünyadov pr.,5,0,5.3503,2.0299,3.3204,10.7225,0
+24,1,Z.Bünyadov pr. 250,7 saylı ASAN xidmət mərkəzi,11,3,5.3024,1.0716,4.2309,15.2057,1263.7143
+24,2,Bakı Avrasiya Universiteti,Z.Bünyadov pr. 214,11,4,5.0236,1.3,3.7236,13.8223,1263.7143
+24,2,Z.Bünyadov pr. 20/61,Bakı Olimpiya Stadionu,5,0,5.2144,1.9977,3.2167,10.4398,0
+523,1,Bakı Mühəndislik Universiteti,Xırdalan şəhəri Polad Həşimov küçəsi 9,1,0,2.1986,0.6898,1.5088,3.4551,0
+525,1,Əliağa Vahid parkı,Masazır kəndir (Yeni saray),11,1,2.9183,0.5759,2.3424,9.1596,0
+525,2,Azadlıq küçəsi (Yeni saray),"Əliağa Vahid küçəsi, giriş 1101",11,1,2.5134,0.1828,2.3306,9.132,0
+533,1,Cıdır küçəsi,Aşağə güzdək qəsəbə 2 nömrəli tam o,4,4,5.579,2.0473,3.5317,8.641,98.2857
+536,2,Mehdiabad qəs.,Qara Qarayev küçəsi 162,9,3,9.6136,3.7715,5.8421,15.0873,109.1429
+537,1,Pirşağı qəs. 14 saylı TYS,T.Məmmədov küç. 137A,5,1,6.4598,2.5612,3.8986,9.7319,0
+537,2,Zabrat elektrik yarımstansiyası,Zabrat-Kürdəxanı şos. 268,6,1,7.6904,3.0363,4.6541,11.6282,8.4286
+537,2,Tofiq Tağızadə küçəsi 268,36 saylı poliklinika,4,2,6.1488,2.2995,3.8492,9.2964,0
+2,1,Dərnəgül NMM,DİN Respublika Hospitalı,11,0,6.2852,1.63,4.6552,16.3624,0
+2,1,Moskva pr. 254,Bakı Beynəlxalq Avtovağzal Kompleksi,3,0,2.4471,0.8409,1.6062,5.3805,0
+2,2,Nizami metro stansiyası,Heydər Əliyev Sarayı,4,0,2.5095,0.9859,1.5236,5.4885,0
+2,2,Ə.Rəcəbli küç. 208,Dərnəgül NMM,7,0,4.1042,1.4773,2.6269,9.4974,0
+26,2,Milli Arxiv İdarəsi,Gənclik Nəqliyyat Mübadilə Məntəqəsi,11,2,5.0371,1.949,3.0881,12.0879,0
+553,1,Motodrom y/m,Bakı Beynəlxalq Avtovağzal Kompleksi,1,0,3.1671,0.9408,2.2263,4.9396,0
+557,2,306 nömrəli tam orta mәktәb,Etibar Şirəliyev adına 274 saylı tam orta,4,1,4.4326,1.7332,2.6994,6.9183,0
+569,1,Şəfiqə Axundova küçəsi,Masazır 6 saylı məktəb,4,4,4.2397,1.2017,3.038,7.6195,10842.0
+569,2,Masazır 6 saylı məktəb,Şəfiqə Axundova küçəsi,4,4,4.1841,1.1978,2.9862,7.5125,10842.0
+596,1,Tır park,7 saylı tam orta məktəb,3,2,4.1215,1.6418,2.4797,6.1307,676.5714
+596,2,Lökbatan NMM,Heybət Dəmiryolu Stansiyası,11,2,10.3646,3.9733,6.3913,16.8905,30.8571
+596,2,7 saylı tam orta məktəb,Tır park,4,3,4.0956,1.6098,2.4858,6.4766,1045.4286
+29,2,H.Zərdabi küç. 38B,Dövlət Sosial Müdafiə Fondu,5,5,2.7756,0.9781,1.7975,6.5692,2072.0
+29,2,Moskva pr. 254,Bakı Beynəlxalq Avtovağzal Kompleksi,3,0,2.4588,0.8554,1.6034,5.3731,0
+30,1,Babək pr. 518,C.Naxçıvanski küç. 520,9,0,5.2975,2.0785,3.219,11.7785,0
+31,2,İ.Nəbiyev küç. 26D,Dövlət İdarəçilik Akademiyası,5,0,2.8847,1.0278,1.8569,6.7307,0
+32,1,Kövkəb Səfərəliyeva küçəsi 31,N.Əliyev küç. 7,6,0,3.3168,1.1945,2.1224,7.7883,0
+32,1,S.Əhmədov küç. 98,11 nömrəli Birləşmiş Şəhər Poliklinikas,11,0,4.2183,1.3077,2.9106,11.6047,0
+32,2,C.Naxçıvanski küç. 424,Neftçilər m/st,7,5,3.0588,1.1434,1.9154,7.5572,0
+33,1,Dərnəgül Nəqliyyat Mübadilə Mərkəzi,Atatürk prospekti 117,10,2,5.7161,2.1938,3.5224,12.9393,0
+33,1,Atatürk prospekti 117,Bakı Sağlamlıq Mərkəzi,4,0,4.1623,1.2683,2.894,9.2255,0
+33,1,Bakı Sağlamlıq Mərkəzi,28 Mall ticarət mərkəzi,10,0,6.1873,2.2478,3.9395,14.0767,0
+33,2,Xarici İşlər Nazirliyi,Koroğlu parkı,11,3,4.8644,1.909,2.9553,11.7261,0
+33,2,Dədə Qorqud parkı,Ş.Məmmədova küç. 24,11,2,7.1443,2.7641,4.3802,15.6118,0
+35,1,Ruhid İslamlı küçəsi 56,87 nömrəli tam orta məktəb,7,1,4.7147,1.6999,3.0148,10.555,0
+35,2,Q.Qarayev pr. 57,Sülh küç. 2,7,0,4.494,1.7597,2.7344,9.7903,0
+36,1,278 nömrəli tam orta məktəb,204 nömrəli tam orta məktəb,11,1,5.9444,1.4345,4.5099,15.9667,0
+36,2,Ulduz m/st,73 nömrəli tam orta məktəb,5,0,4.4003,1.539,2.8612,9.4702,0
+36,2,Ə.Şıxlinski küç. 48,Dövlət Yanğından Mühafizə Hissəsi,11,1,5.2581,1.1292,4.1289,14.9275,0
+37,1,Moskva pr. 254,Bakı Beynəlxalq Avtovağzal Kompleksi,3,0,2.4305,0.8333,1.5972,5.356,0
+37,2,Bakı Beynəlxalq Avtovağzal Kompleksi,Moskva pr. 45A,4,0,2.4732,0.97,1.5032,5.433,0
+38,1,Nəqliyyatı İntellektual İdarəetmə Mərkəzi,Araz küç. 103,11,3,8.6762,0.1604,8.5158,26.8921,848.0
+3,1,Dərnəgül Nəqliyyat Mübadilə Mərkəzi,Ş.Məmmədova küç. 25,11,0,4.0837,1.2279,2.8558,11.455,0
+3,1,Atatürk prospekti 159,Azərbaycan Dövlət Pedaqoji Universiteti 3-cü korpus,6,0,4.7842,1.9102,2.8741,9.8383,0
+3,2,Hüseyn Cavid parkı,Vergi Cinayətlərinin İbtidai Araşdırılma Dep.,5,0,2.91,1.1261,1.7839,6.5319,0
+3,2,Ayna Sultanova parkı,Dərnəgül Nəqliyyat Mübadilə Mərkəzi,10,0,4.3395,1.6918,2.6476,10.5541,0
+39,1,Elmlər Akademiyası m/st,A.M.Şərifzadə küç. 228,7,0,2.6691,0.994,1.6751,6.9023,0
+39,2,Bakı Apellyasiya Məhkəməsi,Hüseyn Cavid parkı,10,0,4.0077,0.6089,3.3988,12.6037,0
+40,1,Sabunçu Dәmiryol Stansiyası,S.Mehmandarov küç. 34,10,0,5.8541,2.3283,3.5257,12.9478,0
+40,2,Bakıxanov Dәmiryol Stansiyası,Sabunçu Dәmiryol Stansiyası,11,0,4.9015,1.7521,3.1494,12.2549,0
+44,1,Dövlət Sərhəd Xidməti Akademiyası,65 nömrəli tam orta məktəb,11,0,6.7947,1.8849,4.9097,17.0513,0
+44,2,65 nömrəli tam orta məktəb,Gəncə pr. 47,11,0,4.7799,1.8125,2.9674,11.7563,0
+46,1,86 nömrəli tam orta məktəb,Səməd bəy Mehmandarov küçəsi 504,11,0,5.0707,1.8533,3.2174,12.4424,0
+46,2,Köhnə Günəşli Elektrik yarımstansiyası,Aşıq Ələsgər küçəsi 17,11,0,4.6954,1.812,2.8834,11.5314,0
+49,1,S.Mehmandarov küç. 21,68 nömrəli tam orta məktəb,11,2,4.43,1.4975,2.9324,11.6641,328.4286
+49,2,68 nömrəli tam orta məktəb,S.Mehmandarov küç. 34,11,2,4.8074,1.7781,3.0293,11.9284,328.4286
+50,1,Q.Qarayev pr. 608,Babək pr. 92,4,0,3.6353,1.4369,2.1984,7.3292,0
+51,1,Həzi Aslanov m/st,Gənclik parkı,9,0,3.4652,1.2936,2.1716,8.9229,0
+51,2,63 nömrəli tam orta mәktәb,Həzi Aslanov m/st,6,0,2.8884,1.1133,1.7751,6.8414,0
+4,1,Gənclik metro stansiyası,Xocalı prospekti 14,11,0,7.8885,2.4999,5.3885,18.3606,0
+4,2,Azərbaycan Dəmir Yolları QSC,Respublika Talassemiya mərkəzi,10,0,6.8358,2.6777,4.1581,14.672,0
+52,2,H.Ələsgərov küç. - C.Məmmədquluzadə küç,Qış parkı,11,0,5.6747,1.6472,4.0275,14.6508,0
+53,1,41-ci polis bölməsi,15 nömrəli Uşaq Poliklinikası,8,1,7.5476,2.403,5.1446,16.7001,0
+53,2,Səbail Rayonu Dövlət Yol Polisi İdarəsi,Badamdar şos. 143,7,1,5.3673,2.0224,3.3449,11.4577,613.5714
+54,1,Heydər Əliyev pr. Zabrat şos. keçid,M.Şəhriyar küç. 2,1,0,2.9555,0.6165,2.3391,6.7133,0
+55,1,Bakıxanov Dәmiryol Stansiyası,Sabunçu Dәmiryol Stansiyası,11,0,4.9015,1.7521,3.1494,12.2562,0
+55,2,Sabunçu Dәmiryol Stansiyası,S.Mehmandarov küç. 34,10,0,5.8541,2.3283,3.5257,12.9493,0
+57,1,Xәtai Rayon Mәhkәmәsi,C.Hacıəliyev küç. 92,11,1,5.4552,1.5692,3.886,14.2645,1430.5714
+57,2,C.Hacıəliyev küç. 92,Əhmədli m/st,11,1,5.941,1.7454,4.1956,15.1088,1430.5714
+60,1,R.Rüstəmov küç. 338,B.Bünyadov küç. 125,11,5,5.1767,1.9297,3.2469,12.5217,2676.0
+60,1,B.Bünyadov küç. 41,Koroğlu Nəqliyyat Mübadilə Mərkəzi,7,3,6.0937,2.167,3.9267,13.0421,4082.1429
+60,2,B.Bünyadov küç. 228,Gənclik küç. 13,11,8,5.1273,2.0065,3.1208,12.1777,3140.8571
+62,1,Asif Əsədullayev küçəsi 135,Neftçilər m/st,9,0,8.3139,3.2114,5.1025,16.9166,0
+62,2,N.Tusi küç. 4,M.Hadi küç. 57,5,1,3.2309,1.2555,1.9754,7.0543,0
+64,1,Q.Qarayev pr. 608,Babək pr. 92,4,0,3.6353,1.4369,2.1984,7.3288,0
+64,1,Babək pr. 106,1-ci Qaraçuxur küç. 72,9,1,3.5025,1.1326,2.3699,9.463,0
+64,2,2 nömrəli uşaq evi,Babək pr. 106/1,9,0,3.5718,1.1942,2.3776,9.4841,0
+66,1,Suraxanı r. Şərq y/m,213 nömrəli tam orta məktəb,7,7,3.5938,0.7112,2.8827,10.1942,1287.0
+67,1,A.Məhərrəmov küç. 140A,X.Natəvan küç. ilə Səttarxan küç. kəs.,11,0,5.0991,1.9356,3.1635,12.2935,0
+67,2,Mərkəzi Dəmiryol Xəstəxanası,Ziya Bünyadov prospekti 3,11,0,6.4051,2.3347,4.0703,14.7665,0
+70,1,AzərSuTikinti Xəstəxanası,B.Nuriyev küç. 207,11,1,4.8162,1.48,3.3362,12.7643,0
+70,1,Neftçilər m/st,İsmət Qayıbov adına stadion,11,0,11.6845,3.2083,8.4762,26.7808,0
+70,2,Asif Əsədullayev küçəsi 135,Qara Qarayev m/st,10,0,9.1401,2.6398,6.5003,21.0593,0
+71,1,Z.Bünyadov pr. 63,Cəbrayıl Rayon 3 nömrəli tam orta m,7,6,3.0105,1.119,1.8915,7.4928,3488.4286
+71,2,Cəbrayıl Rayon 3 nömrəli tam orta m,Z.Bünyadov pr. 2084,6,5,2.9595,1.1599,1.7996,6.9087,2337.2857
+78,2,Sabunçu Rayon İcra Hakimiyyәti,195 saylı uşaq bağçası,8,6,2.6318,1.0205,1.6113,7.0615,470.8571
+79,2,Nizami metro stansiyası,Heydər Əliyev Sarayı,4,0,2.5198,0.9859,1.5339,5.5166,0
+6,2,44 saylı uşaq bağçası,Elmlər Akademiyası m/st,11,0,5.0631,1.3493,3.7138,13.7957,0
+81,1,S.Qocayev küç. 226,279 saylı uşaq bağçası,11,2,3.4081,1.1408,2.2673,9.8495,1400.7143
+81,2,279 saylı uşaq bağçası,Qaraçuxur Yanğından Mühafizə Bölməsi,11,2,3.4115,1.1866,2.2248,9.7337,1400.7143
+81,2,Gənclik küç. 45,Xalqlar Dostluğu m/st,11,4,4.5945,1.6228,2.9717,11.7703,0
+83,1,Bilәcәri dairәsi,Biləcəri Dəmiryol Stansiyası,11,4,4.5868,1.3151,3.2717,12.5897,2472.7143
+83,2,Nəsimi Rayon Mühafizə İdarəsi,Təbriz küç. 25,8,0,4.0289,1.5921,2.4368,9.3129,0
+85,1,S.C.Pişəvəri küç. 3-cü mkr. dairəsi,M.Araz küç. 17A,10,0,7.0795,1.9874,5.092,17.2214,0
+85,2,Azərbaycan Cüdo Federsaiyası Azadlıq pr.,Azərbaycan Respublikasının Milli Arxiv İdarəsi,4,0,2.4951,0.9859,1.5092,5.4495,0
+85,2,H.Əliyev küç. 15,A.Məmmədov küç. 171B,9,0,4.1218,1.6418,2.4801,9.7642,0
+88,1,Binəqədi Rayon Məhkəməsi,Bakı Turizm Peşə Məktəbi,10,0,3.7902,1.4415,2.3487,9.7395,0
+88,2,A.Kunanbayev küç. 36,Dərnəgül NMM,5,0,2.7827,1.0535,1.7291,6.383,0
+92,1,234 saylı uşaq bağçası,10 may küç. 7-ci döngə 3,11,0,4.9049,1.7899,3.115,12.1629,0
+92,2,Dairəvi yol 66C,Bilәcәri bәlәdiyyәsi 1,11,0,4.5547,1.6866,2.8681,11.4897,0
+92,2,X.Natəvan küç. 153A,Memar Əcəmi m/st,9,0,4.8279,1.887,2.9409,11.0215,0
+93,1,Binəqədi Rayon Məhkəməsi,Z.Bünyadov pr. 170,9,0,6.631,1.2103,5.4206,17.7836,0
+93,2,Atatürk pr. 220,Dərnəgül Nəqliyyat Mübadilə Mərkəzi,9,0,4.0169,1.4977,2.5192,9.8707,0
+96,1,Dövlət Statistika Komitəsi,Yasamal bələdiyyəsi,11,0,4.4583,1.5501,2.9082,11.5979,0
+96,1,Respublika Klinik Xəstəxanası,Bakı Beynəlxalq Avtovağzal Kompleksi,6,2,3.9064,1.5529,2.3534,8.4182,0
+96,2,Bakı Beynəlxalq Avtovağzal Kompleksi,1 nömrəli Vərəm Əleyhinə Dispanser,5,0,2.9968,1.1802,1.8166,6.6209,0
+96,2,1 saylı Rabitə Xidmətləri Mərkəzi,H.Cavid pr. 168,11,0,5.3969,1.1559,4.2411,15.2328,0
+96,2,12 saylı notariat ofisi,Xarici İşlər Nazirliyi,11,0,6.2549,0.9818,5.273,18.047,0
+101,2,Qala dairәsi,Dəmiryolçular küç. ilə Sülh küç. kəs.,3,0,3.3097,1.0393,2.2704,5.3943,0
+9,1,1 saylı Rabitə Xidmətləri Mərkəzi,Müstəqillik küç. 7,4,0,3.4658,1.3277,2.1381,7.1648,0
+102,1,Moskva pr. 254,Aprel Zəfəri küç. 194,7,0,6.7615,2.4555,4.306,11.2425,0
+103,1,26 nömrəli Şəhər Poliklinikası,Gənclik küç. 14,7,0,3.32,1.3087,2.0114,6.4944,0
+103,1,Hövsan şosesi 507/1,E.Qasımov küç. 18,7,0,3.48,1.35,2.1299,6.7397,0
+103,2,E.Qasımov küç. 18,Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə,7,0,2.7171,0.9279,1.7892,6.0348,0
+104,1,260 nömrəli tam orta mәktәb,Mərkəzi küç. 637,11,0,4.8017,1.2832,3.5185,10.9473,0
+104,2,Uşaqların D.R.M.,Gəncə pr. 39,11,1,4.995,1.1903,3.8047,11.5395,221.7143
+105,2,Balaxanı q. C.Məmmədquluzadə küç.,E.Mehdiyev küç. 292,11,3,10.2808,3.6156,6.6652,17.4575,7687.4286
+106,1,Y.Əliyev küç. 7,Yeni Ramana küç. 204,8,0,3.2174,1.2547,1.9627,6.7272,0
+106,2,Yeni Ramana küç. 206,Y.Əliyev küç. 2,6,0,3.265,1.156,2.109,6.3632,0
+107,1,Koroğlu NMM,Bakı Olimpiya Stadionu,4,0,3.9636,1.1993,2.7643,7.0527,0
+112,1,Abşeron sanatoriyası,Əli ayağı Məscidi,7,2,12.6444,4.9454,7.6991,17.2338,855.8571
+112,2,Şüvәlan yolu,Dendrologiya İnstitutu,8,3,15.4044,3.7046,11.6998,25.3099,1661.0
+113,2,Əmircan qəbiristanlığı,87 nömrəli tam orta məktəb,9,4,5.3272,2.1236,3.2037,9.6272,291.0
+10,1,Respublika Perinatal Mərkəzi,Mərkəzi Bulvar 2-ci fəvvarələr küç. kəs.,9,1,5.2769,2.0898,3.1871,11.6916,0
+10,2,Mərkəzi Bulvar 1-ci fəvvarələr küç. kəs.,Şah İsmayıl Xətai metro stansiyası,5,1,3.5804,1.2448,2.3356,8.036,0
+10,2,Bəyaz zanbaqlar parkı,Hüseyn Cavid parkı,11,0,4.7882,1.8921,2.8961,11.5646,0
+119,1,Abşeron rayon Mədəniyyət Mərkəzi,Xırdalan şəhər Heydər Əliyev pr. 956A,3,1,3.0417,0.9926,2.0491,5.2392,0
+119,2,Xırdalan şəhər Heydər Əliyev pr. 603,Xırdalan şəhər Heydər Əliyev pr. 427,3,1,3.2308,1.1676,2.0632,5.2684,0
+120,1,Oqtay Şabanov küçəsi 122,Hövsan qəsəbəsi yeni məhəllə,9,1,4.2451,1.6356,2.6094,8.3697,376.1429
+120,2,13-cü Hövsan küçəsi 17,Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə,7,0,2.6286,1.0473,1.5813,5.5873,0
+120,2,Zığ Gölü,Zığ şosesi Zeytun bağı,3,0,2.5464,0.8658,1.6806,4.4582,0
+125,1,Qaradağ Rayon Polis İdarəsi,Lökbatan qəs. 139 nömrəli tam orta məkt,4,0,2.953,1.1067,1.8463,5.1535,0
+125,2,Lökbatan qəs. 139 nömrəli tam orta məkt,Cənub Qapısı y/m,11,0,5.3713,1.7412,3.6301,11.1777,0
+126,1,Sәdәrәk Sәdәrәk t/m (Elit),Xocəsən şos. 28 May küç. kəs.,5,0,7.6281,2.9537,4.6743,10.7148,0
+130,1,A.Şəbiyev küç. 13,Abşeron ticarət mərkəzi,11,0,5.5296,1.735,3.7946,11.5176,0
+130,2,Moskva pr. 254,144 saylı poçt şöbəsi,11,0,7.375,2.512,4.863,13.7282,0
+130,2,Heybət Dəmiryolu Stansiyası,Cırtdan uşaq əyləncə parkı,11,0,8.8691,3.4215,5.4476,14.9377,0
+131,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.0772,1.1993,1.8778,4.5517,0
+132,2,Hövsan Olimpiya İdman Kompleksi,Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə,8,0,3.3253,1.2639,2.0614,6.931,0
+132,2,BakuBus MMC,Gəncə pr. 39,9,0,4.8306,1.8997,2.9309,9.063,0
+139,1,Koroğlu NMM,Bakı Olimpiya Stadionu,2,0,3.0747,1.1803,1.8943,4.5854,0
+141,1,Sergey Yesenin küçəsi 188,Şüvәlan yolu,11,5,11.1081,2.2773,8.8308,21.9357,1046.4286
+141,2,Şüvәlan yolu,Mərdəkan yolu 151,11,0,8.5265,3.3996,5.127,14.2733,0
+141,2,Yeni Ramana küç. 206,Y.Əliyev küç. 2,6,0,3.265,1.156,2.109,6.3631,0
+142,1,M.Ə.Sabir küç.,Su Nəqliyyatında Polis İdarəsi,4,0,4.6387,1.3156,3.3232,8.2087,0
+142,2,FHN-nin Xüsusi Riskli Xilasetmə Xidməti,M.Ə.Sabir küç.,2,0,4.354,1.1428,3.2112,7.3104,0
+145,1,28 May küç. 153,Əliçıraq Məscidi,3,1,7.4474,2.3362,5.1112,11.5748,1670.5714
+145,2,Əliçıraq Məscidi,28 May küç. 130,2,0,7.5243,2.3692,5.1552,11.3323,0
+147,2,Digah qəsəbə Telefon Qovşağı,28 May küç. 36,7,3,4.759,1.8426,2.9164,8.3664,9205.1429

@@ -1,0 +1,29 @@
+C-01 "B": the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+C-09 "E": the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+M-21 "A": the timetable gives a moving speed of 219.2 km/h; using the setting for Bus instead
+M-22 "F": the timetable gives a moving speed of 150.0 km/h; using the setting for Bus instead
+M-34 "A": the timetable gives a moving speed of 251.7 km/h; using the setting for Bus instead
+M-20 "C": the timetable gives a moving speed of 169.5 km/h; using the setting for Bus instead
+C-21 "R": the timetable gives a moving speed of 508.5 km/h; using the setting for Bus instead
+C-13 "D" [17508505]: the timetable gives a moving speed of 142.1 km/h; using the setting for Bus instead
+C-23 "S1": the timetable gives a moving speed of 168.1 km/h; using the setting for Bus instead
+C-24 "H2": the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+C-24 "H1": the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+C-28 "C": the timetable gives a moving speed of 90.2 km/h; using the setting for Bus instead
+CT-23 B: the timetable gives a moving speed of 138.3 km/h; using the setting for Bus instead
+M-05 "H <3": the timetable gives a moving speed of 0.0 km/h; using the setting for Bus instead
+M-06 "B": the timetable gives a moving speed of 125.2 km/h; using the setting for Bus instead
+M-32 "A1": the timetable gives a moving speed of 2240.0 km/h; using the setting for Bus instead
+M-34 "A<3": the timetable gives a moving speed of 742.1 km/h; using the setting for Bus instead
+CT-28 T.S.: the timetable gives a moving speed of 136.8 km/h; using the setting for Bus instead
+CT-27 L: the timetable gives a moving speed of 151.1 km/h; using the setting for Bus instead
+M-35 "D": the timetable gives a moving speed of 102.6 km/h; using the setting for Bus instead
+C-43 "A": the timetable gives a moving speed of 139.1 km/h; using the setting for Bus instead
+M-35 "D<3": the timetable gives a moving speed of 106.4 km/h; using the setting for Bus instead
+CT-25 B: the timetable gives a moving speed of 138.3 km/h; using the setting for Bus instead
+CT-26 B: the timetable gives a moving speed of 138.3 km/h; using the setting for Bus instead
+CT-24 A: express, skipping most stops of a route it runs along
+CT-24 B: express, skipping most stops of a route it runs along
+CT-23 B: express, skipping most stops of a route it runs along
+CT-25 B: express, skipping most stops of a route it runs along
+CT-26 B: express, skipping most stops of a route it runs along

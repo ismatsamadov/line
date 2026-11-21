@@ -1,0 +1,30 @@
+イオンモール高知線 d1: a branch with 11 of 25 departures runs as route イオンモール高知線 (F3;イオンモール（北はりまや橋・高知駅BT・比島 経由）)
+イオンモール高知線 d1: 2 other stop sequence(s) with 2 of 25 departures left out; 8 stops they call at are on no pattern of the route
+トーメン団地線 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+トーメン団地線 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+パークタウン線 d1: a branch with 3 of 9 departures runs as route パークタウン線 (branch 1)
+パークタウン線 d1: 1 other stop sequence(s) with 2 of 9 departures left out; 5 stops they call at are on no pattern of the route
+医大病院線 d1: 1 other stop sequence(s) with 2 of 12 departures left out; 5 stops they call at are on no pattern of the route
+医大病院線 d2: 1 other stop sequence(s) with 2 of 10 departures left out; 5 stops they call at are on no pattern of the route
+金田橋線 d2: 1 other stop sequence(s) with 1 of 5 departures left out; 5 stops they call at are on no pattern of the route
+医大病院～鳥越線 d1: 1 other stop sequence(s) with 1 of 4 departures left out; 11 stops they call at are on no pattern of the route
+南NT線 d1: a branch with 6 of 18 departures runs as route 南NT線 (T2;ハビリセンター（南はりまや橋・横浜・南NT 経由）)
+天王～南NT線 d1: a branch with 6 of 12 departures runs as route 天王～南NT線 (Y2T3;南ニュータウン（朝倉・南はりまや橋 経由）)
+宇津野線 d1: 2 other stop sequence(s) with 4 of 11 departures left out; 64 stops they call at are on no pattern of the route
+桂浜線 d1: a branch with 3 of 15 departures runs as route 桂浜線 (branch 1)
+桂浜線 d2: a branch with 3 of 13 departures runs as route 桂浜線 (branch 1)
+潮見台・JA高知病院線 d1: a branch with 6 of 26 departures runs as route 潮見台・JA高知病院線 (K2;潮見台・JA病院（はりまや橋・南国バイパス・本江田橋・潮見台 経由）)
+潮見台・JA高知病院線 d1: 2 other stop sequence(s) with 6 of 26 departures left out; 10 stops they call at are on no pattern of the route
+船岡～金田橋線 d1: a branch with 6 of 14 departures runs as route 船岡～金田橋線 (G11W3;船岡南団地（金田橋・高知駅前・堺町・上町二丁目 経由）)
+船岡～金田橋線 d2: a branch with 4 of 10 departures runs as route 船岡～金田橋線 (G11W3;船岡南団地（金田橋・高知駅前・堺町・上町二丁目 経由）)
+種崎線 d1: a branch with 3 of 11 departures runs as route 種崎線 (P2C1;県庁前（中央市場前・知寄町二丁目・はりまや橋 経由）)
+種崎線 d2: a branch with 3 of 10 departures runs as route 種崎線 (P2C1;県庁前（中央市場前・知寄町二丁目・はりまや橋 経由）)
+医大病院～高岡線 d1: a branch with 3 of 12 departures runs as route 医大病院～高岡線 (G6Y4;高岡（比島・高知駅BT・堺町・朝倉駅前 経由）)
+医大病院～高岡線 d2: a branch with 3 of 11 departures runs as route 医大病院～高岡線 (G6Y4;高岡（比島・高知駅BT・堺町・朝倉駅前 経由）)
+医療センター線 d1: a branch with 6 of 20 departures runs as route 医療センター線 (J2G1;高知駅BT（県立大・医療センター・美術館通・はりまや橋 経由）)
+医療センター線 d2: a branch with 6 of 13 departures runs as route 医療センター線 (J2G1;高知駅BT（県立大・医療センター・美術館通・はりまや橋 経由）)
+医療センター線 d1: 4 other stop sequence(s) with 7 of 20 departures left out; 63 stops they call at are on no pattern of the route
+鳥越線 [鳥越線_A] d1: a branch with 7 of 18 departures runs as route 鳥越線 [鳥越線_A] (D7;鳥越（南はりまや橋・堺町・あたご・宝町 経由）)
+鳥越線 [鳥越線_A] d2: a branch with 5 of 14 departures runs as route 鳥越線 [鳥越線_A] (D7;鳥越（南はりまや橋・堺町・あたご・宝町 経由）)
+鳥越線 [鳥越線_A] d1: 1 other stop sequence(s) with 1 of 18 departures left out; 5 stops they call at are on no pattern of the route
+鳥越線 [鳥越線_A] d2: 1 other stop sequence(s) with 1 of 14 departures left out; 6 stops they call at are on no pattern of the route

@@ -1,0 +1,43 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+31,1,Kankudi,37,4,0,3.4105,1.1865,2.2241,6.6316,0
+15,1,Abeka Lapaz,Best Point,11,0,11.5943,2.9727,8.6215,27.5514,0
+15,2,St. Johns,Mile 7 Clinic,5,0,3.2954,1.2703,2.0251,7.2768,0
+76,1,Kankudi,37,4,0,3.4071,1.1865,2.2206,8.3963,0
+4,1,KICC,Abattoir,2,0,8.1509,2.7962,5.3547,7.1654,0
+7,2,Junction,Jesus and Mary,6,0,7.4706,2.5562,4.9144,17.2576,0
+3,2,Tse Addo,Villas,2,0,6.324,2.0992,4.2247,12.6182,0
+35,1,FanMilk Junction,Offtown,6,3,3.3627,1.3238,2.0389,5.7034,2482.4286
+81,2,Ritz Second,Madina Zongo Junction,2,0,2.4408,0.9036,1.5372,5.584,0
+55,1,Abeka Lapaz,Lapaz Market,1,0,2.7179,0.993,1.7248,6.6196,0
+470,2,SSNIT,Ministries,5,1,6.1072,2.1106,3.9967,13.4556,0
+470,2,Ministries,Traffic Light,5,0,9.888,1.1695,8.7185,27.3835,0
+419,2,Curve,Lekma,3,1,3.7742,1.3887,2.3856,6.1717,0
+414,1,Fire Stone,Power House,8,0,4.9923,1.7252,3.2671,16.065,0
+401,1,Nii Boi Station,Suzzy's Inn,6,0,3.6259,1.4275,2.1984,7.7297,0
+398,2,KICC,Abattoir,2,0,8.1509,2.7962,5.3547,13.662,0
+92,2,Adehyeman,Mile 7,4,0,3.2773,1.3093,1.968,8.4281,0
+112,1,KICC,Abattoir,2,0,8.1509,2.7962,5.3547,11.4927,0
+112,2,Abofu,Achimota New Station,2,0,2.7491,0.9432,1.8059,4.3178,0
+114,2,Taifa Post Office,Tantra Hills,4,0,5.2944,1.1698,4.1246,17.75,0
+333,2,Fire Stone,Power House,8,0,4.9923,1.7252,3.2671,14.7675,0
+313,1,A Lang,Kwashieman,2,0,3.3169,1.2301,2.0868,13.3567,0
+310,1,Abeka Junction,Alajo T-Junction,5,0,2.8307,0.7673,2.0634,5.7769,0
+243,2,Family Friend,Sakaman Taxi Rank,6,0,8.0893,3.2233,4.866,14.9853,0
+176,1,Fita,Swanlake Last Stop,9,0,2.4721,0.6269,1.8452,10.3079,0
+225,2,Awoshie Vineyard,Odorkor,5,0,3.2774,1.1848,2.0926,10.2125,0
+235,1,Vineyard,Sakaman Taxi Rank,4,0,4.0455,1.6174,2.4281,8.8531,0
+235,2,Sakaman,Awoshie,3,0,2.9643,1.0948,1.8695,6.7897,0
+337,2,Ashaiman,Ashaiman Overhead,1,0,2.9166,0.9252,1.9914,2.5659,0
+9,1,Real Plan estate gate,Adeyman,2,2,3.5813,1.4173,2.164,5.7035,1071.2857
+9,2,Adeyman,Estate,2,2,3.3666,1.2204,2.1462,5.662,1186.1429
+9,2,Kotokou market,Kotokou station,1,1,2.3463,0.7693,1.5769,4.0037,370.2857
+40,1,Coca-Cola / Police Station,18 Junction,2,0,8.8643,3.5084,5.3559,8.899,0
+40,2,Ashaiman,Under Bridge,1,0,5.0331,1.8104,3.2227,5.2869,0
+82,2,Abofu,Achimota New Station,2,0,2.728,0.896,1.832,5.0453,0
+227,2,Awoshie Vineyard,Darkuman Junction,9,0,6.4991,2.4735,4.0256,15.2285,0
+237,1,Awoshie Amangoase,Tantua School,4,0,4.1243,1.6387,2.4856,6.1339,0
+237,2,Sakaman,Awoshie Amangoase,4,0,3.3786,1.3485,2.0301,5.2542,0
+357,2,Mallam Atta,Dworwulu junction,7,0,2.1888,0.4305,1.7583,18.2287,0
+383,1,Coca-Cola / Police Station,18 Junction,2,0,8.8643,3.5084,5.3559,9.1608,0
+434,1,Awoshie Vineyard,Odorkor,7,0,4.6507,1.2545,3.3963,17.0705,0
+394,2,Nima,441,1,0,2.5633,0.957,1.6063,3.9847,0

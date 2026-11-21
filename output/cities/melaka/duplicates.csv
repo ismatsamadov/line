@@ -1,0 +1,6 @@
+﻿route,inside_route,share_of_stops,route_stops,other_route_stops,same_carrier
+M20X,M20,1.0,42,113,True
+M20X,M22,1.0,42,106,True
+M21X,M21,1.0,68,90,True
+M23X,M23,1.0,80,92,True
+M23,M23X,0.8696,92,80,True

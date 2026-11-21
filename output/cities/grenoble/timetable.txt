@@ -1,0 +1,67 @@
+131 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route
+133 d1: 2 other stop sequence(s) with 2 of 3 departures left out; 13 stops they call at are on no pattern of the route
+133 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+C14 d1: a branch with 14 of 40 departures runs as route C14 (branch 1)
+C14 d2: a branch with 19 of 38 departures runs as route C14 (branch 1)
+141 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 8 stops they call at are on no pattern of the route
+143 d1: 3 other stop sequence(s) with 3 of 4 departures left out; 15 stops they call at are on no pattern of the route
+143 d2: 2 other stop sequence(s) with 2 of 3 departures left out; 9 stops they call at are on no pattern of the route
+144 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 7 stops they call at are on no pattern of the route
+15 d1: a branch with 35 of 70 departures runs as route 15 (branch 1)
+15 d2: a branch with 34 of 70 departures runs as route 15 (branch 1)
+16 d1: 1 other stop sequence(s) with 1 of 71 departures left out; 5 stops they call at are on no pattern of the route
+166 d1: 6 other stop sequence(s) with 6 of 7 departures left out; 31 stops they call at are on no pattern of the route
+166 d2: 5 other stop sequence(s) with 5 of 6 departures left out; 40 stops they call at are on no pattern of the route
+167 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 3 stops they call at are on no pattern of the route
+17 d1: a branch with 20 of 51 departures runs as route 17 (branch 1)
+17 d2: a branch with 22 of 51 departures runs as route 17 (branch 1)
+181 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 2 stops they call at are on no pattern of the route
+182 d1: 2 other stop sequence(s) with 2 of 3 departures left out; 7 stops they call at are on no pattern of the route
+182 d2: 2 other stop sequence(s) with 2 of 3 departures left out; 2 stops they call at are on no pattern of the route
+183 d1: 3 other stop sequence(s) with 3 of 6 departures left out; 5 stops they call at are on no pattern of the route
+183 d2: 2 other stop sequence(s) with 2 of 3 departures left out; 3 stops they call at are on no pattern of the route
+184 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 4 stops they call at are on no pattern of the route
+185 d1: 1 other stop sequence(s) with 1 of 3 departures left out; 4 stops they call at are on no pattern of the route
+185 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 3 stops they call at are on no pattern of the route
+20 d1: a branch with 32 of 67 departures runs as route 20 (Sassenage, Les Engenières)
+205 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+205 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+233 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+241 d2: 5 other stop sequence(s) with 5 of 6 departures left out; 4 stops they call at are on no pattern of the route
+243 d2: 3 other stop sequence(s) with 3 of 4 departures left out; 11 stops they call at are on no pattern of the route
+273 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 3 stops they call at are on no pattern of the route
+282 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 3 stops they call at are on no pattern of the route
+283 d2: 3 other stop sequence(s) with 3 of 4 departures left out; 7 stops they call at are on no pattern of the route
+291 d1: 2 other stop sequence(s) with 2 of 4 departures left out; 6 stops they call at are on no pattern of the route
+291 d2: 2 other stop sequence(s) with 2 of 4 departures left out; 6 stops they call at are on no pattern of the route
+293 d1: 1 other stop sequence(s) with 1 of 3 departures left out; 2 stops they call at are on no pattern of the route
+294 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+C3 d2: 1 other stop sequence(s) with 10 of 122 departures left out; 1 stops they call at are on no pattern of the route
+42 d1: a branch with 9 of 30 departures runs as route 42 (branch 1)
+42 d2: a branch with 8 of 28 departures runs as route 42 (branch 1)
+44 d1: a branch with 6 of 15 departures runs as route 44 (Château-Bernard, Col de l'Arzelier)
+44 d2: a branch with 5 of 14 departures runs as route 44 (Château-Bernard, Col de l'Arzelier)
+45 d1: 1 other stop sequence(s) with 2 of 7 departures left out; 2 stops they call at are on no pattern of the route
+45 d2: 2 other stop sequence(s) with 2 of 8 departures left out; 11 stops they call at are on no pattern of the route
+49 d1: a branch with 6 of 13 departures runs as route 49 (Seyssinet-Pariset, Cimetière)
+49 d2: 1 other stop sequence(s) with 1 of 13 departures left out; 1 stops they call at are on no pattern of the route
+50 d1: a branch with 3 of 10 departures runs as route 50 (Sassenage, La Dent du Loup)
+50 d2: a branch with 3 of 11 departures runs as route 50 (Sassenage, La Dent du Loup)
+50 d1: 1 other stop sequence(s) with 2 of 10 departures left out; 1 stops they call at are on no pattern of the route
+50 d2: 1 other stop sequence(s) with 1 of 11 departures left out; 1 stops they call at are on no pattern of the route
+51 d1: 1 other stop sequence(s) with 2 of 12 departures left out; 3 stops they call at are on no pattern of the route
+51 d2: 2 other stop sequence(s) with 2 of 12 departures left out; 3 stops they call at are on no pattern of the route
+54 d1: a branch with 5 of 13 departures runs as route 54 (Sassenage, Les Engenières)
+55 d1: 1 other stop sequence(s) with 1 of 6 departures left out; 1 stops they call at are on no pattern of the route
+55 d2: 2 other stop sequence(s) with 2 of 7 departures left out; 4 stops they call at are on no pattern of the route
+56 d1: 2 other stop sequence(s) with 3 of 6 departures left out; 7 stops they call at are on no pattern of the route
+56 d2: 2 other stop sequence(s) with 3 of 6 departures left out; 7 stops they call at are on no pattern of the route
+59 d1: a branch with 3 of 15 departures runs as route 59 (Gières, Le Chamandier)
+59 d1: 2 other stop sequence(s) with 3 of 15 departures left out; 0 stops they call at are on no pattern of the route
+59 d2: 6 other stop sequence(s) with 8 of 12 departures left out; 35 stops they call at are on no pattern of the route
+65 d2: a branch with 4 of 11 departures runs as route 65 (Vizille, Le Péage)
+67 d1: a branch with 3 of 15 departures runs as route 67 (Eybens, Collège des Saules)
+67 d2: a branch with 3 of 13 departures runs as route 67 (Eybens, Collège des Saules)
+67 d2: 2 other stop sequence(s) with 2 of 13 departures left out; 1 stops they call at are on no pattern of the route
+73 d1: 1 other stop sequence(s) with 1 of 5 departures left out; 1 stops they call at are on no pattern of the route
+73 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route

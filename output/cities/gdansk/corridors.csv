@@ -1,0 +1,5 @@
+﻿from_stop,to_stop,via_stop,km,stops,mean_routes_per_link,max_routes_on_a_link,routes,stop_ids
+Toruńska 01,Plac Solidarności 04,,2.3606,6,15.0,17,M32 106 108 111 112 123 132 138 154 166 167 178 184 186 189 199 208 212 267 289 M32 (branch 1) 132 (branch 1) 166 (branch 1),1004 1028 1016 1000 14653 1009
+Niepołomicka 01,Niepołomicka 02,Łostowice Świętokrzyska 06,1.8742,6,10.4,12,113 120 155 175 176 195 208 213 213 (Kowale Szkoła Metropolitalna) 255 256 262 295 120 (branch 1),1320 1318 390 191 1319 1321
+Mostek 02,Węzeł Elbląska 02,,1.2032,3,10.5,12,T8 T8 (Stogi Plaża) T9 106 111 112 138 166 186 212 166 (branch 1) 166 (branch 2),1601 1101 1103
+Węzeł Elbląska 01,Mostek 01,,1.057,3,11.5,12,T8 T8 (Stogi Plaża) T9 106 111 112 138 166 178 186 212 166 (branch 1),1256 1102 1100

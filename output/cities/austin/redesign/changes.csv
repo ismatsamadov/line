@@ -1,0 +1,17 @@
+﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
+1,merge,333 (333 Brush Country WB),"Merge 333 (333 Brush Country WB) into 333: 97% of its stops are also on 333; its buses go to 333, 1, 201",101.8728,101.6735,0.1993,0.0
+2,drop,661,Drop 661: among the 20 routes with the fewest modelled riders per bus; its buses go to 30,101.6735,101.6191,0.0544,0.0
+3,straighten,383,"Straighten 383 direction 1 between 4815 Braker/Jollyville and Research/Riata Apts: 3.9 km shorter, 1 of its stops dropped",101.6191,101.5919,0.0272,0.0
+4,drop,152,Drop 152: among the 20 routes with the fewest modelled riders per bus; its buses go to 50,101.5919,101.5672,0.0248,131.8571
+5,drop,672,"Drop 672: among the 20 routes with the fewest modelled riders per bus; its buses go to 670, 300, 18",101.5672,101.5433,0.0238,0.0
+6,drop,214,"Drop 214: among the 20 routes with the fewest modelled riders per bus; its buses go to 214 (214 Lakeline Station EB), 383",101.5433,101.5313,0.0121,0.0
+7,straighten,4,"Straighten 4 direction 2 between 2425 7th/Pedernales and 501 Pleasant Valley/5th: 3.4 km shorter, 7 of its stops dropped",101.5313,101.5194,0.0118,365.8571
+8,merge,4 (branch 1),"Merge 4 (branch 1) into 4: 93% of its stops are also on 4; its buses go to 4, 5, 663",101.5194,101.5105,0.0089,0.0
+9,straighten,30,"Straighten 30 direction 1 between Westgate Transit Center - F and 1788 Spyglass/Barton Skyway: 1.6 km shorter, 1 of its stops dropped",101.5105,101.5038,0.0067,0.0
+10,drop,465,"Drop 465: among the 20 routes with the fewest modelled riders per bus; its buses go to 10, 985, 7",101.5038,101.4972,0.0066,0.0
+11,straighten,324,"Straighten 324 direction 1 between 1649 Ohlen/Research and Rundberg/Slayton: 1.4 km shorter, 5 of its stops dropped",101.4972,101.4919,0.0053,0.0
+12,stops,,"Remove 199 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",101.4919,101.3609,0.1311,0.0
+13,shift,,"Move 27 buses from the 20 routes where a bus saves riders the least waiting (640 (branch 1), 670, 656, 640, 837, 345, 803, 800, 642, 2, 801, 7, 18, 20, 4, 30, 10, 311, 300, 5) to the 20 where it saves the most (233, 466, 318, 392, 50, 243, 333, 324, 383, 663, 3, 325, 350, 1, 337, 335, 310, 315, 339, 201)",101.3609,100.8867,0.4742,0.0
+14,shift,,"Move 20 buses from the 20 routes where a bus saves riders the least waiting (640 (branch 1), 670, 656, 233, 466, 837, 640, 800, 803, 642, 2, 201, 801, 243, 7, 311, 315, 663, 335, 20) to the 20 where it saves the most (318, 324, 333, 383, 3, 350, 300, 337, 1, 325, 10, 30, 4, 392, 5, 310, 50, 339, 18, 228)",100.8867,100.6788,0.2079,0.0
+15,shift,,"Move 16 buses from the 20 routes where a bus saves riders the least waiting (640 (branch 1), 640, 670, 656, 466, 233, 837, 50, 803, 18, 800, 339, 2, 4, 392, 801, 642, 310, 325, 5) to the 20 where it saves the most (20, 663, 3, 318, 383, 335, 333, 10, 350, 300, 324, 7, 311, 315, 243, 1, 337, 30, 201, 320)",100.6788,100.5696,0.1092,0.0
+16,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (640 (branch 1), 640, 656, 837, 803, 466, 233, 201, 243, 663) to the 10 where it saves the most (3, 325, 392, 1, 5, 10, 642, 383, 4, 333)",100.5696,100.4895,0.0802,0.0

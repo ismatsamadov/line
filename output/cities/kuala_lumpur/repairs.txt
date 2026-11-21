@@ -1,0 +1,1 @@
+HLB2 d1: shape cannot explain its stops (median offset 5406 m); using straight lines between stops

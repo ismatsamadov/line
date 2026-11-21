@@ -1,0 +1,3 @@
+110N: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+131N: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+140N: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

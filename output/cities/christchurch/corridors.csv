@@ -1,0 +1,5 @@
+﻿from_stop,to_stop,via_stop,km,stops,mean_routes_per_link,max_routes_on_a_link,routes,stop_ids
+Bus Interchange (Platform C),Christchurch Hospital Main Stop WB,Christchurch Hospital Main Stop WB,1.2512,4,10.6667,11,3 5 7 3 (branch 1) 5 (branch 1) 60 80 81 84 85 86,53088 14263 14271 14704
+Riccarton Rd near Paeroa St,Riccarton Rd near Harakeke St,,1.4125,4,9.3333,10,Oa 3 5 3 (branch 1) 5 (branch 1) 80 86 100 120 130 140,38761 38301 53308 17461
+Riccarton Rd near Harakeke St,Riccarton Rd near Paeroa St,,1.3936,4,9.3333,10,Oc 3 5 3 (branch 1) 5 (branch 1) 80 86 100 120 130 140,17966 53298 38291 38289
+Manchester St near Kilmore St,Bus Interchange (Platform B),Bus Interchange (Platform B),1.1828,3,8.0,8,1 1 (Princess Margaret Hospital & Cashmere) 7 27 29 44 91 92 95,14318 53074 53116

@@ -1,0 +1,12 @@
+﻿measure,unit,today,same_buses,same_buses_change,fewer_buses,fewer_buses_change
+"Average door-to-door trip, impossible trips counted at 120 min",min,106.4145,105.6603,-0.7542,106.3938,-0.0207
+"Average door-to-door trip, possible trips only",min,53.0587,55.4447,2.386,53.1169,0.0582
+Trips possible within 45 min,share,0.1126,0.114,0.0014,0.1122,-0.0004
+Trips possible within 120 min,share,0.2029,0.2221,0.0192,0.2034,0.0005
+People with a stop within 400 m,people,967479.2857,966567.1429,-912.1429,966567.1429,-912.1429
+Buses in service,buses,457,454,-3,373,-84
+Bus-hours a day,h,5728.8717,5728.8717,0.0,4609.9514,-1118.9202
+Bus-km a day,km,98355.6142,97247.7125,-1107.9016,78254.0187,-20101.5955
+Fuel a day,L,30907.4233,30687.1933,-220.2301,24693.6008,-6213.8225
+CO2 a day,t,82.5228,81.9348,-0.588,65.9319,-16.5909
+"Riders' time per 100,000 journeys",h,177357.5608,176100.5199,-1257.0409,177322.9954,-34.5654

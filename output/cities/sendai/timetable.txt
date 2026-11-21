@@ -1,0 +1,33 @@
+10 [10001] d2: a branch with 6 of 17 departures runs as route 10 [10001] (南仙台駅・四郎丸)
+15 [10016] d2: a branch with 7 of 14 departures runs as route 15 [10016] (南仙台駅・四郎丸)
+200 d2: a branch with 4 of 12 departures runs as route 200 (branch 1)
+220 d2: a branch with 3 of 9 departures runs as route 220 (branch 1)
+240 d2: a branch with 11 of 31 departures runs as route 240 (branch 1)
+40 [10076] d2: 1 other stop sequence(s) with 2 of 13 departures left out; 1 stops they call at are on no pattern of the route
+45 [10083] d1: 1 other stop sequence(s) with 3 of 26 departures left out; 6 stops they call at are on no pattern of the route
+70 [10120] d2: 1 other stop sequence(s) with 1 of 23 departures left out; 43 stops they call at are on no pattern of the route
+760 d2: 1 other stop sequence(s) with 2 of 16 departures left out; 1 stops they call at are on no pattern of the route
+88 d1: 1 other stop sequence(s) with 1 of 4 departures left out; 3 stops they call at are on no pattern of the route
+A50 [10203] d1: a branch with 7 of 19 departures runs as route A50 [10203] (branch 1)
+B40 d1: 1 other stop sequence(s) with 1 of 3 departures left out; 7 stops they call at are on no pattern of the route
+D55 [10217] d1: a branch with 9 of 22 departures runs as route D55 [10217] (鶴ケ谷七丁目・台原駅)
+J230 d1: a branch with 3 of 12 departures runs as route J230 (branch 1)
+J233 d1: a branch with 3 of 7 departures runs as route J233 (branch 1)
+K506 d1: 1 other stop sequence(s) with 1 of 7 departures left out; 11 stops they call at are on no pattern of the route
+K610 d1: a branch with 5 of 18 departures runs as route K610 (野草園・交通局東北大学病院)
+R18 d1: a branch with 3 of 15 departures runs as route R18 (新浜・岡田・荒井駅)
+S120 d1: 1 other stop sequence(s) with 3 of 32 departures left out; 16 stops they call at are on no pattern of the route
+S130 [10271] d1: a branch with 5 of 15 departures runs as route S130 [10271] (安養寺二丁目・仙台駅)
+S220 d1: a branch with 7 of 27 departures runs as route S220 (branch 1)
+S610 d1: 1 other stop sequence(s) with 1 of 4 departures left out; 12 stops they call at are on no pattern of the route
+S870 d1: a branch with 17 of 44 departures runs as route S870 (branch 1)
+S910 d1: a branch with 14 of 44 departures runs as route S910 (branch 1)
+Z40 d2: 1 other stop sequence(s) with 2 of 16 departures left out; 5 stops they call at are on no pattern of the route
+14: express, skipping most stops of a route it runs along
+878: express, skipping most stops of a route it runs along
+S908: express, skipping most stops of a route it runs along
+60: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+851: runs at night, 2 of its 3 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+902: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+990: runs at night, 2 of its 2 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+X30: runs at night, 1 of its 1 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

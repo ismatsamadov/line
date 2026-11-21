@@ -1,0 +1,24 @@
+171 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 11 stops they call at are on no pattern of the route
+214 d2: a branch with 7 of 18 departures runs as route 214 (214 Lakeline Station EB)
+300 d1: 1 other stop sequence(s) with 4 of 65 departures left out; 1 stops they call at are on no pattern of the route
+300 d2: 1 other stop sequence(s) with 4 of 65 departures left out; 1 stops they call at are on no pattern of the route
+333 d1: a branch with 32 of 65 departures runs as route 333 (333 Brush Country WB)
+333 d2: a branch with 33 of 67 departures runs as route 333 (333 Brush Country WB)
+333 d1: 1 other stop sequence(s) with 1 of 65 departures left out; 1 stops they call at are on no pattern of the route
+333 d2: 1 other stop sequence(s) with 1 of 67 departures left out; 1 stops they call at are on no pattern of the route
+4 d1: a branch with 15 of 62 departures runs as route 4 (branch 1)
+4 d1: 5 other stop sequence(s) with 12 of 62 departures left out; 7 stops they call at are on no pattern of the route
+4 d2: 2 other stop sequence(s) with 4 of 62 departures left out; 2 stops they call at are on no pattern of the route
+640 d1: a branch with 85 of 170 departures runs as route 640 (branch 1)
+661 d1: 1 other stop sequence(s) with 3 of 56 departures left out; 2 stops they call at are on no pattern of the route
+7 d2: 1 other stop sequence(s) with 6 of 65 departures left out; 3 stops they call at are on no pattern of the route
+214: express, skipping most stops of a route it runs along
+935: express (its name says so)
+980: express (its name says so)
+982: express (its name says so)
+990: express (its name says so)
+481: runs at night, 18 of its 18 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+483: runs at night, 14 of its 14 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+484: runs at night, 10 of its 10 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+485: runs at night, 12 of its 12 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+486: runs at night, 14 of its 14 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

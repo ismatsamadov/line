@@ -1,0 +1,102 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+Pohjolan Matka,2,Saukkolantie I,Vesanka I,3,0,2.8414,1.1212,1.7202,3.2779,0
+141,1,Suolahti kirkko I,Vuorikuja E,2,0,2.292,0.7324,1.5596,2.2512,0
+141,1,Puustelli E,Haavistontie L,10,0,5.9516,2.354,3.5976,6.9884,0
+141,2,Rokkakangas P,Harjutie P,6,1,3.6283,1.3859,2.2424,4.2782,0
+141,2,Vuorikuja P,Alkula L,11,0,6.9754,1.0936,5.8817,9.6423,0
+Kouluvuoro [6701],1,Purola L,Karhunlähde E,10,0,18.6886,7.4024,11.2861,20.0035,0
+Kouluvuoro [6711],1,Kaura-ahontie P,Telakkakadun koulu,5,0,4.7759,1.866,2.9099,4.8716,0
+Kouluvuoro [6712],2,Telakkakadun koulu,Nakertaja E,5,0,3.5996,1.3053,2.2943,4.1621,0
+Mämmensalmi,1,Masto P,Kauppis E,10,10,4.9501,0.3092,4.6409,10.2676,680.1429
+Mämmensalmi,1,Kauppis E,Äänekoski (Nelostielle),10,1,4.6697,1.4519,3.2178,8.1413,0
+Kouluvuoro [6912],2,Vieryvämäki P,Rauhanyhdistyksen piha,4,1,8.9785,2.8306,6.1479,10.6768,6.0
+Kouluvuoro [6913],1,Hakalampi E,Niemeläntien th E,7,0,14.6645,5.3822,9.2824,13.1265,0
+S1,1,Haapaniemi 1,Jyskä L,11,0,6.1463,2.0902,4.056,10.5896,0
+S1,1,Rautpohja 2,Vesangantie 2,11,0,5.067,1.4249,3.6421,9.8831,0
+S1,2,Hankurainen 1,Jäähalli 1,11,0,5.4096,1.5392,3.8704,10.2728,0
+S1,2,Varastomyymälä I,Haapaniemi 2,11,0,6.0534,2.2945,3.7589,10.0824,0
+1M,1,Sammallahti P,Pitkäsilta L,7,0,4.5954,1.559,3.0363,7.4827,0
+1M,2,Pitkäsilta I,Suvimäki E,8,0,4.7488,1.8286,2.9201,7.619,0
+S2,1,Rautpohja 2,Vesangantie 2,11,0,4.933,1.4249,3.5081,10.1464,0
+S2,2,Hankurainen 1,Jäähalli 1,11,0,5.2013,1.5392,3.6621,10.4308,0
+S2M,1,Yliopisto 2,Vesangantie 2,11,0,5.1996,2.069,3.1306,8.8494,0
+S2M,2,Hankurainen 1,Valimo 1,9,0,4.6975,1.7976,2.8998,7.8007,0
+S3,2,Kirjasto 6,Satama 2,5,0,2.5979,0.9147,1.6832,5.3117,0
+S4,2,Kirjasto 6,Satama 2,5,0,2.5979,0.9147,1.6832,5.3267,0
+4K,1,Valmetintie 1,Alhontie 2,3,0,2.1611,0.493,1.6681,4.2391,0
+S5,1,Kaakkolampi,Huhtasuo 1,8,2,3.6445,1.4088,2.2358,6.8568,252.7143
+5,1,Lounaispuisto 2,Ohjelmakaari,5,0,3.7602,1.1086,2.6515,9.0492,0
+5,2,Kylmänoro 1,Kirjasto 6,4,0,3.1564,1.1793,1.9771,6.838,0
+5K,1,Taitoniekantie,Lounaispuisto 2,10,0,4.7807,1.7908,2.9899,10.3986,0
+5K,1,Lounaispuisto 2,Messukeskus 1,11,0,8.4972,1.1381,7.3591,21.0567,0
+S6,1,Keltinmutka 1,Pajatie 1,5,0,2.6725,1.0311,1.6414,4.1293,0
+S6,1,Cygnaeuksen koulu 1,Harjun oppilaitos 2,6,0,3.0648,1.2126,1.8521,4.7788,0
+S6,2,Nova 2,Haperontie 2,5,0,2.7673,1.0928,1.6746,4.1791,0
+7,1,Yliopisto 1,Ammattikoulu 1,7,0,3.9459,1.5409,2.405,6.4525,0
+8,1,Kuokkala 1,Tikan koulu 1,4,0,2.5,0.9933,1.5066,4.7107,0
+8,2,Lounaispuisto 2,Muurarintie 1,7,0,4.7666,1.6462,3.1204,9.3283,0
+9,1,Cygnaeuksen koulu 2,Tietoniekantie 2,8,0,4.0872,1.5182,2.569,7.1523,0
+9,2,Tietoniekantie 1,Pitkäkatu 1,8,0,4.2596,1.6715,2.5881,7.1857,0
+9,2,Kirjasto 6,Satama 2,5,0,2.5979,0.9147,1.6832,4.6057,0
+9K,1,Kuokkala 2,Urhonkatu 1,11,0,5.2333,2.0858,3.1475,8.9065,0
+9K,1,Cygnaeuksen koulu 2,Tietoniekantie 2,8,0,4.0872,1.5182,2.569,6.9435,0
+9K,2,Tietoniekantie 1,Pitkäkatu 1,8,0,4.2596,1.6715,2.5881,6.9754,0
+9K,2,Kirjasto 6,Kuokkala 1,11,0,6.0916,2.0089,4.0827,10.4635,0
+12,1,Yliopisto 2,Haperontie 2,11,0,6.7032,2.448,4.2552,11.8687,0
+12,2,Haperontie 1,Purokatu 1,11,0,5.6107,1.9755,3.6352,10.6736,0
+12,2,Palanderinkatu 2,Kulottajantie,6,3,3.8027,1.3911,2.4115,6.6483,208.0
+12K,1,Rautpohja 2,Myllysuo 2,11,2,6.655,2.3165,4.3385,12.1156,336.4286
+12K,2,Myllypolku 2,Rautpohja 1,11,3,7.2563,2.0627,5.1936,13.7809,336.4286
+12K,2,Cygnaeuksen koulu 1,Harjun oppilaitos 2,6,0,3.0648,1.2126,1.8522,5.6071,0
+12K,2,Sorastajantie 22,Valio E,8,7,4.3795,1.723,2.6565,7.8401,863.2857
+14M (VIITANIEMI),1,Yliopisto 1,Ammattikoulu 1,7,0,3.9458,1.5409,2.4049,5.7801,0
+15,1,Sulkulantie E,Pohjanlampi 2,8,6,4.2753,1.6467,2.6286,6.428,1304.8571
+15,2,Lounaispuisto 2,Kuokkala 1,10,0,5.2884,2.0427,3.2457,7.9777,0
+15,2,Lampitie th 2,Kammi,10,5,5.354,1.9307,3.4233,8.2319,1217.1429
+15K,1,Kirjasto 6,Vellamonkatu 2,7,0,3.5,0.913,2.587,7.9128,0
+15K,2,Vellamonkatu 1,Satama 2,8,0,4.78,1.7721,3.0079,9.1539,0
+16,1,Kokko 1,Kinkovuorentie th P,11,0,6.2785,2.429,3.8495,9.0222,0
+16,1,Yliopisto 1,Jäähalli 2,11,0,5.032,0.6307,4.4013,9.79,0
+16,2,Voionmaan koulu 1,Purokatu 2,11,0,5.5093,1.2007,4.3087,9.6611,0
+16,2,Kertuntie E,Koppikylä E,9,0,5.4925,2.1199,3.3727,7.6923,0
+16 (branch 1),1,Koppikylä 1,Kertuntie P,9,0,5.5125,2.1851,3.3273,7.8764,0
+16 (branch 1),1,Yliopisto 1,Jäähalli 2,11,0,5.032,0.6307,4.4013,10.117,0
+16M,1,Kokko 1,Riihelä L,11,0,5.3679,2.0288,3.3391,8.7228,0
+16M,1,Yliopisto 1,Ammattikoulu 2,8,0,3.8478,1.3507,2.4971,6.4478,0
+16M,2,Kertuntie E,Koppikylä E,9,0,5.4925,2.1199,3.3727,8.1069,0
+20,1,Tervala 2,Kauramäki 1,11,2,6.2148,2.0959,4.119,10.9786,20.8571
+20,2,Kauramäki 1,Valimontie P,10,2,4.9934,1.8329,3.1605,8.9438,20.8571
+21,1,Vuorenlahdentie I,Betonivalimo P,11,2,8.2037,2.6587,5.545,10.8216,16.2857
+21,2,Betonivalimo E,Vuorenlahdentie E,11,2,8.3175,2.7251,5.5925,10.8829,5.0
+22,1,"Koulukatu, Tikkakoski I",Mestarinkatu I,5,1,2.7923,1.0001,1.7922,4.1912,12.0
+22,2,Mestarinkatu L,"Koulukatu, Tikkakoski I",6,0,2.8787,1.1075,1.7712,4.4949,0
+KOULUKYYTI,2,Haukanpesäntie 2,Mannila 1,8,0,4.8016,1.6768,3.1249,7.7707,0
+26,1,Ritoniemi 1,Verkkokatu 1,11,0,4.5336,1.6337,2.8999,7.5835,0
+26,1,Harjun oppilaitos 1,Ohjelmakaari,10,0,5.761,2.2122,3.5488,8.1267,0
+26,2,Lohikoski 2,Ritoniemi 2,11,0,4.1571,1.434,2.7231,7.3447,0
+36,1,Heinälammintie 1,Seppäläntien jatke 1,6,0,2.606,0.9687,1.6374,3.6033,0
+36,2,Seppäläntien jatke 2,Heinälammintie 2,6,0,2.4953,0.8753,1.62,3.5863,0
+36 (branch 1),1,Heinälammintie 1,Seppäläntien jatke 1,6,0,2.606,0.9687,1.6374,4.1801,0
+37,1,Savulahti P,Sarvikallio E,11,3,6.2229,1.6574,4.5656,10.1882,178.5714
+37,2,Sarvikallio P,Rantaniemeläntie E,11,3,5.6906,1.5087,4.1819,9.6402,178.5714
+38K,1,Lepola P,Kuopiontie 369 L,3,3,3.1745,1.1357,2.0388,2.9222,15.2857
+38K,2,Leppälahti th P,Muurikaisjärvi E,1,1,2.0198,0.4459,1.574,1.8173,10.4286
+38R,1,Lievestuore th P,Kelkkamäki L,6,0,4.4042,1.4097,2.9945,4.2895,0
+38R,2,Kelkkamäki th E,Ruuhimäki th E,11,11,24.166,7.5646,16.6014,16.3596,61.5714
+39,1,Energia 1,Jäähalli 2,11,0,5.9167,0.9308,4.9859,11.925,0
+40,1,Saukkolantie I,Vesanka I,3,0,2.8414,1.1212,1.7202,3.4734,0
+40,1,Voionmaan koulu 1,Linkkikeskus 4,7,0,3.2472,1.2346,2.0126,5.227,0
+40,2,Möykynmäki L,Vesanka L,3,0,2.3743,0.6664,1.7079,3.4556,0
+41 [9411],2,Vihtavuoren kappeli 2,Kuhanpuro P,10,4,5.8581,2.2829,3.5751,7.7537,0
+41 [9411] (branch 1),1,Puustelli E,Haavistontie L,10,0,5.9516,2.354,3.5976,7.8189,0
+41 [9414],2,Cygnaeuksen koulu 1,Harjun oppilaitos 2,6,0,3.0724,1.2126,1.8598,4.2826,0
+143,1,Tuomiojantie L,Niemisjärvi th E,4,4,3.5581,1.3901,2.168,3.1414,125.1429
+143,2,Vuokonmaa P,Anterontie P,3,3,2.1708,0.4427,1.7281,2.4412,83.7143
+46,1,Ylä Kylmänoro 1,Keskussairaala 2,6,3,5.6482,2.1518,3.4964,7.1478,0
+47,1,Kansanopisto 1,Korpela 1,8,0,3.3879,0.946,2.4419,6.4133,0
+47,2,Messukeskus 2,Kansanopisto 2,8,0,4.3827,1.7474,2.6353,6.71,0
+TARVAALA,2,Samulinkallio I,Tarvaala th P,11,2,23.1151,3.4869,19.6283,22.4489,13.5714
+NOJOSNIEMI,2,Vaajakoski th E,Eerolantie P,11,2,8.1081,0.7353,7.3728,11.7958,0
+NOJOSNIEMI,2,Ala-Kuukkalantie P,Vihtasilta th E,11,0,7.7009,2.7808,4.9201,9.0915,0
+100 [9801],2,Vanhavaaruntie E,Vanhavaaruntie P,11,0,10.2638,0.1077,10.1562,13.6377,0
+100 [9802],2,Putkilahti E,Synsiä E,11,0,20.8687,8.0804,12.7884,14.1727,0

@@ -1,0 +1,109 @@
+C4 d1: 2 other stop sequence(s) with 10 of 128 departures left out; 2 stops they call at are on no pattern of the route
+C4 d2: 1 other stop sequence(s) with 4 of 127 departures left out; 1 stops they call at are on no pattern of the route
+C6 d1: 1 other stop sequence(s) with 3 of 87 departures left out; 1 stops they call at are on no pattern of the route
+C7 d1: 2 other stop sequence(s) with 8 of 72 departures left out; 6 stops they call at are on no pattern of the route
+C7 d2: 1 other stop sequence(s) with 6 of 72 departures left out; 4 stops they call at are on no pattern of the route
+11 d2: 1 other stop sequence(s) with 2 of 77 departures left out; 14 stops they call at are on no pattern of the route
+13 d1: a branch with 13 of 54 departures runs as route 13 (Saint-Jacques  Gaîté)
+14 d1: a branch with 16 of 57 departures runs as route 14 (branch 1)
+14 d2: a branch with 16 of 55 departures runs as route 14 (branch 1)
+34 d1: a branch with 15 of 36 departures runs as route 34 (Chantepie)
+34 d2: a branch with 15 of 36 departures runs as route 34 (Chantepie)
+38 d2: a branch with 3 of 9 departures runs as route 38 (Monniais)
+38 d2: 1 other stop sequence(s) with 1 of 9 departures left out; 1 stops they call at are on no pattern of the route
+50 d1: 1 other stop sequence(s) with 1 of 40 departures left out; 1 stops they call at are on no pattern of the route
+50 d2: 2 other stop sequence(s) with 3 of 41 departures left out; 3 stops they call at are on no pattern of the route
+51 d2: 1 other stop sequence(s) with 2 of 62 departures left out; 16 stops they call at are on no pattern of the route
+52 d1: 2 other stop sequence(s) with 3 of 37 departures left out; 2 stops they call at are on no pattern of the route
+52 d2: 4 other stop sequence(s) with 6 of 40 departures left out; 9 stops they call at are on no pattern of the route
+53 d1: 2 other stop sequence(s) with 3 of 45 departures left out; 6 stops they call at are on no pattern of the route
+53 d2: 1 other stop sequence(s) with 2 of 45 departures left out; 1 stops they call at are on no pattern of the route
+54 d1: 2 other stop sequence(s) with 3 of 40 departures left out; 15 stops they call at are on no pattern of the route
+55 d1: a branch with 14 of 37 departures runs as route 55 (Mordelles)
+61 d1: 3 other stop sequence(s) with 9 of 40 departures left out; 18 stops they call at are on no pattern of the route
+61 d2: 1 other stop sequence(s) with 7 of 40 departures left out; 1 stops they call at are on no pattern of the route
+62 d1: 1 other stop sequence(s) with 2 of 47 departures left out; 18 stops they call at are on no pattern of the route
+64 d2: 1 other stop sequence(s) with 2 of 40 departures left out; 1 stops they call at are on no pattern of the route
+65 d1: 1 other stop sequence(s) with 1 of 31 departures left out; 1 stops they call at are on no pattern of the route
+65 d2: 2 other stop sequence(s) with 3 of 32 departures left out; 1 stops they call at are on no pattern of the route
+67 d2: a branch with 10 of 35 departures runs as route 67 (Cesson Champelé)
+67 d2: 1 other stop sequence(s) with 5 of 35 departures left out; 0 stops they call at are on no pattern of the route
+72 d1: 5 other stop sequence(s) with 11 of 45 departures left out; 9 stops they call at are on no pattern of the route
+72 d2: 3 other stop sequence(s) with 8 of 43 departures left out; 3 stops they call at are on no pattern of the route
+73 d1: 1 other stop sequence(s) with 5 of 27 departures left out; 2 stops they call at are on no pattern of the route
+73 d2: 1 other stop sequence(s) with 5 of 28 departures left out; 2 stops they call at are on no pattern of the route
+74 d1: 1 other stop sequence(s) with 3 of 36 departures left out; 6 stops they call at are on no pattern of the route
+74 d2: 1 other stop sequence(s) with 2 of 39 departures left out; 6 stops they call at are on no pattern of the route
+76 d1: 1 other stop sequence(s) with 1 of 22 departures left out; 1 stops they call at are on no pattern of the route
+76 d2: 1 other stop sequence(s) with 1 of 25 departures left out; 1 stops they call at are on no pattern of the route
+77 d1: 2 other stop sequence(s) with 3 of 56 departures left out; 24 stops they call at are on no pattern of the route
+78 d1: a branch with 11 of 32 departures runs as route 78 (branch 1)
+78 d2: a branch with 10 of 29 departures runs as route 78 (branch 1)
+79 d2: a branch with 3 of 14 departures runs as route 79 (Rennes Henri Fréville)
+80 d1: a branch with 5 of 18 departures runs as route 80 (Laillé - Bruz DGA-MI)
+80 d2: a branch with 6 of 20 departures runs as route 80 (Laillé - Bruz DGA-MI)
+81 d1: 2 other stop sequence(s) with 3 of 26 departures left out; 19 stops they call at are on no pattern of the route
+82 d1: a branch with 5 of 16 departures runs as route 82 (branch 1)
+82 d2: a branch with 4 of 17 departures runs as route 82 (branch 1)
+91 d1: a branch with 7 of 15 departures runs as route 91 (Bruz Pont-Réan)
+91 d2: a branch with 6 of 17 departures runs as route 91 (Bruz Pont-Réan)
+153ex d1: a branch with 3 of 7 departures runs as route 153ex (Vezin L'Hermitage La Chapelle-Thouarault)
+155ex d1: 1 other stop sequence(s) with 1 of 8 departures left out; 3 stops they call at are on no pattern of the route
+155ex d2: 1 other stop sequence(s) with 1 of 6 departures left out; 2 stops they call at are on no pattern of the route
+161ex d2: 1 other stop sequence(s) with 1 of 8 departures left out; 3 stops they call at are on no pattern of the route
+172ex d2: 1 other stop sequence(s) with 1 of 4 departures left out; 1 stops they call at are on no pattern of the route
+201 d1: 3 other stop sequence(s) with 3 of 5 departures left out; 4 stops they call at are on no pattern of the route
+202 d1: 1 other stop sequence(s) with 1 of 3 departures left out; 8 stops they call at are on no pattern of the route
+202 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 8 stops they call at are on no pattern of the route
+204 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+206 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 2 stops they call at are on no pattern of the route
+213 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 8 stops they call at are on no pattern of the route
+214 d1: 1 other stop sequence(s) with 2 of 4 departures left out; 4 stops they call at are on no pattern of the route
+218 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route
+219 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 0 stops they call at are on no pattern of the route
+219 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 0 stops they call at are on no pattern of the route
+220 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 2 stops they call at are on no pattern of the route
+222 d1: 3 other stop sequence(s) with 3 of 6 departures left out; 7 stops they call at are on no pattern of the route
+222 d2: 3 other stop sequence(s) with 3 of 5 departures left out; 7 stops they call at are on no pattern of the route
+223 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 5 stops they call at are on no pattern of the route
+223 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route
+226 d1: 3 other stop sequence(s) with 4 of 6 departures left out; 10 stops they call at are on no pattern of the route
+227 d1: 1 other stop sequence(s) with 2 of 5 departures left out; 2 stops they call at are on no pattern of the route
+231 d1: 2 other stop sequence(s) with 2 of 4 departures left out; 5 stops they call at are on no pattern of the route
+231 d2: 1 other stop sequence(s) with 1 of 3 departures left out; 1 stops they call at are on no pattern of the route
+236 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+241 d2: 3 other stop sequence(s) with 3 of 5 departures left out; 3 stops they call at are on no pattern of the route
+245 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+Ts22 d1: 2 other stop sequence(s) with 2 of 3 departures left out; 3 stops they call at are on no pattern of the route
+Ts35 d2: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+Ts38 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 1 stops they call at are on no pattern of the route
+Ts44 d1: 1 other stop sequence(s) with 1 of 2 departures left out; 2 stops they call at are on no pattern of the route
+510 d1: a branch with 3 of 12 departures runs as route 510 (branch 1)
+510 d1: 1 other stop sequence(s) with 1 of 12 departures left out; 2 stops they call at are on no pattern of the route
+510 d2: 1 other stop sequence(s) with 2 of 12 departures left out; 2 stops they call at are on no pattern of the route
+C7ex: express, skipping most stops of a route it runs along
+79 (Rennes Henri Fréville): express, skipping most stops of a route it runs along
+80: express, skipping most stops of a route it runs along
+152ex: express (its name says so)
+153ex: express (its name says so)
+153ex (Vezin L'Hermitage La Chapelle-Thouarault): express (its name says so)
+154ex: express (its name says so)
+155ex: express (its name says so)
+156ex: express (its name says so)
+159ex: express (its name says so)
+161ex: express (its name says so)
+164ex: express (its name says so)
+165ex: express (its name says so)
+167ex: express (its name says so)
+172ex: express (its name says so)
+173ex: express (its name says so)
+175ex: express (its name says so)
+178ex: express (its name says so)
+N1: runs at night, 15 of its 15 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N2: runs at night, 7 of its 7 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N3: runs at night, 8 of its 8 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N4: runs at night, 16 of its 16 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+N5: runs at night, 8 of its 8 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+TTZ: runs at night, 3 of its 3 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+E2: runs at night, 12 of its 12 departures outside the hours of service; left out, since one all-day frequency cannot stand for it
+E1: runs at night, 226 of its 243 departures outside the hours of service; left out, since one all-day frequency cannot stand for it

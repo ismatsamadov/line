@@ -1,0 +1,134 @@
+﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
+C2,1,Bourgeois,Haut Sancé,9,3,3.3816,1.2924,2.0892,8.7211,0
+C2,2,Haut Sancé,Bourgeois,9,4,3.5726,1.3842,2.1884,8.9929,0
+C3,1,Ginguené,Henri Fréville,8,6,3.2283,1.2525,1.9758,8.4642,1130.2857
+C3,2,Henri Fréville,Ginguené,8,5,3.3781,1.331,2.0472,8.6737,1130.2857
+C6,1,Rigourdière,Sports et Nature,10,3,4.0941,1.4471,2.6471,10.4018,0
+C6,2,Hublais,Rigourdière,11,4,4.4265,1.7354,2.6911,10.8528,0
+C7,1,Vert Buisson,Bruz Centre,6,0,3.7269,1.127,2.5999,6.9151,0
+C7,2,Bruz Centre,Vert Buisson,6,0,3.6152,1.1399,2.4753,6.6795,0
+10,2,Porte de Cleunay,Voltaire,7,7,2.791,1.0915,1.6995,6.9663,3030.0
+11,1,Haut Sancé,Serpette,11,5,5.0617,1.4004,3.6613,12.9878,3816.7143
+11,2,Serpette,Haut Sancé,11,5,4.957,1.3832,3.5737,12.7649,4197.2857
+14,1,Saint-Exupéry,Armorique,9,0,3.3886,1.3401,2.0485,8.7214,0
+14,1,Trois Croix,Bois Labbé,9,0,3.8304,1.508,2.3224,9.4864,0
+14,2,Villejean-Université,Trois Croix,10,0,4.2928,1.7163,2.5764,10.5293,0
+14,2,Trois Croix,Saint-Exupéry,11,0,5.0475,1.5868,3.4607,13.3323,0
+14 (branch 1),1,Saint-Exupéry,Armorique,9,0,3.3886,1.3401,2.0485,8.6487,0
+14 (branch 1),1,Trois Croix,Bois Labbé,9,0,3.8304,1.508,2.3224,9.404,0
+14 (branch 1),2,Villejean-Université,Trois Croix,10,0,4.2949,1.7163,2.5785,10.4437,0
+14 (branch 1),2,Trois Croix,Saint-Exupéry,11,0,4.3996,1.5868,2.8128,11.4228,0
+34,1,La Coulée,Cesson Gare,5,0,3.1407,1.0663,2.0744,6.0812,0
+34,2,Cesson Gare,La Coulée,5,0,3.1272,1.0636,2.0636,6.058,0
+34 (Chantepie),1,Mare Pavée,Charmilles,11,0,5.7792,2.0466,3.7325,11.4042,0
+34 (Chantepie),2,Charmilles,Mare Pavée,11,0,5.7455,2.0369,3.7086,11.3547,0
+C7ex,1,Châteliers,Bruz Centre,3,0,2.1464,0.6207,1.5257,4.2387,0
+50,1,Landelles,Juteauderies,4,0,2.8581,1.0989,1.7592,4.4923,0
+50,2,Portail,Thorigné Mairie,4,0,2.7323,0.9968,1.7355,4.4498,0
+52,1,Montgermont Mairie,Nominoë,11,0,12.6621,4.333,8.3291,18.9478,0
+52,2,Nominoë,Montgermont Mairie,11,1,12.9013,4.2789,8.6224,19.4859,0
+59,1,Bobinais,Bruz Gare,6,0,4.0521,1.3885,2.6637,7.227,0
+59,2,Bruz Gare,Bobinais,6,0,4.401,1.384,3.017,7.9203,0
+62,1,Vern Eglise,Hauts de Gaudon,3,1,2.9515,1.1049,1.8466,4.6626,0
+62,2,Hauts de Gaudon,Vern Eglise,3,1,2.9976,1.1069,1.8907,4.75,0
+64,1,Verger,Cesson - Viasilva,4,0,3.1648,1.1098,2.055,4.7829,0
+64,2,Cesson - Viasilva,Verger,4,0,3.3236,1.1956,2.1281,4.9056,0
+72,1,Callouët,Constant Mérel,7,1,3.2258,1.2083,2.0175,6.286,0
+72,2,Constant Mérel,Callouët,7,0,3.2975,1.2355,2.062,6.3731,0
+73,1,Lande du Jardin,ZA Bourgbarré,1,0,2.4819,0.8578,1.6241,2.77,0
+73,2,ZA Bourgbarré,Lande du Jardin,1,0,2.4283,0.8426,1.5858,2.7125,0
+75,1,Langlois,Eclosel,3,0,3.0565,0.9913,2.0652,4.1331,0
+75,2,Grée Barel,Langlois,3,0,1.6648,0.1569,1.5079,3.2877,0
+78,1,Holywell,CHP Saint-Grégoire,6,0,3.8351,1.3297,2.5054,7.4816,0
+78,2,CHP Saint-Grégoire,Holywell,6,0,4.0834,1.4106,2.6728,7.848,0
+78 (branch 1),1,Holywell,CHP Saint-Grégoire,6,0,3.8351,1.3297,2.5053,7.5195,0
+78 (branch 1),2,CHP Saint-Grégoire,Holywell,6,0,4.0834,1.4106,2.6728,7.8885,0
+82,1,Sévignière,Miniac Eglise,1,0,4.4996,1.7741,2.7255,3.4748,0
+82,2,Miniac Eglise,Sévignière,1,0,4.6138,1.7887,2.8251,3.5896,0
+82 (branch 1),1,Sévignière,Miniac Eglise,1,0,4.4996,1.7741,2.7255,3.5758,0
+82 (branch 1),2,Miniac Eglise,Sévignière,1,0,4.6138,1.7887,2.8251,3.6943,0
+83,1,ZA Bellevue,Pâtis du Moulinet,5,2,4.2636,1.6201,2.6435,7.9062,109.8571
+83,2,Pâtis du Moulinet,ZA Bellevue,5,2,4.0546,1.571,2.4837,7.529,101.8571
+90,1,Bruz Centre,Noë,3,0,4.0157,0.6656,3.3501,7.0152,0
+90,2,Noë,Bruz Centre,3,0,4.1699,0.6527,3.5172,7.3154,0
+91,1,Haye de Pan,Rabine,9,0,6.3422,2.4501,3.8921,10.8467,0
+91,2,Rabine,Haye de Pan,9,0,6.4696,2.4711,3.9985,11.0611,0
+91 (Bruz Pont-Réan),1,Haye de Pan,Haut Launay,8,0,5.8755,2.2189,3.6566,9.465,0
+91 (Bruz Pont-Réan),2,Haut Launay,Haye de Pan,8,0,5.9672,2.2157,3.7515,9.6414,0
+159ex,1,Bruz Centre,Bruz Gare,3,0,2.9228,0.8093,2.1135,4.7131,0
+159ex,2,Bruz Gare,Bruz Centre,3,0,2.9447,0.8093,2.1354,4.7515,0
+201,1,Landelles,Bocage,3,0,2.267,0.6414,1.6257,4.641,0
+201,2,Portail,Thorigné Mairie,4,0,2.7323,0.9968,1.7355,5.2204,0
+204,2,Assomption,Clotilde Vautier,1,1,2.8444,0.8661,1.9783,5.8828,0
+206,2,Taillis,Cesson Piscine,4,0,4.1299,1.6011,2.5287,8.5907,0
+214,2,Rond Point de Bray,Cesson Piscine,8,0,6.2155,1.6562,4.5593,13.0448,0
+219,1,Etangs,Aire du 8 Mai,6,0,10.338,2.5251,7.8129,19.3675,0
+219,2,Aire du 8 Mai,Etangs,6,0,9.4181,2.538,6.8801,17.2941,0
+221,1,Portail,Anne de Bretagne,3,0,2.3951,0.8212,1.5739,4.4519,0
+221,1,Thorigné Mairie,Pâtis du Moulinet,2,0,3.441,1.2766,2.1644,5.4135,0
+221,2,Pâtis du Moulinet,Thorigné Mairie,2,0,3.3837,1.3025,2.0811,5.2309,0
+222,2,Renaudais,Marronniers,2,0,7.1931,1.4792,5.7139,16.7336,0
+226,2,Centre scolaire Pacé,Silandière,6,0,8.3264,3.2313,5.0951,11.4723,0
+229,1,Brossolette,Croix Madame,2,0,7.1264,2.4676,4.6588,9.8703,0
+229,1,Croix Madame,Calvaire,2,0,7.6982,2.9463,4.7518,10.054,0
+229,2,Calvaire,Croix Madame,2,0,7.4092,2.9325,4.4767,9.5105,0
+229,2,Croix Madame,Brossolette,2,0,6.1524,2.3789,3.7735,8.1213,0
+231,1,Brossolette,Fontaine Blanche,3,0,9.7728,2.8696,6.9032,15.5352,0
+231,2,Pont-Péan Mairie,Anita Conti,5,0,9.715,3.2095,6.5055,15.3645,0
+236,2,Clairville,La Renardière,3,0,3.2734,1.1336,2.1398,5.8451,0
+240,2,Pont aux Moines,Maison Neuve,3,0,2.8625,1.0204,1.8421,4.6306,0
+242,1,Miniac Eglise,Sévignière,1,0,4.6138,1.7887,2.8251,4.272,0
+242,2,Sévignière,Miniac Eglise,1,0,4.4996,1.7741,2.7255,4.1332,0
+245,1,Corbières,Bruz Centre,8,0,4.6168,1.521,3.0958,9.0199,0
+245,2,Bruz Centre,Corbières,8,0,4.4875,1.5309,2.9567,8.7343,0
+Ts3,1,Pont de l'Ise,Leuzières,3,0,2.2834,0.7087,1.5747,3.9624,0
+Ts4,1,La Fretais,Bourgbarré Mairie,2,0,2.396,0.8774,1.5186,3.7333,0
+Ts4,1,Brossolette,Anita Conti,1,0,5.2564,1.6066,3.6498,7.7039,0
+Ts4,2,Anita Conti,Brossolette,1,0,5.6894,1.6066,4.0828,8.5783,0
+Ts4,2,Bourgbarré Mairie,La Fretais,2,0,2.4435,0.7517,1.6918,4.0831,0
+Ts5,1,Anita Conti,Bois de Carcé,1,0,5.9766,1.0682,4.9084,7.8958,0
+Ts5,2,Bois de Carcé,Aire du 8 Mai,1,0,4.3092,1.3915,2.9177,4.8287,0
+Ts7,1,Ecotais,Anita Conti,2,0,6.3708,1.2801,5.0907,9.8058,0
+Ts7,2,Brossolette,Ecotais,2,0,7.0521,0.8064,6.2457,11.8794,0
+Ts9,1,Anita Conti,Brossolette,1,0,5.6891,1.6066,4.0826,7.2952,0
+Ts9,2,Brossolette,Anita Conti,1,0,5.2566,1.6066,3.65,6.5575,0
+Ts10,1,Anita Conti,Brossolette,1,0,5.6892,1.6066,4.0826,7.8138,0
+Ts10,1,Le Cleux,Les Vallées,2,0,4.4549,1.5611,2.8939,5.969,0
+Ts10,2,Le Cleux,Les Vallées,2,0,4.4552,1.5611,2.8942,5.9696,0
+Ts10,2,Brossolette,Anita Conti,1,0,5.2566,1.6066,3.65,7.0212,0
+Ts11,1,Anita Conti,Martigné,2,0,10.521,3.6013,6.9197,14.4574,0
+Ts11,2,Martigné,Anita Conti,2,0,10.4192,3.626,6.7932,14.2052,0
+Ts20,1,La Croix de l'Epine,La Tertronais,2,2,7.0482,1.4623,5.586,9.9794,145.1429
+Ts20,2,Le Gobigné,L'Ourmais,2,2,3.0068,1.1991,1.8078,3.6805,164.2857
+Ts22,2,Gériatrie,La Planche,2,0,2.4491,0.8814,1.5677,5.0168,0
+Ts34,1,Rue de Montfort,L'Hermitage Gare,2,0,3.0043,0.5145,2.4898,6.1226,0
+Ts34,2,L'Hermitage Gare,Rue de Montfort,2,0,3.0676,0.5062,2.5614,6.2796,0
+Ts36,1,Ville Noublée,Morvan Lebesque,1,0,5.1699,1.9155,3.2545,7.5279,0
+Ts36,2,Morvan Lebesque,Ville Noublée,1,0,4.9097,1.9298,2.9799,6.9209,0
+Ts41,1,Izé,Pierre Texier,3,3,5.0441,1.9247,3.1194,7.9415,363.8571
+Ts41,1,Pierre Texier,Thébaudière,3,1,4.1919,0.9967,3.1952,8.1102,235.5714
+Ts41,2,Vizeule,Belle Epine,2,2,4.2268,0.894,3.3328,8.083,534.2857
+Ts41,2,Belle Epine,Izé,3,2,6.005,2.131,3.874,9.6207,272.2857
+Ts46,1,Haie de Terre,Sorinais,2,2,4.5868,1.6196,2.9672,6.3301,240.4286
+Ts51,2,Collège Récipon,Ormes Blanches,4,0,3.5131,1.1686,2.3445,6.3635,0
+Ts51,2,La Basse Erable,La Fretais,4,3,5.1054,0.5465,4.5589,11.1144,694.7143
+Ts52,1,Abords Launay,Molène,3,1,12.9121,2.0258,10.8863,22.8038,75.8571
+Ts52,2,Molène,Abords Launay,5,1,13.65,2.0195,11.6305,24.961,75.8571
+Ts53,1,Fort Joual,Bossardière,7,1,14.0475,4.8821,9.1654,18.6484,0
+Ts54,1,Douazel,Alexandre Gilois,4,0,4.2084,1.5201,2.6883,8.0934,0
+Ts54,2,Alexandre Gilois,Douazel,4,0,4.1171,1.4708,2.6462,7.9878,0
+Ts55,1,Laillé Collège,Le Cleux,3,1,8.2117,1.6993,6.5125,11.1218,103.4286
+Ts55,1,Le Cleux,ZA Le Rachat,3,0,7.7397,0.921,6.8187,11.5977,0
+Ts55,2,ZA Le Rachat,Les Vallées,3,0,5.8738,2.1062,3.7676,6.8557,0
+Ts55,2,Les Vallées,Laillé Collège,3,1,9.1807,2.2182,6.9625,11.8212,108.8571
+Ts57,1,Laillé Collège,Bout de Lande,1,0,4.2002,1.6264,2.5739,4.3698,0
+Ts61,1,Ménouriais,Prieuré Forge,3,3,5.8711,1.9004,3.9708,11.8135,179.1429
+Ts61,2,Prieuré Forge,Ménouriais,3,3,6.8976,1.8909,5.0067,14.6346,186.2857
+Ts67,1,La Houdinais,Saint-Hubert,3,1,5.6325,2.1475,3.485,7.0567,46.2857
+Ts67,2,Saint-Hubert,La Houdinais,3,1,5.6237,2.1626,3.4611,7.015,0
+RPI-1,1,Chapelle-Chaussée,Chapelle-Chaussée,1,1,18.2801,0.0,18.2801,30.0898,0
+RPI-1,2,Bécherel Ecole,Bécherel Ecole,1,0,17.7601,0.0,17.7601,29.2435,0
+Ts71,1,Rouaudière,La Couplais,2,1,9.1023,2.3349,6.7674,12.2103,56.7143
+Ts71,2,La Couplais,Rouaudière,2,1,9.1091,2.3304,6.7787,12.2296,56.7143
+Ts82,1,Pont,Collège Pôle Sud,2,0,8.9259,2.2408,6.6851,14.5251,0
+Ts82,2,Collège Pôle Sud,Pont,2,0,8.562,2.2206,6.3414,13.8127,0

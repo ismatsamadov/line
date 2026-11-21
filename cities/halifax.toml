@@ -1,0 +1,24 @@
+# Settings for Halifax, read from its GTFS feed (python3 data/fetch_city.py halifax wrote this file;
+# edit it freely, the script does not overwrite it). Every setting not named here keeps its
+# default in busnet/assumptions.py, as for Baku; see docs/configuration.md.
+#   python3 measure.py --config cities/halifax.toml --out output/cities/halifax
+#   python3 redesign.py --config cities/halifax.toml --out output/cities/halifax/redesign
+
+[data]
+gtfs = "../data/cities/halifax/gtfs.zip"
+population = "../data/cities/halifax/kontur_population_CA_20231101.gpkg"
+destinations = [
+    "../data/cities/halifax/osm_education.json",
+    "../data/cities/halifax/osm_health.json",
+    "../data/cities/halifax/osm_shopping.json",
+    "../data/cities/halifax/osm_offices.json",
+    "../data/cities/halifax/osm_transport.json",
+]
+
+[service]
+service_hours = 19                   # the hours of service the feed's timetable shows (measure.py reports them)
+headway_from_ridership = false       # no counts in the format of BakuBus's
+reference_fleet = 0                  # buses in daily service, if known
+
+[redesign]
+redesign_protected_routes = []       # route numbers the search must leave as they are
