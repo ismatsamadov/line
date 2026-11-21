@@ -37,7 +37,7 @@ coverage_radius_m = 400          # "served" = a stop within this distance (TCQSM
 default_headway_min = 12
 headway_from_ridership = true    # BakuBus routes: enough trips to carry their observed boardings
 boardings_per_trip = 60          # average boardings on one one-way trip of a 12 m bus
-service_hours = 17               # 06:00 to 23:00
+service_hours = 17               # 06:00 to 23:00; BakuBus's 52 routes average 16.95 h (data/bakubus_route_hours.csv)
 min_headway_min = 3
 max_headway_min = 30
 transfer_penalty_min = 5         # perceived cost of each change, on top of waiting
