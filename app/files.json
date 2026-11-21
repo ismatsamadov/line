@@ -3,6 +3,7 @@
   "busnet/__init__.py",
   "busnet/assumptions.py",
   "busnet/bicycle.py",
+  "busnet/calibration.py",
   "busnet/config.py",
   "busnet/destinations.py",
   "busnet/geo.py",
