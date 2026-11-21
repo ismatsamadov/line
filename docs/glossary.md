@@ -66,7 +66,7 @@ Terms as they are used in this repository. Setting names are in `code` font
 | Route | A bus line with a number, such as 7A. Has one or two directions |
 | Route time | On the benchmark networks, the minutes it takes to drive every route once one way: the operator's score (TRT or C<sub>o</sub> in some papers) |
 | Search sample | The fixed set of trips the redesign scores every change on (`redesign_origins`, `redesign_seed`) |
-| Service day | The one day of a GTFS feed's timetable the model reads: `gtfs_date`, or else the weekday with the most bus trips |
+| Service day | The one day of a GTFS feed's timetable the model reads: `gtfs_date`, or else the weekday with the most bus trips that does not stand out from the same weekday in the weeks around it, as a holiday added on top of the usual timetable does |
 | Service hours | Hours of service a day (`service_hours`, 17: 06:00 to 23:00). For a GTFS feed, the hours in which buses leave at least a quarter as often as in the busiest hour, which `measure.py` reports |
 | Shift | A redesign change that moves buses from the routes where one more bus would save riders the least waiting to the routes where it would save the most |
 | Short turn | A trip that runs only part of its route's main pattern, ending or starting partway. `read_gtfs` counts it towards the route's frequency in proportion to the distance it covers |

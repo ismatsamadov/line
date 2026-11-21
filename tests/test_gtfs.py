@@ -233,6 +233,17 @@ class ReadTest(unittest.TestCase):
         day = Calendar(Old()).busiest_weekday({"OLD": 1, "NEW": 5})
         self.assertEqual(day.isoformat(), "2026-11-02")
 
+    def test_a_holiday_added_on_top_of_the_usual_timetable_is_passed_over(self):
+        from busnet.gtfs import Calendar
+
+        class Doubled:                           # as Cardiff Bus's feed runs 25 December and 1 January
+            def columns(self, name, *wanted):
+                rows = {"calendar.txt": [("WK", "1", "1", "1", "1", "1", "0", "0", "20261102", "20270129")],
+                        "calendar_dates.txt": [("XMAS", "20261225", "1"), ("XMAS", "20270101", "1")]}
+                return iter(rows.get(name, []))
+        day = Calendar(Doubled()).busiest_weekday({"WK": 10, "XMAS": 6})
+        self.assertEqual(day.isoformat(), "2026-11-02")
+
     def test_a_chosen_day_and_a_day_without_service(self):
         _, table = read_gtfs(self.feed, Assumptions(gtfs_date="2026-11-03"))
         self.assertAlmostEqual(table.trips_each_way["R1"], ((2 + 2 / 5) + 2) / 2, places=3)

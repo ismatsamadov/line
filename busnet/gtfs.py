@@ -170,6 +170,7 @@ WEEKDAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", 
 BRANCH_SHARE = 0.2           # a branch with this share of its direction's departures, and at least
 MIN_BRANCH_DEPARTURES = 3    # this many, runs as a route of its own; a smaller one is left out
 PAIR_M = 150.0               # a branch's two directions: most stops of each within this of the other's
+HOLIDAY_EXCESS = 1.25        # a day with this many times the trips of its weekday in the weeks around it is passed over
 EXPRESS_WORDS = ("express", "ekspres", "expres", "экспресс", "экспрес")
 EXPRESS_SHARE, EXPRESS_CALLS = 0.85, 0.6   # see _express
 
@@ -273,13 +274,26 @@ class Calendar:
         return sorted(out)
 
     def busiest_weekday(self, trips_per_service):
-        """The weekday with the most trips, the first if several; a weekend day if none runs on a weekday."""
-        best, key = None, (False, 0)
-        for day in self.days():
-            n = sum(trips_per_service.get(s, 0) for s in self.services(day))
-            if n and (day.weekday() < 5, n) > key:
-                best, key = day, (day.weekday() < 5, n)
-        return best
+        """The weekday with the most trips, the first if several; a weekend day if none runs on a weekday.
+
+        A day with more than HOLIDAY_EXCESS times the trips of the same weekday in the weeks
+        around it, on each side that runs, is passed over while another day runs: a holiday
+        whose timetable some feeds add on top of the usual one. The first day of a new, busier
+        timetable is not, since the weeks after it run as it does."""
+        def trips(day):
+            return sum(trips_per_service.get(s, 0) for s in self.services(day))
+
+        def stands_out(day, n):
+            sides = []
+            for sign in (-1, 1):
+                around = sorted(m for m in (trips(day + datetime.timedelta(7 * sign * k)) for k in (1, 2, 3)) if m)
+                if around:
+                    sides.append(n > HOLIDAY_EXCESS * around[len(around) // 2])
+            return bool(sides) and all(sides)
+
+        running = [(day, n) for day in self.days() if (n := trips(day))]
+        running.sort(key=lambda dn: (dn[0].weekday() >= 5, -dn[1], dn[0]))
+        return next((day for day, n in running if not stands_out(day, n)), running[0][0] if running else None)
 
 
 def _positions(part, seq):

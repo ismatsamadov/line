@@ -64,7 +64,11 @@ routes, stops and patterns from it, for one service day:
    read (`gtfs_route_types`, buses by default), the first such day if several tie. A day's
    services are those `calendar.txt` runs that weekday, with the holidays and extra days
    of `calendar_dates.txt`. A trip in `frequencies.txt` counts as many departures as its
-   windows hold.
+   windows hold. A day with more than 1.25 times the trips of the same weekday in the three
+   weeks before it and in the three after (the middle of each three) is passed over: a
+   holiday whose timetable a feed adds on top of the usual one, as Cardiff Bus's does on
+   25 December and Dublin Bus's on 1 January. The first day of a new, busier timetable is
+   kept, since the weeks after it run as it does.
 2. **Directions.** From `direction_id`: 0 becomes direction 1 and 1 becomes 2. When a
    route's trips lack it, each trip is compared with the route's most-run stop sequence,
    by the order of the stops the two share or, if that does not decide, by which of their
