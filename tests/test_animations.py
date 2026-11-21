@@ -196,7 +196,8 @@ class Committed(unittest.TestCase):
                 for d in v}
         with open(ROOT / "output" / "redesign" / "changes.csv", newline="", encoding="utf-8-sig") as f:
             changes = len(list(csv.DictReader(f)))
-        expected = {"buses.gif": 80, "riders.gif": len(days), "redesign.gif": 2 * changes + 2, "travel-time.gif": 121}
+        expected = {"buses.gif": 80, "riders.gif": len(days), "redesign.gif": 2 * changes + 2, "travel-time.gif": 121,
+                    "bicycle.gif": 5}
         m = build.Map()
         for name, frames in expected.items():
             data = (ROOT / "animations" / name).read_bytes()

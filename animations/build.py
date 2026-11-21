@@ -10,6 +10,9 @@ Draw the README's animations as GIFs, from the committed data and outputs.
                    a time, with the average door-to-door time on its sample of trips
   travel-time.gif  how far the buses take you, minute by minute, from the stop where the
                    page's travel-time view starts, by the same travel model
+  bicycle.gif      AYNA's bicycle lanes over the bus routes, on a crop of central Baku: the
+                   lanes of January 2025, those of September 2026 with the new ones marked,
+                   then the bus stops within 100 m of a lane and the parking points
 
 Only riders.gif shows counts. AYNA publishes no timetables and no bus positions, so the
 buses run as the model runs them, and each picture says what it rests on.
@@ -20,8 +23,9 @@ data or the settings.
 
 Standard library only, like the rest of the repository; draw.py holds the drawing and the
 GIF writer. The maps use the flat projection of the measurements (busnet.geo.PROJ), the
-crop of the manuscript's figures and the repaired network the measurements use. Usage:
-  python3 animations/build.py                    # all four, about four minutes
+crop of the manuscript's figures (bicycle.gif a closer one) and the repaired network the
+measurements use. Usage:
+  python3 animations/build.py                    # all five, about four minutes
   python3 animations/build.py --only riders      # one of them; repeatable
 """
 
@@ -45,9 +49,10 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(HERE))
 
 import draw                                                                     # noqa: E402
+from busnet.bicycle import LANES_2025_FOLDER, LineIndex, along, load_lanes, load_parking, stops_near  # noqa: E402
 from busnet.destinations import _match, read_exits                             # noqa: E402
 from busnet.geo import PROJ, Polyline                                           # noqa: E402
-from busnet.graph import TransitGraph                                           # noqa: E402
+from busnet.graph import StopIndex, TransitGraph                                # noqa: E402
 from busnet.inputs import load_inputs                                           # noqa: E402
 from busnet.optimize import Context, Evaluator, Plan, search                    # noqa: E402
 from busnet.population import _mercator_to_latlon, load_population, stops_bbox  # noqa: E402
@@ -611,9 +616,105 @@ def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
     return gif.write(out / "travel-time.gif")
 
 
+# ---------------------------------------------------------------- 5. bicycle lanes
+
+LANE_GREEN = "#23634e"           # the page's colour for bicycle lanes
+NEW_LANE_M = 30.0                # a lane of September 2026 is new where it runs farther than this from January 2025's
+
+
+def bicycle(inp, m, base, out):
+    """AYNA's bicycle lanes over today's bus routes, in five steps: the routes, the lanes AYNA
+    drew in January 2025, the lanes of its file of September 2026 with the new ones marked,
+    the served stops within 100 m of a lane, and the 185 MPV parking points (the 649 MPS
+    points are left out, since the file does not say what they are). The same measures as
+    bicycle.py, on a crop of central Baku the size of the other animations."""
+    net, a = inp.network, inp.a
+    lanes, _ = load_lanes(inp.data["bicycle_lanes"])
+    lanes_2025, _ = load_lanes(inp.data["bicycle_parking"], LANES_2025_FOLDER)
+    parking = [p for p in load_parking(inp.data["bicycle_parking"]) if p.kind == "MPV"]
+    xs, ys = zip(*(PROJ.to_xy(*pt) for lane in lanes + lanes_2025 for pt in lane.line.latlon))
+    cx, cy = (min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2
+    half_w = max((max(xs) - min(xs)) / 2, (max(ys) - min(ys)) / 2 * m.w / m.h) * 1.12
+    half_h = half_w * m.h / m.w
+    (lat0, lon0), (lat1, lon1) = PROJ.to_latlon(cx - half_w, cy - half_h), PROJ.to_latlon(cx + half_w, cy + half_h)
+    zm = Map((lat0, lat1, lon0, lon1), m.w)
+    tx, ty = 340, 404                            # the text sits on the bay
+
+    old_index = LineIndex([(k, lane.line) for k, lane in enumerate(lanes_2025)])
+    beside = [sum(along(lane.line, old_index, NEW_LANE_M).values()) for lane in lanes]
+    new = [k for k, lane in enumerate(lanes) if beside[k] < lane.line.length_m / 2]
+    km = sum(lane.line.length_m for lane in lanes) / 1000
+    km_2025 = sum(lane.line.length_m for lane in lanes_2025) / 1000
+    km_new = sum(lane.line.length_m - beside[k] for k, lane in enumerate(lanes)) / 1000
+    streets = len({lane.name for lane in lanes})
+    near = stops_near(net, LineIndex([(k, lane.line) for k, lane in enumerate(lanes)]), 100)
+    served = net.served_stop_ids()
+    stops = StopIndex([net.stops[s] for s in sorted(served)])
+    near_stop = sum(1 for p in parking if stops.within(p.lat, p.lon, 100))
+
+    still = base_map(zm, hexagons(inp.data["population"], (lat0, lat1, lon0, lon1)))
+    network_lines(still, zm, net.patterns.values(), opacity=0.35)
+    still.text(tx, ty, "Bicycle lanes beside the buses", 16, INK, 1.75, halo=PAGE)
+    still.text(tx, ty + 20, "AYNA's lanes and parking points (opendata.az) over today's bus routes", 11, INK2, halo=PAGE)
+    legend(still, tx, ty + 40, [(LANE_GREEN, "lane, January 2025"), (GREEN, "new by September 2026")])
+    legend(still, tx, ty + 58, [(BLUE, "stop within 100 m of a lane"), (ORANGE, "parking point")])
+    note(still, f"A lane counts as new where it runs more than {NEW_LANE_M:.0f} m from every lane drawn in January "
+                f"2025. The {len(served):,} stops are the network's served stops; the parking file's MPS points are "
+                f"left out, since it does not say what they are.", ty + 124, most=3)
+
+    def step(c, title, detail):
+        c.text(tx, ty + 84, title, 13, INK, 1.6, halo=PAGE)
+        c.text(tx, ty + 102, detail, 11, INK2, halo=PAGE)
+        return c
+
+    def lines(c, chosen, colour, width, casing=False):
+        """Lines in one colour as one mask, so they do not darken where they meet; casing puts a
+        white edge under them."""
+        for w, col, alpha in ([(width + 2.4, "#ffffff", 0.9)] if casing else []) + [(width, colour, 0.95)]:
+            mask = c.mask()
+            for line in chosen:
+                mask.line(line, w)
+            c.paint(mask, col, alpha)
+
+    old_lines = [zm.line(lane.line.latlon) for lane in lanes_2025]
+    now_lines = [zm.line(lane.line.latlon) for k, lane in enumerate(lanes) if k not in new]
+    new_lines = [zm.line(lanes[k].line.latlon) for k in new]
+    gif = draw.Gif(zm.w, zm.h, pinned=[PAGE, INK, INK2, MUTED, LANE_GREEN, GREEN, BLUE, ORANGE, "#ffffff"], colours=64)
+    gif.add(step(still.copy(), "Today's bus routes", f"{len(served):,} served stops on "
+                 f"{len({p.route_id for p in net.patterns.values()})} routes"), 160)
+    c = still.copy()
+    lines(c, old_lines, LANE_GREEN, 2.6)
+    gif.add(step(c, "January 2025", f"{len(lanes_2025)} lanes, {km_2025:.1f} km, as AYNA drew them"), 220)
+    lanes_now = still.copy()
+    lines(lanes_now, now_lines, LANE_GREEN, 2.6)
+    lines(lanes_now, new_lines, GREEN, 3.2, casing=True)
+    gif.add(step(lanes_now.copy(), "September 2026",
+                 f"{len(lanes)} lanes, {km:.1f} km on {streets} streets; {km_new:.1f} km of them new"), 260)
+    c = lanes_now.copy()
+    casing, dots = c.mask(), c.mask()
+    for s in sorted(near):
+        x, y = zm.px(net.stops[s].lat, net.stops[s].lon)
+        casing.disc(x, y, 3.6)
+        dots.disc(x, y, 2.6)
+    c.paint(casing, "#ffffff", 0.9)
+    c.paint(dots, BLUE)
+    gif.add(step(c.copy(), "Bus stops beside the lanes",
+                 f"{len(near)} of the {len(served):,} served stops lie within 100 m of a lane"), 260)
+    casing, dots = c.mask(), c.mask()
+    for p in parking:
+        x, y = zm.px(p.lat, p.lon)
+        casing.disc(x, y, 3.8)
+        dots.disc(x, y, 2.8)
+    c.paint(casing, "#ffffff", 0.9)
+    c.paint(dots, ORANGE)
+    gif.add(step(c, "Parking points", f"{len(parking)} parking points, {near_stop} of them within 100 m of a bus stop"),
+            400)
+    return gif.write(out / "bicycle.gif")
+
+
 # ---------------------------------------------------------------- main
 
-ANIMATIONS = {"buses": buses, "riders": riders, "redesign": redesign, "travel-time": travel_time}
+ANIMATIONS = {"buses": buses, "riders": riders, "redesign": redesign, "travel-time": travel_time, "bicycle": bicycle}
 
 
 def main():
