@@ -47,6 +47,7 @@ busnet/
   instances.py        Baku's stops merged into nodes, the links between them, today's routes as paths, the gravity demand
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
+app/                  the engine in the browser (Pyodide): build.py writes files.json, the files index.html and app.js load
 site/
   build.py            the page's data and checklist from output/ and the repaired network
   data.js             written by build.py: everything the page shows, as one object
