@@ -14,6 +14,7 @@ here.
 | `ayna.db` | 208 routes, 3,841 stops, stop sequences and route shapes | AYNA map API (`map-api.ayna.gov.az`, an unauthenticated OpenAPI service), scraped 23 October 2026 with `ayna_scraper.py`; identical to the snapshot of 6 May 2026 kept in github.com/samirmehd1yev/best_route_finding. Also published on Kaggle with the tables as CSV: [doi.org/10.34740/KAGGLE/DSV/21173689](https://doi.org/10.34740/KAGGLE/DSV/21173689) | None. The data is AYNA's; neither AYNA nor the API publishes terms of use (ayna.gov.az states only "All rights reserved"). Redistributed here as a research snapshot with attribution to AYNA; this repository's licence does not extend to it |
 | `ayna_scraper.py` | Script that builds `ayna.db` from the AYNA API | This repository | |
 | `headways.csv` | Real headways where a public source gives one; add rows as data arrives | See the `source` column ([airport.az, August 2024](https://www.airport.az/en/press-release/h1-airport-express-route-will-now-operate-24-7-for-the-convenience-of-passengers/)) | |
+| `bakubus_route_hours.csv` | The first and last departures of 52 BakuBus routes, with their two terminals as BakuBus names them; not read by the tools ([docs/data.md](../docs/data.md#bakubuss-first-and-last-departures-databakubus_route_hourscsv)) | Transcribed by hand from the route table on BakuBus's website ([bakubus.az/az/route](https://www.bakubus.az/az/route), "Marşrut şəbəkəsi"), which the page shows as one image, `uploads/menus/o_1ijslae3a1nc0d6evq9pq1dqai.png`, last changed on 12 February 2025; read on 21 November 2026 | None published. Facts of BakuBus MMC's service, transcribed as a research record with attribution to BakuBus |
 
 ## Metro network
 
@@ -195,7 +196,8 @@ the extracts are not kept. ODbL, © OpenStreetMap contributors.
 ## Searched for and not found
 
 No public source gives route headways or timetables, vehicle positions, or ticket
-validations by stop. Checked: the AYNA map API, opendata.az (69 transport datasets),
+validations by stop; BakuBus's website gives only the first and last departures of its
+routes (above) and an interval for H1. Checked: the AYNA map API, opendata.az (69 transport datasets),
 OpenStreetMap, the BakuBus and AYNA websites, and news reports. Until AYNA or the
 operators share them, `busnet.toml` holds the assumptions that stand in for them. For the
 metro, intervals and running times are published (above), but no full timetable, no

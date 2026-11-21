@@ -193,7 +193,10 @@ Door-to-door, on 300 origins sampled by population:
 | CO₂ a day | 605 tonnes |
 
 The implied fleet lands near the reported one, which suggests the estimated headways are
-realistic overall. Individual routes can still be far off.
+realistic overall. Individual routes can still be far off. The hours of service hold up
+better: BakuBus publishes the first and last departures of 52 of its routes, and they
+average 16.95 hours against the 17 assumed; running each over its own hours would add
+1.6% to their bus-hours ([data.md](data.md#bakubuss-first-and-last-departures-databakubus_route_hourscsv)).
 
 ### Ridership, and how well the model matches it
 

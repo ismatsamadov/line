@@ -208,6 +208,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 |---|---|
 | `data/ayna.db`, `data/ayna_scraper.py` | Bus network snapshot from the AYNA map API, and the script that builds it |
 | `data/external/` | Public datasets: population, ridership, metro, statistics, OpenStreetMap, Wikidata, the answers of the metro's own API, AYNA's bicycle lanes and parking points, the benchmark networks of Mumford (2013) and the route sets later studies published on them |
+| `data/bakubus_route_hours.csv` | The first and last departures BakuBus publishes for 52 of its routes, copied from the image on its website; a check on the hours of service, not read by the tools |
 | `data/headways.csv` | Real headways where known |
 | `data/fetch_external.py`, `data/osm_pbf.py` | Downloads the public datasets again; the reader of OpenStreetMap PBF extracts that cuts the walking network out of Geofabrik's, and another city's destinations |
 | `data/cities/`, `data/fetch_city.py` | Another city's inputs (Riga's: its GTFS feed, Kontur's grid for Latvia, OpenStreetMap destinations), and the script that downloads them for any city and writes its settings file |

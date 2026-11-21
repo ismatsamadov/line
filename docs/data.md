@@ -386,10 +386,35 @@ Columns `route`, `headway_min` and an optional `source`. A route listed here use
 headway instead of any estimate. Today it holds one row: H1 (Airport Express) every
 20 minutes, from an airport.az press release of August 2024. Add rows as real data arrives.
 
+## BakuBus's first and last departures (`data/bakubus_route_hours.csv`)
+
+BakuBus's website lists its routes on its "Marşrut şəbəkəsi" page as one picture, a
+table of 52 routes with their two terminals and the first and last departure of the
+day; the server dates the picture 12 February 2025. I copied it by hand into
+`data/bakubus_route_hours.csv` on 21 November 2026. It gives no headways, so it does not
+change what the model has to estimate, and no tool reads it, but it is a check on one
+assumption. All 52 routes are BakuBus routes in AYNA's snapshot, with the same terminals
+(147, 503 and 150E, also BakuBus's in the snapshot, are not in the table). Their days
+run from 13 hours (E1, 06:00 to 19:00) to 19 hours (H1, 06:00 to 01:00), a median of 17.5
+and a mean of 16.95: 21 routes start before 06:00 and 30 run past 23:00, while the
+express and outer routes stop early (72, 205, 211 and E1 by 20:00). So the 17 hours
+of service the model gives every route is right on average. Running these 52 routes
+over their own hours instead, at the same headways, would add 1.6% to their bus-hours
+and 1.3% to their fuel.
+
+The website disagrees with itself and with the airport on H1. Its H1 page says the
+buses run every 15 minutes, around the clock, for 1.30 AZN; the table gives H1 a last
+departure at 01:00; and `data/headways.csv` keeps the 20 minutes by day (45 at night)
+that the airport announced in August 2024, because the H1 page carries no date. The
+statistics page counts 81,342,816 BakuBus passengers in 2024, 222,000 a day, and
+856,864,889 from 2015 to 2024. The opendata.az counts of September 2026 come to 768,253
+boardings an average weekday ([Ridership](#ridership)); the two are not reconciled here.
+
 ## Searched for and not found
 
 No public source gives route headways or timetables, vehicle GPS positions, ticket
-validations by stop, or origin-destination data. I checked the AYNA map API (it returns
+validations by stop, or origin-destination data; BakuBus's website gives only the first
+and last departures of its routes ([above](#bakubuss-first-and-last-departures-databakubus_route_hourscsv)). I checked the AYNA map API (it returns
 only routes, stops and shapes), the 69 transport datasets on opendata.az, OpenStreetMap
 (249 bus routes; only M5 carries an interval tag), the BakuBus and AYNA websites, and
 news reports. The settings in `busnet.toml` stand in for them, and since such data

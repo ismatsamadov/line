@@ -81,7 +81,9 @@ boardings when `headway_from_ridership` is on; the value for its working zone in
 | `headway_by_zone` | urban 10, urban express 15, suburban 15, suburban express 20, within a settlement 20, between settlements 20, intercity 30 | Headway by working zone (keys are the Azerbaijani zone names) | Assumption |
 
 The estimated headways imply 2,015 buses in service, 88% of `reference_fleet`, which
-suggests they are realistic.
+suggests they are realistic. The hours of service are borne out too: by the first and
+last departures BakuBus publishes, its 52 routes run 16.95 hours a day on average
+(`data/bakubus_route_hours.csv`).
 
 ## Speed (`[speed]`, `[cruise_kmh]`)
 

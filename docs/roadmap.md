@@ -123,7 +123,8 @@ command in step 1 serves all three.
 
 - Headways are estimated for 200 of the 201 routes (55 from boardings, 145 by service
   type, 1 published), so waiting times, fleet, bus-hours and fuel per route are
-  approximate.
+  approximate. BakuBus publishes only its routes' first and last departures, which bear
+  out the 17 hours of service assumed.
 - Demand comes from a gravity model that ranks routes at 0.58, so estimated riders per
   route can be far off; the redesign uses counts for the 56 BakuBus routes and
   estimates for the other 145.
