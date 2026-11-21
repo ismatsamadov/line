@@ -96,6 +96,11 @@ dates, which end on 31 December 2027, move forward by 24 December 2027
 
 ### A Mac desktop app
 
+The first step is made, in the browser rather than on the Mac: `app/` runs the same engine
+inside a web page and measures and redesigns Riga there, with every result matching the
+repository's ([app.md](app.md)). A web app reaches Windows too, which most agencies use, and
+the Mac app below could wrap it.
+
 Today the tool is three commands and a folder of CSV files, which suits someone who reads
 code and few of the people at a transit agency who would use the answers. A Mac app would
 put the same runs behind a window: pick a city from the Mobility Database or drop in a GTFS

@@ -49,6 +49,7 @@ busnet/
   calibration.py      the trips' paths found once and spread again for any demand settings
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
+app/                  the engine in the browser (Pyodide in a Web Worker): build.py writes files.json, the files index.html, app.js and worker.js load
 site/
   build.py            the page's data and checklist from output/ and the repaired network
   data.js             written by build.py: everything the page shows, as one object
@@ -413,7 +414,8 @@ On one Python version a rebuild gives the same files byte for byte.
    to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
-   picture size and the number of frames its data gives. `tests/test_instances.py` checks
+   picture size and the number of frames its data gives. `tests/test_app.py` checks that
+   `app/files.json` is the list `app/build.py` writes and that every file on it exists. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
