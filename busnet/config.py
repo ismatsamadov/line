@@ -5,6 +5,7 @@ keys are Assumptions fields; the table names only group them for readers. Tables
 as headway_by_zone are merged with the defaults, so one entry can be changed alone.
 Unknown keys are an error, so a typo cannot be silently ignored."""
 
+import os
 import tomllib
 from dataclasses import fields, replace
 from pathlib import Path
@@ -66,7 +67,7 @@ def _resolve(base, value):
     if isinstance(value, list):
         return [_resolve(base, v) for v in value]
     p = Path(value)
-    return str(p if p.is_absolute() else base / p)
+    return os.path.normpath(p if p.is_absolute() else base / p)       # a city's "../data/..." becomes ".../data/..."
 
 
 _FIELDS = {f.name for f in fields(Assumptions)}
