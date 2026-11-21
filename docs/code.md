@@ -413,15 +413,15 @@ On one Python version a rebuild gives the same files byte for byte.
    to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
-   picture size and the number of frames its data gives. `tests/test_calibration.py` holds
-   `busnet/calibration.py` to exactly the boardings and trip lengths `metrics.evaluate_od`
-   gives on the made-up network, checks the rank correlation, and checks that the committed
-   `output/calibration/` agrees with itself. `tests/test_instances.py` checks
+   picture size and the number of frames its data gives. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
    demand comes back from the published nodes; with `BUSNET_SLOW_TESTS=1` it cuts the
-   instances again (about twelve minutes).
+   instances again (about twelve minutes). `tests/test_calibration.py` holds
+   `busnet/calibration.py` to exactly the boardings and trip lengths `metrics.evaluate_od`
+   gives on the made-up network, checks the rank correlation, and checks that the committed
+   `output/calibration/` agrees with itself.
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.
