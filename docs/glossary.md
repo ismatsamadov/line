@@ -13,7 +13,7 @@ Terms as they are used in this repository. Setting names are in `code` font
 | Benchmark network | One of the small networks on which methods of designing bus routes are compared, with published route sets and scores: Mandl's and Mumford0–3 ([benchmark.md](benchmark.md)) |
 | Bicycle lane | One of AYNA's existing bicycle lanes as drawn in its opendata.az file: 60 lines on 54 streets, 57.1 km in all ([results.md](results.md#bicycle-lanes-and-parking)) |
 | Boarding | One rider getting on one bus. A trip with one change is two boardings |
-| Branch | A stop sequence of a route in a GTFS feed that calls at stops the route's main pattern does not. `read_gtfs` leaves it out of the model and lists it, with its departures and the stops only it serves, in `timetable.txt` |
+| Branch | A stop sequence of a route in a GTFS feed that calls at stops the route's main pattern does not. One with at least a fifth of its direction's departures runs as a route of its own, named after its headsign; a smaller one is left out and listed, with its departures and the stops only it serves, in `timetable.txt` |
 | Bus-equivalent | A fractional number of buses. The redesign assigns fractions so that small changes count; whole buses are the fractions rounded up per route |
 | Bus-hours, bus-km | Hours and kilometres that buses drive in service in a day. The main operating costs |
 | Chainage | Distance along a route's path from its first stop, at each stop |
@@ -32,7 +32,7 @@ Terms as they are used in this repository. Setting names are in `code` font
 | Door-to-door time | Walk to the stop + wait + ride + any changes (with their penalty) + walk from the stop |
 | Drop | A redesign change that removes a route and gives its buses to the routes that overlap it |
 | Duplication ratio | Total route length ÷ length of distinct stop-to-stop links. 1 means no two routes share a link |
-| Express route | A route in an express working zone ("ekspres" in the AYNA data): E1, H1, 72, 120E, 121E, 140E, 150E, 594 and 595. Near-duplicate checks leave them out, since skipping a local route's stops is their purpose. A GTFS feed does not mark them, so for another city they belong in `redesign_protected_routes` |
+| Express route | A route in an express working zone ("ekspres" in the AYNA data): E1, H1, 72, 120E, 121E, 140E, 150E, 594 and 595. Near-duplicate checks leave them out, since skipping a local route's stops is their purpose. A GTFS feed does not mark them, so `read_gtfs` marks a route express when its name says so or when it calls at fewer than 60% of the stops of a route it runs along |
 | Fleet | Buses needed to run the service: round-trip time × (1 + `layover_share`) ÷ headway, per route |
 | Fit ladder | The demand model checked against observed boardings four times, adding one input at a time: flat headways, headways by service type, destinations, headways from boardings (`output/robustness/fit_ladder.csv`) |
 | Fleet-saving option | The share of the redesigned network's buses that still gives today's average trip time |
@@ -67,7 +67,7 @@ Terms as they are used in this repository. Setting names are in `code` font
 | Route time | On the benchmark networks, the minutes it takes to drive every route once one way: the operator's score (TRT or C<sub>o</sub> in some papers) |
 | Search sample | The fixed set of trips the redesign scores every change on (`redesign_origins`, `redesign_seed`) |
 | Service day | The one day of a GTFS feed's timetable the model reads: `gtfs_date`, or else the weekday with the most bus trips |
-| Service hours | Hours of service a day (`service_hours`, 17: 06:00 to 23:00). For a GTFS feed, the hours between its first and last departures, which `measure.py` reports |
+| Service hours | Hours of service a day (`service_hours`, 17: 06:00 to 23:00). For a GTFS feed, the hours in which buses leave at least a quarter as often as in the busiest hour, which `measure.py` reports |
 | Shift | A redesign change that moves buses from the routes where one more bus would save riders the least waiting to the routes where it would save the most |
 | Short turn | A trip that runs only part of its route's main pattern, ending or starting partway. `read_gtfs` counts it towards the route's frequency in proportion to the distance it covers |
 | Simulated annealing | A search that sometimes accepts a worse change, to escape a local optimum |

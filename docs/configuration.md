@@ -72,7 +72,7 @@ boardings when `headway_from_ridership` is on; the value for its working zone in
 | `default_headway_min` | 12 | Headway for a route with no better information | Assumption |
 | `headway_from_ridership` | true | Estimate BakuBus headways from their observed boardings | Uses the opendata.az counts |
 | `boardings_per_trip` | 60 | Average boardings on one one-way trip of a 12 m bus, used for that estimate | Assumption; checked through the fleet total |
-| `service_hours` | 17 | Hours of service a day (06:00 to 23:00) | Assumption; for a GTFS feed, the hours between its first and last departures, which the run reports |
+| `service_hours` | 17 | Hours of service a day (06:00 to 23:00) | Assumption; for a GTFS feed, its hours of service, which the run reports: the hours in which buses leave at least a quarter as often as in the busiest hour |
 | `min_headway_min` | 3 | Shortest headway allowed for estimates and in the redesign's plans | Assumption; a feed whose routes run more often (the run counts them) needs it lower |
 | `max_headway_min` | 30 | Longest headway allowed for estimates, and the floor of service the redesign keeps on every route | Assumption; the TCQSM's 31–60 minute band is a lower level of service |
 | `transfer_penalty_min` | 5 | Extra minutes a rider perceives for each change, on top of waiting | The value used in the Mandl and Mumford benchmark studies ([research.md](research.md#5-designing-a-network-by-computer)) |

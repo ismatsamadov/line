@@ -73,10 +73,9 @@ Baku's own feed reproduces the snapshot's results to within 0.1%. No other city'
 has been through it yet, and that is the next test. It needs a city whose feed,
 population grid and OpenStreetMap destinations can be committed under their licences.
 That city's network would be measured and redesigned, and its `impact.csv` sent to
-someone there who would read it. Real feeds would also show whether two changes to the
-reader are worth making. One is placing stops by `shape_dist_traveled` where a feed gives
-it. The other is keeping a route's large branches as routes of their own instead of
-leaving them out.
+someone there who would read it. The reader already places stops by a feed's
+`shape_dist_traveled`, keeps a route's large branches as routes of their own, and tells
+express routes apart, three things a real feed was expected to need.
 
 Everything else can wait, because it would make the method look more serious without
 changing the answer much: generating new candidate routes (k-shortest paths between
@@ -125,9 +124,10 @@ dates, which end on 31 December 2027, move forward by 24 December 2027
 - Fuel is in diesel-equivalent litres; CNG and electric buses are not modelled
   separately.
 - Another city runs from its GTFS feed, but as one service day, one stop pattern per
-  route direction (short turns counted, branches left out and listed in
-  `timetable.txt`) and one all-day frequency per route. The reader has been checked on
-  Baku's own feed and on a small made-up one, not yet on another city's.
+  route direction and branch (short turns counted, small branches left out and listed in
+  `timetable.txt`) and one all-day frequency per route over the hours of service. Express
+  routes are recognised from their names and their stops, so one with its own stops and
+  a plain name is treated as local.
 
 ## Questions that are not mine to answer
 

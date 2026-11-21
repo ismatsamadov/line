@@ -148,9 +148,11 @@ python3 redesign.py --config my_city.toml --out output/my_city/redesign
 ```
 
 `measure.py` prints the day it read (the weekday with the most bus trips, or
-`gtfs_date`), the share of that day's departures on the route patterns, the hours between
-the first and last departures, and any warning about the feed; `timetable.txt` lists the
-branches left out and the routes whose speed fell back to the settings
+`gtfs_date`), the share of that day's departures on the route patterns, the branches run
+as routes and the express routes, the hours of service (the hours in which buses leave at
+least a quarter as often as in the busiest hour), and any warning about the feed;
+`timetable.txt` lists each branch, each express route and each route whose speed fell back
+to the settings
 ([configuration.md](configuration.md#a-gtfs-feed-instead-of-the-ayna-snapshot-gtfs)).
 `redesign.py` then writes the redesign and its `impact.csv`. With `--set fuel_price=...`,
 `cost_per_bus_hour`, `value_of_time`, `daily_journeys` and `days_per_year`, the table adds
@@ -188,7 +190,7 @@ later. Nothing reads `data/metro/` yet, so the metro scripts do not change the r
 | `The redesign needs population data` | `redesign.py` without a population file | Restore the Kontur file |
 | `Settings error: no GTFS feed at ...` | `[data] gtfs` names a file that is not there | Fix the path; relative paths are read from the settings file's folder |
 | `Settings error: no trips of route types [3] run on ...` | Nothing of those types runs on `gtfs_date` | Leave `gtfs_date` empty for the busiest weekday, or add types to `gtfs_route_types` |
-| `departures run from ... set it to ...` | The feed's hours of departures differ from `service_hours` by more than an hour | Set `service_hours` as the message says, so waiting times match the timetable |
+| `buses leave at least a quarter as often as in the busiest hour from ... set it to ...` | The feed's hours of service differ from `service_hours` by more than an hour | Set `service_hours` as the message says, so waiting times match the timetable |
 
 ## Where to go next
 

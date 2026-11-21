@@ -100,9 +100,10 @@ Nothing in the measurements or the search is Baku's. A settings file whose `[dat
 names a city's GTFS feed (`gtfs = "my_city/gtfs.zip"`), a population grid for its country
 and, if wanted, OpenStreetMap destinations runs both on that city. The feed's timetable
 gives every route the frequency and speed Baku's data lacks. The reader takes the
-weekday with the most bus trips, makes one stop pattern per route direction (short turns
-count towards its frequency, branches are left out and listed) and moves the map
-projection to the city. Read back, the feed this repository writes for Baku reproduces
+weekday with the most bus trips and makes one stop pattern per route direction. Short
+turns count towards its frequency, large branches run as routes of their own and small
+ones are left out and listed, and express routes are told apart by their names and their
+stops. It then moves the map projection to the city. Read back, the feed this repository writes for Baku reproduces
 the snapshot's results to within 0.1%. [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
 shows the settings file and where each input comes from.
 
@@ -194,7 +195,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `network.json` | Network-wide results, the inputs found and the settings used |
 | `scenario.json` | The same results before and after a scenario |
 | `repairs.txt` | Data defects fixed automatically before measuring |
-| `timetable.txt` | From a GTFS feed only: branches left out and speeds that fell back to the settings |
+| `timetable.txt` | From a GTFS feed only: branches run as routes or left out, express routes, and speeds that fell back to the settings |
 | `robustness/` | The redesign on other trip samples and under other assumptions, the model's fit as inputs are added, coverage by radius |
 | `benchmark/` | The published benchmark route sets scored here beside their published scores, and what straightening does to them |
 | `gtfs_validation/` | What MobilityData's GTFS validator says about the two feeds |

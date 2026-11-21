@@ -174,14 +174,15 @@ counted boardings, riders per route come from the model alone. They are only use
 routes for dropping and for moving buses, so the search runs the same. In `routes.csv`
 they appear as each route's share of the modelled boardings, since there is no count to
 scale them to a day. The protected routes and the fleet reference in `busnet.toml` are
-Baku's, so a city's file should reset them. A feed does not say which routes are express
-routes, which AYNA's service types do. So merge candidates there include express routes
-whose stops a local route also serves, and a city's express routes belong in
-`redesign_protected_routes`. Run on the feed this repository writes for Baku, the search
-keeps 27 changes as it does from the snapshot, 20 of them the same. The others include
-merging express routes 121E and 140E. Trips get 0.76 minutes shorter on the independent
-check, as from the snapshot, and 88% of the buses (1,791 rather than 1,796) give today's
-trip times.
+Baku's, so a city's file should reset them. A feed does not say which routes are express,
+as AYNA's service types do, so the reader marks a route express when its name says so or
+when it skips most stops of a route it runs along
+([methodology.md](methodology.md#from-a-gtfs-feed)); merges never take an express route.
+An express route the reader misses belongs in `redesign_protected_routes`. Run on the feed
+this repository writes for Baku, the search keeps 26 changes, 25 of them the same as from
+the snapshot. The other two differ only on route 525, whose detour the feed's line hides,
+and route 50. Trips get 0.74 minutes shorter on the independent check, against 0.76 from
+the snapshot, and 88% of the buses (1,791 rather than 1,796) give today's trip times.
 
 ## Limitations
 

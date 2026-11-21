@@ -69,22 +69,40 @@ routes, stops and patterns from it, for one service day:
    route's trips lack it, each trip is compared with the route's most-run stop sequence,
    by the order of the stops the two share or, if that does not decide, by which of their
    ends lie nearer each other.
-3. **One pattern per direction.** The stop sequence with the most departures. A sequence
-   that is an in-order part of it (a short turn) adds its departures in proportion to the
-   share of the pattern's length it covers. Any other sequence (a branch) is left out, and
-   `timetable.txt` lists it with the stops only it calls at. A route with one direction
-   only is a loop that runs one way, and its daily service is not doubled (section 4).
-4. **Shapes.** The shape most of the pattern's trips use, matched to its stops as in step
-   3 above. A shape that fits better reversed is reversed; one with more than max(2, 10% of
-   its stops) order breaks, or a median offset over 60 m, gives way to straight lines. The
-   5 km straight-segment test is not applied, because in a feed a long straight is a
+3. **Patterns.** The stop sequence with the most departures is the route's pattern in
+   that direction. A sequence that is an in-order part of a pattern (a short turn) adds its
+   departures to it in proportion to the share of the pattern's length it covers. Any other
+   sequence is a branch. A branch with at least a fifth of its direction's departures, and
+   at least three, runs as a route of its own, named after its trips' headsign: route
+   number, then the headsign in brackets. Its two directions are paired when at least half
+   the stops of each lie within 150 m of the other's. A smaller branch is left out, and
+   `timetable.txt` lists it with the stops only it calls at. A route, or branch, with one
+   direction only is a loop that runs one way, and its daily service is not doubled
+   (section 4).
+4. **Shapes.** The shape most of the pattern's trips use. Where the feed gives
+   `shape_dist_traveled` for the shape and for every stop of one of those trips, each stop
+   is placed at its distance along the line, so a line that passes a stop twice is placed
+   on the pass the bus stops on; the distances are kept only if the stops then lie, at the
+   median, within 60 m of the line. Otherwise the stops are matched to the line as in step
+   3 above. A shape that fits better reversed is reversed; one with more than max(2, 10%
+   of its stops) order breaks, or a median offset over 60 m, gives way to straight lines.
+   The 5 km straight-segment test is not applied, because in a feed a long straight is a
    sparsely drawn road rather than a fault.
 5. **Speed.** The route's length divided by its timetable's moving time: the median
    scheduled time from first departure to last arrival of each direction's pattern trips,
    summed over its directions, less `stop_loss_s` at every stop. A speed outside 5 to
    90 km/h gives way to `cruise_kmh`.
 6. **Frequency.** Each direction's departures, averaged over the route's directions, are
-   its trips a day each way (section 4).
+   its trips a day each way (section 4). The hours of service are the hours in which buses
+   leave at least a quarter as often as in the busiest hour, from the first such hour to
+   the end of the last; a night bus or an early depot run does not stretch them, and
+   `service_hours` should be set to them.
+7. **Express routes.** A feed has no service types, so a route is marked express when its
+   name says so ("express", "ekspres", "экспресс"), or when at least 85% of its stops lie
+   on one direction of another route that calls at more than two stops for every one of
+   its own (it stops at fewer than 60% of them) along the same stretch. The near-duplicate
+   check leaves express routes out, as it does AYNA's, so the redesign never merges one
+   into the local route it runs along.
 
 The flat projection (section 2) moves to the median of the feed's stops. Read back, the
 feed `redesign.py` writes for Baku gives the same 201 routes, 402 directions and 3,456
@@ -94,8 +112,10 @@ door to door, and the same 2,015 buses. The one exception is the small share of 
 with three or more changes (1.43% against 1.45%). Two directions out of 402 change length
 by more than 1%. On direction 1 of route 525 the reader matches one stop to a different
 pass of the line than the snapshot does, and the direction comes out 21% shorter. Where a
-line passes a stop twice, matching alone cannot tell which pass the bus stops on; a
-feed's `shape_dist_traveled` could, and the reader does not use it yet.
+line passes a stop twice, matching alone cannot tell which pass the bus stops on. The
+feed this repository writes has no `shape_dist_traveled`, which would settle it. The
+reader finds 121E and 140E express, two of the nine routes AYNA's service types call
+express; the other seven share too few stops with a local route to look like one.
 
 ## 2. Geometry measures
 
