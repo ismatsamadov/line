@@ -8,3 +8,13 @@ __pycache__/
 
 # Email drafts to researchers, sent by hand; not part of the study
 emails/
+
+# The world pilot's inputs, and the feeds and map redesign.py writes for each city, live in a
+# Hugging Face dataset; data/world_files.csv lists each with its checksum, and
+# python3 data/fetch_world.py downloads them. Riga's stay in git.
+/data/cities/*
+!/data/cities/riga/
+/output/cities/*/redesign/gtfs_*.zip
+/output/cities/*/redesign/network.geojson
+!/output/cities/riga/redesign/gtfs_*.zip
+!/output/cities/riga/redesign/network.geojson

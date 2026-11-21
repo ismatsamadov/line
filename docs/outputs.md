@@ -424,7 +424,9 @@ files found).
 `output/cities/<city>/` holds what `measure.py` writes for a city with `cities/<city>.toml`,
 the same files as `output/` above (without `ridership_check.csv`, which needs counts), and
 `output/cities/<city>/redesign/` what `redesign.py` writes, the same files as
-`output/redesign/`.
+`output/redesign/`. For the cities of the world pilot other than Riga, the redesign's two
+GTFS feeds and its map, `network.geojson`, are not in git but in the Hugging Face dataset
+with the inputs; `python3 data/fetch_world.py` puts them in place ([world.md](world.md)).
 
 ## output/world/ — the world pilot in one table
 

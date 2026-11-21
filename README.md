@@ -175,6 +175,7 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `data/headways.csv` | Real headways where known |
 | `data/fetch_external.py`, `data/osm_pbf.py` | Downloads the public datasets again; the reader of OpenStreetMap PBF extracts that cuts the walking network out of Geofabrik's, and another city's destinations |
 | `data/cities/`, `data/fetch_city.py` | Another city's inputs (Riga's: its GTFS feed, Kontur's grid for Latvia, OpenStreetMap destinations), and the script that downloads them for any city and writes its settings file |
+| `data/world_files.csv`, `data/fetch_world.py` | The world pilot's inputs and the feeds and maps its redesigns write, kept in a Hugging Face dataset rather than in git: each file with its size and SHA-256, and the script that downloads and checks them |
 | `data/metro/`, `data/metro_scraper.py`, `data/build_metro.py` | The metro network (stations, train services, running times, departures), not yet used by the model; the scripts that read the metro's API and build the tables |
 | `data/metro_headways.csv` | Metro train intervals the operator has published, with sources |
 | `busnet.toml` | Settings: data paths and every assumption |
@@ -212,10 +213,16 @@ the estimates. `python3 measure.py --config none` runs with the built-in default
 | `gtfs_validation/` | What MobilityData's GTFS validator says about the two feeds |
 | `bicycle/` | AYNA's bicycle lanes and parking points beside the bus network: lanes by street with the routes along them, routes along lanes, stops and parking points near lanes, people within reach |
 
-## The snapshot on Kaggle
+## The data on Kaggle and Hugging Face
 
 The AYNA snapshot `data/ayna.db` is also published on Kaggle, with its five tables as
 CSV and the known defects described: https://doi.org/10.34740/KAGGLE/DSV/21173689.
+
+The world pilot's inputs, and the feeds and maps its redesigns write, 351 MB, are not in git
+but in the Hugging Face dataset
+[ismatsamadov/route-efficiency-cities](https://huggingface.co/datasets/ismatsamadov/route-efficiency-cities).
+`python3 data/fetch_world.py` downloads them into place and checks each against its
+SHA-256 in `data/world_files.csv`.
 
 ## The page for readers who will not open the code
 
@@ -264,7 +271,7 @@ published, and its data is a snapshot that is not updated automatically.
 
 The code is mine and is under the MIT License ([LICENSE](LICENSE)): `busnet/`,
 `measure.py`, `redesign.py`, `robustness.py`, `bicycle.py`, `world.py`, `paper/figures.py`, `paper/check.py`, `paper/build.py`, `tests/`, `data/ayna_scraper.py`,
-`data/fetch_external.py`, `data/fetch_city.py`, `data/osm_pbf.py`, `data/metro_scraper.py`, `data/build_metro.py`, `busnet.toml`, `index.html`, `site/build.py`, `site/app.js`,
+`data/fetch_external.py`, `data/fetch_city.py`, `data/fetch_world.py`, `data/osm_pbf.py`, `data/metro_scraper.py`, `data/build_metro.py`, `busnet.toml`, `index.html`, `site/build.py`, `site/app.js`,
 `site/style.css`, `site/og.html`, `animations/build.py` and `animations/draw.py`. The page loads Leaflet 1.9.4 (BSD-2-Clause) from cdnjs and draws its
 base map from OpenStreetMap's tiles, credited on the map. The documentation in `docs/` is under
 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). [CITATION.cff](CITATION.cff)
@@ -293,6 +300,12 @@ The data keep their own terms, listed file by file in [data/SOURCES.md](data/SOU
   1.0), Kontur Population for Latvia (CC BY) and OpenStreetMap extracts (ODbL, ©
   OpenStreetMap contributors). `output/cities/riga/` is derived from them and carries the
   same terms.
+- The world pilot's inputs, in the Hugging Face dataset `data/fetch_world.py` downloads:
+  each city's GTFS feed under its publisher's terms (CC0, CC BY, ODbL, Open Government
+  Licences, or CapMetro's open data licence; [data/SOURCES.md](data/SOURCES.md) gives each),
+  Kontur Population (CC BY) and OpenStreetMap extracts (ODbL). Each city's results in
+  `output/cities/<city>/`, and the redesigned feeds and maps in the dataset, carry its
+  feed's terms.
 
 The results in `output/` are derived from those data and carry the same terms: the
 files that contain AYNA's routes and stops (the GTFS feeds, `network.geojson` and the

@@ -56,11 +56,14 @@ animations/
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
   buses.gif, riders.gif, redesign.gif, travel-time.gif   written by build.py
 .nojekyll             tells GitHub Pages to serve the files as they are
-data/                 every input, committed (see data.md)
+data/                 every input, committed (see data.md), except the world pilot's, which are in a Hugging Face dataset
   ayna_scraper.py     the bus network from AYNA's map API -> ayna.db (run in a folder outside the repository)
   fetch_external.py   the public datasets -> data/external/
   fetch_city.py       another city's feed, population grid and destinations -> data/cities/<city>/, and cities/<city>.toml
   cities/riga/        Riga's inputs
+  cities/<city>/      the world pilot's inputs, not in git: fetch_world.py downloads them from the Hugging Face dataset
+  fetch_world.py      the world pilot's inputs, and its redesigns' feeds and maps, from the Hugging Face dataset, checked against world_files.csv
+  world_files.csv     every file of that dataset with its size and SHA-256
   osm_pbf.py          reads OpenStreetMap PBF extracts (standard library); cuts the walking network out of Geofabrik's,
                       and a city's destinations (places) for fetch_city.py --osm geofabrik
   metro_scraper.py    the metro's own API -> data/external/metro_api/
