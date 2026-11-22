@@ -318,6 +318,17 @@ class SplitLineTest(unittest.TestCase):
         self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["100", "7 [P]", "7 [Q]"])
         self.assertTrue(self.net.routes["P"].runs_one_way)
 
+    def test_joining_the_halves_keeps_the_timetable_of_every_route(self):
+        s = self.table.summary
+        self.assertEqual(s["departures"], 12)
+        self.assertEqual((s["first_departure"], s["last_departure"]), ("06:00", "09:30"))
+        self.assertEqual((s["service_from"], s["service_to"], s["hours_of_service"]), ("06:00", "10:00", 4))
+        self.assertEqual((s["speeds_from_timetable"], s["speeds_from_settings"]), (3, 0))
+        for rid in ("O", "P", "Q"):
+            p = self.net.patterns[(rid, 1)]
+            hop_m = p.length_m / (len(p.stop_ids) - 1)
+            self.assertAlmostEqual(self.net.routes[rid].speed_kmh, hop_m / (HOP_S - 20) * 3.6, places=6)
+
 
 class BranchesAndExpressTest(unittest.TestCase):
     """A route whose branch carries half its departures, an express along a local route, a route

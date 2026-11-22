@@ -502,8 +502,8 @@ def _read(feed, a, repair, source):
     if not stops:
         raise ValueError("none of the stops the trips call at has a position in stops.txt")
     warnings, notes = [], []
-    for second, first in sorted(joined.items()):
-        notes.append(f"{kinds[first][1]}: the feed's routes {first} and {second}, one for each direction, "
+    for second, kept in sorted(joined.items()):
+        notes.append(f"{kinds[kept][1]}: the feed's routes {kept} and {second}, one for each direction, "
                      f"read as one route")
     if len(stops) < len(used):
         warnings.append(f"{len(used) - len(stops)} stops called at in stop_times.txt have no position in stops.txt; "
