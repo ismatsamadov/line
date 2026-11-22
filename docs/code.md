@@ -380,8 +380,10 @@ page's colours.
   step; the last frame takes its figures from `summary.json`.
 - `travel-time.gif`: from the stop with the most routes (the lowest id on a tie), where the
   page's Travel time view starts, `graph.TransitGraph` is searched from the stop's arrival
-  node as the page searches it, cut at `max_trip_min` plus three change penalties, and
-  each stop's minutes are the cost less one penalty per boarding. One frame per minute
+  node as the page searches it, to every stop with no cut on the cost (which holds a
+  penalty for every boarding, so any cut would lose stops reached within `max_trip_min`
+  with enough changes), and each stop's minutes are the cost less one penalty per
+  boarding. One frame per minute
   from 0 to 120, 80 ms each and the last held for 3 s; each stop takes the colour of the
   page's 15-minute bins when it is reached, with a white halo in that minute.
 - `bicycle.gif`: the lanes of September 2026 and of January 2025 come from

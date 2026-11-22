@@ -561,8 +561,9 @@ def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
     at = net.routes_at_stop()
     origin = min(at, key=lambda s: (-len(at[s]), s))
     graph = TransitGraph(net, a, inp.headways)
-    dist, boards, _, _ = graph.search({graph.arrival(origin): 0.0},
-                                      a.max_trip_min * 60 + 3 * a.transfer_penalty_s)
+    # No cut on the cost: it holds a penalty for every boarding, which the minutes leave out, so
+    # a cut at any cost would lose stops reached within max_trip_min with enough changes.
+    dist, boards, _, _ = graph.search({graph.arrival(origin): 0.0})
     reach = {}
     for s in graph.stop_ids:
         i = graph.arrival(s)
