@@ -17,7 +17,7 @@ are publishable: the repaired network and its measured diagnosis
 ([results.md](results.md#todays-network)); the door-to-door travel model built only
 from public data, with its fit against observed ridership stated honestly (0.58 fair,
 0.77 circular; [fit ladder](results.md#the-demand-model-as-each-input-is-added)); the
-redesign, 51.8 → 50.9 minutes with the same buses or today's travel times with about
+redesign, 51.9 → 51.0 minutes with the same buses or today's travel times with about
 12% fewer buses, robust over ten trip samples and eleven alternative assumptions
 ([robustness](results.md#how-robust-the-results-are)), including the finding that the
 strict coverage guard costs nothing; and the pipeline itself, with every input
@@ -351,7 +351,17 @@ point.
    (2025) under the title of another paper of theirs (arXiv:2403.07917); the paper at
    that DOI is "Learning heuristics for transit network design and improvement with
    deep reinforcement learning", as `paper/manuscript.md` now has it (found 30 October
-   2026; the numbers taken from its Table 3 were always from the right paper).
+   2026; the numbers taken from its Table 3 were always from the right paper). A second
+   waits as well. On 22 November 2026 the journey search turned out to stop at the
+   two-hour limit before taking off the first boarding's transfer penalty, so trips just
+   inside the limit counted as impossible. Regenerated, 66.4% of trips are possible
+   rather than 66.3%, the average possible trip is 51.9 minutes rather than 51.8, and
+   the redesign takes it from 51.9 to 51.0 minutes rather than from 51.8 to 50.9; under
+   the other assumptions the gain reaches 0.89 minutes rather than 0.88. The gain
+   counting impossible trips at 120 minutes (0.76), the fleet saving (219 buses, 88%),
+   the range over ten samples (0.68 to 0.81) and the fair fit (0.58 on one sample, 0.53
+   over five) stay as submitted. `paper/manuscript.md`, Figure 4 and the Medium draft
+   carry the new figures; `paper/submission/` keeps the submitted ones.
 8. After acceptance: add the reference to the preprint, update `CITATION.cff` with
    `preferred-citation`, make a new release if anything changed, add the paper to ORCID,
    and name the Mobility Database listing of today's feed (mdb-3629) in Section 6.5 and

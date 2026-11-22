@@ -144,7 +144,7 @@ The inputs are what they are: headways are estimates, the demand model matches o
 ridership only moderately (0.58), and there is no crowding. For the 145 routes without
 counts, riders are estimates and can be far off, so the estimate behind every dropped
 route and every route that gains or loses many buses deserves a look; in the latest
-result, route 519, a 3-stop shuttle the model credits with 14,700 boardings a day, goes
+result, route 519, a 3-stop shuttle the model credits with 14,800 boardings a day, goes
 from every 15 to every 3 minutes. When local knowledge says a route must not be changed,
 add it to `redesign_protected_routes` and run the search again: a protected route is
 never merged, dropped or straightened, keeps its stops and never gives up buses, but it

@@ -23,11 +23,11 @@ ranks routes against observed boardings at a Spearman correlation of 0.58. Only 
 201 routes run within 1.4 times the straight line between their ends, and 66% of the
 3.04 million residents live within 400 m of a stop in a straight line, 45% along mapped
 streets. A greedy search keeping today's fleet and applying changes used by redesigns
-elsewhere shortens the average possible trip from 51.8 to 50.9 minutes (0.76 minutes
+elsewhere shortens the average possible trip from 51.9 to 51.0 minutes (0.76 minutes
 with impossible trips counted at 120), or delivers today's modelled travel times with
 about 12% fewer buses than the estimated headways imply. On 10 independent trip samples
 the gain counted that way is 0.68 to 0.81 minutes, and under 14 alternative assumptions
-0.46 to 0.88, the smallest without bus shifts; a stricter rule that strands nobody gains
+0.46 to 0.89, the smallest without bus shifts; a stricter rule that strands nobody gains
 as much as the default. The pipeline, data and results are released to regenerate or,
 with a reader for another map format, apply to other cities publishing only a map.
 
@@ -442,11 +442,11 @@ people within 1,000 m of a stop in a straight line, the walk to the nearest stop
 typically 1.54 times the line (the population-weighted median; a quarter walk more than
 twice the line), and for 80% of them more than the 1.3 the travel model assumes, so the
 straight-line shares are upper bounds on access and the model's walks are too short.
-Door to door, on 300 origins sampled by population, the average possible trip takes 51.8
+Door to door, on 300 origins sampled by population, the average possible trip takes 51.9
 minutes; 16.2% of trips can be made within 30 minutes, 29.4% within 45, 42.2% within 60
-and 66.3% within 120; 34.6% of trips have no stop within 500 m at one end or both; the
+and 66.4% within 120; 34.6% of trips have no stop within 500 m at one end or both; the
 average trip is 8.0 km in a straight line. Of the possible trips, 11.4% are walked,
-28.9% need no change, 43.2% one, 15.0% two and 1.5% three or more.
+28.8% need no change, 43.1% one, 15.1% two and 1.5% three or more.
 
 ### 5.3 Daily service and how far the model can be trusted
 
@@ -471,8 +471,8 @@ Stop balancing alone, removing stops closer than 250 m to a neighbour on every r
 that uses them while keeping terminals and hubs and never leaving a gap over 700 m,
 removes 351 stops: the median gap rises from 420 to 473 m, the share of people within
 400 m of a stop falls by 0.15 points, 28 fewer buses are needed at today's headways,
-bus-hours fall 1.5% and fuel 1.7%, and the average door-to-door trip shortens from 51.8
-to 51.6 minutes.
+bus-hours fall 1.5% and fuel 1.7%, and the average door-to-door trip shortens from 51.9
+to 51.7 minutes.
 
 ### 5.5 The redesign
 
@@ -507,14 +507,14 @@ Table 3. Today's network and the redesign on the independent check (300 origins)
 | Median stop gap (m) | 420 | 470 |
 | People within 400 m of a stop | 65.96% | 65.80% |
 | People left without a stop within 500 m | 0 | 976 |
-| Average door-to-door time, possible trips (min) | 51.82 | 50.86 |
+| Average door-to-door time, possible trips (min) | 51.93 | 50.96 |
 | Capped average door-to-door time, impossible trips as 120 (min) | 74.82 | 74.06 |
 | Trips possible within 45 minutes | 29.4% | 30.3% |
-| Trips possible within 120 minutes | 66.3% | 66.4% |
-| Possible trips with two or more changes | 16.5% | 17.4% |
+| Trips possible within 120 minutes | 66.4% | 66.5% |
+| Possible trips with two or more changes | 16.6% | 17.5% |
 | Trips a day | 33,363 | 34,418 |
 | Bus-hours a day | 28,327 | 28,327 |
-| Bus-kilometres a day | 588,994 | 596,868 |
+| Bus-kilometres a day | 588,994 | 596,869 |
 | Fuel a day (diesel-equivalent litres) | 226,592 | 226,708 |
 
 The improvement can instead be taken as a smaller fleet. With 88.3% of the redesigned
@@ -533,17 +533,17 @@ gain in the capped average is 0.68 to 0.81 minutes, mean 0.77 with a standard de
 of 0.04, and positive in every sample (Figure 4); the level itself moves by about 4
 minutes between samples, so the gain should be quoted with its range and the level not
 to two decimals. Under the 14 changed settings (Table 4) the capped gain stays between
-0.46 and 0.88 minutes and today's travel times need 87 to 93% of the buses in every run
-(7 to 13% less fuel). It is smallest without the bus shifts: the 23 structural changes
+0.46 and 0.89 minutes and today's travel times need 86 to 93% of the buses in every run
+(7 to 14% less fuel). It is smallest without the bus shifts: the 23 structural changes
 alone gain 0.46 minutes, three fifths of the default run's 0.76, and give today's travel
 times with 93% of the buses, so the shifts add the remaining 0.30 minutes and 5 points
 of fleet. Among the runs with shifts it is smallest with shorter trips or a shorter
 access radius and largest with the service-type headways scaled by 1.25 or a larger
 search sample; scaling that table, which sets 145 of the 201 headways, by 0.8 or 1.25
-leaves the gain at 0.68 and 0.88 minutes and the fleet share at 88%. What the search
+leaves the gain at 0.68 and 0.89 minutes and the fleet share at 88%. What the search
 keeps is also stable: two to four drops, 12 to 17 straightened detours, one
 stop-balancing pass and, where allowed, four shifts in every run, and five merges in 12
-of the 15. A larger or a different search sample keeps 32 or 33 changes instead of 27
+of the 15. A larger or a different search sample keeps 32 changes instead of 27
 with the same gain on the independent check, so the sample decides the changes at the
 margin, not the effect.
 
@@ -561,23 +561,23 @@ independent check and the share of the fleet that gives today's travel times.
 | Transfer penalty 8 minutes | 26 | 0.72 | 88% |
 | Distance decay 4 km instead of 6 | 27 | 0.59 | 90% |
 | Distance decay 9 km | 26 | 0.83 | 88% |
-| Trips end at homes only | 25 | 0.82 | 87% |
+| Trips end at homes only | 25 | 0.83 | 86% |
 | 45 boardings per trip instead of 60 | 25 | 0.73 | 88% |
 | 80 boardings per trip | 26 | 0.81 | 88% |
-| Access radius of 400 m instead of 500 | 24 | 0.58 | 90% |
-| Search sample of 200 origins | 32 | 0.84 | 87% |
-| Search sample with another seed | 33 | 0.79 | 88% |
+| Access radius of 400 m instead of 500 | 24 | 0.57 | 90% |
+| Search sample of 200 origins | 32 | 0.83 | 87% |
+| Search sample with another seed | 32 | 0.79 | 88% |
 | Nobody may lose a stop | 24 | 0.77 | 88% |
 | No bus shifts | 23 | 0.46 | 93% |
 | Service-type headways scaled by 0.8 | 26 | 0.68 | 88% |
-| Service-type headways scaled by 1.25 | 28 | 0.88 | 88% |
+| Service-type headways scaled by 1.25 | 28 | 0.89 | 88% |
 
 ### 5.7 Changes that rest on thin evidence
 
 Several kept changes rest on estimates alone. Route 519, a 2.1 km shuttle with three
-stops and no counts, is credited by the model with 14,700 boardings a day and raised
+stops and no counts, is credited by the model with 14,800 boardings a day and raised
 from every 15 minutes to every 3. The three dropped routes have little evidence behind
-them: 164 and 39 have no counts and estimated boardings of 133 and 582 a day, and 150E
+them: 164 and 39 have no counts and estimated boardings of 133 and 581 a day, and 150E
 recorded 16.5 boardings a weekday. Six routes without counts (131, 197, 198, 550, 551,
 554) go from every 15 to every 30 minutes on estimates alone, and two more (54 and 50)
 from every 10 to about every 24. Each straightened stretch follows links that buses
