@@ -459,7 +459,7 @@ today's travel times in both.
    every 15 to every 30 minutes, and 54 and 50 from every 10 to about every 24. None of
    them has counts.
 5. More riders must change buses: the share of trips with two or more changes rises
-   from 16.5% to 17.4%.
+   from 16.6% to 17.5%.
 6. Every straightened stretch needs looking at on the map
    (`output/redesign/network.geojson`). Each new path follows links that buses drive
    today, but turns, one-way streets and the skipped stops (schools, clinics) still need

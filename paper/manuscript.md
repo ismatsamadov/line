@@ -315,10 +315,11 @@ plus a 5-minute transfer penalty; riding to the next stop costs the hop distance
 route's service-type moving speed plus 20 s; alighting and staying at a stop cost
 nothing; walking to another stop within 300 m costs the straight-line distance times 1.3
 at 1.25 m/s, once between rides, never chained. A trip walks from its origin to any stop
-within 500 m, follows the cheapest path by Dijkstra's algorithm up to 120 minutes, and
-walks from a stop within 500 m to its destination; one transfer penalty is removed at
-the end, since the first boarding is not a change, and trips under 2 km may be walked
-entirely. Reported are the mean door-to-door time of trips possible within 120 minutes,
+within 500 m, follows the cheapest path by Dijkstra's algorithm, and walks from a stop
+within 500 m to its destination; one transfer penalty is removed at the end, since the
+first boarding is not a change, so the search runs one penalty past 120 minutes to find
+every trip within them, and trips under 2 km may be walked entirely. Reported are the
+mean door-to-door time of trips possible within 120 minutes,
 the shares possible within 30, 45, 60 and 120 minutes, the share of trips without a stop
 within reach at one end, and the distribution of changes. Each modelled trip is also
 pushed back along its path to count a boarding on every route it uses, which gives the

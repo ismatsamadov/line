@@ -23,7 +23,7 @@ lists what to check first. The same measurements and search now run on any city 
 publishes a GTFS feed, where the timetable gives the headways and speeds Baku's data
 lacks, and each redesign comes with what it is worth in minutes, buses, fuel and CO₂.
 Run on 25 cities on five continents and on Baku's own feed, the search shortens trips in
-every one, by 2.8 minutes in the middle city, or keeps today's trip times with a fifth fewer
+every one, by 2.9 minutes in the middle city, or keeps today's trip times with a fifth fewer
 buses in the networks their operators publish ([world.md](world.md)).
 
 ## Where to read
