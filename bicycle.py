@@ -26,7 +26,6 @@ Standard library only. Usage:
 """
 
 import argparse
-import csv
 import json
 import sys
 import time
@@ -39,19 +38,7 @@ from busnet.bicycle import LANES_2025_FOLDER, load_lanes, load_parking, measure 
 from busnet.config import settings_file                                            # noqa: E402
 from busnet.destinations import read_exits                                         # noqa: E402
 from busnet.inputs import load_inputs                                              # noqa: E402
-
-
-def write_csv(path, rows):
-    """A table, one row per dict. A table without rows is not written, and one an earlier run
-    left in the folder is removed, so no file means no rows."""
-    if not rows:
-        Path(path).unlink(missing_ok=True)
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:   # utf-8-sig: Excel shows ə/ş/ç correctly
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
+from busnet.tables import write_csv                                                # noqa: E402
 
 
 def main():

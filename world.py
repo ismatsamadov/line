@@ -31,7 +31,6 @@ Standard library only. Usage (from the repository root):
 """
 
 import argparse
-import csv
 import json
 import statistics
 import subprocess
@@ -42,6 +41,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 
+sys.path.insert(0, str(ROOT))
+
+from busnet.tables import write_csv                                            # noqa: E402
 # (folder under cities/ and output/cities/, name, country, continent), by continent and name.
 WORLD = [
     ("accra", "Accra", "GH", "Africa"),
@@ -170,14 +172,6 @@ def summarise(rows):
             c[k] += r[k]
     return {"cities": len(rows), "total": total, "spread": {k: spread(k) for k in SPREAD},
             "by_continent": by_continent, "rows": rows}
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def main():

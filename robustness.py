@@ -45,6 +45,7 @@ from busnet.metrics import compare_ridership, coverage_by_route, evaluate_od   #
 from busnet.optimize import Context, Evaluator, Plan, search                   # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
 from busnet.service import operations, route_headways                         # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 from busnet.walking import load_walk_network                                   # noqa: E402
 
 RADII = (300, 400, 500, 800, 1000)
@@ -74,19 +75,6 @@ VARIANTS = [
      ['headway_by_zone={"Şəhərdaxili" = 12.5, "Şəhərdaxili (ekspres)" = 18.75, "Şəhərətrafı" = 18.75, '
       '"Şəhərətrafı (ekspres)" = 25, "Qəsəbədaxili" = 25, "Qəsəbələrarası" = 25, "Şəhərlərarası" = 37.5}']),
 ]
-
-
-def write_csv(path, rows):
-    """A table, one row per dict. A table without rows is not written, and one an earlier run
-    left in the folder is removed, so no file means no rows."""
-    if not rows:
-        Path(path).unlink(missing_ok=True)
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def capped(acc, a):

@@ -47,6 +47,7 @@ from busnet.instances import (cluster_stops, gravity, half_up, metres,         #
                               network_links, node_people, positions, todays_routes)
 from busnet.metrics import _route_key                                          # noqa: E402
 from busnet.service import run_time_s                                          # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 
 CLUSTER_M = 600                         # stops within this of the stop that starts a cluster join it
 CENTRE = ("the 28 May metro station", 40.379862, 49.848636)      # as data/metro/stations.csv places it
@@ -59,14 +60,6 @@ DEMAND_SCALE = 10                       # the trips are written ten times over, 
 SEARCHES = {"one_pass": False, "repeated": True}                  # name: repeat passes?
 MEASURES = ("att", "d0", "d1", "d2", "dun", "route_time")
 FIT_LADDER = ROOT / "output" / "robustness" / "fit_ladder.csv"
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def demand_check():

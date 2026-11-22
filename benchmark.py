@@ -25,7 +25,6 @@ Standard library only, about three minutes. Usage:
 """
 
 import argparse
-import csv
 import sys
 import time
 from pathlib import Path
@@ -33,6 +32,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.tables import write_csv                                               # noqa: E402
 from busnet.utrp import (JIAO_FILE, JIAO_SCORES, LATER_SETS, RULES, evaluate,     # noqa: E402
                          husselmann_route_sets, jiao_route_sets, load_instance, matlab,
                          problems, published_route_sets, published_scores, search)
@@ -41,14 +41,6 @@ EXTERNAL = ROOT / "data" / "external" / "utrp"
 SUPPLEMENT = EXTERNAL / "CEC2013Supp.zip"
 SEARCHES = {"one_pass": False, "repeated": True}                  # name: repeat passes?
 MEASURES = ("att", "d0", "d1", "d2", "dun", "route_time")
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def nodes(seq):

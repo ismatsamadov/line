@@ -55,6 +55,7 @@ from busnet.inputs import load_inputs                                          #
 from busnet.metrics import compare_ridership                                   # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
 from busnet.service import route_headways                                      # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 
 DECAYS_KM = (1, 1.5, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30)
 SHARES = (0, 0.25, 0.4, 0.5, 0.6, 0.75, 1.0)
@@ -64,14 +65,6 @@ SEED = 7                                 # the sample the grid is scored on
 NOISE_SEEDS = (1, 2, 3, 4, 5)            # samples that show how much the fit moves with the sample
 FRESH_SEEDS = (101, 102, 103)            # samples the chosen settings are checked on
 FOLDS, REPEATS = 5, 200
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def spearman(xs, ys):

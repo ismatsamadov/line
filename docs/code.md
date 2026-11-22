@@ -154,6 +154,7 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `geo` | `haversine_m`, `PROJ` (a `LocalProjection`; `centre_on(lat, lon)` moves it to another city, as `read_gtfs` does), `Polyline` (`cum`, `project_all`, `point_at`, `slice_latlon`, `max_jump_m`, `reversed`), `match_stops`, `fit_score` | `match_stops` is the dynamic program in [methodology.md](methodology.md#1-loading-and-repairing-the-network) |
 | `model` | `load_network(db_path, repair=True)` | Repairs are detected from the data, not hard-coded per route, so they still apply after a new scrape |
 | `service` | `run_time_s(pattern, network, a)`, `fuel_l(pattern, a)`, `load_headways(path)`, `route_headways(network, a, observed, supplied, timetable)`, `operations(network, a, headways)` | `operations` returns (per route, totals) |
+| `tables` | `write_csv(path, rows)` | The one CSV writer every script uses: UTF-8 with a byte-order mark, floats to 4 decimals, and no file for a table without rows, removing the one an earlier run left |
 | `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)`, `cut_gpkg(src, dst, bbox)` | Reads GeoPackage (no GIS library) or CSV. `cut_gpkg` copies a GeoPackage keeping only the cells whose centre is in a box, for `data/fetch_city.py` |
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
@@ -190,8 +191,9 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
   and the browser page allow that: JSON numbers to 1e-9, and CSV numbers to one in the last
   decimal written (the 4th, or a later one where a cell shows more), while whole numbers,
   such as counts and ids, and text must match exactly.
-- **Output files.** CSVs are written with `utf-8-sig` and floats rounded to 4 decimals;
-  JSON keeps non-Latin letters (`ensure_ascii=False`).
+- **Output files.** CSVs are written by `tables.write_csv`, with `utf-8-sig` and floats
+  rounded to 4 decimals, and a table without rows is not written; JSON keeps non-Latin
+  letters (`ensure_ascii=False`).
 - **Style.** Short docstrings that say what a function returns and why; comments only
   where the code cannot say it.
 
@@ -409,8 +411,9 @@ On one Python version a rebuild gives the same files byte for byte.
    below, in `metrics.evaluate_od`, the redesign's scoring and the calibration's paths.
    `tests/test_regression.py` regenerates
    `output/` with `measure.py` into a temporary folder and compares every file with the
-   committed one byte for byte, and runs Riga's stop balancing twice into one folder, the
-   second time removing nothing, to check that no table of the first run is left behind.
+   committed one byte for byte, checks that every script writes its tables with
+   `tables.write_csv`, and runs Riga's stop balancing twice into one folder, the second
+   time removing nothing, to check that no table of the first run is left behind.
    With `BUSNET_SLOW_TESTS=1` it also regenerates
    `output/redesign/` (about two minutes) and `output/benchmark/` (about three) and
    `output/robustness/` (about ten). `tests/test_utrp.py` checks that the 35 published

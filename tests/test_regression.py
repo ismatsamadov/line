@@ -156,18 +156,17 @@ class CommittedResults(unittest.TestCase):
 class Rerun(unittest.TestCase):
     """A run into a folder an earlier run wrote leaves no table of the earlier run behind."""
 
-    def test_every_table_writer_removes_a_table_that_has_become_empty(self):
-        import bicycle
-        import measure
-        import redesign
-        import robustness
+    def test_every_script_writes_its_tables_with_the_one_writer(self):
+        import importlib
+        from busnet.tables import write_csv
+        for name in ("measure", "redesign", "robustness", "bicycle", "calibrate", "world", "instances", "benchmark"):
+            self.assertIs(importlib.import_module(name).write_csv, write_csv, name)
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "table.csv"
-            for script in (measure, redesign, robustness, bicycle):
-                script.write_csv(path, [{"stop_id": 7970, "km": 0.12345}])
-                self.assertEqual(path.read_bytes(), "\ufeffstop_id,km\r\n7970,0.1235\r\n".encode())
-                script.write_csv(path, [])
-                self.assertFalse(path.exists(), script.__name__)
+            write_csv(path, [{"stop_id": 7970, "km": 0.12345}])
+            self.assertEqual(path.read_bytes(), "\ufeffstop_id,km\r\n7970,0.1235\r\n".encode())
+            write_csv(path, [])
+            self.assertFalse(path.exists())
 
     def test_stop_balancing_that_removes_nothing_after_one_that_removed_stops(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -188,10 +187,10 @@ CSV_CASES = [
     ("401932.5714", "401932.5716", False), ("0.5", "0.6", False),
     ("0.012345678", "0.012345679", True), ("0.012345678", "0.012345688", False),   # eight digits written
     ("401932", "401933", False), ("0123", "123", False),                 # a count is exact, an id is text
+    ("-0.0", "0.0", True), ("1e-05", "1.1e-05", True), ("1e-05", "1.2e-05", False),
     ("1000000000000.1234", "1000000000000.1236", True),                  # its last bit is worth 1.2e-4 there
     ("1000000000000.1234", "1000000000000.1239", False),
     ('"x,0.1234,y"', '"x,0.1235,y"', False),                             # a quoted cell is text, commas and all
-    ("-0.0", "0.0", True), ("1e-05", "1.1e-05", True), ("1e-05", "1.2e-05", False),
 ]
 
 
