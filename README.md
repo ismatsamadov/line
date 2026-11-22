@@ -124,8 +124,8 @@ all, and on Baku read from its own feed. With the same buses, the average trip g
 in every city, by 2.91 minutes in the middle one (0.76 to 8.32). Kept to today's trip times
 instead, the 23 networks their operators or cities publish need 1,470 fewer of their 7,375
 buses, 20%, which saves 140,079 litres of fuel and 374 tonnes of CO₂ a weekday; with the
-three networks mapped from OpenStreetMap it comes to 3,877 fewer of 12,920 buses and
-379,503 litres.
+three networks mapped from OpenStreetMap it comes to 3,910 fewer of 12,920 buses and
+383,172 litres.
 All of it rests on modelled demand, since no city but Baku publishes counts the model can
 use. [docs/world.md](docs/world.md) has the table, how the cities were chosen and how far to
 trust it; `output/world/` has the numbers, and `python3 world.py` regenerates them.

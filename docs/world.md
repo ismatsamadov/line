@@ -19,12 +19,12 @@ instead, the middle city needs 77% of its buses, from 51% in Trujillo to 89% in 
 
 | City | Continent | Routes | Stops | Buses today | Door to door today (min) | Same buses: minutes saved | Fewer buses: buses saved | Fuel saved (L a day) | CO₂ saved (t a day) |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| Accra (GH) | Africa | 277 | 2,525 | 2,183 | 56.2 | 2.79 | 842 | 65,004 | 173.6 |
-| Addis Ababa (ET) | Africa | 193 | 1,340 | 972 | 62.4 | 3.70 | 413 | 29,707 | 79.3 |
+| Accra (GH) | Africa | 277 | 2,525 | 2,183 | 56.3 | 2.57 | 859 | 66,497 | 177.5 |
+| Addis Ababa (ET) | Africa | 193 | 1,340 | 972 | 62.4 | 3.45 | 413 | 29,832 | 79.7 |
 | Austin (US) | Americas | 65 | 2,260 | 266 | 53.9 | 0.88 | 49 | 5,066 | 13.5 |
 | Halifax (CA) | Americas | 79 | 2,344 | 183 | 59.4 | 6.19 | 58 | 6,215 | 16.6 |
 | Québec City (CA) | Americas | 137 | 4,041 | 270 | 63.0 | 7.00 | 94 | 8,320 | 22.2 |
-| Trujillo (PE) | Americas | 102 | 4,067 | 2,390 | 39.0 | 8.32 | 1,152 | 144,713 | 386.4 |
+| Trujillo (PE) | Americas | 102 | 4,067 | 2,390 | 39.1 | 8.32 | 1,168 | 146,765 | 391.9 |
 | Baku (AZ), from its own feed | Asia | 201 | 3,456 | 2,015 | 52.1 | 0.82 | 255 | 29,754 | 79.4 |
 | Kōchi (JP) | Asia | 36 | 790 | 44 | 51.8 | 3.98 | 21 | 882 | 2.4 |
 | Kuala Lumpur (MY) | Asia | 139 | 4,088 | 400 | 62.7 | 1.89 | 101 | 11,348 | 30.3 |
@@ -45,19 +45,19 @@ instead, the middle city needs 77% of its buses, from 51% in Trujillo to 89% in 
 | Cairns (AU) | Oceania | 20 | 460 | 43 | 59.9 | 4.19 | 9 | 985 | 2.6 |
 | Christchurch (NZ) | Oceania | 34 | 2,054 | 165 | 52.1 | 3.26 | 41 | 4,404 | 11.8 |
 | Townsville (AU) | Oceania | 17 | 637 | 45 | 60.8 | 3.89 | 9 | 878 | 2.3 |
-| All 26 | | 2,760 | 52,945 | 12,920 | | | 3,877 | 379,503 | 1,013.3 |
+| All 26 | | 2,760 | 52,945 | 12,920 | | | 3,910 | 383,172 | 1,023.1 |
 
 Over all 26 networks the model counts 12,920 buses in service on a weekday, and every
 saving here is taken from that count. The timetables themselves would need 13,210: in
 Accra, Addis Ababa and Trujillo seven routes run more often than every three minutes, the
 shortest headway the model gives a route, and the model runs them at three minutes with
 290 fewer buses (`buses_timetable` and `buses_capped` in `output/world/cities.csv`).
-Keeping today's trip times, the redesigned networks need 3,877 fewer buses, 30%, which
-saves 55,269 bus-hours, 379,503 litres of fuel and 1,013 tonnes of CO₂ a day. Most of
+Keeping today's trip times, the redesigned networks need 3,910 fewer buses, 30%, which
+saves 55,718 bus-hours, 383,172 litres of fuel and 1,023 tonnes of CO₂ a day. Most of
 that, though, is in the three networks mapped from OpenStreetMap rather than published by
 an operator: Trujillo's, Accra's and Addis Ababa's. They are minibus and city-bus
 networks whose frequencies are the mappers' estimates, and the model prices their fuel as
-a full-size bus burns it. Between them they hold 2,407 of the 3,877 buses and 239,424 of
+a full-size bus burns it. Between them they hold 2,440 of the 3,910 buses and 243,093 of
 the litres. In the 23 networks their operators or cities publish, the total is 1,470
 fewer buses of 7,375, 20%, saving 19,320 bus-hours, 140,079 litres of fuel and 374 tonnes
 of CO₂ a day. That is the figure I would quote.
@@ -66,7 +66,10 @@ The first version of this table, on 21 November 2026, took today's buses from th
 timetables and the savings from the model's count, so 13,245 buses today less the 9,083
 needed came to 4,162, not the 3,872 it gave as saved; the 290 buses in between are the
 three-minute cap, not the redesign. The table now takes both from the model and checks
-that every row and the total add up. Two fixes in the model moved the results a little
+that every row and the total add up. The search, too, now starts from the model's count:
+until then the same-buses option in Accra and Addis Ababa could hand the capped buses to
+other routes, so its 2.79 and 3.70 minutes there rested on buses today's network does not
+count; they are now 2.57 and 3.45. Two fixes in the model moved the results a little
 too: trips that could just be made within two hours had been counted as impossible, and
 Christchurch's timetable had been read without its times (below).
 

@@ -14,28 +14,28 @@
   "fuel_l": 1299826.1978183466,
   "co2_t": 3470.5359481749856,
   "routes_after": 2330,
-  "fewer_buses": 9043,
-  "buses_saved": 3877,
-  "bus_hours_saved": 55269.12963841791,
-  "bus_km_saved": 607600.8151684455,
-  "fuel_l_saved": 379502.7838851463,
-  "co2_t_saved": 1013.2724329733409,
-  "same_buses_fuel_l_change": -10120.026218973417,
-  "share_of_buses_saved": 0.30007739938080497,
-  "share_of_fuel_saved": 0.29196425223780775
+  "fewer_buses": 9010,
+  "buses_saved": 3910,
+  "bus_hours_saved": 55718.33169501943,
+  "bus_km_saved": 616582.1831972233,
+  "fuel_l_saved": 383171.84338638175,
+  "co2_t_saved": 1023.0688218416394,
+  "same_buses_fuel_l_change": -26125.91795151155,
+  "share_of_buses_saved": 0.3026315789473684,
+  "share_of_fuel_saved": 0.29478698308243423
  },
  "spread": {
   "door_to_door_min": {
-   "median": 56.955627776290186,
+   "median": 56.985257576054266,
    "min": 38.12120673029079,
    "max": 63.02765774414213,
-   "mean_weighted_by_people_in_area": 57.14475201142333
+   "mean_weighted_by_people_in_area": 57.15541583678881
   },
   "share_trips_possible": {
    "median": 0.5283511359177551,
    "min": 0.20411738061086376,
-   "max": 0.845095094513908,
-   "mean_weighted_by_people_in_area": 0.4211165017972172
+   "max": 0.8450862017231411,
+   "mean_weighted_by_people_in_area": 0.42109300116246867
   },
   "share_within_400m": {
    "median": 0.6153144864427225,
@@ -47,41 +47,41 @@
    "median": 2.914672918300319,
    "min": 0.7554152907650149,
    "max": 8.316590439640578,
-   "mean_weighted_by_people_in_area": 2.5252757161149737
+   "mean_weighted_by_people_in_area": 2.462721140141533
   },
   "minutes_saved_possible_trips": {
    "median": 1.882902731706377,
    "min": -5.278453910778715,
    "max": 9.850108534999258,
-   "mean_weighted_by_people_in_area": 2.4723451649494628
+   "mean_weighted_by_people_in_area": 2.359669438148545
   },
   "riders_hours_saved_per_100k_journeys": {
    "median": 4857.788197167196,
    "min": 1259.0254846083699,
    "max": 13860.984066067627,
-   "mean_weighted_by_people_in_area": 4208.792860191624
+   "mean_weighted_by_people_in_area": 4104.53523356922
   },
   "share_of_buses_needed": {
    "median": 0.76953125,
    "min": 0.5078125,
    "max": 0.890625,
-   "mean_weighted_by_people_in_area": 0.6919981763136674
+   "mean_weighted_by_people_in_area": 0.7000789495753125
   }
  },
  "by_continent": {
   "Africa": {
    "cities": 2,
    "buses": 3155,
-   "buses_saved": 1255,
-   "fuel_l_saved": 94711.22126035023,
-   "co2_t_saved": 252.8789607651351
+   "buses_saved": 1272,
+   "fuel_l_saved": 96328.43018920555,
+   "co2_t_saved": 257.19690860517875
   },
   "Americas": {
    "cities": 4,
    "buses": 3109,
-   "buses_saved": 1353,
-   "fuel_l_saved": 164313.84478457452,
-   "co2_t_saved": 438.71796557481406
+   "buses_saved": 1369,
+   "fuel_l_saved": 166365.69535695465,
+   "co2_t_saved": 444.19640660306897
   },
   "Asia": {
    "cities": 6,
@@ -118,8 +118,8 @@
    "people_in_area": 5339937.142857143,
    "people_within_400m": 2623110.0,
    "share_within_400m": 0.49122488333196007,
-   "door_to_door_min": 56.243976819533,
-   "share_trips_possible": 0.462480205597378,
+   "door_to_door_min": 56.30323641906116,
+   "share_trips_possible": 0.46240197746805634,
    "routes_more_often_than_min_headway": 3,
    "buses_timetable": 2359,
    "buses_capped": 176,
@@ -130,17 +130,17 @@
    "co2_t": 456.84198447090887,
    "changes": 44,
    "routes_after": 243,
-   "minutes_saved": 2.793145503783265,
-   "minutes_saved_possible_trips": 4.569538521939336,
-   "riders_hours_saved_per_100k_journeys": 4655.242506305454,
-   "same_buses_fuel_l_change": 17824.642764222197,
-   "fewer_buses": 1341,
-   "share_of_buses_needed": 0.5546875,
-   "buses_saved": 842,
-   "bus_hours_saved": 12279.781016778958,
-   "bus_km_saved": 147548.77495593246,
-   "fuel_l_saved": 65004.059053486766,
-   "co2_t_saved": 173.56083767280967,
+   "minutes_saved": 2.5659171988854865,
+   "minutes_saved_possible_trips": 4.159180212024168,
+   "riders_hours_saved_per_100k_journeys": 4276.528664809157,
+   "same_buses_fuel_l_change": 6520.4253246561275,
+   "fewer_buses": 1324,
+   "share_of_buses_needed": 0.5859375,
+   "buses_saved": 859,
+   "bus_hours_saved": 12567.577161922149,
+   "bus_km_saved": 151225.91483458597,
+   "fuel_l_saved": 66496.86877628276,
+   "co2_t_saved": 177.5466396326749,
    "feed": "data/cities/accra/gtfs.zip"
   },
   {
@@ -155,8 +155,8 @@
    "people_in_area": 5989906.0,
    "people_within_400m": 2548530.0,
    "share_within_400m": 0.42547078368174723,
-   "door_to_door_min": 62.3901822190683,
-   "share_trips_possible": 0.37776681302638776,
+   "door_to_door_min": 62.40463699052369,
+   "share_trips_possible": 0.3776659945113116,
    "routes_more_often_than_min_headway": 1,
    "buses_timetable": 1017,
    "buses_capped": 45,
@@ -167,17 +167,17 @@
    "co2_t": 190.38916888284052,
    "changes": 45,
    "routes_after": 153,
-   "minutes_saved": 3.7032023494318196,
-   "minutes_saved_possible_trips": 6.012833694598783,
-   "riders_hours_saved_per_100k_journeys": 6172.003915719688,
-   "same_buses_fuel_l_change": 8167.139281321637,
+   "minutes_saved": 3.44820128484956,
+   "minutes_saved_possible_trips": 5.554466114066045,
+   "riders_hours_saved_per_100k_journeys": 5747.002141415898,
+   "same_buses_fuel_l_change": 3465.464988349573,
    "fewer_buses": 559,
-   "share_of_buses_needed": 0.5234375,
+   "share_of_buses_needed": 0.5546875,
    "buses_saved": 413,
-   "bus_hours_saved": 5778.3430533854225,
-   "bus_km_saved": 88709.81934277958,
-   "fuel_l_saved": 29707.162206863453,
-   "co2_t_saved": 79.31812309232542,
+   "bus_hours_saved": 5723.717714843751,
+   "bus_km_saved": 89194.67310430265,
+   "fuel_l_saved": 29831.56141292279,
+   "co2_t_saved": 79.65026897250385,
    "feed": "data/cities/addis_ababa/gtfs.zip"
   },
   {
@@ -303,8 +303,8 @@
    "people_in_area": 905146.5714285715,
    "people_within_400m": 782194.0,
    "share_within_400m": 0.8641628048874799,
-   "door_to_door_min": 39.016206227855214,
-   "share_trips_possible": 0.845095094513908,
+   "door_to_door_min": 39.08714312968404,
+   "share_trips_possible": 0.8450862017231411,
    "routes_more_often_than_min_headway": 3,
    "buses_timetable": 2459,
    "buses_capped": 69,
@@ -319,13 +319,13 @@
    "minutes_saved_possible_trips": 9.850108534999258,
    "riders_hours_saved_per_100k_journeys": 13860.984066067627,
    "same_buses_fuel_l_change": -53085.405607553665,
-   "fewer_buses": 1238,
+   "fewer_buses": 1222,
    "share_of_buses_needed": 0.5078125,
-   "buses_saved": 1152,
-   "bus_hours_saved": 17890.73576213491,
-   "bus_km_saved": 70178.9792962838,
-   "fuel_l_saved": 144712.82167529545,
-   "co2_t_saved": 386.38323387303893,
+   "buses_saved": 1168,
+   "bus_hours_saved": 18106.76701213491,
+   "bus_km_saved": 74998.35368488514,
+   "fuel_l_saved": 146764.67224767557,
+   "co2_t_saved": 391.86167490129384,
    "feed": "data/cities/trujillo/gtfs.zip"
   },
   {

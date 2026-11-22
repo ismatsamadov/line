@@ -29,7 +29,7 @@ sys.path.insert(0, str(ROOT / "data"))
 import fetch_external                                                           # noqa: E402
 
 DATASET = "ismatsamadov/route-efficiency-cities"
-REVISION = "916bd758358cf7ecb903dd62ae97d5c1b151b162"   # the dataset's commit that data/world_files.csv describes
+REVISION = "995a3976ce78ca54bb6a83aa7c6a740ac0b9c6f5"   # the dataset's commit that data/world_files.csv describes
 URL = "https://huggingface.co/datasets/{}/resolve/{}/{}"
 MANIFEST = ROOT / "data" / "world_files.csv"
 # The files that live in the dataset rather than in git, as .gitignore lists them.
