@@ -21,7 +21,9 @@ their sources so they can be read and changed in one place.
 - `--set name=value` overrides one setting (or one data path) for a single run. The value
   is read as TOML: `--set default_headway_min=10`, `--set headway_from_ridership=false`,
   `--set 'headway_by_zone={"Şəhərdaxili" = 8}'`. It can be repeated.
-- `--config other.toml` uses another file; `--config none` uses the built-in defaults.
+- `--config other.toml` uses another file; `--config none` uses the built-in defaults. A
+  file that is not there stops the run with `Settings error: no settings file at ...`
+  before anything is written, so a mistyped name never gives results for the defaults.
 - Every run records the settings it used in `output/network.json` (and
   `output/redesign/summary.json`) under `settings`, and the data files it found under
   `inputs`.

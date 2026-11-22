@@ -41,6 +41,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.service import SOURCES                                             # noqa: E402
 from busnet.metrics import (compare_ridership, detour_table, near_duplicates,  # noqa: E402
@@ -89,7 +90,7 @@ def main():
     ap.add_argument("--max-gap", type=float, default=700, help="stop-balancing: never leave a gap longer than this (m)")
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

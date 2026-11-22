@@ -39,6 +39,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.gtfs import write_gtfs                                             # noqa: E402
 from busnet.impact import capped_minutes, impact_rows                         # noqa: E402
@@ -110,7 +111,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "output" / "redesign"))
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

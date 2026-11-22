@@ -49,6 +49,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet import calibration                                                 # noqa: E402
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.metrics import compare_ridership                                   # noqa: E402
@@ -201,7 +202,8 @@ def main():
                   f"{r['spearman_held_out_mean']:.3f} +- {r['spearman_held_out_sd']:.3f}, chosen most {r['chosen_most']}")
         return
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else str(Path(args.config).resolve())
+    config = settings_file(args.config)
+    config = str(Path(config).resolve()) if config else None
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

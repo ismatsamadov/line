@@ -41,6 +41,7 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet import utrp                                                        # noqa: E402
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.instances import (cluster_stops, gravity, half_up, metres,         # noqa: E402
                               network_links, node_people, positions, todays_routes)
@@ -293,7 +294,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "output" / "instances"))
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

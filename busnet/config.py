@@ -24,6 +24,17 @@ def parse_value(text):
         return text.strip()
 
 
+def settings_file(name):
+    """The settings file a script's --config names, or None for "none", the built-in defaults.
+    A name that is not a file stops the script with a settings error naming it, before
+    anything is written, so a mistyped name cannot give results for the defaults."""
+    if name.lower() == "none":
+        return None
+    if not Path(name).is_file():
+        raise SystemExit(f"Settings error: no settings file at {name} (--config none uses the built-in defaults)")
+    return name
+
+
 def load_config(path=None, overrides=()):
     """(Assumptions, {data key: path}) from an optional TOML file and "name=value" overrides.
 

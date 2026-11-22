@@ -37,6 +37,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.graph import StopIndex                                             # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
@@ -224,9 +225,7 @@ def redesign_seeds(inp, fine, fine_pull, seeds, say):
 def run_variant(name, overrides, config, tmp):
     """Run redesign.py with overrides into a temporary folder; return its summary and changes."""
     out = Path(tmp) / name
-    cmd = [sys.executable, str(ROOT / "redesign.py"), "--out", str(out)]
-    if config:
-        cmd += ["--config", str(config)]
+    cmd = [sys.executable, str(ROOT / "redesign.py"), "--out", str(out), "--config", str(config) if config else "none"]
     for item in overrides:
         cmd += ["--set", item]
     done = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
@@ -276,7 +275,8 @@ def main():
     ap.add_argument("--skip-settings", action="store_true", help="do not run the redesign under other assumptions")
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else str(Path(args.config).resolve())
+    config = settings_file(args.config)
+    config = str(Path(config).resolve()) if config else None
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
