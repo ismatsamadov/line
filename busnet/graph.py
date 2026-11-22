@@ -46,13 +46,16 @@ class StopIndex:
         return out
 
     def nearest(self, lat, lon, max_m=5000.0):
-        r = self.cell
-        while r <= max_m:
+        """(distance_m, stop) of the nearest stop within max_m, or None. The search starts at one
+        cell and doubles, ending at max_m itself."""
+        r = min(self.cell, max_m)
+        while True:
             hits = self.within(lat, lon, r)
             if hits:
                 return hits[0]
-            r *= 2
-        return None
+            if r >= max_m:
+                return None
+            r = min(2 * r, max_m)
 
 
 class TransitGraph:

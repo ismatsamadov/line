@@ -398,7 +398,9 @@ On one Python version a rebuild gives the same files byte for byte.
 1. **Run the tests.** `python3 -m unittest` takes about 35 seconds. `tests/test_geo.py`,
    `test_service.py`, `test_config.py` and `test_optimize.py` check `geo.match_stops`,
    the headway rules and daily service, the settings reader, and `Plan` arithmetic on a
-   small made-up network (`tests/helpers.py`). `tests/test_regression.py` regenerates
+   small made-up network (`tests/helpers.py`). `tests/test_graph.py` checks that
+   `StopIndex.nearest` finds a stop anywhere within the distance asked for, out to its
+   last metre and below one cell of the grid. `tests/test_regression.py` regenerates
    `output/` with `measure.py` into a temporary folder and compares every file with the
    committed one byte for byte. With `BUSNET_SLOW_TESTS=1` it also regenerates
    `output/redesign/` (about two minutes) and `output/benchmark/` (about three) and
