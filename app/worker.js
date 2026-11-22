@@ -10,6 +10,7 @@ let py = null;
 async function start() {
   const runtime = await loadPyodide();
   await runtime.loadPackage("sqlite3");
+  runtime.runPython("import sqlite3");          // loadPackage can report a failure without throwing
   runtime.setStdout({ batched: (line) => postMessage({ type: "log", line }) });
   runtime.setStderr({ batched: (line) => postMessage({ type: "log", line }) });
   py = runtime;
@@ -58,6 +59,7 @@ self.onmessage = async (event) => {
     else throw new Error(`unknown command ${cmd}`);
     postMessage({ id, ok: true, ...answer });
   } catch (error) {
-    postMessage({ id, ok: false, error: String(error && error.message || error) });
+    const message = String(error && error.message || error);
+    postMessage({ id, ok: false, error: message, fatal: /fatal/i.test(message) });   // Pyodide's fatal errors say so
   }
 };

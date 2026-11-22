@@ -67,7 +67,8 @@ def _same_cell(a, b):
         return False
     x, y = Decimal(a), Decimal(b)
     places = max(4, -x.as_tuple().exponent, -y.as_tuple().exponent)
-    return abs(x - y) <= Decimal(1).scaleb(-places)
+    slack = 1 + int(2 * math.ulp(max(abs(float(x)), abs(float(y)))) * 10 ** places)   # past 1e12 a float's last bit outweighs the 4th decimal
+    return abs(x - y) <= Decimal(1).scaleb(-places) * slack
 
 
 _NUMBER = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
@@ -187,6 +188,9 @@ CSV_CASES = [
     ("401932.5714", "401932.5716", False), ("0.5", "0.6", False),
     ("0.012345678", "0.012345679", True), ("0.012345678", "0.012345688", False),   # eight digits written
     ("401932", "401933", False), ("0123", "123", False),                 # a count is exact, an id is text
+    ("1000000000000.1234", "1000000000000.1236", True),                  # its last bit is worth 1.2e-4 there
+    ("1000000000000.1234", "1000000000000.1239", False),
+    ('"x,0.1234,y"', '"x,0.1235,y"', False),                             # a quoted cell is text, commas and all
     ("-0.0", "0.0", True), ("1e-05", "1.1e-05", True), ("1e-05", "1.2e-05", False),
 ]
 

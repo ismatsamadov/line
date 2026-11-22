@@ -8,9 +8,9 @@ const log = (line) => { logBox.textContent += line + "\n"; logBox.scrollTop = lo
 const seconds = (t) => ((performance.now() - t) / 1000).toFixed(1) + " s";
 
 // A promise for each request to the worker, settled by the answer with the same id. A worker
-// whose Python failed to start, or that could not even load Pyodide (its error event), is
-// let go with whatever waits on it, and the next run starts a fresh one.
-let worker = null, started = null;
+// whose Python failed to start, failed fatally later, or could not even load Pyodide (its
+// error event), is let go with whatever waits on it, and the next run starts a fresh one.
+let worker = null, started = null, lost = null;
 const pending = new Map();
 let nextId = 1;
 
@@ -22,7 +22,9 @@ function newWorker() {
     const p = pending.get(msg.id);
     if (!p) return;
     pending.delete(msg.id);
-    msg.ok ? p.resolve(msg) : p.reject(new Error(msg.error));
+    if (msg.ok) { p.resolve(msg); return; }
+    p.reject(new Error(msg.error));
+    if (msg.fatal) letGo(w, new Error(msg.error));     // Pyodide cannot be used again after a fatal error
   };
   w.onerror = (event) => {
     if (event.preventDefault) event.preventDefault();
@@ -35,11 +37,13 @@ function letGo(w, error) {
   if (worker !== w) return;
   w.terminate();
   worker = started = null;
+  lost = error;
   for (const p of pending.values()) p.reject(error);
   pending.clear();
 }
 
 const call = (cmd, args = {}) => new Promise((resolve, reject) => {
+  if (!worker) { reject(lost || new Error("Python is not running")); return; }   // let go between two calls
   const id = nextId++;
   pending.set(id, { resolve, reject });
   worker.postMessage({ id, cmd, ...args });
@@ -62,6 +66,7 @@ function sameValue(a, b, tol) {
 // runs can differ by one in the 4th decimal; a cell written with more decimals is held to its
 // own last one. Whole numbers, such as counts and ids, must match exactly. Compared as exact
 // integers in units of the last decimal, as tests/test_regression.py compares them.
+// A float so large that its last bit is worth more than a decimal written may move by those bits too.
 const NUMBER = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
 function sameCell(a, b) {
   if (a === b) return true;
@@ -71,13 +76,38 @@ function sameCell(a, b) {
   const decimals = (m) => (m[3] || "").length - Number(m[4] || 0);
   const places = Math.max(4, decimals(x), decimals(y));
   const units = (m) => (m[1] === "-" ? -1n : 1n) * BigInt((m[2] || "") + (m[3] || "") || "0") * 10n ** BigInt(places - decimals(m));
+  const big = Math.max(Math.abs(Number(a)), Math.abs(Number(b)));
+  const ulp = big > 0 ? 2 ** (Math.floor(Math.log2(big)) - 52) : 0;     // the spacing of floats there, as math.ulp
+  const slack = 1n + BigInt(Math.floor(2 * ulp * 10 ** places));
   const gap = units(x) - units(y);
-  return gap >= -1n && gap <= 1n;
+  return gap >= -slack && gap <= slack;
+}
+
+// Rows of cells as Python's csv.reader reads them: quoted cells may hold commas, quotes and line breaks.
+function csvRows(text) {
+  const rows = [];
+  let row = [], cell = "", quoted = false;
+  text = text.replace(/^\ufeff/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch !== '"') cell += ch;
+      else if (text[i + 1] === '"') { cell += '"'; i++; }
+      else quoted = false;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      rows.push(row.length || cell !== "" ? [...row, cell] : []);
+      row = []; cell = "";
+    } else cell += ch;
+  }
+  if (row.length || cell !== "") rows.push([...row, cell]);
+  return rows;
 }
 
 function sameCsv(mine, theirs) {
-  const rows = (text) => text.replace(/^\ufeff/, "").trim().split(/\r?\n/).map((line) => line.split(","));
-  const [a, b] = [rows(mine), rows(theirs)];
+  const [a, b] = [csvRows(mine), csvRows(theirs)];
   return a.length === b.length && a.every((row, i) => row.length === b[i].length && row.every((c, j) => sameCell(c, b[i][j])));
 }
 

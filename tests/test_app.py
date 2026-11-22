@@ -1,8 +1,8 @@
 """app/: the list of files the page loads is the one app/build.py writes, and every file on
 it exists, so the page cannot ask for a file that is not there. With Node installed, app.js
 also runs against a stand-in page and worker: its CSV comparison holds numbers to the
-decimals written, as tests/test_regression.py does, and a run after Python failed to start
-starts a fresh worker."""
+decimals written and reads quoted cells, as tests/test_regression.py does, and a run after
+Python failed to start, failed fatally or lost its worker starts a fresh worker."""
 
 import json
 import shutil
@@ -128,6 +128,37 @@ behave = (w, msg) => {
 };
 """ + self.RUNS)
         self.check(got, "sqlite3 did not load")
+
+    def test_a_fatal_error_after_a_good_start_gives_the_next_run_a_fresh_worker(self):
+        got = run_page("""
+behave = (w, msg) => {
+  if (msg.cmd === "start") return answer(w, msg, { version: "3.12.7" });
+  if (msg.cmd === "run" && workers.indexOf(w) === 0)
+    return w.onmessage({ data: { id: msg.id, ok: false, error: "Pyodide already fatally failed and can no longer be used.", fatal: true } });
+  answer(w, msg, msg.cmd === "read" ? { data: null } : {});
+};
+""" + self.RUNS)
+        first, second = got["seen"]
+        self.assertIn("Failed: Pyodide already fatally failed", first["log"])
+        self.assertIn("0 of 0 result files match the repository", second["log"])
+        self.assertEqual((got["workers"], got["terminated"], got["starts"]), (2, [True, False], [1, 1]))
+
+    def test_a_worker_that_dies_between_two_requests_fails_with_its_own_error(self):
+        got = run_page("""
+behave = (w, msg) => {
+  if (msg.cmd === "start") return answer(w, msg, { version: "3.12.7" });
+  if (msg.cmd === "load" && workers.indexOf(w) === 0) {        // answers, then dies before the next request
+    answer(w, msg);
+    return w.onerror({ message: "worker crashed", preventDefault() {} });
+  }
+  answer(w, msg, msg.cmd === "read" ? { data: null } : {});
+};
+""" + self.RUNS)
+        first, second = got["seen"]
+        self.assertIn("Failed: worker crashed", first["log"])
+        self.assertNotIn("null", first["log"])
+        self.assertIn("0 of 0 result files match the repository", second["log"])
+        self.assertEqual(got["workers"], 2)
 
     def test_a_worker_that_cannot_load_pyodide_releases_the_page(self):
         got = run_page("""
