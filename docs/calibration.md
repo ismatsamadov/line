@@ -24,10 +24,12 @@ Three settings shape the demand: how fast trips fall off with distance (`trip_de
 today 6 km), how much destinations pull trips compared with homes (`destination_share`,
 today 0.5), and how much a metro station weighs for every 1,000 daily entries
 (`metro_weight_per_1000_entries`, today 2). I tried 420 combinations: fall-offs from 1 to
-30 km, shares from 0 to 1, metro weights from 0 to 8. Finding every trip's path is the
-slow part of the model and does not depend on these settings, so `busnet/calibration.py`
-finds the paths once and spreads the trips again for each setting; a test holds it to
-exactly the boardings and trip lengths `metrics.evaluate_od` gives.
+30 km, shares from 0 to 1, metro weights from 0 to 8. Each metro weight scales the
+stations' own counts of entries, so the whole grid is tried whatever weight the settings
+give, and today's settings are tried too when they fall between its points. Finding every
+trip's path is the slow part of the model and does not depend on these settings, so
+`busnet/calibration.py` finds the paths once and spreads the trips again for each setting;
+a test holds it to exactly the boardings and trip lengths `metrics.evaluate_od` gives.
 
 The best setting on all 56 routes ranks them at 0.67, with trips falling off over 1.5 km.
 That is the fit on the routes it was chosen on, so I cross-validated it: the routes are

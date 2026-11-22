@@ -409,12 +409,12 @@ with counts, with headways that do not come from the counts. A setting is
 
 | File | Contents |
 |---|---|
-| `grid.csv` | One row per setting tried, on one sample of 2,000 origins: the three settings, `mean_trip_km_straight_line` (the average straight-line trip they give), `spearman` and `pearson_of_log_shares` on all 56 routes |
+| `grid.csv` | One row per setting tried, on one sample of 2,000 origins: the three settings, `mean_trip_km_straight_line` (the average straight-line trip they give), `spearman` and `pearson_of_log_shares` on all 56 routes. Today's settings are always among them: when they fall between the grid's points they are tried after it, as a 421st setting |
 | `grid_routes.csv` | One row per setting and counted route: `modelled_share`, the route's share of the modelled boardings of the 56, to eight significant digits |
 | `cv.csv` | One row per cross-validation repeat: `candidates` (`all` settings, or `realistic`, those whose trips are at least as long as today's), `spearman_held_out`, the fit of the routes each fold predicted with the setting chosen on the other four, and `settings_chosen`, fold by fold |
 | `tradeoff.csv` | One row per least average trip allowed (`least_trip_km`, 0 to 8 km and today's): the number of `settings` that qualify, the cross-validated fit among them (`spearman_held_out_mean`, `_sd`), and the setting `chosen_most` with its trip length and its fit on all routes |
 | `routes.csv` | One row per counted route: `observed_weekday_boardings`, `observed_share`, and the modelled share at today's settings, at the setting chosen most among all and at the one chosen most among the realistic |
-| `summary.json` | `today` (the settings, their trip length, their fit on the grid's sample and on five other samples), `best_on_all_routes`, `cross_validated` and `cross_validated_realistic` (mean and spread of the held-out fit, the settings chosen most), `fitted` and `fitted_realistic`, `fresh_samples` (today's and both fitted settings on three new samples of origins), `official_average_bus_trip_km` (the State Statistical Committee's latest), `grid`, `settings` |
+| `summary.json` | `today` (the settings, their trip length, their fit on the grid's sample and on five other samples), `best_on_all_routes`, `cross_validated` and `cross_validated_realistic` (mean and spread of the held-out fit, the settings chosen most), `fitted` and `fitted_realistic`, `fresh_samples` (today's and both fitted settings on three new samples of origins), `official_average_bus_trip_km` (the State Statistical Committee's latest), `grid` (the values tried, the seed of its sample and `settings_scored`, 420 or, with today's settings off the grid, 421), `settings` |
 
 `python3 calibrate.py --tradeoff-only` rewrites `tradeoff.csv` from the other files in
 seconds.

@@ -429,8 +429,9 @@ On one Python version a rebuild gives the same files byte for byte.
    demand comes back from the published nodes; with `BUSNET_SLOW_TESTS=1` it cuts the
    instances again (about twelve minutes). `tests/test_calibration.py` holds
    `busnet/calibration.py` to exactly the boardings and trip lengths `metrics.evaluate_od`
-   gives on the made-up network, checks the rank correlation, and checks that the committed
-   `output/calibration/` agrees with itself.
+   gives on the made-up network, checks the rank correlation, checks that `calibrate.py`
+   scores today's settings when they fall between the grid's points and every metro weight
+   when today's is 0, and checks that the committed `output/calibration/` agrees with itself.
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.
