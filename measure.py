@@ -50,7 +50,10 @@ from busnet.scenarios import balance_stops                                     #
 
 
 def write_csv(path, rows):
+    """A table, one row per dict. A table without rows is not written, and one an earlier run
+    left in the folder is removed, so no file means no rows."""
     if not rows:
+        Path(path).unlink(missing_ok=True)
         return
     with open(path, "w", newline="", encoding="utf-8-sig") as f:   # utf-8-sig: Excel shows ə/ş/ç correctly
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
@@ -132,10 +135,11 @@ def main():
     write_csv(out / "duplicates.csv", near_duplicates(net))
     summary = network_summary(net, a, zones, args.od_origins if zones else 0, headways, attraction)
     modelled = split_modelled(summary)
+    rows = []
     if modelled is not None and observed:
         rows, fit = compare_ridership(net, modelled, observed)
-        write_csv(out / "ridership_check.csv", rows)
         summary["ridership_fit"] = fit
+    write_csv(out / "ridership_check.csv", rows)
     report = {"network": summary, "inputs": inp.found, "settings": asdict(a),
               "headway_sources": sources, "repairs": net.repairs}
     if inp.timetable:

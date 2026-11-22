@@ -6,7 +6,11 @@ writes `output/robustness/`; `site/build.py` writes the page's files in `site/`
 the README ([below](#animations--the-animations-in-the-readme)). CSV files are UTF-8 with a byte-order mark, so Excel shows
 Azerbaijani letters correctly. Shares are
 fractions between 0 and 1; distances are km or m as named; times are minutes unless named
-otherwise. Blank cells mean "not defined" (for example the circuity of a loop route).
+otherwise. Blank cells mean "not defined" (for example the circuity of a loop route). A
+table with no rows is not written, and a run removes the one an earlier run left in the
+same folder, so a missing table has no rows: eight cities of the world pilot have no
+`corridors.csv`, since no kilometre of their streets carries eight routes, and Kyiv has no
+`duplicates.csv`.
 
 ## output/routes.csv — one row per route with stops (201 rows)
 

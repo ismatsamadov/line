@@ -405,7 +405,9 @@ On one Python version a rebuild gives the same files byte for byte.
    below, in `metrics.evaluate_od`, the redesign's scoring and the calibration's paths.
    `tests/test_regression.py` regenerates
    `output/` with `measure.py` into a temporary folder and compares every file with the
-   committed one byte for byte. With `BUSNET_SLOW_TESTS=1` it also regenerates
+   committed one byte for byte, and runs Riga's stop balancing twice into one folder, the
+   second time removing nothing, to check that no table of the first run is left behind.
+   With `BUSNET_SLOW_TESTS=1` it also regenerates
    `output/redesign/` (about two minutes) and `output/benchmark/` (about three) and
    `output/robustness/` (about ten). `tests/test_utrp.py` checks that the 35 published
    benchmark route sets score as their authors published them, that each benchmark rule

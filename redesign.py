@@ -50,7 +50,10 @@ from busnet.population import load_population, stops_bbox                     # 
 
 
 def write_csv(path, rows):
+    """A table, one row per dict. A table without rows is not written, and one an earlier run
+    left in the folder is removed, so no file means no rows."""
     if not rows:
+        Path(path).unlink(missing_ok=True)
         return
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
