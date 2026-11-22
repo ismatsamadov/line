@@ -312,8 +312,7 @@ def main():
         seed_rows = redesign_seeds(inp, fine, fine_pull, seeds, print)
         write_csv(out / "fit_ladder.csv", ladder)              # on disk before the slow runs are collected
         write_csv(out / "coverage_radius.csv", coverage)
-        if walk_rows:
-            write_csv(out / "coverage_walk.csv", walk_rows)
+        write_csv(out / "coverage_walk.csv", walk_rows or [])   # without a walk network, no table, and no old one
         write_csv(out / "redesign_seeds.csv", seed_rows)
 
         variants, failed = None, []
@@ -344,8 +343,7 @@ def main():
         "redesign_settings": None if failed else variants,
         "settings": asdict(a), "inputs": inp.found,
     }
-    if variants and not failed:
-        write_csv(out / "redesign_settings.csv", variants)
+    write_csv(out / "redesign_settings.csv", variants if variants and not failed else [])
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     if failed:
         sys.exit("These redesign runs failed, so redesign_settings.csv was not written:\n  " + "\n  ".join(failed))
