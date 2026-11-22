@@ -319,7 +319,7 @@
   }
  },
  "demand_check": {
-  "spearman": 0.5768,
+  "spearman": 0.5753,
   "routes_compared": 56
  },
  "settings": {
