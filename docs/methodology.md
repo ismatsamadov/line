@@ -243,10 +243,12 @@ Walking time = straight-line distance × `walk_detour` ÷ `walk_speed_mps`. Walk
 once between rides, never chained.
 
 A trip walks from its origin point to any stop within `max_access_walk_m`, follows the
-cheapest path (Dijkstra's algorithm, up to `max_trip_min`), and walks from a stop within
-`max_access_walk_m` to its destination. Every boarding pays the transfer penalty, so one
-penalty is taken off at the end: the first boarding is not a change. Trips under 2 km may
-also be walked entirely, whichever is quicker.
+cheapest path (Dijkstra's algorithm), and walks from a stop within `max_access_walk_m` to
+its destination. Every boarding pays the transfer penalty, so one penalty is taken off at
+the end: the first boarding is not a change. The search therefore runs to `max_trip_min`
+plus one penalty, and a trip counts as possible when its time, the walk to the destination
+included, is within `max_trip_min`. Trips under 2 km may also be walked entirely, whichever
+is quicker.
 
 Reported (`accessibility` in `output/network.json`): the mean door-to-door time of trips
 possible within `max_trip_min`; the share of trips possible within 30, 45 and 60 minutes

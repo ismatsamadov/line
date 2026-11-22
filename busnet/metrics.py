@@ -371,7 +371,7 @@ def evaluate_od(network, a, zones, n_origins=300, seed=7, headways=None, attract
             sources[node] = min(w, sources.get(node, math.inf))
         dist = boards = pred = settled = None
         if sources:
-            dist, boards, pred, settled = graph.search(sources, cutoff)
+            dist, boards, pred, settled = graph.search(sources, graph.trip_cutoff_s)
         ox, oy, o_access = zx[o], zy[o], bool(access[o])
         weights, results = [], []
         for d in range(len(zones)):

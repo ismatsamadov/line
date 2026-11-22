@@ -177,7 +177,7 @@ class Evaluator:
                     sources[node] = min(w, sources.get(node, math.inf))
             dist = boards = pred = settled = None
             if sources:
-                dist, boards, pred, settled = graph.search(sources, cap)
+                dist, boards, pred, settled = graph.search(sources, graph.trip_cutoff_s)
             flow = {}
             for d, w, walk_s in dests:
                 best, nb, end = walk_s, 0, None

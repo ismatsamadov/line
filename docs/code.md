@@ -158,7 +158,7 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
 | `bicycle` | `placemarks(path)`, `load_lanes(path, folder)`, `load_parking(path)`, `LineIndex(lines)` (`nearest`, `nearest_any`), `along(path, index, within_m)`, `stops_near`, `measure(network, a, zones, observed, lanes, lanes_2025, parking, exits)`, `geojson` | Reads KMZ with the standard library; `measure` returns the summary and every table `bicycle.py` writes ([methodology.md](methodology.md#13-bicycle-lanes-and-parking)). Used by `bicycle.py` and `site/build.py` |
-| `graph` | `StopIndex(stops)` (`within`, `nearest`), `TransitGraph(network, a, headways)` (`search`, `arrival`, `departure`, `is_departure`, `node_route`) | Dijkstra over arrival, departure and on-board nodes |
+| `graph` | `StopIndex(stops)` (`within`, `nearest`), `TransitGraph(network, a, headways)` (`search`, `trip_cutoff_s`, `arrival`, `departure`, `is_departure`, `node_route`) | Dijkstra over arrival, departure and on-board nodes; `trip_cutoff_s`, `max_trip_min` plus one transfer penalty, is how far a search must reach to find every trip within `max_trip_min` |
 | `metrics` | `route_table`, `detour_table`, `trunk_corridors`, `near_duplicates`, `find_detours`, `StreetGraph`, `coverage_by_route`, `evaluate_od`, `compare_ridership`, `network_summary` | `network_summary` gives every network-wide figure in `network.json` |
 | `scenarios` | `balance_stops(network, min_gap_m, max_gap_after_m, protect)` | Returns (new network, details); never edits its input |
 | `walking` | `walkable(tags)`, `load_overpass(path)`, `WalkNetwork(nodes, ways)` (`snap`, `distances_from`, `walk_distances`), `load_walk_network(path)` | Streets and paths from an Overpass answer as a graph; one multi-source Dijkstra from the stops gives the walk from every population point. Used by `robustness.py` only ([methodology.md](methodology.md#5-population-and-coverage)) |
@@ -400,7 +400,10 @@ On one Python version a rebuild gives the same files byte for byte.
    the headway rules and daily service, the settings reader, and `Plan` arithmetic on a
    small made-up network (`tests/helpers.py`). `tests/test_graph.py` checks that
    `StopIndex.nearest` finds a stop anywhere within the distance asked for, out to its
-   last metre and below one cell of the grid. `tests/test_regression.py` regenerates
+   last metre and below one cell of the grid, and that a trip with a change and one
+   without count as possible with the limit just above their time and not with it just
+   below, in `metrics.evaluate_od`, the redesign's scoring and the calibration's paths.
+   `tests/test_regression.py` regenerates
    `output/` with `measure.py` into a temporary folder and compares every file with the
    committed one byte for byte. With `BUSNET_SLOW_TESTS=1` it also regenerates
    `output/redesign/` (about two minutes) and `output/benchmark/` (about three) and
