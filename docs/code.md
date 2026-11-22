@@ -438,6 +438,9 @@ On one Python version a rebuild gives the same files byte for byte.
    gives on the made-up network, checks the rank correlation, checks that `calibrate.py`
    scores today's settings when they fall between the grid's points and every metro weight
    when today's is 0, and checks that the committed `output/calibration/` agrees with itself.
+   `tests/test_world.py` checks that every row of `output/world/cities.csv` and the total
+   add up, that today's figures are each redesign's own baseline with the timetables' count
+   beside it, and that `world.py` refuses a row that does not add up.
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.

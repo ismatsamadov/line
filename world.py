@@ -15,6 +15,13 @@ Baku is in it as read from its own feed (cities/baku.toml), not from AYNA's snap
 BakuBus's counts, which is Baku's own study (busnet.toml). Every saving is a model estimate:
 apart from Baku's, no city's demand rests on counts (docs/world.md).
 
+Today's buses, bus-hours, km, fuel and CO2 are the redesign's own baseline, the figures its
+savings are taken from, so that a row's saving and its share of today come from one network.
+The baseline runs no route more often than min_headway_min, and where a timetable runs one
+more often, the buses it needs at the timetable's own headways (measure.py) are given beside
+it: buses_timetable, buses_capped more. Every row and the total are checked to add up before
+anything is written.
+
 With --run, measure.py and redesign.py run first for every city whose results are missing
 (or, with --force, for all), several at a time.
 
@@ -67,9 +74,10 @@ WORLD = [
 CAPPED = "Average door-to-door trip, impossible trips counted at 120 min"
 POSSIBLE = "Average door-to-door trip, possible trips only"
 # Columns that add up over cities; the rest are given as middle and range.
-TOTALS = ("routes", "stops", "people_in_area", "people_within_400m", "buses", "bus_hours", "bus_km",
-          "fuel_l", "co2_t", "routes_after", "fewer_buses", "buses_saved", "bus_hours_saved", "bus_km_saved",
-          "fuel_l_saved", "co2_t_saved", "same_buses_fuel_l_change")
+TOTALS = ("routes", "stops", "people_in_area", "people_within_400m", "routes_more_often_than_min_headway",
+          "buses_timetable", "buses_capped", "buses", "bus_hours", "bus_km", "fuel_l", "co2_t", "routes_after",
+          "fewer_buses", "buses_saved", "bus_hours_saved", "bus_km_saved", "fuel_l_saved", "co2_t_saved",
+          "same_buses_fuel_l_change")
 SPREAD = ("door_to_door_min", "share_trips_possible", "share_within_400m", "minutes_saved",
           "minutes_saved_possible_trips", "riders_hours_saved_per_100k_journeys", "share_of_buses_needed")
 
@@ -95,6 +103,9 @@ def city_row(city, name, country, continent):
     acc, ops = n["accessibility"], n["operations"]
     impact = {r["measure"]: r for r in red["impact"]}
 
+    def today(measure):                          # the redesign's baseline, which the savings are taken from
+        return impact[measure]["today"]
+
     def saved(measure):                          # what the fewer-buses option saves
         return -impact[measure]["fewer_buses_change"]
 
@@ -105,8 +116,10 @@ def city_row(city, name, country, continent):
         "people_in_area": n["population_in_study_area"], "people_within_400m": n["population_within_coverage_radius"],
         "share_within_400m": n["share_population_covered"],
         "door_to_door_min": acc["mean_door_to_door_min"], "share_trips_possible": acc["share_reachable"],
-        "buses": ops["fleet"], "bus_hours": ops["bus_hours_per_day"], "bus_km": ops["bus_km_per_day"],
-        "fuel_l": ops["fuel_l_per_day"], "co2_t": ops["co2_t_per_day"],
+        "routes_more_often_than_min_headway": day["routes_more_often_than_min_headway"],
+        "buses_timetable": ops["fleet"], "buses_capped": ops["fleet"] - today("Buses in service"),
+        "buses": today("Buses in service"), "bus_hours": today("Bus-hours a day"), "bus_km": today("Bus-km a day"),
+        "fuel_l": today("Fuel a day"), "co2_t": today("CO2 a day"),
         "changes": sum(red["changes"].values()), "routes_after": red["routes_after"],
         "minutes_saved": -impact[CAPPED]["same_buses_change"],
         "minutes_saved_possible_trips": -impact[POSSIBLE]["same_buses_change"],
@@ -120,8 +133,25 @@ def city_row(city, name, country, continent):
     }
 
 
+def reconcile(rows, total):
+    """Stop unless every row and the total add up: buses saved are the baseline's less the
+    fewer buses, the timetable's buses are the baseline's and those capped, and the other
+    savings are no more than the baseline's figures."""
+    for r in rows + [total]:
+        name = r.get("name", "the total")
+        if r["buses"] - r["fewer_buses"] != r["buses_saved"]:
+            raise ValueError(f"{name}: {r['buses']} buses less {r['fewer_buses']} is not the {r['buses_saved']} saved")
+        if r["buses"] + r["buses_capped"] != r["buses_timetable"]:
+            raise ValueError(f"{name}: {r['buses']} buses and {r['buses_capped']} capped are not the timetable's "
+                             f"{r['buses_timetable']}")
+        for k in ("bus_hours", "bus_km", "fuel_l", "co2_t"):
+            if not r[f"{k}_saved"] <= r[k] + 1e-6:
+                raise ValueError(f"{name}: {k}_saved {r[k + '_saved']:,.1f} is more than the baseline's {r[k]:,.1f}")
+
+
 def summarise(rows):
     total = {k: sum(r[k] for r in rows) for k in TOTALS}
+    reconcile(rows, total)
     total["share_of_buses_saved"] = total["buses_saved"] / total["buses"]
     total["share_of_fuel_saved"] = total["fuel_l_saved"] / total["fuel_l"]
     weights = [r["people_in_area"] for r in rows]
@@ -168,7 +198,8 @@ def main():
     s = summarise(rows)
     (out / "summary.json").write_text(json.dumps(s, ensure_ascii=False, indent=1), encoding="utf-8")
     t = s["total"]
-    print(f"{s['cities']} cities, {t['routes']:,} routes, {t['buses']:,} buses today. With the same buses the "
+    print(f"{s['cities']} cities, {t['routes']:,} routes, {t['buses']:,} buses today in the model "
+          f"({t['buses_timetable']:,} at the timetables' own headways). With the same buses the "
           f"average trip is {s['spread']['minutes_saved']['median']:.2f} min shorter in the middle city "
           f"({s['spread']['minutes_saved']['min']:.2f} to {s['spread']['minutes_saved']['max']:.2f}). With trip "
           f"times kept, {t['buses_saved']:,} fewer buses ({t['share_of_buses_saved']:.0%}) save "
