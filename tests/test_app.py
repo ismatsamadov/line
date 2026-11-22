@@ -1,7 +1,8 @@
 """app/: the list of files the page loads is the one app/build.py writes, and every file on
 it exists, so the page cannot ask for a file that is not there. With Node installed, app.js
 also runs against a stand-in page and worker: its CSV comparison holds numbers to the
-decimals written, as tests/test_regression.py does."""
+decimals written, as tests/test_regression.py does, and a run after Python failed to start
+starts a fresh worker."""
 
 import json
 import shutil
@@ -90,6 +91,53 @@ console.log(JSON.stringify([edited !== text, page.compareText("impact.csv", text
                             page.compareText("impact.csv", edited, text).ok]));
 """)
         self.assertEqual(got, [True, True, False])
+
+
+@unittest.skipUnless(NODE, "Node is not installed")
+class PageRetry(unittest.TestCase):
+    """A run after Python failed to start starts a fresh worker, whether Python failed inside
+    the worker or the worker could not load Pyodide at all."""
+
+    RUNS = """
+(async () => {
+  const seen = [];
+  for (let k = 0; k < 2; k++) {
+    await page.run("riga", false);
+    seen.push({ log: element("log").textContent, disabled: element("run").disabled });
+  }
+  console.log(JSON.stringify({ seen, workers: workers.length, terminated: workers.map((w) => w.terminated),
+                               starts: workers.map((w) => w.sent.filter((m) => m.cmd === "start").length) }));
+})();
+"""
+
+    def check(self, got, why):
+        first, second = got["seen"]
+        self.assertIn(f"Failed: {why}", first["log"])
+        self.assertFalse(first["disabled"])                            # the button works again
+        self.assertNotIn("Python 3.12.7 ready", first["log"])
+        self.assertIn("Python 3.12.7 ready", second["log"])
+        self.assertIn("0 of 0 result files match the repository", second["log"])
+        self.assertFalse(second["disabled"])
+        self.assertEqual((got["workers"], got["terminated"], got["starts"]), (2, [True, False], [1, 1]))
+
+    def test_python_that_fails_to_start_can_be_started_again(self):
+        got = run_page("""
+behave = (w, msg) => {
+  if (msg.cmd === "start") return workers.indexOf(w) === 0 ? fail(w, msg, "sqlite3 did not load") : answer(w, msg, { version: "3.12.7" });
+  answer(w, msg, msg.cmd === "read" ? { data: null } : {});
+};
+""" + self.RUNS)
+        self.check(got, "sqlite3 did not load")
+
+    def test_a_worker_that_cannot_load_pyodide_releases_the_page(self):
+        got = run_page("""
+behave = (w, msg) => {
+  if (workers.indexOf(w) === 0) return w.onerror({ message: "importScripts failed", preventDefault() {} });
+  if (msg.cmd === "start") return answer(w, msg, { version: "3.12.7" });
+  answer(w, msg, msg.cmd === "read" ? { data: null } : {});
+};
+""" + self.RUNS)
+        self.check(got, "importScripts failed")
 
 
 if __name__ == "__main__":

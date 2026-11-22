@@ -7,18 +7,38 @@ const logBox = document.getElementById("log");
 const log = (line) => { logBox.textContent += line + "\n"; logBox.scrollTop = logBox.scrollHeight; };
 const seconds = (t) => ((performance.now() - t) / 1000).toFixed(1) + " s";
 
-// A promise for each request to the worker, settled by the answer with the same id.
-const worker = new Worker("worker.js");
+// A promise for each request to the worker, settled by the answer with the same id. A worker
+// whose Python failed to start, or that could not even load Pyodide (its error event), is
+// let go with whatever waits on it, and the next run starts a fresh one.
+let worker = null, started = null;
 const pending = new Map();
 let nextId = 1;
-worker.onmessage = (event) => {
-  const msg = event.data;
-  if (msg.type === "log") { log("  " + msg.line); return; }
-  const p = pending.get(msg.id);
-  if (!p) return;
-  pending.delete(msg.id);
-  msg.ok ? p.resolve(msg) : p.reject(new Error(msg.error));
-};
+
+function newWorker() {
+  const w = new Worker("worker.js");
+  w.onmessage = (event) => {
+    const msg = event.data;
+    if (msg.type === "log") { log("  " + msg.line); return; }
+    const p = pending.get(msg.id);
+    if (!p) return;
+    pending.delete(msg.id);
+    msg.ok ? p.resolve(msg) : p.reject(new Error(msg.error));
+  };
+  w.onerror = (event) => {
+    if (event.preventDefault) event.preventDefault();
+    letGo(w, new Error(event.message || "the worker could not load Python"));
+  };
+  return w;
+}
+
+function letGo(w, error) {
+  if (worker !== w) return;
+  w.terminate();
+  worker = started = null;
+  for (const p of pending.values()) p.reject(error);
+  pending.clear();
+}
+
 const call = (cmd, args = {}) => new Promise((resolve, reject) => {
   const id = nextId++;
   pending.set(id, { resolve, reject });
@@ -90,8 +110,6 @@ async function compareFolder(outDir, paths, tbody) {
   return same;
 }
 
-let started = null;
-
 async function run(city, withRedesign) {
   const button = document.getElementById("run");
   button.disabled = true;
@@ -101,7 +119,8 @@ async function run(city, withRedesign) {
     const t0 = performance.now();
     if (!started) {
       log("Loading Python ...");
-      started = call("start");
+      const w = worker = newWorker();
+      started = call("start").catch((e) => { letGo(w, e); throw e; });
     }
     const { version } = await started;
     log(`Python ${version} ready in ${seconds(t0)}`);

@@ -6,11 +6,13 @@ importScripts("https://cdn.jsdelivr.net/pyodide/v0.27.2/full/pyodide.js");
 
 let py = null;
 
+// py is set only once Python is ready, so a start that fails leaves nothing half made.
 async function start() {
-  py = await loadPyodide();
-  await py.loadPackage("sqlite3");
-  py.setStdout({ batched: (line) => postMessage({ type: "log", line }) });
-  py.setStderr({ batched: (line) => postMessage({ type: "log", line }) });
+  const runtime = await loadPyodide();
+  await runtime.loadPackage("sqlite3");
+  runtime.setStdout({ batched: (line) => postMessage({ type: "log", line }) });
+  runtime.setStderr({ batched: (line) => postMessage({ type: "log", line }) });
+  py = runtime;
   return { version: py.version };
 }
 

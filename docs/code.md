@@ -424,7 +424,11 @@ On one Python version a rebuild gives the same files byte for byte.
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
    picture size and the number of frames its data gives. `tests/test_app.py` checks that
-   `app/files.json` is the list `app/build.py` writes and that every file on it exists. `tests/test_instances.py` checks
+   `app/files.json` is the list `app/build.py` writes and that every file on it exists and,
+   where Node is installed, runs `app/app.js` against a stand-in page and worker: its CSV
+   comparison on the same cases as the regression test's, and a second run after Python
+   failed to start, or after the worker failed to load Pyodide, which must start a fresh
+   worker and succeed. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
