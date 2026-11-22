@@ -106,6 +106,28 @@ class TodaysSettings(unittest.TestCase):
             self.assertNotEqual(got[(0.5, 0)], got[(0.5, 2)])
 
 
+class TradeoffFromFiles(unittest.TestCase):
+    def test_todays_settings_off_the_grid_with_many_decimals(self):
+        """--tradeoff-only reads today's settings back from summary.json, unrounded, and finds them
+        among grid.csv's rows, which write_csv rounds to 4 decimals."""
+        today = (6.0, 0.12345, 2.0)
+        keys = [(6, 0.5, 2), today]
+        routes = [("1", 900.0, 0.5), ("2A", 300.0, 0.3), ("3", 150.0, 0.2)]
+        with tempfile.TemporaryDirectory() as tmp:
+            out = Path(tmp)
+            calibrate.write_csv(out / "routes.csv", [{"route": n, "observed_weekday_boardings": o} for n, o, _ in routes])
+            calibrate.write_csv(out / "grid.csv", [{"trip_decay_km": d, "destination_share": sh, "metro_weight_per_1000_entries": m,
+                                                    "mean_trip_km_straight_line": 8.0 + k} for k, (d, sh, m) in enumerate(keys)])
+            calibrate.write_csv(out / "grid_routes.csv", [{"trip_decay_km": d, "destination_share": sh,
+                                                           "metro_weight_per_1000_entries": m, "route": n, "modelled_share": share}
+                                                          for d, sh, m in keys for n, _, share in routes])
+            (out / "summary.json").write_text(json.dumps({"today": dict(zip(
+                ("trip_decay_km", "destination_share", "metro_weight_per_1000_entries"), today))}), encoding="utf-8")
+            rows = calibrate.tradeoff_from_files(out)
+        self.assertAlmostEqual(rows[-1]["least_trip_km"], 9.0)          # today's trips, read back from grid.csv
+        self.assertTrue(all(r["settings"] >= 1 for r in rows))
+
+
 class Spearman(unittest.TestCase):
     def test_ranks_with_ties(self):
         self.assertAlmostEqual(spearman([1, 2, 3, 4], [10, 20, 30, 40]), 1.0)
@@ -138,8 +160,7 @@ class Committed(unittest.TestCase):
         self.assertEqual(least, sorted(least))
         counts = [int(r["settings"]) for r in rows]
         self.assertEqual(counts, sorted(counts, reverse=True))
-        self.assertEqual(counts[0], len(s["grid"]["trip_decay_km"]) * len(s["grid"]["destination_share"])
-                         * len(s["grid"]["metro_weight_per_1000_entries"]))
+        self.assertEqual(counts[0], s["grid"]["settings_scored"])
         for r in rows:
             self.assertGreaterEqual(float(r["chosen_most_trip_km"]) + 1e-9, float(r["least_trip_km"]))
         self.assertAlmostEqual(least[-1], s["today"]["mean_trip_km_straight_line"], places=3)

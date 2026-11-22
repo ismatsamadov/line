@@ -217,7 +217,8 @@ def tradeoff_from_files(out):
         shares.setdefault(key(r), {})[r["route"]] = float(r["modelled_share"])
     grid = {k: [v[n] for n in numbers] for k, v in shares.items()}
     s = json.loads((out / "summary.json").read_text(encoding="utf-8"))["today"]
-    today = (float(s["trip_decay_km"]), float(s["destination_share"]), float(s["metro_weight_per_1000_entries"]))
+    # grid.csv holds today's settings rounded to 4 decimals, as write_csv rounds every float
+    today = tuple(round(float(s[k]), 4) for k in ("trip_decay_km", "destination_share", "metro_weight_per_1000_entries"))
     return tradeoff(observed, grid, trip_km, today)
 
 def main():
