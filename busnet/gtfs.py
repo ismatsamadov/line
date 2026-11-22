@@ -459,6 +459,7 @@ def _read(feed, a, repair, source):
         raise ValueError(f"no trips of route types {sorted(types)} run on {day}")
     # A line its feed splits into two routes, one for each direction, as Christchurch's does, runs
     # as one route: the two have the same agency and name, and each runs one way, not the same one.
+    # Both directions must be known: a trip without a direction_id could run either way.
     ways = defaultdict(set)
     for rid, did, _, _ in trips.values():
         ways[rid].add(did)
@@ -467,7 +468,7 @@ def _read(feed, a, repair, source):
         alike[kinds[rid][:2]].append(rid)
     joined = {}                                  # the second direction's route -> the first's
     for rids in alike.values():
-        if len(rids) == 2 and sorted(tuple(ways[r]) for r in rids) == [("0",), ("1",)]:
+        if len(rids) == 2 and {frozenset(ways[r]) for r in rids} == {frozenset({"0"}), frozenset({"1"})}:
             first, second = sorted(rids, key=lambda r: ways[r] != {"0"})
             joined[second] = first
     trips = {tid: (joined.get(rid, rid), did, shp, sign) for tid, (rid, did, shp, sign) in trips.items()}

@@ -305,6 +305,7 @@ class SplitLineTest(unittest.TestCase):
             f"{r},WK,{t},{d}\n" for r, t, d, _, _ in trips)
         files["stop_times.txt"] = stop_times([(t, st, start, None) for _, t, _, st, start in trips])
         self.net, self.table = read_gtfs(zipped(tmp.name, "split.zip", files), Assumptions())
+        self.folder, self.files = tmp.name, files
 
     def test_the_two_halves_of_a_line_run_as_one_route(self):
         line = self.net.routes["O"]
@@ -317,6 +318,16 @@ class SplitLineTest(unittest.TestCase):
     def test_routes_that_share_a_number_but_run_the_same_way_stay_apart(self):
         self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["100", "7 [P]", "7 [Q]"])
         self.assertTrue(self.net.routes["P"].runs_one_way)
+
+    def test_a_route_whose_direction_is_not_given_is_not_joined(self):
+        files = dict(self.files)
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_long_name,route_type\nM,A,8,,3\nN,A,8,,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\nM,WK,m_1,0\nN,WK,n_1,\n"
+        files["stop_times.txt"] = stop_times([("m_1", LOCAL, "06:00:00", None), ("n_1", LOCAL[::-1], "06:30:00", None)])
+        net, table = read_gtfs(zipped(self.folder, "mixed.zip", files), Assumptions())
+        self.assertEqual(sorted(r.number for r in net.routes.values()), ["8 [M]", "8 [N]"])
+        self.assertEqual(net.patterns[("N", 1)].stop_ids, LOCAL[::-1])         # its own direction, from its stops
+        self.assertFalse(any("read as one route" in n for n in table.notes))
 
     def test_joining_the_halves_keeps_the_timetable_of_every_route(self):
         s = self.table.summary
