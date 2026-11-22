@@ -23,8 +23,8 @@ the file of October 2026, published on 5 November ([data/SOURCES.md](../data/SOU
 It has 80 routes: 52 bus routes, 21 trolleybus routes and 7 tram routes. The model reads
 the buses only, as it leaves out Baku's metro, so where trams and trolleybuses carry the
 centre of Riga the bus network looks thinner than the city's transit is. It reads them
-as they run on Wednesday 4 November 2026, the weekday with the most bus trips: 3,499
-departures. From 05:00 to 23:00, buses leave at least a quarter as often as in the busiest
+as they run on Wednesday 4 November 2026, the weekday with the most bus departures:
+3,499. From 05:00 to 23:00, buses leave at least a quarter as often as in the busiest
 hour, so each route's trips are spread over those 18 hours.
 
 98.2% of the departures run a route's main stop sequence or a short turn of it. Four

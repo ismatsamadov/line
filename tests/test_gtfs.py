@@ -432,5 +432,34 @@ class ShapeDistanceTest(unittest.TestCase):
         self.assertEqual(table.summary["directions_placed_by_shape_dist_traveled"], 0)
 
 
+class FrequencyDayTest(unittest.TestCase):
+    """Mondays run two scheduled trips and Tuesdays one trip that frequencies.txt repeats every
+    ten minutes from 06:00 to 16:00, every week of November 2026: Tuesday is the busier day."""
+
+    def setUp(self):
+        keep_projection(self)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        files = dict(BASIC)
+        files["calendar.txt"] = ("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
+                                 "MO,1,0,0,0,0,0,0,20261102,20261130\nTU,0,1,0,0,0,0,0,20261102,20261130\n")
+        files["stops.txt"] = "stop_id,stop_name,stop_lat,stop_lon\n" + "".join(
+            f"{k},stop {k},{lat:.6f},{lon:.6f}\n" for k, (lat, lon) in STREET.items())
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_type\nR,A,7,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\nR,MO,mo_1,0\nR,MO,mo_2,0\nR,TU,tu_1,0\n"
+        files["stop_times.txt"] = stop_times([("mo_1", LOCAL, "07:00:00", None), ("mo_2", LOCAL, "08:00:00", None),
+                                              ("tu_1", LOCAL, "06:00:00", None)])
+        files["frequencies.txt"] = "trip_id,start_time,end_time,headway_secs,exact_times\ntu_1,06:00:00,16:00:00,600,1\n"
+        self.feed = zipped(tmp.name, "frequencies.zip", files)
+
+    def test_the_busiest_day_counts_each_departure_of_a_repeated_trip(self):
+        _, table = read_gtfs(self.feed, Assumptions())
+        self.assertEqual((table.day, table.summary["weekday"], table.summary["departures"]), ("2026-11-03", "Tuesday", 60))
+
+    def test_a_chosen_day_still_wins(self):
+        _, table = read_gtfs(self.feed, Assumptions(gtfs_date="2026-11-02"))
+        self.assertEqual((table.summary["weekday"], table.summary["departures"]), ("Monday", 2))
+
+
 if __name__ == "__main__":
     unittest.main()

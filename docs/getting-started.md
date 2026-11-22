@@ -169,7 +169,7 @@ redesign_protected_routes = ["22"]   # 22 runs to the airport, which no destinat
                                      # so the model cannot see its riders and would drop it
 ```
 
-`measure.py` prints the day it read (the weekday with the most bus trips, or
+`measure.py` prints the day it read (the weekday with the most bus departures, or
 `gtfs_date`), the share of that day's departures on the route patterns, the branches run
 as routes and the express routes, the hours of service (the hours in which buses leave at
 least a quarter as often as in the busiest hour), and any warning about the feed;

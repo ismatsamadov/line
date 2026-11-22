@@ -103,7 +103,7 @@ city's GTFS feed, Kontur's population grid for its country and OpenStreetMap's
 destinations in the box of its stops, and writes a settings file whose `[data]` table
 names them; `measure.py` and `redesign.py` then run on that city. The feed's timetable
 gives every route the frequency and speed Baku's data lacks. The reader takes the
-weekday with the most bus trips and makes one stop pattern per route direction. Short
+weekday with the most bus departures and makes one stop pattern per route direction. Short
 turns count towards its frequency, large branches run as routes of their own and small
 ones are left out and listed, express routes are told apart by their names and their
 stops, and night routes are named so the redesign leaves them alone. It then moves the
