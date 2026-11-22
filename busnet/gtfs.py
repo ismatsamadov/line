@@ -284,8 +284,8 @@ class Calendar:
         around it, on each side that runs, is passed over while another day runs: a holiday
         whose timetable some feeds add on top of the usual one. The first day of a new, busier
         timetable is not, since the weeks after it run as it does."""
-        def trips(day):
-            return sum(departures_per_service.get(s, 0) for s in self.services(day))
+        def trips(day):                          # in a fixed order, so that float sums tie the same way
+            return sum(departures_per_service.get(s, 0) for s in sorted(self.services(day)))
 
         def stands_out(day, n):
             sides = []
@@ -453,10 +453,16 @@ def _read(feed, a, repair, source):
         if rid in kinds:
             listed.append((tid, rid, sid, did if did in ("0", "1") else None, shp, sign))
     ids = {tid for tid, *_ in listed}
-    windows = defaultdict(list)                  # trip -> [(start, end, headway)] from frequencies.txt
+    windows, unreadable = defaultdict(list), {}  # trip -> [(start, end, headway)] from frequencies.txt
     for tid, start, end, every in feed.columns("frequencies.txt", "trip_id", "start_time", "end_time", "headway_secs"):
-        if tid in ids and start and end and every and float(every) > 0:
-            windows[tid].append((_seconds(start), _seconds(end), float(every)))
+        if tid in ids and start and end and every:
+            try:
+                window = (_seconds(start), _seconds(end), float(every))
+            except ValueError as e:              # an error only if the trip runs on the day read
+                unreadable.setdefault(tid, f"{start}, {end}, {every} ({e})")
+                continue
+            if window[2] > 0:
+                windows[tid].append(window)
     departures = {tid: sum(max(0.0, (e - s) / h) for s, e, h in windows[tid]) if tid in windows else 1.0
                   for tid in ids}
     per_service = Counter()                      # a trip repeated by frequencies.txt counts each departure
@@ -470,16 +476,18 @@ def _read(feed, a, repair, source):
     trips = {tid: (rid, did, shp, sign) for tid, rid, sid, did, shp, sign in listed if sid in running}
     if not trips:
         raise ValueError(f"no trips of route types {sorted(types)} run on {day}")
+    for tid in sorted(set(trips) & set(unreadable)):
+        raise ValueError(f"frequencies.txt has a row it cannot read for trip {tid}, which runs on {day}: {unreadable[tid]}")
     departures = {tid: departures[tid] for tid in trips}
     # A line its feed splits into two routes, one for each direction, as Christchurch's does, runs
-    # as one route: the two have the same agency and name, and each runs one way, not the same one.
-    # Both directions must be known: a trip without a direction_id could run either way.
+    # as one route: the two have the same agency, name and mode, and each runs one way, not the same
+    # one. Both directions must be known: a trip without a direction_id could run either way.
     ways = defaultdict(set)
     for rid, did, _, _ in trips.values():
         ways[rid].add(did)
     alike = defaultdict(list)
     for rid in sorted(ways):
-        alike[kinds[rid][:2]].append(rid)
+        alike[kinds[rid][:3]].append(rid)
     joined = {}                                  # the second direction's route -> the first's
     for rids in alike.values():
         if len(rids) == 2 and {frozenset(ways[r]) for r in rids} == {frozenset({"0"}), frozenset({"1"})}:
