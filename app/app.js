@@ -25,8 +25,8 @@ const call = (cmd, args = {}) => new Promise((resolve, reject) => {
   worker.postMessage({ id, cmd, ...args });
 });
 
-// Numbers equal to within tol, everything else exactly; JSON and CSV are parsed first, so that
-// a last-digit difference in a float is not counted as a change.
+// JSON numbers equal to within tol, everything else exactly; JSON is parsed first, so that a
+// last-digit difference in a float is not counted as a change.
 function sameValue(a, b, tol) {
   if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b));
   if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((x, i) => sameValue(x, b[i], tol));
@@ -37,14 +37,34 @@ function sameValue(a, b, tol) {
   return a === b;
 }
 
-function csvCells(text) {
-  return text.replace(/^﻿/, "").trim().split(/\r?\n/).map((line) => line.split(",").map((c) => (c !== "" && !isNaN(c) ? Number(c) : c)));
+// Two CSV cells: the same text, or two numbers no further apart than rounding to the decimals
+// written. The writers round floats to 4 decimals (fewer show when the last are zeros), so two
+// runs can differ by one in the 4th decimal; a cell written with more decimals is held to its
+// own last one. Whole numbers, such as counts and ids, must match exactly. Compared as exact
+// integers in units of the last decimal, as tests/test_regression.py compares them.
+const NUMBER = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
+function sameCell(a, b) {
+  if (a === b) return true;
+  const [x, y] = [NUMBER.exec(a), NUMBER.exec(b)];
+  if (!x || !y || !(x[2] || x[3]) || !(y[2] || y[3])) return false;
+  if (x[3] === undefined && !x[4] && y[3] === undefined && !y[4]) return false;
+  const decimals = (m) => (m[3] || "").length - Number(m[4] || 0);
+  const places = Math.max(4, decimals(x), decimals(y));
+  const units = (m) => (m[1] === "-" ? -1n : 1n) * BigInt((m[2] || "") + (m[3] || "") || "0") * 10n ** BigInt(places - decimals(m));
+  const gap = units(x) - units(y);
+  return gap >= -1n && gap <= 1n;
+}
+
+function sameCsv(mine, theirs) {
+  const rows = (text) => text.replace(/^\ufeff/, "").trim().split(/\r?\n/).map((line) => line.split(","));
+  const [a, b] = [rows(mine), rows(theirs)];
+  return a.length === b.length && a.every((row, i) => row.length === b[i].length && row.every((c, j) => sameCell(c, b[i][j])));
 }
 
 function compareText(name, mine, theirs) {
   if (mine === theirs) return { ok: true, how: "identical, byte for byte" };
   if (name.endsWith(".json") && sameValue(JSON.parse(mine), JSON.parse(theirs), 1e-9)) return { ok: true, how: "same values (floats to 1e-9)" };
-  if (name.endsWith(".csv") && sameValue(csvCells(mine), csvCells(theirs), 1.5e-4)) return { ok: true, how: "same values (to the 4 decimals written)" };
+  if (name.endsWith(".csv") && sameCsv(mine, theirs)) return { ok: true, how: "same values (to the last decimal written)" };
   return { ok: false, how: "differs" };
 }
 

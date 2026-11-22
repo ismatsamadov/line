@@ -10,18 +10,22 @@ A rerun into a folder an earlier run wrote must leave none of the earlier run's 
 behind.
 
 Files must match byte for byte, with one allowance: Python 3.12 changed how sum() adds
-floats, so an older Python can differ in the last digits. A CSV or JSON file that is not
-byte-identical still passes when every number in it matches to within rounding."""
+floats, so an older Python can differ in the last digits. A JSON file that is not
+byte-identical still passes when every number in it matches to 1e-9, and a CSV file when
+every number matches to the rounding of the decimals written (one in the 4th decimal) and
+every whole number and text exactly."""
 
 import csv
 import io
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -51,17 +55,29 @@ def _same(a, b, tol):
     return a == b
 
 
-def _cells(data):
-    rows = []
-    for row in csv.reader(io.StringIO(data.decode("utf-8-sig"))):
-        cells = []
-        for c in row:
-            try:
-                cells.append(float(c))
-            except ValueError:
-                cells.append(c)
-        rows.append(cells)
-    return rows
+def _same_cell(a, b):
+    """Two CSV cells: the same text, or two numbers no further apart than rounding to the
+    decimals written. The writers round floats to 4 decimals (fewer show when the last are
+    zeros), so two runs whose floats differ in the last bits can differ by one in the 4th
+    decimal; a cell written with more decimals is held to its own last one. Whole numbers,
+    such as counts and ids, must match exactly."""
+    if a == b:
+        return True
+    if not (_NUMBER.fullmatch(a) and _NUMBER.fullmatch(b)) or (_WHOLE.fullmatch(a) and _WHOLE.fullmatch(b)):
+        return False
+    x, y = Decimal(a), Decimal(b)
+    places = max(4, -x.as_tuple().exponent, -y.as_tuple().exponent)
+    return abs(x - y) <= Decimal(1).scaleb(-places)
+
+
+_NUMBER = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
+_WHOLE = re.compile(r"[+-]?\d+")
+
+
+def _same_csv(expected, actual):
+    rows = [list(csv.reader(io.StringIO(data.decode("utf-8-sig")))) for data in (expected, actual)]
+    return len(rows[0]) == len(rows[1]) and all(
+        len(r) == len(q) and all(_same_cell(a, b) for a, b in zip(r, q)) for r, q in zip(*rows))
 
 
 def same_file(expected, actual, name):
@@ -70,7 +86,7 @@ def same_file(expected, actual, name):
     if name.endswith(".json"):
         return _same(json.loads(expected), json.loads(actual), 1e-9)
     if name.endswith(".csv"):
-        return _same(_cells(expected), _cells(actual), 1.5e-4)    # values are rounded to 4 decimals
+        return _same_csv(expected, actual)
     return False
 
 
@@ -164,6 +180,17 @@ class Rerun(unittest.TestCase):
             self.assertFalse(removed.exists())
 
 
+# (cell, cell, the same?) for both CSV comparisons, this one and app.js's (tests/test_app.py).
+CSV_CASES = [
+    ("401932.5714", "401932.5715", True), ("0.5", "0.5001", True),       # 0.5000 is written 0.5
+    ("12.0", "11.9999", True), ("401932.5714", "401982.5714", False),    # 50 more people
+    ("401932.5714", "401932.5716", False), ("0.5", "0.6", False),
+    ("0.012345678", "0.012345679", True), ("0.012345678", "0.012345688", False),   # eight digits written
+    ("401932", "401933", False), ("0123", "123", False),                 # a count is exact, an id is text
+    ("-0.0", "0.0", True), ("1e-05", "1.1e-05", True), ("1e-05", "1.2e-05", False),
+]
+
+
 class Comparison(unittest.TestCase):
     def test_numbers_match_to_within_rounding_but_text_must_match_exactly(self):
         self.assertTrue(same_file(b'{"a": [1.00000000001, "x"]}', b'{"a": [1.0, "x"]}', "f.json"))
@@ -172,3 +199,17 @@ class Comparison(unittest.TestCase):
         self.assertTrue(same_file("﻿r,v\n1,0.1234\n".encode(), "﻿r,v\n1,0.1235\n".encode(), "f.csv"))
         self.assertFalse(same_file("﻿r,v\n1,0.1234\n".encode(), "﻿r,v\n1,0.1244\n".encode(), "f.csv"))
         self.assertFalse(same_file(b"abc", b"abd", "f.txt"))
+
+    def test_a_csv_number_may_move_by_its_last_decimal_and_no_more(self):
+        for a, b, same in CSV_CASES:
+            csv_ = lambda v: f"﻿route,people\r\n22,{v}\r\n".encode()
+            self.assertEqual(same_file(csv_(a), csv_(b), "impact.csv"), same, (a, b))
+        self.assertFalse(same_file(b"r,v\r\n1,1.0\r\n", b"r,v\r\n1,1.0\r\n23,2.0\r\n", "f.csv"))
+
+    def test_fifty_more_people_in_rigas_impact_table_are_found(self):
+        data = (ROOT / "output" / "cities" / "riga" / "redesign" / "impact.csv").read_bytes()
+        text = data.decode("utf-8-sig")
+        people = next(r["today"] for r in csv.DictReader(io.StringIO(text)) if r["unit"] == "people")   # about 402,000
+        edited = data.replace(people.encode(), f"{Decimal(people) + 50}".encode(), 1)
+        self.assertNotEqual(data, edited)
+        self.assertFalse(same_file(data, edited, "impact.csv"))

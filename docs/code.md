@@ -187,7 +187,9 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
   sorted before results depend on their order; zip files get a fixed timestamp. The same
   inputs give byte-identical outputs on the same Python version. Python 3.12 changed how
   `sum()` adds floats, so Python 3.11 can differ in the last digits; the regression test
-  allows that for CSV and JSON files.
+  and the browser page allow that: JSON numbers to 1e-9, and CSV numbers to one in the last
+  decimal written (the 4th, or a later one where a cell shows more), while whole numbers,
+  such as counts and ids, and text must match exactly.
 - **Output files.** CSVs are written with `utf-8-sig` and floats rounded to 4 decimals;
   JSON keeps non-Latin letters (`ensure_ascii=False`).
 - **Style.** Short docstrings that say what a function returns and why; comments only
