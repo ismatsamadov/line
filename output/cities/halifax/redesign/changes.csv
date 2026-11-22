@@ -1,37 +1,37 @@
 ﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
-1,merge,9A,"Merge 9A into 9B: 97% of its stops are also on 9B; its buses go to 9B, 127, 24",84.1846,83.7738,0.4108,296.1429
-2,merge,6A,"Merge 6A into 6B: 100% of its stops are also on 6B; its buses go to 6C, 6B, 5",83.7738,83.5241,0.2497,0.0
-3,drop,168B,"Drop 168B: among the 20 routes with the fewest modelled riders per bus; its buses go to 168A, 68, 161",83.5241,83.3132,0.2109,0.0
-4,drop,165,"Drop 165: among the 20 routes with the fewest modelled riders per bus; its buses go to 65, 168A, 161",83.3132,83.1266,0.1866,0.0
-5,drop,161,"Drop 161: among the 20 routes with the fewest modelled riders per bus; its buses go to 61, 168A, 159",83.1266,82.8942,0.2324,0.0
-6,drop,168A,"Drop 168A: among the 20 routes with the fewest modelled riders per bus; its buses go to 68, 159, 158",82.8942,82.6017,0.2925,0.0
-7,merge,10B,"Merge 10B into 10C: 100% of its stops are also on 10C; its buses go to 10C, 10A, 1",82.6017,82.4474,0.1543,0.0
-8,drop,159,"Drop 159: among the 20 routes with the fewest modelled riders per bus; its buses go to 59, 158, 138",82.4474,82.3899,0.0575,0.0
-9,drop,123,"Drop 123: among the 20 routes with the fewest modelled riders per bus; its buses go to 21, 127, 9B",82.3899,82.3158,0.074,0.0
-10,drop,186,"Drop 186: among the 20 routes with the fewest modelled riders per bus; its buses go to 86, 182, 185",82.3158,82.2626,0.0532,0.0
-11,straighten,24,"Straighten 24 direction 1 between Ridgevalley Rd After Limerick Rd (8167) and Osborne St Before Sullivan Terr (8578): 1.2 km shorter, 9 of its stops dropped",82.2626,82.2164,0.0462,0.0
-12,drop,136,"Drop 136: among the 20 routes with the fewest modelled riders per bus; its buses go to 138, 137, 39",82.2164,82.1702,0.0463,0.0
-13,straighten,5,"Straighten 5 direction 1 between Barrington St After Cogswell St Bay 3 (6105) and Alderney Dr Before Prince St (6028): 0.6 km shorter, 7 of its stops dropped",82.1702,82.132,0.0381,0.0
-14,straighten,55,"Straighten 55 direction 1 between Bridge Terminal Bay 1 (7601) and Crichton Ave After Oakdale Cr (6530): 1.6 km shorter, 10 of its stops dropped",82.132,82.1069,0.0251,0.0
-15,straighten,72,"Straighten 72 direction 1 between Finlay Dr After Shubie Dr (8855) and Jennett Ave After Guildford Ave (2289): 3.5 km shorter, 7 of its stops dropped",82.1069,82.0819,0.025,0.1429
-16,drop,183,"Drop 183: among the 20 routes with the fewest modelled riders per bus; its buses go to 83, 185, 182",82.0819,82.0567,0.0253,0.0
-17,straighten,24,"Straighten 24 direction 2 between Osborne St After Sullivan Terr (8579) and Ridgevalley Rd Before Bromley Rd (8168): 1.6 km shorter, 9 of its stops dropped",82.0567,82.0398,0.0169,0.0
-18,straighten,4,"Straighten 4 direction 2 between Robie St Before Bliss St (8194) and Lemarchant St Before University Ave (7144): 1.9 km shorter, 9 of its stops dropped",82.0398,82.0199,0.0199,0.0
-19,straighten,61,"Straighten 61 direction 2 between North Preston Rd Before Upper Governor St (7102) and Johnson Rd Before North Preston Rd (7000): 0.9 km shorter, 3 of its stops dropped",82.0199,82.0073,0.0127,51.2857
-20,drop,192,"Drop 192: among the 20 routes with the fewest modelled riders per bus; its buses go to 91, 196, 194",82.0073,81.9926,0.0147,0.0
-21,straighten,10C,"Straighten 10C direction 1 between Lemarchant St Before University Ave (7144) and South Park St Before Spring Garden Rd (8312): 0.7 km shorter, 6 of its stops dropped",81.9926,81.9823,0.0103,0.0
-22,straighten,9B,"Straighten 9B direction 2 between Herring Cove Rd Before Oceanbreeze Ave (6902) and Herring Cove Rd Before Glen Baker Dr (6896): 2.3 km shorter, 8 of its stops dropped",81.9823,81.9407,0.0416,483.8571
-23,straighten,30A,"Straighten 30A direction 1 between Lacewood Terminal Bay 12 (9112) and Parkland Dr After Bethany Way (2188): 1.5 km shorter, 6 of its stops dropped",81.9407,81.9312,0.0095,0.0
-24,drop,158,"Drop 158: among the 20 routes with the fewest modelled riders per bus; its buses go to 58, 138, 137",81.9312,81.8987,0.0326,0.0
-25,drop,194,"Drop 194: among the 20 routes with the fewest modelled riders per bus; its buses go to 90, 196, 185",81.8987,81.8669,0.0318,0.0
-26,drop,135,"Drop 135: among the 20 routes with the fewest modelled riders per bus; its buses go to 138, 4, 3",81.8669,81.8309,0.036,0.0
-27,drop,330B,"Drop 330B: among the 20 routes with the fewest modelled riders per bus; its buses go to 330A, 7A, 433",81.8309,81.8231,0.0078,124.5714
-28,straighten,72,"Straighten 72 direction 2 between Jennett Ave Before Wilkinson Ave (2290) and Commodore Dr Before John Savage (2357): 1.8 km shorter, 6 of its stops dropped",81.8231,81.8128,0.0102,15.4286
-29,straighten,28,"Straighten 28 direction 2 between Lacewood Dr After Stratford Way (7064) and Washmill Lake Dr After Bently Dr (6719): 1.7 km shorter, 10 of its stops dropped",81.8128,81.8029,0.0099,0.0
-30,straighten,91,"Straighten 91 direction 2 between Southgate Dr Before Windstone Cl (2194) and Starboard Dr Before Larry Uteck Blvd (8352): 1.5 km shorter, 9 of its stops dropped",81.8029,81.7955,0.0074,0.0
-31,drop,330A,"Drop 330A: among the 20 routes with the fewest modelled riders per bus; its buses go to 7A, 433, 370",81.7955,81.7663,0.0293,0.0
-32,stops,,"Remove 626 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",81.7663,79.2605,2.5058,0.0
-33,shift,,"Move 16 buses from the 20 routes where a bus saves riders the least waiting (10A, 53, 58, 22, 2, 1, 7B, 7A, 4, 30A, 30B, 29, 24, 90, 10C, 3, 9B, 8, 59, 21) to the 20 where it saves the most (88, 6B, 65, 55, 63, 62, 401, 68, 25, 39, 5, 61, 82, 433, 67, 196, 6C, 86, 51A, 87)",79.2605,77.8965,1.364,0.0
-34,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (58, 2, 88, 1, 59, 65, 7B, 7A, 4, 25) to the 10 where it saves the most (401, 433, 196, 8, 39, 21, 5, 6B, 9B, 63)",77.8965,77.3736,0.5229,0.0
-35,shift,,"Move 5 buses from the 10 routes where a bus saves riders the least waiting (59, 2, 1, 7B, 88, 65, 4, 7A, 86, 29) to the 10 where it saves the most (8, 39, 401, 91, 5, 196, 9B, 433, 68, 21)",77.3736,77.1564,0.2172,0.0
-36,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (61, 1, 4, 7B, 7A) to the 5 where it saves the most (91, 10C, 8, 9B, 5)",77.1564,76.9889,0.1675,0.0
+1,merge,9A,"Merge 9A into 9B: 97% of its stops are also on 9B; its buses go to 9B, 127, 24",84.1768,83.7662,0.4106,296.1429
+2,merge,6A,"Merge 6A into 6B: 100% of its stops are also on 6B; its buses go to 6C, 6B, 5",83.7662,83.5158,0.2503,0.0
+3,drop,168B,"Drop 168B: among the 20 routes with the fewest modelled riders per bus; its buses go to 168A, 68, 161",83.5158,83.3082,0.2076,0.0
+4,drop,165,"Drop 165: among the 20 routes with the fewest modelled riders per bus; its buses go to 65, 168A, 161",83.3082,83.1233,0.1849,0.0
+5,drop,161,"Drop 161: among the 20 routes with the fewest modelled riders per bus; its buses go to 61, 168A, 159",83.1233,82.8912,0.2321,0.0
+6,drop,168A,"Drop 168A: among the 20 routes with the fewest modelled riders per bus; its buses go to 68, 159, 158",82.8912,82.599,0.2922,0.0
+7,merge,10B,"Merge 10B into 10C: 100% of its stops are also on 10C; its buses go to 10C, 10A, 1",82.599,82.4448,0.1543,0.0
+8,drop,159,"Drop 159: among the 20 routes with the fewest modelled riders per bus; its buses go to 59, 158, 138",82.4448,82.3872,0.0575,0.0
+9,drop,123,"Drop 123: among the 20 routes with the fewest modelled riders per bus; its buses go to 21, 127, 9B",82.3872,82.3128,0.0744,0.0
+10,drop,186,"Drop 186: among the 20 routes with the fewest modelled riders per bus; its buses go to 86, 182, 185",82.3128,82.2596,0.0533,0.0
+11,straighten,24,"Straighten 24 direction 1 between Ridgevalley Rd After Limerick Rd (8167) and Osborne St Before Sullivan Terr (8578): 1.2 km shorter, 9 of its stops dropped",82.2596,82.2134,0.0461,0.0
+12,drop,136,"Drop 136: among the 20 routes with the fewest modelled riders per bus; its buses go to 138, 137, 39",82.2134,82.167,0.0464,0.0
+13,straighten,55,"Straighten 55 direction 1 between Bridge Terminal Bay 1 (7601) and Crichton Ave After Oakdale Cr (6530): 1.6 km shorter, 10 of its stops dropped",82.167,82.1418,0.0252,0.0
+14,straighten,5,"Straighten 5 direction 1 between Barrington St After Cogswell St Bay 3 (6105) and Alderney Dr Before Prince St (6028): 0.6 km shorter, 7 of its stops dropped",82.1418,82.1038,0.038,0.0
+15,straighten,72,"Straighten 72 direction 1 between Finlay Dr After Shubie Dr (8855) and Jennett Ave After Guildford Ave (2289): 3.5 km shorter, 7 of its stops dropped",82.1038,82.0788,0.025,0.1429
+16,drop,183,"Drop 183: among the 20 routes with the fewest modelled riders per bus; its buses go to 83, 185, 182",82.0788,82.0536,0.0253,0.0
+17,straighten,24,"Straighten 24 direction 2 between Osborne St After Sullivan Terr (8579) and Ridgevalley Rd Before Bromley Rd (8168): 1.6 km shorter, 9 of its stops dropped",82.0536,82.0366,0.017,0.0
+18,straighten,4,"Straighten 4 direction 2 between Robie St Before Bliss St (8194) and Lemarchant St Before University Ave (7144): 1.9 km shorter, 9 of its stops dropped",82.0366,82.0167,0.0199,0.0
+19,straighten,61,"Straighten 61 direction 2 between North Preston Rd Before Upper Governor St (7102) and Johnson Rd Before North Preston Rd (7000): 0.9 km shorter, 3 of its stops dropped",82.0167,82.004,0.0126,51.2857
+20,drop,192,"Drop 192: among the 20 routes with the fewest modelled riders per bus; its buses go to 91, 196, 194",82.004,81.9894,0.0147,0.0
+21,straighten,10C,"Straighten 10C direction 1 between Lemarchant St Before University Ave (7144) and South Park St Before Spring Garden Rd (8312): 0.7 km shorter, 6 of its stops dropped",81.9894,81.9791,0.0103,0.0
+22,straighten,9B,"Straighten 9B direction 2 between Herring Cove Rd Before Oceanbreeze Ave (6902) and Herring Cove Rd Before Glen Baker Dr (6896): 2.3 km shorter, 8 of its stops dropped",81.9791,81.9374,0.0417,483.8571
+23,straighten,30A,"Straighten 30A direction 1 between Lacewood Terminal Bay 12 (9112) and Parkland Dr After Bethany Way (2188): 1.5 km shorter, 6 of its stops dropped",81.9374,81.9279,0.0095,0.0
+24,drop,158,"Drop 158: among the 20 routes with the fewest modelled riders per bus; its buses go to 58, 138, 137",81.9279,81.8953,0.0326,0.0
+25,drop,194,"Drop 194: among the 20 routes with the fewest modelled riders per bus; its buses go to 90, 196, 185",81.8953,81.8632,0.0321,0.0
+26,drop,135,"Drop 135: among the 20 routes with the fewest modelled riders per bus; its buses go to 138, 4, 3",81.8632,81.8273,0.0359,0.0
+27,straighten,72,"Straighten 72 direction 2 between Jennett Ave Before Wilkinson Ave (2290) and Commodore Dr Before John Savage (2357): 1.8 km shorter, 6 of its stops dropped",81.8273,81.817,0.0102,15.4286
+28,drop,330B,"Drop 330B: among the 20 routes with the fewest modelled riders per bus; its buses go to 330A, 7A, 433",81.817,81.8092,0.0078,124.5714
+29,straighten,28,"Straighten 28 direction 2 between Lacewood Dr After Stratford Way (7064) and Washmill Lake Dr After Bently Dr (6719): 1.7 km shorter, 10 of its stops dropped",81.8092,81.7993,0.0099,0.0
+30,straighten,91,"Straighten 91 direction 2 between Southgate Dr Before Windstone Cl (2194) and Starboard Dr Before Larry Uteck Blvd (8352): 1.5 km shorter, 9 of its stops dropped",81.7993,81.7919,0.0074,0.0
+31,drop,330A,"Drop 330A: among the 20 routes with the fewest modelled riders per bus; its buses go to 7A, 433, 370",81.7919,81.7626,0.0293,0.0
+32,stops,,"Remove 626 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",81.7626,79.2587,2.5039,0.0
+33,shift,,"Move 16 buses from the 20 routes where a bus saves riders the least waiting (10A, 53, 58, 22, 2, 1, 7B, 7A, 4, 30A, 30B, 29, 24, 10C, 90, 3, 9B, 8, 59, 21) to the 20 where it saves the most (88, 6B, 65, 55, 63, 62, 401, 68, 25, 39, 5, 61, 82, 433, 67, 196, 6C, 86, 51A, 87)",79.2587,77.8939,1.3648,0.0
+34,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (58, 2, 88, 1, 59, 65, 7B, 7A, 4, 25) to the 10 where it saves the most (401, 433, 196, 8, 39, 21, 5, 6B, 9B, 63)",77.8939,77.3719,0.5219,0.0
+35,shift,,"Move 5 buses from the 10 routes where a bus saves riders the least waiting (59, 2, 1, 7B, 88, 65, 4, 86, 7A, 29) to the 10 where it saves the most (8, 39, 401, 91, 5, 196, 9B, 433, 68, 21)",77.3719,77.1551,0.2168,0.0
+36,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (61, 1, 4, 7B, 7A) to the 5 where it saves the most (91, 10C, 8, 9B, 5)",77.1551,76.9881,0.167,0.0

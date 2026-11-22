@@ -1,46 +1,46 @@
 ﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
-1,merge,SH085,"Merge SH085 into AB100: 95% of its stops are also on AB100; its buses go to AB100, SH069, AB065",97.1342,97.0323,0.1019,0.0
-2,merge,SH081,"Merge SH081 into AB130: 100% of its stops are also on AB130; its buses go to AB130, A24, AB070",97.0323,96.938,0.0943,0.0
-3,drop,AB045,"Drop AB045: among the 20 routes with the fewest modelled riders per bus; its buses go to AB006, AB020, AB030",96.938,96.8469,0.0911,0.0
-4,merge,AB018,"Merge AB018 into SH076: 100% of its stops are also on SH076; its buses go to SH076, AB021, AB087",96.8469,96.7737,0.0731,0.0
-5,merge,AB122,"Merge AB122 into AB017: 88% of its stops are also on AB017; its buses go to AB017, AB031, AB056",96.7737,96.6987,0.0751,0.0
-6,merge,SH070,"Merge SH070 into AB128: 100% of its stops are also on AB128; its buses go to AB128, C51, AB129",96.6987,96.6358,0.0629,0.0
-7,merge,SH099,"Merge SH099 into AB048: 90% of its stops are also on AB048; its buses go to AB048, AB014, SH079",96.6358,96.5757,0.0601,0.0
-8,merge,SH080,"Merge SH080 into AB112: 100% of its stops are also on AB112; its buses go to AB112, SH103, AB023",96.5757,96.5293,0.0463,0.0
-9,merge,SH087,"Merge SH087 into A08: 100% of its stops are also on A08; its buses go to SH073, A08, AB012",96.5293,96.4863,0.0431,0.0
-10,drop,SH012,"Drop SH012: among the 20 routes with the fewest modelled riders per bus; its buses go to B22, AB081, AB019",96.4863,96.4456,0.0407,0.0
-11,merge,SH096,"Merge SH096 into AB076: 100% of its stops are also on AB076; its buses go to AB076, SH089, AB125",96.4456,96.4039,0.0417,0.0
-12,drop,A18,"Drop A18: among the 20 routes with the fewest modelled riders per bus; its buses go to SH105, AB103, AB107",96.4039,96.3657,0.0382,0.0
-13,drop,SH028,"Drop SH028: among the 20 routes with the fewest modelled riders per bus; its buses go to AB110, SH016, AB056",96.3657,96.3348,0.031,0.0
-14,merge,SH078,"Merge SH078 into AB042: 100% of its stops are also on AB042; its buses go to AB042, D26, AB119",96.3348,96.2956,0.0392,0.0
-15,merge,SH082,"Merge SH082 into AB093: 92% of its stops are also on AB093; its buses go to AB093, AB014, SH089",96.2956,96.2771,0.0185,0.0
-16,drop,A01,"Drop A01: among the 20 routes with the fewest modelled riders per bus; its buses go to AB031, AB110, AB055",96.2771,96.2547,0.0223,0.0
-17,merge,AB121,"Merge AB121 into AB106: 91% of its stops are also on AB106; its buses go to AB106, AB027, AB117",96.2547,96.2184,0.0363,0.0
-18,drop,C14,"Drop C14: among the 20 routes with the fewest modelled riders per bus; its buses go to AB081, AB019, AB111",96.2184,96.1842,0.0342,0.0
-19,merge,SH089,"Merge SH089 into AB125: 100% of its stops are also on AB125; its buses go to AB125, AB076, SH092",96.1842,96.16,0.0242,0.0
-20,merge,AB036,"Merge AB036 into AB062: 100% of its stops are also on AB062; its buses go to AB062, AB026, AB090",96.16,96.1333,0.0267,0.0
-21,merge,D52,"Merge D52 into AB113: 92% of its stops are also on AB113; its buses go to AB113, D26, SH077",96.1333,96.1053,0.028,438.7143
-22,merge,AB109,"Merge AB109 into AB110: 88% of its stops are also on AB110; its buses go to AB110, SH093, AB098",96.1053,96.0896,0.0156,0.0
-23,drop,SH035,"Drop SH035: among the 20 routes with the fewest modelled riders per bus; its buses go to AB080, AB083, AB023",96.0896,96.0708,0.0188,0.0
-24,merge,AB129,"Merge AB129 into C51: 97% of its stops are also on C51; its buses go to C51, AB040, AB089",96.0708,96.0446,0.0263,0.0
-25,merge,B35B,"Merge B35B into B35: 100% of its stops are also on B35; its buses go to AB118, B35, AB085",96.0446,96.0254,0.0192,0.0
-26,merge,AB086,"Merge AB086 into B40: 93% of its stops are also on B40; its buses go to B40, AB117, AB076",96.0254,96.0128,0.0127,0.0
-27,merge,AB102,"Merge AB102 into AB057: 93% of its stops are also on AB057; its buses go to AB057, AB032, AB128",96.0128,95.9914,0.0213,0.0
-28,merge,B35,"Merge B35 into AB118: 88% of its stops are also on AB118; its buses go to AB118, AB085, AB021",95.9914,95.9701,0.0214,0.0
-29,merge,AB082,"Merge AB082 into D26: 92% of its stops are also on D26; its buses go to D26, AB113, AB042",95.9701,95.9519,0.0182,0.0
-30,drop,A02,"Drop A02: among the 20 routes with the fewest modelled riders per bus; its buses go to AB067, SH105, AB103",95.9519,95.9373,0.0146,0.0
-31,drop,AB028,"Drop AB028: among the 20 routes with the fewest modelled riders per bus; its buses go to AB024, AB043, AB019",95.9373,95.9101,0.0272,0.0
-32,drop,A24,"Drop A24: among the 20 routes with the fewest modelled riders per bus; its buses go to AB130, SH067, AB078",95.9101,95.8806,0.0295,0.0
-33,merge,A08,"Merge A08 into SH073: 100% of its stops are also on SH073; its buses go to SH073, AB012, AB064",95.8806,95.8529,0.0276,0.0
-34,merge,D23,"Merge D23 into SH066: 100% of its stops are also on SH066; its buses go to SH066, AB097, SH067",95.8529,95.8468,0.0062,0.0
-35,merge,D25,"Merge D25 into AB119: 96% of its stops are also on AB119; its buses go to AB119, AB079, AB011",95.8468,95.8399,0.0069,0.0
-36,drop,SH009,"Drop SH009: among the 20 routes with the fewest modelled riders per bus; its buses go to AB091, AB026, AB066",95.8399,95.8331,0.0068,0.0
-37,drop,AB058,"Drop AB058: among the 20 routes with the fewest modelled riders per bus; its buses go to AB090, AB070, AB065",95.8331,95.8235,0.0096,0.0
-38,drop,AB006,"Drop AB006: among the 20 routes with the fewest modelled riders per bus; its buses go to C50, AB104, C15",95.8235,95.8155,0.008,0.0
-39,drop,AB010,"Drop AB010: among the 20 routes with the fewest modelled riders per bus; its buses go to AB040, C51, AB089",95.8155,95.8029,0.0126,0.0
-40,straighten,SH076,"Straighten SH076 direction 2 between Keranio Bridge and Degu Hotel: 0.6 km shorter, 0 of its stops dropped",95.8029,95.7969,0.006,0.0
-41,drop,C50,"Drop C50: among the 20 routes with the fewest modelled riders per bus; its buses go to AB104, C15, AB037",95.7969,95.7836,0.0133,0.0
-42,shift,,"Move 54 buses from the 20 routes where a bus saves riders the least waiting (SH074, AB120, C15, AB095, AB111, SH097, SH092, AB093, AB080, AB103, SH072, AB011, AB020, AB117, AB124, AB042, AB015, AB040, SH091, AB076) to the 20 where it saves the most (AB030, SH010, AB123, AB073, AB007, AB100, AB081, SH073, SH076, AB023, B19, AB019, AB054, AB008, AB056, SH077, AB062, AB071, AB053, AB017)",95.7836,94.1842,1.5994,0.0
-43,shift,,"Move 41 buses from the 20 routes where a bus saves riders the least waiting (AB020, SH103, SH072, SH074, AB040, SH097, AB044, AB111, AB120, AB001, AB015, AB080, AB103, AB095, AB093, AB117, SH092, AB016, SH079, AB011) to the 20 where it saves the most (AB071, AB007, AB062, B19, AB030, AB081, AB123, AB073, AB009, SH105, AB100, AB056, AB019, AB130, SH010, AB052, SH069, SH076, SH077, AB054)",94.1842,93.4793,0.7049,0.0
-44,shift,,"Move 36 buses from the 20 routes where a bus saves riders the least waiting (AB111, AB011, AB020, AB040, SH103, SH079, AB001, AB044, AB103, AB080, AB093, AB095, SH092, AB016, SH095, AB104, AB042, AB078, AB031, AB090) to the 20 where it saves the most (AB071, B19, AB081, AB062, AB030, AB123, SH105, AB073, AB007, AB094, AB025, AB131, AB008, AB130, AB023, AB017, AB041, AB019, AB100, AB056)",93.4793,93.0574,0.4219,0.0
-45,shift,,"Move 36 buses from the 20 routes where a bus saves riders the least waiting (AB040, SH103, SH079, SH095, AB093, SH092, AB095, AB104, SH086, AB002, AB112, AB124, AB046, AB089, AB031, AB059, AB026, AB013, AB078, SH075) to the 20 where it saves the most (B19, AB019, AB071, AB131, AB062, AB030, AB123, SH105, AB081, AB073, AB009, AB014, SH077, B22, AB007, AB052, AB130, SH076, D26, SH073)",93.0574,92.7444,0.3129,0.0
+1,merge,SH085,"Merge SH085 into AB100: 95% of its stops are also on AB100; its buses go to AB100, SH069, AB065",97.1316,97.0299,0.1017,0.0
+2,merge,SH081,"Merge SH081 into AB130: 100% of its stops are also on AB130; its buses go to AB130, A24, AB070",97.0299,96.9357,0.0942,0.0
+3,drop,AB045,"Drop AB045: among the 20 routes with the fewest modelled riders per bus; its buses go to AB006, AB020, AB030",96.9357,96.8444,0.0912,0.0
+4,merge,AB018,"Merge AB018 into SH076: 100% of its stops are also on SH076; its buses go to SH076, AB021, AB087",96.8444,96.7712,0.0732,0.0
+5,merge,AB122,"Merge AB122 into AB017: 88% of its stops are also on AB017; its buses go to AB017, AB031, AB056",96.7712,96.6962,0.0751,0.0
+6,merge,SH070,"Merge SH070 into AB128: 100% of its stops are also on AB128; its buses go to AB128, C51, AB129",96.6962,96.6333,0.0628,0.0
+7,merge,SH099,"Merge SH099 into AB048: 90% of its stops are also on AB048; its buses go to AB048, AB014, SH079",96.6333,96.5733,0.0601,0.0
+8,merge,SH080,"Merge SH080 into AB112: 100% of its stops are also on AB112; its buses go to AB112, SH103, AB023",96.5733,96.5272,0.0461,0.0
+9,merge,SH087,"Merge SH087 into A08: 100% of its stops are also on A08; its buses go to SH073, A08, AB012",96.5272,96.4841,0.0431,0.0
+10,drop,SH012,"Drop SH012: among the 20 routes with the fewest modelled riders per bus; its buses go to B22, AB081, AB019",96.4841,96.4433,0.0407,0.0
+11,drop,A18,"Drop A18: among the 20 routes with the fewest modelled riders per bus; its buses go to SH105, AB103, AB107",96.4433,96.4051,0.0383,0.0
+12,merge,SH096,"Merge SH096 into AB076: 100% of its stops are also on AB076; its buses go to AB076, SH089, AB125",96.4051,96.3634,0.0416,0.0
+13,drop,SH028,"Drop SH028: among the 20 routes with the fewest modelled riders per bus; its buses go to AB110, SH016, AB056",96.3634,96.3323,0.0311,0.0
+14,merge,SH078,"Merge SH078 into AB042: 100% of its stops are also on AB042; its buses go to AB042, D26, AB119",96.3323,96.2933,0.0391,0.0
+15,merge,SH082,"Merge SH082 into AB093: 92% of its stops are also on AB093; its buses go to AB093, AB014, SH089",96.2933,96.2747,0.0186,0.0
+16,drop,A01,"Drop A01: among the 20 routes with the fewest modelled riders per bus; its buses go to AB031, AB110, AB055",96.2747,96.2524,0.0223,0.0
+17,merge,AB121,"Merge AB121 into AB106: 91% of its stops are also on AB106; its buses go to AB106, AB027, AB117",96.2524,96.2162,0.0362,0.0
+18,drop,C14,"Drop C14: among the 20 routes with the fewest modelled riders per bus; its buses go to AB081, AB019, AB111",96.2162,96.1821,0.0341,0.0
+19,merge,SH089,"Merge SH089 into AB125: 100% of its stops are also on AB125; its buses go to AB125, AB076, SH092",96.1821,96.1579,0.0242,0.0
+20,merge,AB036,"Merge AB036 into AB062: 100% of its stops are also on AB062; its buses go to AB062, AB026, AB090",96.1579,96.1315,0.0265,0.0
+21,merge,D52,"Merge D52 into AB113: 92% of its stops are also on AB113; its buses go to AB113, D26, SH077",96.1315,96.1037,0.0277,438.7143
+22,merge,AB109,"Merge AB109 into AB110: 88% of its stops are also on AB110; its buses go to AB110, SH093, AB098",96.1037,96.0879,0.0158,0.0
+23,drop,SH035,"Drop SH035: among the 20 routes with the fewest modelled riders per bus; its buses go to AB080, AB083, AB023",96.0879,96.0691,0.0188,0.0
+24,merge,AB129,"Merge AB129 into C51: 97% of its stops are also on C51; its buses go to C51, AB040, AB089",96.0691,96.0429,0.0262,0.0
+25,merge,B35B,"Merge B35B into B35: 100% of its stops are also on B35; its buses go to AB118, B35, AB085",96.0429,96.0237,0.0192,0.0
+26,merge,AB086,"Merge AB086 into B40: 93% of its stops are also on B40; its buses go to B40, AB117, AB076",96.0237,96.0109,0.0128,0.0
+27,merge,AB102,"Merge AB102 into AB057: 93% of its stops are also on AB057; its buses go to AB057, AB032, AB128",96.0109,95.9896,0.0214,0.0
+28,merge,B35,"Merge B35 into AB118: 88% of its stops are also on AB118; its buses go to AB118, AB085, AB021",95.9896,95.9682,0.0213,0.0
+29,drop,A02,"Drop A02: among the 20 routes with the fewest modelled riders per bus; its buses go to AB067, SH105, AB103",95.9682,95.9535,0.0147,0.0
+30,merge,AB082,"Merge AB082 into D26: 92% of its stops are also on D26; its buses go to D26, AB113, AB042",95.9535,95.9353,0.0183,0.0
+31,drop,AB028,"Drop AB028: among the 20 routes with the fewest modelled riders per bus; its buses go to AB024, AB043, AB019",95.9353,95.9081,0.0272,0.0
+32,drop,A24,"Drop A24: among the 20 routes with the fewest modelled riders per bus; its buses go to AB130, SH067, AB078",95.9081,95.8786,0.0294,0.0
+33,merge,A08,"Merge A08 into SH073: 100% of its stops are also on SH073; its buses go to SH073, AB012, AB064",95.8786,95.851,0.0277,0.0
+34,merge,D23,"Merge D23 into SH066: 100% of its stops are also on SH066; its buses go to SH066, AB097, SH067",95.851,95.8449,0.0061,0.0
+35,merge,D25,"Merge D25 into AB119: 96% of its stops are also on AB119; its buses go to AB119, AB079, AB011",95.8449,95.8379,0.0069,0.0
+36,drop,SH009,"Drop SH009: among the 20 routes with the fewest modelled riders per bus; its buses go to AB091, AB026, AB066",95.8379,95.8311,0.0068,0.0
+37,drop,AB058,"Drop AB058: among the 20 routes with the fewest modelled riders per bus; its buses go to AB090, AB070, AB065",95.8311,95.8216,0.0095,0.0
+38,drop,AB006,"Drop AB006: among the 20 routes with the fewest modelled riders per bus; its buses go to C50, AB104, C15",95.8216,95.8136,0.008,0.0
+39,drop,AB010,"Drop AB010: among the 20 routes with the fewest modelled riders per bus; its buses go to AB040, C51, AB089",95.8136,95.8011,0.0125,0.0
+40,straighten,SH076,"Straighten SH076 direction 2 between Keranio Bridge and Degu Hotel: 0.6 km shorter, 0 of its stops dropped",95.8011,95.7951,0.006,0.0
+41,drop,C50,"Drop C50: among the 20 routes with the fewest modelled riders per bus; its buses go to AB104, C15, AB037",95.7951,95.7819,0.0132,0.0
+42,shift,,"Move 54 buses from the 20 routes where a bus saves riders the least waiting (SH074, AB120, C15, AB095, AB111, SH097, SH092, AB093, AB080, AB103, SH072, AB011, AB020, AB117, AB124, AB042, AB015, AB040, SH091, AB076) to the 20 where it saves the most (AB030, SH010, AB123, AB007, AB073, AB100, AB081, SH073, SH076, AB023, B19, AB019, AB054, AB008, SH077, AB056, AB062, AB071, AB053, AB017)",95.7819,94.1818,1.6001,0.0
+43,shift,,"Move 41 buses from the 20 routes where a bus saves riders the least waiting (AB020, SH103, SH072, SH074, AB040, SH097, AB044, AB111, AB120, AB001, AB015, AB080, AB103, AB095, AB093, AB117, SH092, AB016, SH079, AB011) to the 20 where it saves the most (AB071, AB007, AB062, B19, AB030, AB081, AB123, AB073, AB009, SH105, AB100, AB056, AB019, AB130, SH010, AB052, SH069, SH076, SH077, AB054)",94.1818,93.4785,0.7033,0.0
+44,shift,,"Move 36 buses from the 20 routes where a bus saves riders the least waiting (AB111, AB011, AB020, AB040, SH103, SH079, AB001, AB044, AB103, AB080, AB093, AB095, SH092, AB016, SH095, AB104, AB042, AB031, AB078, AB090) to the 20 where it saves the most (AB071, B19, AB081, AB062, AB030, AB123, SH105, AB073, AB007, AB094, AB025, AB131, AB008, AB130, AB023, AB041, AB017, AB019, AB056, AB100)",93.4785,93.0563,0.4222,0.0
+45,shift,,"Move 36 buses from the 20 routes where a bus saves riders the least waiting (AB040, SH103, SH079, SH095, AB093, SH092, AB095, AB104, SH086, AB002, AB112, AB046, AB124, AB089, AB031, AB059, AB026, AB013, AB078, SH075) to the 20 where it saves the most (B19, AB019, AB071, AB131, AB062, AB030, AB123, SH105, AB081, AB073, AB009, AB014, SH077, B22, AB007, AB052, AB130, SH076, D26, SH073)",93.0563,92.7429,0.3133,0.0

@@ -120,9 +120,10 @@ routes, stops and patterns from it, for one service day:
 The flat projection (section 2) moves to the median of the feed's stops. Read back, the
 feed `redesign.py` writes for Baku gives the same 201 routes, 402 directions and 3,456
 stops, headways within 0.2% and speeds equal to the zone speeds. Every network-wide
-figure in `network.json` is within 0.1% of the snapshot's: 51.84 against 51.82 minutes
-door to door, and the same 2,015 buses. The one exception is the small share of trips
-with three or more changes (1.43% against 1.45%). Two directions out of 402 change length
+figure in `network.json` is within 0.1% of the snapshot's: 51.96 against 51.93 minutes
+door to door, and the same 2,015 buses. The exceptions are two small shares: trips with
+three or more changes (1.48% against 1.50%), and stop gaps under 200 m (5.42% in both,
+0.2% apart, since stops.txt rounds each position to six decimals). Two directions out of 402 change length
 by more than 1%. On direction 1 of route 525 the reader matches one stop to a different
 pass of the line than the snapshot does, and the direction comes out 21% shorter. Where a
 line passes a stop twice, matching alone cannot tell which pass the bus stops on. The

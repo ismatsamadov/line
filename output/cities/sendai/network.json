@@ -20,18 +20,18 @@
   "share_population_covered": 0.5466370737008884,
   "accessibility": {
    "origins_sampled": 300,
-   "mean_door_to_door_min": 61.59370742380724,
-   "share_reachable": 0.2751948356503551,
+   "mean_door_to_door_min": 62.13518275648932,
+   "share_reachable": 0.27783885633035177,
    "share_within_30_min": 0.07946664112440753,
    "share_within_45_min": 0.11064880336604964,
    "share_within_60_min": 0.12833179196446648,
    "share_trips_without_stop_nearby": 0.5483273243194537,
    "mean_trip_km_straight_line": 6.966057114213187,
    "transfers": {
-    "0": 0.1990479664301151,
-    "1": 0.41855849510756404,
-    "2": 0.032028583063029685,
-    "walk only": 0.35036495539928864
+    "0": 0.1973350881732693,
+    "1": 0.4205398759557973,
+    "2": 0.03509428721240324,
+    "walk only": 0.3470307486585282
    }
   },
   "operations": {

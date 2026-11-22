@@ -1,51 +1,51 @@
 ﻿route,direction,from_stop,to_stop,stops_inside,inside_stops_only_this_route,along_km,straight_km,excess_km,extra_min_per_trip,population_only_this_route
-100,1,Ilam Rd near Kirkwood Ave,Idris Rd near Fendalton Rd,11,1,5.2602,1.9936,3.2666,11.5065,0
-100,2,Straven Rd near Rochdale St,Riccarton Rd near Middleton Rd,11,0,5.3127,2.0723,3.2404,11.4435,0
-107,1,Saracen Ave near Handel Cl,Veitches Rd near Northfield Rd,7,6,6.0608,2.3514,3.7093,11.2358,1850.2857
-110,2,The Palms (Golf Links Rd),Avondale Rd near Woolley St,3,0,4.6621,1.7652,2.8969,7.9526,0
-120,1,Sheffield Cres,Cranbrook Ave near Glencoe St,11,7,3.9643,1.5623,2.402,9.4314,888.0
-120,1,Brougham St near Kipling St,Barrington Mall,11,7,4.4982,1.0177,3.4806,12.0201,1051.8571
-120,2,Barrington Mall (Athelstan St),Barrington St near Bewdley St,6,4,2.6691,0.8077,1.8614,6.4675,729.8571
-120,2,Barrington St near Bewdley St,Whiteleigh Ave near Barrington St,11,8,4.2852,0.9104,3.3748,11.7661,839.7143
-120,2,Teesdale St near Tay St,Sheffield Cres,6,5,2.6168,0.978,1.6388,5.9331,0
-125,1,Harewood Rd near Cotswold Ave,Withells Rd near Avonhead Rd,11,3,7.5925,2.8012,4.7913,15.1657,524.2857
-125,1,Westlake Dr near Lancewood Dr,Halswell Rd near Nicholls Rd,11,5,4.0668,1.3399,2.7269,10.2113,528.0
-125,2,Halswell Shops,Patterson Tce near Brigham Dr,11,4,4.2052,1.0827,3.1224,11.1605,264.0
-125,2,Withells Rd near Avonhead Rd,Harewood Rd near Cotswold Ave,11,2,7.5341,2.8201,4.714,14.9803,524.2857
-130,1,Grahams Rd near Powell Cres,Solway Ave near Glenside Ave,11,10,4.4413,1.1646,3.2767,11.5308,2757.8571
-130,1,Kotare St near Medbury Tce,Riccarton Rd near Shand Cres,11,8,4.1195,0.9559,3.1636,11.2594,727.0
-130,1,Buchanans Rd near Dumfries Dr,The Hub Hornby,11,8,3.7161,1.3337,2.3824,9.3844,2498.8571
-130,2,Riccarton Rd near Paeroa St,Kotare St near Roa Rd,11,7,3.9307,1.0165,2.9141,10.6605,727.0
-130,2,Solway Ave near Glenside Ave,Merrin St near Farndale Pl,11,10,3.9762,1.2659,2.7102,10.1712,2656.8571
-135,1,Marshland Rd,Burwood Hospital - Mairehau Rd,11,10,8.7749,2.1715,6.6034,19.5148,1128.1429
-135,1,Mairehau Rd near Medina Cres,Effingham St near Monowai Cres,7,2,3.5874,1.3853,2.2021,7.6184,0
-135,2,Effingham St near Monowai Cres,Mairehau Rd near Tapiri St,6,2,3.7041,1.4424,2.2617,7.428,0
-135,2,Burwood Rd,Marshland Rd near Cotton St,11,11,8.7795,2.2496,6.53,19.3386,1073.2857
-140,1,Soleares Ave near Valencia Ln,Major Hornbrook Rd near Billys Trk,11,11,3.0978,0.4025,2.6953,10.1354,1786.5714
-140,2,Major Hornbrook Rd near Billys Trk,Soleares Ave near Cadiz Ln,11,11,3.1979,0.3763,2.8216,10.4386,1555.5714
-155,1,Eastgate Mall (Buckleys Rd),Radley St near Tavender St,11,8,6.7742,1.9927,4.7815,15.1422,2145.1429
-155,2,Ferry Rd near Alport Place,Hay St near Kuaka Cres,11,11,6.0914,2.2011,3.8902,13.0032,2253.2857
-1,1,Rangiora (Ashley St),Central Park and Ride (White St),11,9,6.4568,0.8931,5.5637,17.0197,0
-1,2,Cashmere,Colombo St near Woodbridge Rd,11,6,4.0149,1.5846,2.4304,9.4995,0
-1 (Princess Margaret Hospital & Cashmere),1,Colombo St near Thorrington Rd,Hackthorne Rd near Westenra Tce,11,6,3.917,1.5432,2.3737,9.3636,236.8571
-1 (Princess Margaret Hospital & Cashmere),2,Central Park and Ride (White St),Rangiora (Ashley St),11,9,6.4312,0.919,5.5122,16.8959,0
-27,1,Highsted Rd,Harewood Rd near Wilmot St,9,2,3.4655,1.3352,2.1303,8.1127,160.8571
-27,2,Harewood Rd near Wilmot St,Highsted Rd,8,2,3.376,1.2961,2.08,7.6586,160.8571
-44,1,Emmett St near Jebson St,Flockton St near Archer St,11,8,3.1263,0.9334,2.1929,8.9297,1215.8571
-44,2,Sedgwick Way near Woodside Common,Hoon Hay Rd near Cashmere Rd,11,11,3.6218,1.0805,2.5413,9.7659,1918.0
-44,2,Flockton St near Archer St,Emmett St near Jebson St,11,8,3.1301,0.9561,2.1739,8.8841,1478.5714
-5 (branch 1),1,Brookside Rd near Stonebrook Dr,Rolleston (Kidman St),9,4,4.0733,1.6236,2.4497,8.8792,887.4286
-5 (branch 1),2,Jones Rd near Hoskyns Rd,Rolleston Dr near Othello Dr,8,4,4.464,1.7136,2.7504,9.2676,887.4286
-7,1,Queenspark Dr near Brentwood St,Burwood Rd near Clarevale St,9,6,4.2943,1.7064,2.5879,9.2109,1615.0
-7,2,Mairehau Rd near Royal Pk Dr,Queenspark,8,8,2.8266,1.0749,1.7518,6.8709,2050.1429
-80,1,Bower Ave near Dick Taylor Dr,Queenspark Dr near Chadbury St,11,8,4.9028,1.2757,3.6272,12.3719,2627.2857
-80,2,Queenspark Dr near Inwoods Rd,Bower Ave near Pinewood Ave,11,9,4.9395,1.3367,3.6028,12.3134,2627.2857
-820,1,Izone Dr,Tennyson St near Markham Way,2,1,3.0562,1.1316,1.9246,5.2857,81.8571
-820,1,Tennyson St near Michelangelo Dr,Lady Isaac Dr near Jean Batten Ln,10,5,7.3053,2.6053,4.7,14.6133,1131.8571
-820,2,Faringdon Boulevard near Broomfield Dr,Izone Dr,9,5,8.6751,3.0762,5.5989,16.4374,1032.2857
-84,1,Brookside Rd near Stonebrook Dr,Tennyson St near Michelangelo Dr,5,0,6.5155,1.3419,5.1736,14.0832,0
-84,2,Tennyson St near Michelangelo Dr,Rolleston Dr near Renoir Dr,7,0,7.5137,0.8035,6.7102,18.4378,0
-85,1,Lincoln Rolleston Rd near Reuben Ave,Faringdon Blvd near Dynes Road,5,0,6.3992,1.8253,4.5739,12.644,0
-85,2,Tennyson St near Michelangelo Dr,Lincoln Rolleston Rd near Reuben Ave,6,0,9.0901,1.1609,7.9292,21.0301,0
-Oa,1,Frankleigh St near Alvarez Pl,Cashmere Rd,11,4,3.9963,1.204,2.7923,10.3681,0
-Oc,1,Cashmere Rd,Frankleigh St near Alvarez Pl,11,4,3.8691,1.2704,2.5987,9.9035,0
+100,1,Ilam Rd near Kirkwood Ave,Idris Rd near Fendalton Rd,11,1,5.2602,1.9936,3.2666,9.4752,0
+100,2,Straven Rd near Rochdale St,Riccarton Rd near Middleton Rd,11,0,5.3127,2.0723,3.2404,9.4285,0
+107,1,Saracen Ave near Handel Cl,Veitches Rd near Northfield Rd,7,6,6.0608,2.3514,3.7093,7.8633,1850.2857
+110,2,The Palms (Golf Links Rd),Avondale Rd near Woolley St,3,0,4.6621,1.7652,2.8969,5.8759,0
+120,1,Sheffield Cres,Cranbrook Ave near Glencoe St,11,7,3.9643,1.5623,2.402,7.4668,888.0
+120,1,Brougham St near Kipling St,Barrington Mall,11,7,4.4982,1.0177,3.4806,9.1732,1051.8571
+120,2,Barrington Mall (Athelstan St),Barrington St near Bewdley St,6,4,2.6691,0.8077,1.8614,4.945,729.8571
+120,2,Barrington St near Bewdley St,Whiteleigh Ave near Barrington St,11,8,4.2852,0.9104,3.3748,9.0058,839.7143
+120,2,Teesdale St near Tay St,Sheffield Cres,6,5,2.6168,0.978,1.6388,4.5927,0
+125,1,Harewood Rd near Cotswold Ave,Withells Rd near Avonhead Rd,11,3,7.5925,2.8012,4.7913,10.6338,524.2857
+125,1,Westlake Dr near Lancewood Dr,Halswell Rd near Nicholls Rd,11,5,4.0668,1.3399,2.7269,7.632,528.0
+125,2,Halswell Shops,Patterson Tce near Brigham Dr,11,4,4.2052,1.0827,3.1224,8.2071,264.0
+125,2,Withells Rd near Avonhead Rd,Harewood Rd near Cotswold Ave,11,2,7.5341,2.8201,4.714,10.5215,524.2857
+130,1,Grahams Rd near Powell Cres,Solway Ave near Glenside Ave,11,10,4.4413,1.1646,3.2767,8.9473,2757.8571
+130,1,Kotare St near Medbury Tce,Riccarton Rd near Shand Cres,11,8,4.1195,0.9559,3.1636,8.765,727.0
+130,1,Buchanans Rd near Dumfries Dr,The Hub Hornby,11,8,3.7161,1.3337,2.3824,7.506,2498.8571
+130,2,Riccarton Rd near Paeroa St,Kotare St near Roa Rd,11,7,3.9307,1.0165,2.9141,8.3629,727.0
+130,2,Solway Ave near Glenside Ave,Merrin St near Farndale Pl,11,10,3.9762,1.2659,2.7102,8.0343,2656.8571
+135,1,Marshland Rd,Burwood Hospital - Mairehau Rd,11,10,8.7749,2.1715,6.6034,14.0905,1128.1429
+135,1,Mairehau Rd near Medina Cres,Effingham St near Monowai Cres,7,2,3.5874,1.3853,2.2021,5.8095,0
+135,2,Effingham St near Monowai Cres,Mairehau Rd near Tapiri St,6,2,3.7041,1.4424,2.2617,5.5702,0
+135,2,Burwood Rd,Marshland Rd near Cotton St,11,11,8.7795,2.2496,6.53,13.9746,1073.2857
+140,1,Soleares Ave near Valencia Ln,Major Hornbrook Rd near Billys Trk,11,11,3.0978,0.4025,2.6953,8.4205,1786.5714
+140,2,Major Hornbrook Rd near Billys Trk,Soleares Ave near Cadiz Ln,11,11,3.1979,0.3763,2.8216,8.6434,1555.5714
+155,1,Eastgate Mall (Buckleys Rd),Radley St near Tavender St,11,8,6.7742,1.9927,4.7815,10.633,2145.1429
+155,2,Ferry Rd near Alport Place,Hay St near Kuaka Cres,11,11,6.0914,2.2011,3.8902,9.3345,2253.2857
+1,1,Rangiora (Ashley St),Central Park and Ride (White St),11,9,6.4568,0.8931,5.5637,12.8632,0
+1,2,Cashmere,Colombo St near Woodbridge Rd,11,6,4.0149,1.5846,2.4304,7.6839,0
+1 (Princess Margaret Hospital & Cashmere),1,Colombo St near Thorrington Rd,Hackthorne Rd near Westenra Tce,11,6,3.917,1.5432,2.3737,7.5094,236.8571
+1 (Princess Margaret Hospital & Cashmere),2,Central Park and Ride (White St),Rangiora (Ashley St),11,9,6.4312,0.919,5.5122,12.5902,0
+27,1,Highsted Rd,Harewood Rd near Wilmot St,9,2,3.4655,1.3352,2.1303,6.9749,160.8571
+27,2,Harewood Rd near Wilmot St,Highsted Rd,8,2,3.376,1.2961,2.08,6.5477,160.8571
+44,1,Emmett St near Jebson St,Flockton St near Archer St,11,8,3.1263,0.9334,2.1929,7.316,1215.8571
+44,2,Sedgwick Way near Woodside Common,Hoon Hay Rd near Cashmere Rd,11,11,3.6218,1.0805,2.5413,7.8958,1918.0
+44,2,Flockton St near Archer St,Emmett St near Jebson St,11,8,3.1301,0.9561,2.1739,7.2844,1478.5714
+5 (branch 1),1,Brookside Rd near Stonebrook Dr,Rolleston (Kidman St),9,4,4.0733,1.6236,2.4497,7.2983,887.4286
+5 (branch 1),2,Jones Rd near Hoskyns Rd,Rolleston Dr near Othello Dr,8,4,4.464,1.7136,2.7504,7.4926,887.4286
+7,1,Queenspark Dr near Brentwood St,Burwood Rd near Clarevale St,9,6,4.2943,1.7064,2.5879,7.4165,1615.0
+7,2,Mairehau Rd near Royal Pk Dr,Queenspark,8,8,2.8266,1.0749,1.7518,5.6563,2050.1429
+80,1,Bower Ave near Dick Taylor Dr,Queenspark Dr near Chadbury St,11,8,4.9028,1.2757,3.6272,9.6216,2627.2857
+80,2,Queenspark Dr near Inwoods Rd,Bower Ave near Pinewood Ave,11,9,4.9395,1.3367,3.6028,9.5816,2627.2857
+820,1,Izone Dr,Tennyson St near Markham Way,2,1,3.0562,1.1316,1.9246,3.0479,81.8571
+820,1,Tennyson St near Michelangelo Dr,Lady Isaac Dr near Jean Batten Ln,10,5,7.3053,2.6053,4.7,9.1484,1131.8571
+820,2,Faringdon Boulevard near Broomfield Dr,Izone Dr,9,5,8.6751,3.0762,5.5989,9.9273,1032.2857
+84,1,Brookside Rd near Stonebrook Dr,Tennyson St near Michelangelo Dr,5,0,6.5155,1.3419,5.1736,10.5353,0
+84,2,Tennyson St near Michelangelo Dr,Rolleston Dr near Renoir Dr,7,0,7.5137,0.8035,6.7102,13.8361,0
+85,1,Lincoln Rolleston Rd near Reuben Ave,Faringdon Blvd near Dynes Road,5,0,6.3992,1.8253,4.5739,9.713,0
+85,2,Tennyson St near Michelangelo Dr,Lincoln Rolleston Rd near Reuben Ave,6,0,9.0901,1.1609,7.9292,15.9489,0
+Oa,1,Frankleigh St near Alvarez Pl,Cashmere Rd,11,4,3.9963,1.204,2.7923,8.503,0
+Oc,1,Cashmere Rd,Frankleigh St near Alvarez Pl,11,4,3.8691,1.2704,2.5987,7.8457,0
