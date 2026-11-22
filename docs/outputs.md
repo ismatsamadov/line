@@ -222,7 +222,10 @@ has passed. Stop and route ids are AYNA's. Stop times come from the travel model
 feeds describe the model, not an official timetable; `feed_info.txt` names the network
 (`feed_version` is `today` or `redesign`) and the repository as publisher. For a network
 read from another city's GTFS feed, the ids are that feed's, and `agency.txt` and
-`feed_info.txt` carry its agency's web address, time zone and language.
+`feed_info.txt` carry its agency's web address, time zone and language. Each route keeps
+its mode in `routes.txt`: AYNA's routes are buses (`route_type` 3), and a route read from
+a feed keeps the basic type it was read with, so the trams or trolleybuses that
+`gtfs_route_types` adds stay trams or trolleybuses.
 
 The shapes are the repaired route lines with two changes the validator below asks for: a
 point that repeats the one before it is written once (the repaired lines repeat a point

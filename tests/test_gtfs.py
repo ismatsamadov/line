@@ -18,6 +18,7 @@ from busnet.geo import PROJ, haversine_m
 from busnet.gtfs import read_gtfs, shape_points, write_gtfs
 from busnet.metrics import near_duplicates
 from busnet.model import Pattern
+from busnet.optimize import Plan
 from busnet.service import operations, route_headways
 
 from .helpers import LAT, LON, STEP, two_route_network
@@ -79,6 +80,9 @@ class GtfsTest(unittest.TestCase):
     def test_full_lines_are_left_alone(self):
         p = self.net.patterns[(1, 2)]
         self.assertEqual(shape_points(p, self.net), p.path)
+
+    def test_ayna_routes_are_buses(self):
+        self.assertEqual({r["route_type"] for r in self.tables["routes.txt"]}, {"3"})
 
 
 def keep_projection(test):
@@ -188,6 +192,22 @@ class ReadTest(unittest.TestCase):
         self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["1 [R1]", "1 [R3]", "2", "L"])
         net, _ = read_gtfs(self.feed, Assumptions(gtfs_route_types=[3, 0]))
         self.assertEqual(net.routes["T1"].zone, "Tram")
+
+    def test_a_tram_read_with_the_buses_is_written_back_as_a_tram(self):
+        a = Assumptions(gtfs_route_types=[0, 3])
+        net, table = read_gtfs(self.feed, a)
+        self.assertEqual((net.routes["T1"].zone, net.routes["T1"].route_type), ("Tram", 0))
+        today = Plan.from_headways(net, a, route_headways(net, a, timetable=table.trips_each_way))
+        redesign = today.changed(drop=["R3"])                  # a plan's network keeps the routes' modes
+        for version, plan in (("today", today), ("redesign", redesign)):
+            out = Path(self.feed).parent / f"{version}.zip"
+            write_gtfs(out, plan.network, a, plan.headways(a), version, feed=table.feed)
+            types = {r["route_id"]: r["route_type"] for r in read(out)["routes.txt"]}
+            self.assertEqual((types["T1"], types["R1"], types["R2"]), ("0", "3", "3"), version)   # R2's 700 is a bus
+            buses, back = read_gtfs(out, Assumptions())
+            self.assertNotIn("T1", buses.routes)
+            self.assertEqual(back.summary["routes_of_other_types"], {"Tram": 1})
+            self.assertEqual(read_gtfs(out, a)[0].routes["T1"].zone, "Tram")
 
     def test_short_turns_count_by_distance_and_branches_are_left_out(self):
         self.assertEqual(self.net.patterns[("R1", 1)].stop_ids, OUT)

@@ -27,9 +27,11 @@ is: one all-day frequency cannot stand for it, and the redesign would take it fo
 little-used day route or hand it a day route's buses.
 
 Writing turns each route direction into one trip that repeats every headway between the
-start and end of service (frequencies.txt). Times between stops follow the same model as
-the metrics: distance at the route's moving speed plus the fixed loss at each stop. A feed
-written with estimated headways describes the model, not an official timetable.
+start and end of service (frequencies.txt), and gives each route its mode: bus for AYNA's
+routes, and the basic type it was read with for a feed's. Times between stops follow the
+same model as the metrics: distance at the route's moving speed plus the fixed loss at
+each stop. A feed written with estimated headways describes the model, not an official
+timetable.
 
 Shapes are the repaired route lines with two changes the MobilityData GTFS validator asks
 for: a point that repeats the one before it is written once, and a line that ends before
@@ -138,7 +140,8 @@ def write_gtfs(path, network, a, headways, version, start_hour=6, feed=None):
                         f"{network.stops[s].lat:.6f}", f"{network.stops[s].lon:.6f}"] for s in served]),
         "routes.txt": (["route_id", "agency_id", "route_short_name", "route_long_name", "route_type"],
                        [[rid, feed["agency_id"], network.routes[rid].number,
-                         f"{network.routes[rid].first_point} - {network.routes[rid].last_point}", 3]
+                         f"{network.routes[rid].first_point} - {network.routes[rid].last_point}",
+                         network.routes[rid].route_type]
                         for rid in sorted(headways) if rid in network.routes]),
         "calendar.txt": (["service_id", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
                           "sunday", "start_date", "end_date"], [["daily", 1, 1, 1, 1, 1, 1, 1, *SERVICE_DATES]]),
@@ -653,7 +656,7 @@ def _read(feed, a, repair, source):
             first_p = pats[min(pats)]
             routes[route_id] = Route(route_id, label, " ".join(agency[0].split()), stops[first_p.stop_ids[0]].name,
                                      stops[first_p.stop_ids[-1]].name, None, TYPE_NAMES.get(mode, str(mode)), "", None,
-                                     "", "", speed_kmh=speed, runs_one_way=len(pats) == 1)
+                                     "", "", speed_kmh=speed, runs_one_way=len(pats) == 1, route_type=mode)
             for d, p in pats.items():
                 patterns[(route_id, d)] = p
             trips_each_way[route_id] = sum(each_way) / len(each_way)
