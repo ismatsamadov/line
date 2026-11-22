@@ -60,7 +60,7 @@ settings whose trips are at least a given length, and cross-validating as before
 | 5 km | 290 | 0.63 ± 0.01 | 3 km fall-off, share 0.6, metro 8 | 5.0 km |
 | 6 km | 280 | 0.58 ± 0.01 | 4 km fall-off, share 1, metro 0 | 6.5 km |
 | 7 km | 245 | 0.55 ± 0.01 | 5 km fall-off, share 1, metro 0 | 7.6 km |
-| 8 km | 210 | 0.52 ± 0.01 | 6 km fall-off, share 0.5, metro 1 | 8.4 km |
+| 8 km | 210 | 0.52 ± 0.01 | 6 km fall-off, share 0.4, metro 0 | 8.4 km |
 | 8.4 km (today's) | 194 | 0.52 ± 0.01 | 6 km fall-off, share 0.5, metro 2 | 8.4 km |
 
 Among settings whose trips are as long as today's, today's settings are the ones chosen
