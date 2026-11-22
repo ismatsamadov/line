@@ -1,25 +1,25 @@
 ﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
-1,drop,23,"Drop 23: among the 20 routes with the fewest modelled riders per bus; its buses go to 24, E2, E1",84.1394,84.0251,0.1142,0.0
-2,straighten,G2,"Straighten G2 direction 1 between Castleforbes Road and Wellington Quay: 3.6 km shorter, 0 of its stops dropped",84.0251,83.982,0.0431,0.0
-3,straighten,77A,"Straighten 77A direction 2 between Health Care Centre and New Bawn Pk: 2.3 km shorter, 11 of its stops dropped",83.982,83.9443,0.0377,0.0
-4,straighten,N4,"Straighten N4 direction 2 between Westend Office Park and Ballycoolin Road: 1.7 km shorter, 5 of its stops dropped",83.9443,83.9118,0.0325,0.0
-5,drop,11B,"Drop 11B: among the 20 routes with the fewest modelled riders per bus; its buses go to 11, E2, E1",83.9118,83.8822,0.0296,0.0
-6,straighten,N4,"Straighten N4 direction 1 between Ballycoolin Road and Westend Office Park: 1.6 km shorter, 4 of its stops dropped",83.8822,83.8547,0.0275,266.2857
-7,merge,33X,"Merge 33X into 33: 89% of its stops are also on 33; its buses go to 33, 33E, 142",83.8547,83.8297,0.025,0.0
-8,straighten,70,"Straighten 70 direction 2 between Clonee Village and Littlepace Park: 1.8 km shorter, 5 of its stops dropped",83.8297,83.8073,0.0224,0.0
-9,merge,65,"Merge 65 into 65 (Ballymore): 99% of its stops are also on 65 (Ballymore); its buses go to 65 (Ballymore), 65A, 65B",83.8073,83.7958,0.0115,0.0
-10,merge,44D,"Merge 44D into 44: 98% of its stops are also on 44; its buses go to 44, 11, 142",83.7958,83.783,0.0128,0.0
-11,straighten,44,"Straighten 44 direction 2 between Whitehall Village and Falcarragh Rd: 1.2 km shorter, 4 of its stops dropped",83.783,83.7716,0.0113,0.0
-12,straighten,13,"Straighten 13 direction 2 between Takeda and Kilmahuddrick: 2.2 km shorter, 4 of its stops dropped",83.7716,83.7631,0.0085,0.0
-13,straighten,15B,"Straighten 15B direction 2 between Richmond St South and Merrion Square South: 1.7 km shorter, 9 of its stops dropped",83.7631,83.7538,0.0093,0.0
-14,straighten,13,"Straighten 13 direction 1 between St Cuthbert's Road and Takeda: 2.1 km shorter, 4 of its stops dropped",83.7538,83.7455,0.0083,0.0
-15,straighten,70,"Straighten 70 direction 1 between Littlepace Gallops and Clonee Village: 1.8 km shorter, 5 of its stops dropped",83.7455,83.7395,0.0059,0.0
-16,merge,38A,"Merge 38A into 38: 97% of its stops are also on 38; its buses go to 38, 38B, 38D",83.7395,83.7313,0.0082,0.0
-17,merge,X28,"Merge X28 into X27: 91% of its stops are also on X27; its buses go to X27, C4, X25",83.7313,83.7235,0.0078,0.0
-18,drop,32X,"Drop 32X: among the 20 routes with the fewest modelled riders per bus; its buses go to H2, 42D, 42",83.7235,83.7162,0.0073,0.0
-19,straighten,39A,"Straighten 39A direction 1 between Pembroke St Lwr and Wood Quay: 1.2 km shorter, 5 of its stops dropped",83.7162,83.7078,0.0084,0.0
-20,stops,,"Remove 874 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",83.7078,82.575,1.1328,0.0
-21,shift,,"Move 40 buses from the 20 routes where a bus saves riders the least waiting (L12, 7A, 1, G1, C3, F3, 19, 39, L53, 41C, E2, H3, 15A, 40D, 41, 80, 38, 150, 16, E1) to the 20 where it saves the most (44, 47, H2, L54, 52, 11, 68, 33, 69, 7, 151, 44B, 120, 56A, L14, G2, 74, S2, L25, C4)",82.575,81.2432,1.3318,0.0
-22,shift,,"Move 42 buses from the 20 routes where a bus saves riders the least waiting (L12, 19, 1, G1, F3, 15A, 41C, 80, E2, 130, 150, 41, 27, 16, 39A, 122, C2, F2, F1, L59) to the 20 where it saves the most (44B, 44, H2, 68, 47, 74, 11, 69, 7, 33, G2, 52, 65B, L54, 151, 27B, 120, 42, L14, S2)",81.2432,80.6453,0.5979,0.0
-23,shift,,"Move 40 buses from the 20 routes where a bus saves riders the least waiting (C2, 19, G1, 1, F3, 41, 80, 130, 44B, 122, E2, 13, 16, 27, 15B, F1, N4, H1, 77A, 42) to the 20 where it saves the most (68, 65B, C1, 44, 74, 33, 69, H2, 47, G2, 24, 70, L25, 27B, 82, C4, 151, 11, 37, 7)",80.6453,80.2355,0.4098,0.0
-24,shift,,"Move 37 buses from the 20 routes where a bus saves riders the least waiting (C2, 1, F1, G1, F3, 80, 122, 16, 13, 130, 44B, 77A, 4, 70, E2, L25, 15, 39A, 14, 37) to the 20 where it saves the most (65B, F2, 68, 33, 44, C1, 42, 69, H1, N4, 74, 40E, 15B, 24, G2, 120, 27B, 82, H2, S2)",80.2355,80.0558,0.1797,0.0
+1,drop,23,"Drop 23: among the 20 routes with the fewest modelled riders per bus; its buses go to 24, E2, E1",84.1345,84.0204,0.1141,0.0
+2,straighten,G2,"Straighten G2 direction 1 between Castleforbes Road and Wellington Quay: 3.6 km shorter, 0 of its stops dropped",84.0204,83.9772,0.0432,0.0
+3,straighten,77A,"Straighten 77A direction 2 between Health Care Centre and New Bawn Pk: 2.3 km shorter, 11 of its stops dropped",83.9772,83.9395,0.0378,0.0
+4,straighten,N4,"Straighten N4 direction 2 between Westend Office Park and Ballycoolin Road: 1.7 km shorter, 5 of its stops dropped",83.9395,83.9073,0.0322,0.0
+5,drop,11B,"Drop 11B: among the 20 routes with the fewest modelled riders per bus; its buses go to 11, E2, E1",83.9073,83.8777,0.0296,0.0
+6,straighten,N4,"Straighten N4 direction 1 between Ballycoolin Road and Westend Office Park: 1.6 km shorter, 4 of its stops dropped",83.8777,83.8503,0.0274,266.2857
+7,merge,33X,"Merge 33X into 33: 89% of its stops are also on 33; its buses go to 33, 33E, 142",83.8503,83.8255,0.0248,0.0
+8,straighten,70,"Straighten 70 direction 2 between Clonee Village and Littlepace Park: 1.8 km shorter, 5 of its stops dropped",83.8255,83.8031,0.0223,0.0
+9,merge,65,"Merge 65 into 65 (Ballymore): 99% of its stops are also on 65 (Ballymore); its buses go to 65 (Ballymore), 65A, 65B",83.8031,83.7916,0.0116,0.0
+10,merge,44D,"Merge 44D into 44: 98% of its stops are also on 44; its buses go to 44, 11, 142",83.7916,83.7789,0.0127,0.0
+11,straighten,44,"Straighten 44 direction 2 between Whitehall Village and Falcarragh Rd: 1.2 km shorter, 4 of its stops dropped",83.7789,83.7675,0.0114,0.0
+12,straighten,13,"Straighten 13 direction 2 between Takeda and Kilmahuddrick: 2.2 km shorter, 4 of its stops dropped",83.7675,83.7589,0.0085,0.0
+13,straighten,15B,"Straighten 15B direction 2 between Richmond St South and Merrion Square South: 1.7 km shorter, 9 of its stops dropped",83.7589,83.7496,0.0094,0.0
+14,straighten,13,"Straighten 13 direction 1 between St Cuthbert's Road and Takeda: 2.1 km shorter, 4 of its stops dropped",83.7496,83.7412,0.0084,0.0
+15,straighten,70,"Straighten 70 direction 1 between Littlepace Gallops and Clonee Village: 1.8 km shorter, 5 of its stops dropped",83.7412,83.7354,0.0058,0.0
+16,merge,38A,"Merge 38A into 38: 97% of its stops are also on 38; its buses go to 38, 38B, 38D",83.7354,83.7272,0.0082,0.0
+17,merge,X28,"Merge X28 into X27: 91% of its stops are also on X27; its buses go to X27, C4, X25",83.7272,83.7194,0.0078,0.0
+18,drop,32X,"Drop 32X: among the 20 routes with the fewest modelled riders per bus; its buses go to H2, 42D, 42",83.7194,83.7121,0.0073,0.0
+19,straighten,39A,"Straighten 39A direction 1 between Pembroke St Lwr and Wood Quay: 1.2 km shorter, 5 of its stops dropped",83.7121,83.7035,0.0085,0.0
+20,stops,,"Remove 874 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",83.7035,82.5712,1.1323,0.0
+21,shift,,"Move 40 buses from the 20 routes where a bus saves riders the least waiting (L12, 7A, 1, G1, F3, C3, 19, 39, L53, 41C, E2, H3, 15A, 40D, 41, 80, 38, 150, 16, E1) to the 20 where it saves the most (44, 47, H2, L54, 52, 11, 69, 33, 68, 7, 151, 44B, 56A, 120, L14, G2, 74, S2, L25, C4)",82.5712,81.2395,1.3317,0.0
+22,shift,,"Move 42 buses from the 20 routes where a bus saves riders the least waiting (L12, 19, 1, G1, F3, 15A, 41C, 80, E2, 130, 150, 41, 27, 16, 39A, 122, C2, F2, F1, L59) to the 20 where it saves the most (44B, 44, H2, 68, 47, 74, 69, 11, 7, 33, G2, 65B, 52, L54, 151, 27B, 120, 42, L14, S2)",81.2395,80.6423,0.5972,0.0
+23,shift,,"Move 40 buses from the 20 routes where a bus saves riders the least waiting (C2, 19, G1, 1, F3, 41, 80, 130, 44B, 122, E2, 13, 16, 27, 15B, F1, N4, H1, 77A, 42) to the 20 where it saves the most (68, 65B, C1, 44, 74, 33, 69, H2, 47, G2, 70, 24, 27B, L25, 82, C4, 151, 11, 37, 7)",80.6423,80.2316,0.4107,0.0
+24,shift,,"Move 37 buses from the 20 routes where a bus saves riders the least waiting (C2, 1, F1, G1, F3, 80, 122, 16, 13, 130, 44B, 77A, 4, 70, E2, L25, 15, 14, 39A, 37) to the 20 where it saves the most (65B, F2, 68, 33, 44, C1, 42, 69, H1, N4, 74, 40E, 15B, 24, G2, 120, 27B, 82, H2, L54)",80.2316,80.0525,0.1791,0.0

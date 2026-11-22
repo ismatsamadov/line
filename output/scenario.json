@@ -27,19 +27,19 @@
   "share_population_covered": 0.6596213045284149,
   "accessibility": {
    "origins_sampled": 300,
-   "mean_door_to_door_min": 51.823791264325145,
-   "share_reachable": 0.6626446740078195,
+   "mean_door_to_door_min": 51.93350004424793,
+   "share_reachable": 0.6637380037343827,
    "share_within_30_min": 0.16188076149175373,
    "share_within_45_min": 0.2936376592695846,
    "share_within_60_min": 0.42163732893584827,
    "share_trips_without_stop_nearby": 0.3463652785996123,
    "mean_trip_km_straight_line": 7.989950382646035,
    "transfers": {
-    "0": 0.28892382345142364,
-    "1": 0.43172646806495635,
-    "2": 0.15035093665783023,
-    "3+": 0.014506761464024354,
-    "walk only": 0.11449201036179091
+    "0": 0.28844831008369687,
+    "1": 0.4311874139917363,
+    "2": 0.1510758673206515,
+    "3+": 0.014984993015509212,
+    "walk only": 0.11430341558843417
    }
   },
   "operations": {
@@ -59,8 +59,8 @@
   },
   "ridership_fit": {
    "routes_compared": 56,
-   "spearman": 0.7673957621326042,
-   "pearson_of_log_shares": 0.614587138187115
+   "spearman": 0.7686944634313055,
+   "pearson_of_log_shares": 0.6142549317963266
   }
  },
  "after": {
@@ -84,19 +84,19 @@
   "share_population_covered": 0.6581612266250461,
   "accessibility": {
    "origins_sampled": 300,
-   "mean_door_to_door_min": 51.59139220745088,
-   "share_reachable": 0.6602714961430323,
+   "mean_door_to_door_min": 51.69791910466299,
+   "share_reachable": 0.6613249030663153,
    "share_within_30_min": 0.16213791717690582,
    "share_within_45_min": 0.2945203129020685,
    "share_within_60_min": 0.4227639719486732,
    "share_trips_without_stop_nearby": 0.3498441501141004,
    "mean_trip_km_straight_line": 7.989950382646035,
    "transfers": {
-    "0": 0.2884286230792015,
-    "1": 0.4321114718135017,
-    "2": 0.14936133513409533,
-    "3+": 0.014675140214772602,
-    "walk only": 0.11542342975846004
+    "0": 0.28796946200725226,
+    "1": 0.4315357025879304,
+    "2": 0.15006768791557767,
+    "3+": 0.015187572655146843,
+    "walk only": 0.11523957483412123
    }
   },
   "operations": {

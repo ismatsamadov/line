@@ -44,6 +44,7 @@ class Route:
     card_since: str
     speed_kmh: float = None       # moving speed read from a timetable (gtfs.py); None: the zone's
     runs_one_way: bool = False    # a loop that runs one way only (gtfs.py); see Network.directions_run
+    route_type: int = 3           # GTFS route type: 3 (bus) for AYNA's routes, a feed's own basic type (gtfs.py)
 
 
 @dataclass

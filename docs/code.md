@@ -154,16 +154,17 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `geo` | `haversine_m`, `PROJ` (a `LocalProjection`; `centre_on(lat, lon)` moves it to another city, as `read_gtfs` does), `Polyline` (`cum`, `project_all`, `point_at`, `slice_latlon`, `max_jump_m`, `reversed`), `match_stops`, `fit_score` | `match_stops` is the dynamic program in [methodology.md](methodology.md#1-loading-and-repairing-the-network) |
 | `model` | `load_network(db_path, repair=True)` | Repairs are detected from the data, not hard-coded per route, so they still apply after a new scrape |
 | `service` | `run_time_s(pattern, network, a)`, `fuel_l(pattern, a)`, `load_headways(path)`, `route_headways(network, a, observed, supplied, timetable)`, `operations(network, a, headways)` | `operations` returns (per route, totals) |
+| `tables` | `write_csv(path, rows)` | The one CSV writer every script uses: UTF-8 with a byte-order mark, floats to 4 decimals, and no file for a table without rows, removing the one an earlier run left |
 | `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)`, `cut_gpkg(src, dst, bbox)` | Reads GeoPackage (no GIS library) or CSV. `cut_gpkg` copies a GeoPackage keeping only the cells whose centre is in a box, for `data/fetch_city.py` |
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
 | `bicycle` | `placemarks(path)`, `load_lanes(path, folder)`, `load_parking(path)`, `LineIndex(lines)` (`nearest`, `nearest_any`), `along(path, index, within_m)`, `stops_near`, `measure(network, a, zones, observed, lanes, lanes_2025, parking, exits)`, `geojson` | Reads KMZ with the standard library; `measure` returns the summary and every table `bicycle.py` writes ([methodology.md](methodology.md#13-bicycle-lanes-and-parking)). Used by `bicycle.py` and `site/build.py` |
-| `graph` | `StopIndex(stops)` (`within`, `nearest`), `TransitGraph(network, a, headways)` (`search`, `arrival`, `departure`, `is_departure`, `node_route`) | Dijkstra over arrival, departure and on-board nodes |
+| `graph` | `StopIndex(stops)` (`within`, `nearest`), `TransitGraph(network, a, headways)` (`search`, `trip_cutoff_s`, `arrival`, `departure`, `is_departure`, `node_route`) | Dijkstra over arrival, departure and on-board nodes; `trip_cutoff_s`, `max_trip_min` plus one transfer penalty, is how far a search must reach to find every trip within `max_trip_min` |
 | `metrics` | `route_table`, `detour_table`, `trunk_corridors`, `near_duplicates`, `find_detours`, `StreetGraph`, `coverage_by_route`, `evaluate_od`, `compare_ridership`, `network_summary` | `network_summary` gives every network-wide figure in `network.json` |
 | `scenarios` | `balance_stops(network, min_gap_m, max_gap_after_m, protect)` | Returns (new network, details); never edits its input |
 | `walking` | `walkable(tags)`, `load_overpass(path)`, `WalkNetwork(nodes, ways)` (`snap`, `distances_from`, `walk_distances`), `load_walk_network(path)` | Streets and paths from an Overpass answer as a graph; one multi-source Dijkstra from the stops gives the walk from every population point. Used by `robustness.py` only ([methodology.md](methodology.md#5-population-and-coverage)) |
 | `optimize` | `Plan`, `allocate`, `Evaluator` (`score`, `people_with_stop`), `Streets`, `straightened`, `Drop`, `Straighten`, `BalanceStops`, `Shift`, `Context` (`riders_for`), `candidates`, `search(plan, evaluator, ctx, say, kept)`, `fleet_for_same_time` | Explained in [redesign.md](redesign.md). Given `kept`, `search` calls it with each change it keeps and the plan that change makes, which is how `animations/build.py` draws every step |
-| `gtfs` | `read_gtfs(path, a, repair=True)` returns (`Network`, `Timetable`); `Feed`, `Calendar` (`services(day)`, `busiest_weekday`), `basic_route_type`; `write_gtfs(path, network, a, headways, version, start_hour=6, feed=None)`, `shape_points(pattern, network)` | The reader takes one day of a feed and makes one stop pattern per route direction ([methodology.md](methodology.md#1-loading-and-repairing-the-network)). The writer makes a frequency-based feed; `version` goes into `feed_info.txt`, `feed` gives the agency and language (AYNA's by default). `shape_points` writes a repeated point once and carries a line that stops short on to its end stops ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)) |
+| `gtfs` | `read_gtfs(path, a, repair=True)` returns (`Network`, `Timetable`); `Feed`, `Calendar` (`services(day)`, `busiest_weekday`), `basic_route_type`; `write_gtfs(path, network, a, headways, version, start_hour=6, feed=None)`, `shape_points(pattern, network)` | The reader takes one day of a feed and makes one stop pattern per route direction ([methodology.md](methodology.md#1-loading-and-repairing-the-network)). The writer makes a frequency-based feed, each route with its mode (`Route.route_type`: 3, bus, for AYNA's routes); `version` goes into `feed_info.txt`, `feed` gives the agency and language (AYNA's by default). `shape_points` writes a repeated point once and carries a line that stops short on to its end stops ([outputs.md](outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)) |
 | `impact` | `impact_rows(today, same_buses, fewer_buses, a)`, `capped_minutes(acc, a)`, `COLUMNS` | The rows of `impact.csv` from three network summaries on one sample; a row needing an `[impact]` value left at 0 is left out ([outputs.md](outputs.md#outputredesignimpactcsv--what-the-redesign-is-worth)) |
 | `utrp` | `Instance`, `RULES`, `load_instance(supplement, name)`, `published_route_sets(supplement)`, `published_scores(supplement)`, `LATER_SETS`, `husselmann_route_sets(path)`, `JIAO_FILE`, `JIAO_SCORES`, `jiao_route_sets(path)`, `evaluate(inst, routes)`, `route_time`, `problems(inst, routes)`, `quickest_paths`, `detours`, `Straighten`, `candidates`, `search(inst, routes, max_tries=80, min_gain=0.005, repeat=False)`, `matlab(routes)`, `matrix_text`, `coords_text`, `routes_text`, `read_instance(folder, name, routes, min_nodes, max_nodes)`, `read_coords`, `read_routes` | Scores and rules of the benchmark literature; `search` is the redesign's straightening under those rules ([methodology.md](methodology.md#12-the-benchmark-networks)). Used by `benchmark.py` and `instances.py` |
 | `instances` | `cluster_stops(network, radius_m)`, `positions`, `network_links(network, a, cluster_of)`, `erase_loops`, `split_at_repeats`, `stretches_within`, `route_path`, `todays_routes(routes, inside)`, `node_people(network, a, zones, attraction, cluster_of, n)`, `gravity(xy, people, pull, decay_m, scale)`, `metres` | Cuts Baku into instances of the urban transit routing problem ([instances.md](instances.md)). Used by `instances.py` only |
@@ -187,9 +188,12 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
   sorted before results depend on their order; zip files get a fixed timestamp. The same
   inputs give byte-identical outputs on the same Python version. Python 3.12 changed how
   `sum()` adds floats, so Python 3.11 can differ in the last digits; the regression test
-  allows that for CSV and JSON files.
-- **Output files.** CSVs are written with `utf-8-sig` and floats rounded to 4 decimals;
-  JSON keeps non-Latin letters (`ensure_ascii=False`).
+  and the browser page allow that: JSON numbers to 1e-9, and CSV numbers to one in the last
+  decimal written (the 4th, or a later one where a cell shows more), while whole numbers,
+  such as counts and ids, and text must match exactly.
+- **Output files.** CSVs are written by `tables.write_csv`, with `utf-8-sig` and floats
+  rounded to 4 decimals, and a table without rows is not written; JSON keeps non-Latin
+  letters (`ensure_ascii=False`).
 - **Style.** Short docstrings that say what a function returns and why; comments only
   where the code cannot say it.
 
@@ -378,8 +382,10 @@ page's colours.
   step; the last frame takes its figures from `summary.json`.
 - `travel-time.gif`: from the stop with the most routes (the lowest id on a tie), where the
   page's Travel time view starts, `graph.TransitGraph` is searched from the stop's arrival
-  node as the page searches it, cut at `max_trip_min` plus three change penalties, and
-  each stop's minutes are the cost less one penalty per boarding. One frame per minute
+  node as the page searches it, to every stop with no cut on the cost (which holds a
+  penalty for every boarding, so any cut would lose stops reached within `max_trip_min`
+  with enough changes), and each stop's minutes are the cost less one penalty per
+  boarding. One frame per minute
   from 0 to 120, 80 ms each and the last held for 3 s; each stop takes the colour of the
   page's 15-minute bins when it is reached, with a white halo in that minute.
 - `bicycle.gif`: the lanes of September 2026 and of January 2025 come from
@@ -398,9 +404,17 @@ On one Python version a rebuild gives the same files byte for byte.
 1. **Run the tests.** `python3 -m unittest` takes about 35 seconds. `tests/test_geo.py`,
    `test_service.py`, `test_config.py` and `test_optimize.py` check `geo.match_stops`,
    the headway rules and daily service, the settings reader, and `Plan` arithmetic on a
-   small made-up network (`tests/helpers.py`). `tests/test_regression.py` regenerates
+   small made-up network (`tests/helpers.py`). `tests/test_graph.py` checks that
+   `StopIndex.nearest` finds a stop anywhere within the distance asked for, out to its
+   last metre and below one cell of the grid, and that a trip with a change and one
+   without count as possible with the limit just above their time and not with it just
+   below, in `metrics.evaluate_od`, the redesign's scoring and the calibration's paths.
+   `tests/test_regression.py` regenerates
    `output/` with `measure.py` into a temporary folder and compares every file with the
-   committed one byte for byte. With `BUSNET_SLOW_TESTS=1` it also regenerates
+   committed one byte for byte, checks that every script writes its tables with
+   `tables.write_csv`, and runs Riga's stop balancing twice into one folder, the second
+   time removing nothing, to check that no table of the first run is left behind.
+   With `BUSNET_SLOW_TESTS=1` it also regenerates
    `output/redesign/` (about two minutes) and `output/benchmark/` (about three) and
    `output/robustness/` (about ten). `tests/test_utrp.py` checks that the 35 published
    benchmark route sets score as their authors published them, that each benchmark rule
@@ -415,15 +429,23 @@ On one Python version a rebuild gives the same files byte for byte.
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
    picture size and the number of frames its data gives. `tests/test_app.py` checks that
-   `app/files.json` is the list `app/build.py` writes and that every file on it exists. `tests/test_instances.py` checks
+   `app/files.json` is the list `app/build.py` writes and that every file on it exists and,
+   where Node is installed, runs `app/app.js` against a stand-in page and worker: its CSV
+   comparison on the same cases as the regression test's, and a second run after Python
+   failed to start, or after the worker failed to load Pyodide, which must start a fresh
+   worker and succeed. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the
    demand comes back from the published nodes; with `BUSNET_SLOW_TESTS=1` it cuts the
    instances again (about twelve minutes). `tests/test_calibration.py` holds
    `busnet/calibration.py` to exactly the boardings and trip lengths `metrics.evaluate_od`
-   gives on the made-up network, checks the rank correlation, and checks that the committed
-   `output/calibration/` agrees with itself.
+   gives on the made-up network, checks the rank correlation, checks that `calibrate.py`
+   scores today's settings when they fall between the grid's points and every metro weight
+   when today's is 0, and checks that the committed `output/calibration/` agrees with itself.
+   `tests/test_world.py` checks that every row of `output/world/cities.csv` and the total
+   add up, that today's figures are each redesign's own baseline with the timetables' count
+   beside it, and that `world.py` refuses a row that does not add up.
 2. **Regenerate and compare.** Run the three commands and look at `git diff --stat output/`.
    A refactoring should change nothing; a model change should change only what it means
    to. Commit the regenerated results with the change.

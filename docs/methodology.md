@@ -60,21 +60,24 @@ Repairs, applied in this order (each is logged to `output/repairs.txt`):
 When the settings name a GTFS feed instead of `ayna.db`, `gtfs.read_gtfs` builds the same
 routes, stops and patterns from it, for one service day:
 
-1. **The day.** `gtfs_date`, or else the weekday with the most trips of the route types
-   read (`gtfs_route_types`, buses by default), the first such day if several tie. A day's
-   services are those `calendar.txt` runs that weekday, with the holidays and extra days
-   of `calendar_dates.txt`. A trip in `frequencies.txt` counts as many departures as its
-   windows hold. A day with more than 1.25 times the trips of the same weekday in the three
-   weeks before it and in the three after (the middle of each three) is passed over: a
-   holiday whose timetable a feed adds on top of the usual one, as Cardiff Bus's does on
-   25 December and Dublin Bus's on 1 January. The first day of a new, busier timetable is
-   kept, since the weeks after it run as it does.
+1. **The day.** `gtfs_date`, or else the weekday with the most departures of the route
+   types read (`gtfs_route_types`, buses by default), the first such day if several tie. A
+   day's services are those `calendar.txt` runs that weekday, with the holidays and extra
+   days of `calendar_dates.txt`. A trip in `frequencies.txt` counts as many departures as
+   its windows hold, here and everywhere else the reader counts departures. A day with
+   more than 1.25 times the departures of the same weekday in the three weeks before it
+   and in the three after (the middle of each three) is passed over: a holiday whose
+   timetable a feed adds on top of the usual one, as Cardiff Bus's does on 25 December
+   and Dublin Bus's on 1 January. The first day of a new, busier timetable is kept, since
+   the weeks after it run as it does.
 2. **Directions.** From `direction_id`: 0 becomes direction 1 and 1 becomes 2. When a
    route's trips lack it, each trip is compared with the route's most-run stop sequence,
    by the order of the stops the two share or, if that does not decide, by which of their
-   ends lie nearer each other. Two routes of the same agency and name that each run one
-   way, and not the same way, are one line its feed splits by direction, as Christchurch's
-   does for 28 of its lines: they are read as one route, listed in `timetable.txt`.
+   ends lie nearer each other. Two routes of the same agency and name whose trips each give
+   one `direction_id`, and not the same one, are one line its feed splits by direction, as
+   Christchurch's does for 28 of its lines: they are read as one route, listed in
+   `timetable.txt`. Routes whose trips leave out `direction_id` are not joined, since
+   each could run either way.
 3. **Patterns.** The stop sequence with the most departures is the route's pattern in
    that direction. A sequence that is an in-order part of a pattern (a short turn) adds its
    departures to it in proportion to the share of the pattern's length it covers. Any other
@@ -117,9 +120,10 @@ routes, stops and patterns from it, for one service day:
 The flat projection (section 2) moves to the median of the feed's stops. Read back, the
 feed `redesign.py` writes for Baku gives the same 201 routes, 402 directions and 3,456
 stops, headways within 0.2% and speeds equal to the zone speeds. Every network-wide
-figure in `network.json` is within 0.1% of the snapshot's: 51.84 against 51.82 minutes
-door to door, and the same 2,015 buses. The one exception is the small share of trips
-with three or more changes (1.43% against 1.45%). Two directions out of 402 change length
+figure in `network.json` is within 0.1% of the snapshot's: 51.96 against 51.93 minutes
+door to door, and the same 2,015 buses. The exceptions are two small shares: trips with
+three or more changes (1.48% against 1.50%), and stop gaps under 200 m (5.42% in both,
+0.2% apart, since stops.txt rounds each position to six decimals). Two directions out of 402 change length
 by more than 1%. On direction 1 of route 525 the reader matches one stop to a different
 pass of the line than the snapshot does, and the direction comes out 21% shorter. Where a
 line passes a stop twice, matching alone cannot tell which pass the bus stops on. The
@@ -243,10 +247,12 @@ Walking time = straight-line distance × `walk_detour` ÷ `walk_speed_mps`. Walk
 once between rides, never chained.
 
 A trip walks from its origin point to any stop within `max_access_walk_m`, follows the
-cheapest path (Dijkstra's algorithm, up to `max_trip_min`), and walks from a stop within
-`max_access_walk_m` to its destination. Every boarding pays the transfer penalty, so one
-penalty is taken off at the end: the first boarding is not a change. Trips under 2 km may
-also be walked entirely, whichever is quicker.
+cheapest path (Dijkstra's algorithm), and walks from a stop within `max_access_walk_m` to
+its destination. Every boarding pays the transfer penalty, so one penalty is taken off at
+the end: the first boarding is not a change. The search therefore runs to `max_trip_min`
+plus one penalty, and a trip counts as possible when its time, the walk to the destination
+included, is within `max_trip_min`. Trips under 2 km may also be walked entirely, whichever
+is quicker.
 
 Reported (`accessibility` in `output/network.json`): the mean door-to-door time of trips
 possible within `max_trip_min`; the share of trips possible within 30, 45 and 60 minutes

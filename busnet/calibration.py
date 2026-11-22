@@ -48,7 +48,7 @@ def trip_paths(network, a, zones, n_origins=300, seed=7, headways=None):
         dist = None
         routes_to = {}
         if sources:
-            dist, _, pred, settled = graph.search(sources, cutoff)
+            dist, _, pred, settled = graph.search(sources, graph.trip_cutoff_s)
             for n in settled:                       # a node's predecessor is settled before it
                 p = pred[n]
                 if p < 0:

@@ -17,7 +17,7 @@ are publishable: the repaired network and its measured diagnosis
 ([results.md](results.md#todays-network)); the door-to-door travel model built only
 from public data, with its fit against observed ridership stated honestly (0.58 fair,
 0.77 circular; [fit ladder](results.md#the-demand-model-as-each-input-is-added)); the
-redesign, 51.8 → 50.9 minutes with the same buses or today's travel times with about
+redesign, 51.9 → 51.0 minutes with the same buses or today's travel times with about
 12% fewer buses, robust over ten trip samples and eleven alternative assumptions
 ([robustness](results.md#how-robust-the-results-are)), including the finding that the
 strict coverage guard costs nothing; and the pipeline itself, with every input
@@ -351,7 +351,26 @@ point.
    (2025) under the title of another paper of theirs (arXiv:2403.07917); the paper at
    that DOI is "Learning heuristics for transit network design and improvement with
    deep reinforcement learning", as `paper/manuscript.md` now has it (found 30 October
-   2026; the numbers taken from its Table 3 were always from the right paper).
+   2026; the numbers taken from its Table 3 were always from the right paper). A second
+   waits as well. On 22 November 2026 the journey search turned out to stop at the
+   two-hour limit before taking off the first boarding's transfer penalty, so trips just
+   inside the limit counted as impossible. `paper/manuscript.md` now describes the
+   search as it runs, one penalty past the limit, and carries the regenerated figures:
+   in the abstract 51.9 to 51.0 minutes (submitted: 51.8 to 50.9) and 0.46 to 0.89
+   (0.88); in Section 5.2 51.9 minutes (51.8), 66.4% of trips within 120 minutes (66.3%)
+   and 28.8%, 43.1% and 15.1% with no, one and two changes (28.9, 43.2, 15.0); in
+   Section 5.4 51.9 to 51.7 minutes (51.8 to 51.6); in Table 3 51.93 and 50.96 minutes
+   (51.82, 50.86), 66.4% and 66.5% (66.3, 66.4), 16.6% and 17.5% with two or more
+   changes (16.5, 17.4) and 596,869 bus-km (596,868); in Section 5.6 a gain of up to
+   0.89 minutes (0.88, twice), 86 to 93% of the buses (87 to 93%), 7 to 14% less fuel (7
+   to 13%) and 32 changes (32 or 33); in Table 4 0.83 and 86% for homes only (0.82,
+   87%), 0.57 for the 400 m radius (0.58), 0.83 for 200 origins (0.84), 32 changes for
+   another seed (33) and 0.89 for the headways times 1.25 (0.88); and in Section 5.7
+   14,800 and 581 estimated boardings (14,700, 582). The gain counting impossible trips
+   at 120 minutes (0.76), the fleet saving (219 buses, 88%), the range over ten samples
+   (0.68 to 0.81) and the fair fit of 0.58 stay as submitted. Figure 4 is redrawn and
+   the Medium draft carries the new figures; `paper/submission/` keeps the submitted
+   ones.
 8. After acceptance: add the reference to the preprint, update `CITATION.cff` with
    `preferred-citation`, make a new release if anything changed, add the paper to ORCID,
    and name the Mobility Database listing of today's feed (mdb-3629) in Section 6.5 and

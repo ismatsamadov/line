@@ -27,6 +27,18 @@ class Plans(unittest.TestCase):
         crowded = Plan(self.net, {1: 1000.0, 2: 1000.0})
         self.assertEqual(crowded.headways(self.a)[1][0], self.a.min_headway_min)
 
+    def test_today_holds_only_the_buses_its_headways_can_use(self):
+        from busnet.service import operations
+        headways = {1: (1.5, "timetable"), 2: (15, "timetable")}       # route 1 more often than min_headway_min
+        plan = Plan.from_headways(self.net, self.a, headways)
+        self.assertAlmostEqual(plan.fleet[1], plan.cycle_min(1, self.a) / self.a.min_headway_min)
+        self.assertAlmostEqual(plan.fleet[2], plan.cycle_min(2, self.a) / 15)
+        self.assertEqual(plan.headways(self.a)[1][0], self.a.min_headway_min)
+        # the same buses spread anew run no more than the baseline's own count of buses
+        baseline = operations(self.net, self.a, plan.headways(self.a))[1]["fleet"]
+        moved = plan.changed(fleet={1: plan.fleet[1] / 2, 2: plan.fleet[2] + plan.fleet[1] / 2})
+        self.assertLessEqual(operations(self.net, self.a, moved.headways(self.a))[1]["fleet"], baseline + 1)
+
     def test_dropping_a_route_leaves_the_original_untouched(self):
         new = self.plan.changed(drop=[2])
         self.assertNotIn(2, new.fleet)

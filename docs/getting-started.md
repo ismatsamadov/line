@@ -169,7 +169,7 @@ redesign_protected_routes = ["22"]   # 22 runs to the airport, which no destinat
                                      # so the model cannot see its riders and would drop it
 ```
 
-`measure.py` prints the day it read (the weekday with the most bus trips, or
+`measure.py` prints the day it read (the weekday with the most bus departures, or
 `gtfs_date`), the share of that day's departures on the route patterns, the branches run
 as routes and the express routes, the hours of service (the hours in which buses leave at
 least a quarter as often as in the busiest hour), and any warning about the feed;
@@ -224,6 +224,7 @@ later. Nothing reads `data/metro/` yet, so the metro scripts do not change the r
 | Message | Meaning | What to do |
 |---|---|---|
 | `Settings error: unknown setting(s): ...` | A name in `busnet.toml` or `--set` is misspelled | Use one of the names the message lists |
+| `Settings error: no settings file at ...` | `--config` names a file that is not there, often a typo | Fix the name, or give `--config none` for the built-in defaults; nothing was written |
 | `missing population: ... (using assumptions instead)` | A data file named in `busnet.toml` is not there | Restore it with `data/fetch_external.py`, or accept that the related measures are skipped |
 | `metro stations without exit coordinates: ...` | A metro station name could not be matched to an exit | Check the names in the two metro files |
 | `ModuleNotFoundError: No module named 'tomllib'` | Python older than 3.11 | Use Python 3.11 or newer |

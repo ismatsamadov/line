@@ -24,10 +24,12 @@ Three settings shape the demand: how fast trips fall off with distance (`trip_de
 today 6 km), how much destinations pull trips compared with homes (`destination_share`,
 today 0.5), and how much a metro station weighs for every 1,000 daily entries
 (`metro_weight_per_1000_entries`, today 2). I tried 420 combinations: fall-offs from 1 to
-30 km, shares from 0 to 1, metro weights from 0 to 8. Finding every trip's path is the
-slow part of the model and does not depend on these settings, so `busnet/calibration.py`
-finds the paths once and spreads the trips again for each setting; a test holds it to
-exactly the boardings and trip lengths `metrics.evaluate_od` gives.
+30 km, shares from 0 to 1, metro weights from 0 to 8. Each metro weight scales the
+stations' own counts of entries, so the whole grid is tried whatever weight the settings
+give, and today's settings are tried too when they fall between its points. Finding every
+trip's path is the slow part of the model and does not depend on these settings, so
+`busnet/calibration.py` finds the paths once and spreads the trips again for each setting;
+a test holds it to exactly the boardings and trip lengths `metrics.evaluate_od` gives.
 
 The best setting on all 56 routes ranks them at 0.67, with trips falling off over 1.5 km.
 That is the fit on the routes it was chosen on, so I cross-validated it: the routes are
@@ -58,7 +60,7 @@ settings whose trips are at least a given length, and cross-validating as before
 | 5 km | 290 | 0.63 ± 0.01 | 3 km fall-off, share 0.6, metro 8 | 5.0 km |
 | 6 km | 280 | 0.58 ± 0.01 | 4 km fall-off, share 1, metro 0 | 6.5 km |
 | 7 km | 245 | 0.55 ± 0.01 | 5 km fall-off, share 1, metro 0 | 7.6 km |
-| 8 km | 210 | 0.52 ± 0.01 | 6 km fall-off, share 0.5, metro 1 | 8.4 km |
+| 8 km | 210 | 0.52 ± 0.01 | 6 km fall-off, share 0.4, metro 0 | 8.4 km |
 | 8.4 km (today's) | 194 | 0.52 ± 0.01 | 6 km fall-off, share 0.5, metro 2 | 8.4 km |
 
 Among settings whose trips are as long as today's, today's settings are the ones chosen

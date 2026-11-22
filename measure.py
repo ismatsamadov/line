@@ -31,7 +31,6 @@ Standard library only. Usage:
 """
 
 import argparse
-import csv
 import json
 import sys
 import time
@@ -41,21 +40,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.service import SOURCES                                             # noqa: E402
 from busnet.metrics import (compare_ridership, detour_table, near_duplicates,  # noqa: E402
                             network_summary, route_table, trunk_corridors)
 from busnet.scenarios import balance_stops                                     # noqa: E402
-
-
-def write_csv(path, rows):
-    if not rows:
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:   # utf-8-sig: Excel shows ə/ş/ç correctly
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
+from busnet.tables import write_csv                                            # noqa: E402
 
 
 def show(title, summary):
@@ -89,7 +80,7 @@ def main():
     ap.add_argument("--max-gap", type=float, default=700, help="stop-balancing: never leave a gap longer than this (m)")
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -131,10 +122,11 @@ def main():
     write_csv(out / "duplicates.csv", near_duplicates(net))
     summary = network_summary(net, a, zones, args.od_origins if zones else 0, headways, attraction)
     modelled = split_modelled(summary)
+    rows = []
     if modelled is not None and observed:
         rows, fit = compare_ridership(net, modelled, observed)
-        write_csv(out / "ridership_check.csv", rows)
         summary["ridership_fit"] = fit
+    write_csv(out / "ridership_check.csv", rows)
     report = {"network": summary, "inputs": inp.found, "settings": asdict(a),
               "headway_sources": sources, "repairs": net.repairs}
     if inp.timetable:

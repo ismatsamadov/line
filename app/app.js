@@ -7,26 +7,50 @@ const logBox = document.getElementById("log");
 const log = (line) => { logBox.textContent += line + "\n"; logBox.scrollTop = logBox.scrollHeight; };
 const seconds = (t) => ((performance.now() - t) / 1000).toFixed(1) + " s";
 
-// A promise for each request to the worker, settled by the answer with the same id.
-const worker = new Worker("worker.js");
+// A promise for each request to the worker, settled by the answer with the same id. A worker
+// whose Python failed to start, failed fatally later, or could not even load Pyodide (its
+// error event), is let go with whatever waits on it, and the next run starts a fresh one.
+let worker = null, started = null, lost = null;
 const pending = new Map();
 let nextId = 1;
-worker.onmessage = (event) => {
-  const msg = event.data;
-  if (msg.type === "log") { log("  " + msg.line); return; }
-  const p = pending.get(msg.id);
-  if (!p) return;
-  pending.delete(msg.id);
-  msg.ok ? p.resolve(msg) : p.reject(new Error(msg.error));
-};
+
+function newWorker() {
+  const w = new Worker("worker.js");
+  w.onmessage = (event) => {
+    const msg = event.data;
+    if (msg.type === "log") { log("  " + msg.line); return; }
+    const p = pending.get(msg.id);
+    if (!p) return;
+    pending.delete(msg.id);
+    if (msg.ok) { p.resolve(msg); return; }
+    p.reject(new Error(msg.error));
+    if (msg.fatal) letGo(w, new Error(msg.error));     // Pyodide cannot be used again after a fatal error
+  };
+  w.onerror = (event) => {
+    if (event.preventDefault) event.preventDefault();
+    letGo(w, new Error(event.message || "the worker could not load Python"));
+  };
+  return w;
+}
+
+function letGo(w, error) {
+  if (worker !== w) return;
+  w.terminate();
+  worker = started = null;
+  lost = error;
+  for (const p of pending.values()) p.reject(error);
+  pending.clear();
+}
+
 const call = (cmd, args = {}) => new Promise((resolve, reject) => {
+  if (!worker) { reject(lost || new Error("Python is not running")); return; }   // let go between two calls
   const id = nextId++;
   pending.set(id, { resolve, reject });
   worker.postMessage({ id, cmd, ...args });
 });
 
-// Numbers equal to within tol, everything else exactly; JSON and CSV are parsed first, so that
-// a last-digit difference in a float is not counted as a change.
+// JSON numbers equal to within tol, everything else exactly; JSON is parsed first, so that a
+// last-digit difference in a float is not counted as a change.
 function sameValue(a, b, tol) {
   if (typeof a === "number" && typeof b === "number") return Math.abs(a - b) <= tol * Math.max(1, Math.abs(a), Math.abs(b));
   if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((x, i) => sameValue(x, b[i], tol));
@@ -37,14 +61,60 @@ function sameValue(a, b, tol) {
   return a === b;
 }
 
-function csvCells(text) {
-  return text.replace(/^﻿/, "").trim().split(/\r?\n/).map((line) => line.split(",").map((c) => (c !== "" && !isNaN(c) ? Number(c) : c)));
+// Two CSV cells: the same text, or two numbers no further apart than rounding to the decimals
+// written. The writers round floats to 4 decimals (fewer show when the last are zeros), so two
+// runs can differ by one in the 4th decimal; a cell written with more decimals is held to its
+// own last one. Whole numbers, such as counts and ids, must match exactly. Compared as exact
+// integers in units of the last decimal, as tests/test_regression.py compares them.
+// A float so large that its last bit is worth more than a decimal written may move by those bits too.
+const NUMBER = /^([+-]?)(\d*)(?:\.(\d*))?(?:[eE]([+-]?\d+))?$/;
+function sameCell(a, b) {
+  if (a === b) return true;
+  const [x, y] = [NUMBER.exec(a), NUMBER.exec(b)];
+  if (!x || !y || !(x[2] || x[3]) || !(y[2] || y[3])) return false;
+  if (x[3] === undefined && !x[4] && y[3] === undefined && !y[4]) return false;
+  const decimals = (m) => (m[3] || "").length - Number(m[4] || 0);
+  const places = Math.max(4, decimals(x), decimals(y));
+  const units = (m) => (m[1] === "-" ? -1n : 1n) * BigInt((m[2] || "") + (m[3] || "") || "0") * 10n ** BigInt(places - decimals(m));
+  const big = Math.max(Math.abs(Number(a)), Math.abs(Number(b)));
+  const ulp = big > 0 ? 2 ** (Math.floor(Math.log2(big)) - 52) : 0;     // the spacing of floats there, as math.ulp
+  const slack = 1n + BigInt(Math.floor(2 * ulp * 10 ** places));
+  const gap = units(x) - units(y);
+  return gap >= -slack && gap <= slack;
+}
+
+// Rows of cells as Python's csv.reader reads them: quoted cells may hold commas, quotes and line breaks.
+function csvRows(text) {
+  const rows = [];
+  let row = [], cell = "", quoted = false;
+  text = text.replace(/^\ufeff/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (quoted) {
+      if (ch !== '"') cell += ch;
+      else if (text[i + 1] === '"') { cell += '"'; i++; }
+      else quoted = false;
+    } else if (ch === '"') quoted = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n" || ch === "\r") {
+      if (ch === "\r" && text[i + 1] === "\n") i++;
+      rows.push(row.length || cell !== "" ? [...row, cell] : []);
+      row = []; cell = "";
+    } else cell += ch;
+  }
+  if (row.length || cell !== "") rows.push([...row, cell]);
+  return rows;
+}
+
+function sameCsv(mine, theirs) {
+  const [a, b] = [csvRows(mine), csvRows(theirs)];
+  return a.length === b.length && a.every((row, i) => row.length === b[i].length && row.every((c, j) => sameCell(c, b[i][j])));
 }
 
 function compareText(name, mine, theirs) {
   if (mine === theirs) return { ok: true, how: "identical, byte for byte" };
   if (name.endsWith(".json") && sameValue(JSON.parse(mine), JSON.parse(theirs), 1e-9)) return { ok: true, how: "same values (floats to 1e-9)" };
-  if (name.endsWith(".csv") && sameValue(csvCells(mine), csvCells(theirs), 1.5e-4)) return { ok: true, how: "same values (to the 4 decimals written)" };
+  if (name.endsWith(".csv") && sameCsv(mine, theirs)) return { ok: true, how: "same values (to the last decimal written)" };
   return { ok: false, how: "differs" };
 }
 
@@ -70,8 +140,6 @@ async function compareFolder(outDir, paths, tbody) {
   return same;
 }
 
-let started = null;
-
 async function run(city, withRedesign) {
   const button = document.getElementById("run");
   button.disabled = true;
@@ -81,7 +149,8 @@ async function run(city, withRedesign) {
     const t0 = performance.now();
     if (!started) {
       log("Loading Python ...");
-      started = call("start");
+      const w = worker = newWorker();
+      started = call("start").catch((e) => { letGo(w, e); throw e; });
     }
     const { version } = await started;
     log(`Python ${version} ready in ${seconds(t0)}`);

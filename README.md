@@ -103,7 +103,7 @@ city's GTFS feed, Kontur's population grid for its country and OpenStreetMap's
 destinations in the box of its stops, and writes a settings file whose `[data]` table
 names them; `measure.py` and `redesign.py` then run on that city. The feed's timetable
 gives every route the frequency and speed Baku's data lacks. The reader takes the
-weekday with the most bus trips and makes one stop pattern per route direction. Short
+weekday with the most bus departures and makes one stop pattern per route direction. Short
 turns count towards its frequency, large branches run as routes of their own and small
 ones are left out and listed, express routes are told apart by their names and their
 stops, and night routes are named so the redesign leaves them alone. It then moves the
@@ -121,10 +121,11 @@ explains the settings file.
 The same measurements and search ran on 25 more cities on five continents, each read from
 the GTFS feed its operator, city or a mapping project publishes, with the same settings for
 all, and on Baku read from its own feed. With the same buses, the average trip gets shorter
-in every city, by 2.83 minutes in the middle one (0.75 to 8.32). Kept to today's trip times
-instead, the 23 networks their operators or cities publish need 1,466 fewer of their 7,410
-buses, 20%, which saves 140,105 litres of fuel and 374 tonnes of CO₂ a weekday; with the
-three networks mapped from OpenStreetMap it comes to 3,872 fewer buses and 379,529 litres.
+in every city, by 2.91 minutes in the middle one (0.76 to 8.32). Kept to today's trip times
+instead, the 23 networks their operators or cities publish need 1,470 fewer of their 7,375
+buses, 20%, which saves 140,079 litres of fuel and 374 tonnes of CO₂ a weekday; with the
+three networks mapped from OpenStreetMap it comes to 3,910 fewer of 12,920 buses and
+383,172 litres.
 All of it rests on modelled demand, since no city but Baku publishes counts the model can
 use. [docs/world.md](docs/world.md) has the table, how the cities were chosen and how far to
 trust it; `output/world/` has the numbers, and `python3 world.py` regenerates them.

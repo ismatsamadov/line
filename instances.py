@@ -41,11 +41,13 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet import utrp                                                        # noqa: E402
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.instances import (cluster_stops, gravity, half_up, metres,         # noqa: E402
                               network_links, node_people, positions, todays_routes)
 from busnet.metrics import _route_key                                          # noqa: E402
 from busnet.service import run_time_s                                          # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 
 CLUSTER_M = 600                         # stops within this of the stop that starts a cluster join it
 CENTRE = ("the 28 May metro station", 40.379862, 49.848636)      # as data/metro/stations.csv places it
@@ -58,14 +60,6 @@ DEMAND_SCALE = 10                       # the trips are written ten times over, 
 SEARCHES = {"one_pass": False, "repeated": True}                  # name: repeat passes?
 MEASURES = ("att", "d0", "d1", "d2", "dun", "route_time")
 FIT_LADDER = ROOT / "output" / "robustness" / "fit_ladder.csv"
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def demand_check():
@@ -293,7 +287,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "output" / "instances"))
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

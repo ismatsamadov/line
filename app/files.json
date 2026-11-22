@@ -19,6 +19,7 @@
   "busnet/ridership.py",
   "busnet/scenarios.py",
   "busnet/service.py",
+  "busnet/tables.py",
   "busnet/utrp.py",
   "busnet/walking.py",
   "measure.py",

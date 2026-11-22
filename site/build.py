@@ -67,7 +67,11 @@ SHORTER_BY_M = 500.0          # a shorter path counts only if it saves this much
 
 # ---------------------------------------------------------------- reading output/
 
-def read_csv(path):
+def read_csv(path, may_be_missing=False):
+    """A table's rows. The scripts write no table without rows (and remove an old one), so a
+    table that can have none is read as empty when it is not there."""
+    if may_be_missing and not Path(path).exists():
+        return []
     with open(path, newline="", encoding="utf-8-sig") as f:
         return list(csv.DictReader(f))
 
@@ -353,7 +357,7 @@ def bicycle_layer(data, out, stop_ix):
     streets = read_csv(folder / "lanes.csv")
     routes_on = {r["street"]: r["bus_routes"].split() for r in streets}
     parking = load_parking(data["bicycle_parking"])
-    rows = {r["name"]: r for r in read_csv(folder / "parking.csv")}
+    rows = {r["name"]: r for r in read_csv(folder / "parking.csv", may_be_missing=True)}
     check("bicycle parking points", len(parking), summary["parking"]["points"])
     if set(rows) != {p.name for p in parking}:
         sys.exit("output/bicycle/parking.csv does not match the parking file; run bicycle.py first")
@@ -396,7 +400,7 @@ def build(out_dir):
     detours_csv = read_csv(out / "detours.csv")
     duplicates_csv = read_csv(out / "duplicates.csv")
     corridors_csv = read_csv(out / "corridors.csv")
-    removed_csv = read_csv(out / "scenario_removed_stops.csv")
+    removed_csv = read_csv(out / "scenario_removed_stops.csv", may_be_missing=True)
     repairs = parse_repairs((out / "repairs.txt").read_text(encoding="utf-8").splitlines())
     if [r for r in net.repairs] != (out / "repairs.txt").read_text(encoding="utf-8").splitlines():
         sys.exit("output/repairs.txt does not match the repairs of data/ayna.db; run measure.py first")

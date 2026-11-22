@@ -29,7 +29,6 @@ Standard library only. Usage:
 """
 
 import argparse
-import csv
 import json
 import sys
 import time
@@ -39,6 +38,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.gtfs import write_gtfs                                             # noqa: E402
 from busnet.impact import capped_minutes, impact_rows                         # noqa: E402
@@ -46,16 +46,7 @@ from busnet.inputs import load_inputs                                          #
 from busnet.metrics import evaluate_od, network_summary                        # noqa: E402
 from busnet.optimize import Context, Evaluator, Plan, fleet_for_same_time, search  # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
-
-
-def write_csv(path, rows):
-    if not rows:
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
+from busnet.tables import write_csv                                           # noqa: E402
 
 
 def route_rows(before, after, a, log, riders, counted, protected):
@@ -110,7 +101,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "output" / "redesign"))
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()

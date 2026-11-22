@@ -49,11 +49,13 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet import calibration                                                 # noqa: E402
-from busnet.destinations import zone_attraction                                # noqa: E402
+from busnet.config import settings_file                                        # noqa: E402
+from busnet.destinations import metro_points, zone_attraction                  # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
 from busnet.metrics import compare_ridership                                   # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
 from busnet.service import route_headways                                      # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 
 DECAYS_KM = (1, 1.5, 2, 3, 4, 5, 6, 8, 10, 15, 20, 30)
 SHARES = (0, 0.25, 0.4, 0.5, 0.6, 0.75, 1.0)
@@ -63,14 +65,6 @@ SEED = 7                                 # the sample the grid is scored on
 NOISE_SEEDS = (1, 2, 3, 4, 5)            # samples that show how much the fit moves with the sample
 FRESH_SEEDS = (101, 102, 103)            # samples the chosen settings are checked on
 FOLDS, REPEATS = 5, 200
-
-
-def write_csv(path, rows):
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def spearman(xs, ys):
@@ -106,15 +100,49 @@ def official_trip_km():
     return {"year": int(last["TIME_PERIOD"]), "km": float(last["OBS_VALUE"])}
 
 
-def pulls(fine, points, default_metro):
-    """{(destination_share, metro weight): each zone's pull}; population alone at share 0."""
+def settings_to_score(today):
+    """Every setting of the grid, (trip_decay_km, destination_share, metro weight), and today's
+    after them when they fall between the grid's points, so that today's are always scored."""
+    grid = [(d, s, m) for d in DECAYS_KM for s in SHARES for m in METRO_WEIGHTS]
+    return grid if today in grid else grid + [today]
+
+
+def pulls(fine, points, metro, keys):
+    """{(destination_share, metro weight): each zone's pull} for the (share, weight) keys;
+    population alone at share 0. points are the destinations besides the metro; metro, the
+    metro exits weighing one for every 1,000 daily entries (destinations.metro_points with
+    1), scaled by each weight, so a weight of 0 today takes no counts away from the others."""
     population = [z[2] for z in fine]
     out = {}
-    for m in METRO_WEIGHTS:
-        scaled = [(lat, lon, w * m / default_metro if kind == "metro" else w, kind) for lat, lon, w, kind in points]
-        for s in SHARES:
-            out[(s, m)] = zone_attraction(fine, scaled, s) or population
+    for s, m in keys:
+        scaled = points + [(lat, lon, w * m, kind) for lat, lon, w, kind in metro]
+        out[(s, m)] = zone_attraction(fine, scaled, s) or population
     return out
+
+
+def score(network, settings, origins, distances, rides, pull, observed, numbers, say=print):
+    """Each setting scored on one sample of trips (calibration.trip_paths): (grid, trip_km, rows,
+    route_rows), its modelled boardings of the counted routes in the order of numbers, its
+    average straight-line trip, and its rows of grid.csv and grid_routes.csv. pull holds each
+    (share, metro weight) of the settings (pulls); observed, the counted boardings by route number."""
+    grid, trip_km, rows, route_rows = {}, {}, [], []
+    for decay in dict.fromkeys(k[0] for k in settings):
+        dw = calibration.decay_weights(distances, decay)
+        for key in (k for k in settings if k[0] == decay):
+            _, s, m = key
+            b, km = calibration.spread(origins, rides, dw, pull[(s, m)], distances)
+            mod = counted_boardings(network, b, numbers)
+            grid[key], trip_km[key] = mod, km
+            fit = compare_ridership(network, b, observed)[1]
+            rows.append({"trip_decay_km": decay, "destination_share": s, "metro_weight_per_1000_entries": m,
+                         "mean_trip_km_straight_line": km,
+                         "spearman": fit["spearman"], "pearson_of_log_shares": fit["pearson_of_log_shares"]})
+            total = sum(mod) or 1
+            route_rows += [{"trip_decay_km": decay, "destination_share": s, "metro_weight_per_1000_entries": m,
+                            "route": n, "modelled_share": f"{v / total:.8g}"} for n, v in zip(numbers, mod)]
+        del dw
+        say(f"  decay {decay:4g} km done")
+    return grid, trip_km, rows, route_rows
 
 
 def counted_boardings(network, boardings, numbers):
@@ -182,7 +210,8 @@ def tradeoff_from_files(out):
         shares.setdefault(key(r), {})[r["route"]] = float(r["modelled_share"])
     grid = {k: [v[n] for n in numbers] for k, v in shares.items()}
     s = json.loads((out / "summary.json").read_text(encoding="utf-8"))["today"]
-    today = (float(s["trip_decay_km"]), float(s["destination_share"]), float(s["metro_weight_per_1000_entries"]))
+    # grid.csv holds today's settings rounded to 4 decimals, as write_csv rounds every float
+    today = tuple(round(float(s[k]), 4) for k in ("trip_decay_km", "destination_share", "metro_weight_per_1000_entries"))
     return tradeoff(observed, grid, trip_km, today)
 
 def main():
@@ -201,7 +230,8 @@ def main():
                   f"{r['spearman_held_out_mean']:.3f} +- {r['spearman_held_out_sd']:.3f}, chosen most {r['chosen_most']}")
         return
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else str(Path(args.config).resolve())
+    config = settings_file(args.config)
+    config = str(Path(config).resolve()) if config else None
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -218,7 +248,12 @@ def main():
     today_key = (a.trip_decay_km, a.destination_share, a.metro_weight_per_1000_entries)
     print(f"{len(numbers)} counted routes; {len(fine):,} zones; {args.origins:,} origins a sample")
 
-    pull = pulls(fine, inp.points, a.metro_weight_per_1000_entries)
+    settings = settings_to_score(today_key)
+    others = [pt for pt in inp.points if pt[3] != "metro"]
+    metro = []
+    if inp.found.get("metro_passengers") and inp.found.get("metro_exits"):
+        metro = metro_points(inp.data["metro_passengers"], inp.data["metro_exits"], 1.0)[0]
+    pull = pulls(fine, others, metro, dict.fromkeys(k[1:] for k in settings))
 
     # How much the fit at today's settings moves from one sample of origins to another.
     noise = []
@@ -232,23 +267,8 @@ def main():
     # The grid, on one sample: every setting's boardings on the counted routes, its fit and
     # the average length of its trips.
     origins, distances, rides = calibration.trip_paths(net, fair, fine, args.origins, seed=SEED, headways=headways)
-    grid, trip_km, rows, route_rows = {}, {}, [], []
-    for decay in DECAYS_KM:
-        dw = calibration.decay_weights(distances, decay)
-        for s in SHARES:
-            for m in METRO_WEIGHTS:
-                b, km = calibration.spread(origins, rides, dw, pull[(s, m)], distances)
-                mod = counted_boardings(net, b, numbers)
-                grid[(decay, s, m)], trip_km[(decay, s, m)] = mod, km
-                fit = compare_ridership(net, b, inp.observed)[1]
-                rows.append({"trip_decay_km": decay, "destination_share": s, "metro_weight_per_1000_entries": m,
-                             "mean_trip_km_straight_line": km,
-                             "spearman": fit["spearman"], "pearson_of_log_shares": fit["pearson_of_log_shares"]})
-                total = sum(mod) or 1
-                route_rows += [{"trip_decay_km": decay, "destination_share": s, "metro_weight_per_1000_entries": m,
-                                "route": n, "modelled_share": f"{v / total:.8g}"} for n, v in zip(numbers, mod)]
-        del dw
-        print(f"  decay {decay:4g} km done ({time.time() - t0:.0f}s)", flush=True)
+    grid, trip_km, rows, route_rows = score(net, settings, origins, distances, rides, pull, inp.observed, numbers,
+                                            lambda line: print(f"{line} ({time.time() - t0:.0f}s)", flush=True))
     del distances
     write_csv(out / "grid.csv", rows)
     write_csv(out / "grid_routes.csv", route_rows)
@@ -319,7 +339,8 @@ def main():
         "fresh_samples": fresh,
         "official_average_bus_trip_km": official_trip_km(),
         "grid": {"trip_decay_km": list(DECAYS_KM), "destination_share": list(SHARES),
-                 "metro_weight_per_1000_entries": list(METRO_WEIGHTS), "grid_seed": SEED},
+                 "metro_weight_per_1000_entries": list(METRO_WEIGHTS), "grid_seed": SEED,
+                 "settings_scored": len(grid)},
         "settings": asdict(fair),
     }
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")

@@ -1,29 +1,29 @@
 ﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
-1,merge,114B,"Merge 114B into 114A: 92% of its stops are also on 114A; its buses go to 114A, 557, 511",79.8104,79.7496,0.0608,0.0
-2,drop,164,"Drop 164: among the 20 routes with the fewest modelled riders per bus; its buses go to 125, 509, 206",79.7496,79.7004,0.0492,171.0
-3,merge,100,"Merge 100 into 108B: 93% of its stops are also on 108B; its buses go to 108B, 133, 165",79.7004,79.6623,0.0381,0.0
-4,straighten,161,"Straighten 161 direction 2 between Hövsan Olimpiya İdman Kompleksi and Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə: 1.8 km shorter, 8 of its stops dropped",79.6623,79.6309,0.0314,0.0
-5,straighten,132,"Straighten 132 direction 2 between Hövsan Olimpiya İdman Kompleksi and Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə: 1.8 km shorter, 8 of its stops dropped",79.6309,79.6171,0.0138,0.0
-6,merge,173A,"Merge 173A into 173B: 94% of its stops are also on 173B; its buses go to 173B, 185, 217",79.6171,79.5956,0.0215,20.1429
-7,straighten,509,"Straighten 509 direction 1 between 8 saylı notariat ofisi and Xocasən şosesi: 6.6 km shorter, 8 of its stops dropped",79.5956,79.5733,0.0223,0.0
-8,straighten,166,"Straighten 166 direction 1 between 145 nömrəli tam orta məktəb and Səfərbərlik üzrə Sabunçu r. dövlət idarəsi: 3.9 km shorter, 4 of its stops dropped",79.5733,79.5557,0.0176,0.0
-9,drop,595,"Drop 595: among the 20 routes with the fewest modelled riders per bus; its buses go to 531, 594, 509",79.5557,79.5418,0.0139,0.0
-10,straighten,32,"Straighten 32 direction 1 between S.Əhmədov küç. 98 and 11 nömrəli Birləşmiş Şəhər Poliklinikas: 2.2 km shorter, 5 of its stops dropped",79.5418,79.5242,0.0176,0.0
-11,straighten,509,"Straighten 509 direction 2 between Xocasən şosesi and Cırtdan uşaq əyləncə parkı: 6.1 km shorter, 7 of its stops dropped",79.5242,79.5048,0.0194,0.0
-12,drop,121E,"Drop 121E: among the 20 routes with the fewest modelled riders per bus; its buses go to 120, 120E, 132",79.5048,79.4892,0.0156,0.0
-13,straighten,157,"Straighten 157 direction 2 between Bakı-Sumqayıt şosesi YDM and R.Allahverdiyev küç.: 3.0 km shorter, 6 of its stops dropped",79.4892,79.4779,0.0113,0.0
-14,straighten,40,"Straighten 40 direction 1 between Sabunçu Dәmiryol Stansiyası and S.Mehmandarov küç. 34: 1.8 km shorter, 8 of its stops dropped",79.4779,79.4665,0.0114,0.0
-15,straighten,3,"Straighten 3 direction 1 between Atatürk prospekti 159 and Azərbaycan Dövlət Pedaqoji Universiteti 3-cü korpus: 2.1 km shorter, 4 of its stops dropped",79.4665,79.4562,0.0104,0.0
-16,drop,149,"Drop 149: among the 20 routes with the fewest modelled riders per bus; its buses go to 205, 125, 120A",79.4562,79.4467,0.0095,0.0
-17,straighten,17,"Straighten 17 direction 2 between A.Abbasov küç. 68 and 54 saylı uşaq bağçası: 3.1 km shorter, 10 of its stops dropped",79.4467,79.4362,0.0105,0.0
-18,drop,39,"Drop 39: among the 20 routes with the fewest modelled riders per bus; its buses go to 96, 205, 18",79.4362,79.4253,0.0109,0.0
-19,merge,169,"Merge 169 into 168: 91% of its stops are also on 168; its buses go to 168, 141, 160",79.4253,79.4158,0.0095,0.0
-20,straighten,537,"Straighten 537 direction 1 between Pirşağı qəs. 14 saylı TYS and T.Məmmədov küç. 137A: 3.4 km shorter, 0 of its stops dropped",79.4158,79.4076,0.0082,0.0
-21,drop,140E,"Drop 140E: among the 20 routes with the fewest modelled riders per bus; its buses go to 140, 141, 146",79.4076,79.4009,0.0067,0.0
-22,straighten,125,"Straighten 125 direction 2 between Lökbatan qəs. 139 nömrəli tam orta məkt and Cənub Qapısı y/m: 2.1 km shorter, 10 of its stops dropped",79.4009,79.3939,0.0071,0.0
-23,merge,210,"Merge 210 into 215: 93% of its stops are also on 215; its buses go to 215, 212, 132",79.3939,79.3881,0.0058,495.4286
-24,stops,,"Remove 342 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",79.3881,79.1701,0.218,0.0
-25,shift,,"Move 24 buses from the 20 routes where a bus saves riders the least waiting (174, 180, 190, 130, 54, 143, 197, 198, 195, 554, 550, 22, 160A, 182, 533, 131, 50, 212, 551, 177) to the 20 where it saves the most (519, 102, 161, 515, 503, 170, 133, H1, 569, 139, 502, 204, 113, 118A, 183, 148, 104, 179, 114A, 508)",79.1701,78.7946,0.3756,0.0
-26,shift,,"Move 20 buses from the 20 routes where a bus saves riders the least waiting (158, 174, 180, 190, 54, 143, 131, 197, 550, 551, 554, 155, 22, 195, 198, 41, 141E, 182, 160A, 42) to the 20 where it saves the most (503, 170, 515, 502, 133, 113, 102, H1, 161, 569, 104, 139, 204, 183, 118A, 148, 179, 71, 511, 114A)",78.7946,78.5855,0.209,0.0
-27,shift,,"Move 21 buses from the 20 routes where a bus saves riders the least waiting (158, 54, 131, 197, 550, 551, 554, 155, 22, 41, 198, 533, 101, 50, 42, 141E, 168, 120A, 212, 177) to the 20 where it saves the most (503, 161, 515, 170, H1, 113, 133, 502, 102, 104, 569, 179, 139, 71, 183, 204, 592, 508, 114A, 118A)",78.5855,78.4069,0.1786,0.0
-28,shift,,"Move 15 buses from the 20 routes where a bus saves riders the least waiting (158, 42, 54, 131, 197, 550, 168, 101, 120A, 551, 554, 41, 50, 22, 155, 35, 533, 198, 108A, 126) to the 20 where it saves the most (503, 502, 133, H1, 515, 170, 113, 161, 104, 102, 148, 211, 179, 522, 535, 511, 183, 71, 592, 569)",78.4069,78.3002,0.1067,0.0
+1,merge,114B,"Merge 114B into 114A: 92% of its stops are also on 114A; its buses go to 114A, 557, 511",79.8086,79.7478,0.0607,0.0
+2,drop,164,"Drop 164: among the 20 routes with the fewest modelled riders per bus; its buses go to 125, 509, 206",79.7478,79.6985,0.0493,171.0
+3,merge,100,"Merge 100 into 108B: 93% of its stops are also on 108B; its buses go to 108B, 133, 165",79.6985,79.6604,0.0381,0.0
+4,straighten,161,"Straighten 161 direction 2 between Hövsan Olimpiya İdman Kompleksi and Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə: 1.8 km shorter, 8 of its stops dropped",79.6604,79.6293,0.0312,0.0
+5,straighten,132,"Straighten 132 direction 2 between Hövsan Olimpiya İdman Kompleksi and Hövsan şosesi Rasim Şahsuvarov küçəsi ilə kəsişmə: 1.8 km shorter, 8 of its stops dropped",79.6293,79.6154,0.0138,0.0
+6,merge,173A,"Merge 173A into 173B: 94% of its stops are also on 173B; its buses go to 173B, 185, 217",79.6154,79.5939,0.0216,20.1429
+7,straighten,509,"Straighten 509 direction 1 between 8 saylı notariat ofisi and Xocasən şosesi: 6.6 km shorter, 8 of its stops dropped",79.5939,79.5715,0.0223,0.0
+8,straighten,166,"Straighten 166 direction 1 between 145 nömrəli tam orta məktəb and Səfərbərlik üzrə Sabunçu r. dövlət idarəsi: 3.9 km shorter, 4 of its stops dropped",79.5715,79.5539,0.0176,0.0
+9,drop,595,"Drop 595: among the 20 routes with the fewest modelled riders per bus; its buses go to 531, 594, 509",79.5539,79.54,0.0139,0.0
+10,straighten,32,"Straighten 32 direction 1 between S.Əhmədov küç. 98 and 11 nömrəli Birləşmiş Şəhər Poliklinikas: 2.2 km shorter, 5 of its stops dropped",79.54,79.5224,0.0176,0.0
+11,straighten,509,"Straighten 509 direction 2 between Xocasən şosesi and Cırtdan uşaq əyləncə parkı: 6.1 km shorter, 7 of its stops dropped",79.5224,79.5032,0.0192,0.0
+12,drop,121E,"Drop 121E: among the 20 routes with the fewest modelled riders per bus; its buses go to 120, 120E, 132",79.5032,79.4876,0.0156,0.0
+13,straighten,157,"Straighten 157 direction 2 between Bakı-Sumqayıt şosesi YDM and R.Allahverdiyev küç.: 3.0 km shorter, 6 of its stops dropped",79.4876,79.4764,0.0113,0.0
+14,straighten,40,"Straighten 40 direction 1 between Sabunçu Dәmiryol Stansiyası and S.Mehmandarov küç. 34: 1.8 km shorter, 8 of its stops dropped",79.4764,79.465,0.0114,0.0
+15,straighten,3,"Straighten 3 direction 1 between Atatürk prospekti 159 and Azərbaycan Dövlət Pedaqoji Universiteti 3-cü korpus: 2.1 km shorter, 4 of its stops dropped",79.465,79.4545,0.0105,0.0
+16,drop,149,"Drop 149: among the 20 routes with the fewest modelled riders per bus; its buses go to 205, 125, 120A",79.4545,79.4451,0.0095,0.0
+17,straighten,17,"Straighten 17 direction 2 between A.Abbasov küç. 68 and 54 saylı uşaq bağçası: 3.1 km shorter, 10 of its stops dropped",79.4451,79.4346,0.0104,0.0
+18,drop,39,"Drop 39: among the 20 routes with the fewest modelled riders per bus; its buses go to 96, 205, 18",79.4346,79.4238,0.0109,0.0
+19,merge,169,"Merge 169 into 168: 91% of its stops are also on 168; its buses go to 168, 141, 160",79.4238,79.4142,0.0095,0.0
+20,straighten,537,"Straighten 537 direction 1 between Pirşağı qəs. 14 saylı TYS and T.Məmmədov küç. 137A: 3.4 km shorter, 0 of its stops dropped",79.4142,79.4061,0.0081,0.0
+21,drop,140E,"Drop 140E: among the 20 routes with the fewest modelled riders per bus; its buses go to 140, 141, 146",79.4061,79.3994,0.0067,0.0
+22,straighten,125,"Straighten 125 direction 2 between Lökbatan qəs. 139 nömrəli tam orta məkt and Cənub Qapısı y/m: 2.1 km shorter, 10 of its stops dropped",79.3994,79.3924,0.0071,0.0
+23,merge,210,"Merge 210 into 215: 93% of its stops are also on 215; its buses go to 215, 212, 132",79.3924,79.3866,0.0058,495.4286
+24,stops,,"Remove 342 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",79.3866,79.1687,0.2179,0.0
+25,shift,,"Move 24 buses from the 20 routes where a bus saves riders the least waiting (174, 180, 190, 130, 54, 143, 197, 198, 195, 554, 550, 22, 160A, 533, 182, 131, 50, 212, 551, 177) to the 20 where it saves the most (519, 102, 161, 503, 515, 170, 133, H1, 569, 139, 502, 204, 113, 118A, 183, 148, 104, 179, 114A, 508)",79.1687,78.7932,0.3755,0.0
+26,shift,,"Move 20 buses from the 20 routes where a bus saves riders the least waiting (158, 174, 180, 190, 54, 143, 131, 197, 550, 551, 554, 155, 22, 195, 198, 41, 141E, 182, 160A, 42) to the 20 where it saves the most (503, 170, 515, 502, 133, 113, 102, H1, 161, 569, 104, 139, 204, 183, 118A, 148, 179, 71, 511, 114A)",78.7932,78.5842,0.209,0.0
+27,shift,,"Move 21 buses from the 20 routes where a bus saves riders the least waiting (158, 54, 131, 197, 550, 551, 554, 155, 22, 41, 198, 533, 101, 50, 42, 141E, 168, 120A, 212, 177) to the 20 where it saves the most (503, 161, 515, 170, 113, H1, 133, 502, 102, 104, 569, 179, 139, 71, 183, 204, 592, 508, 114A, 118A)",78.5842,78.4059,0.1782,0.0
+28,shift,,"Move 15 buses from the 20 routes where a bus saves riders the least waiting (158, 42, 54, 131, 197, 550, 168, 101, 120A, 551, 554, 41, 50, 22, 155, 35, 533, 198, 108A, 126) to the 20 where it saves the most (503, 502, 133, H1, 515, 170, 113, 161, 104, 102, 148, 211, 179, 522, 535, 511, 183, 71, 592, 569)",78.4059,78.2992,0.1067,0.0

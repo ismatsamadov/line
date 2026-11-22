@@ -24,7 +24,7 @@ Detours are common and mostly unnecessary. There are 271 of them, adding 939 km 
 
 ## 2. Who the network reaches, and how honest the model is
 
-Two thirds of the 3.04 million people in the area live within 400 m of a served stop; 91.5% within 1 km. A door-to-door travel model, built from the same public data with a gravity model for where people go, gives an average trip of 51.8 minutes, with 29% of trips possible within 45 minutes and 35% of trips having no stop within 500 m at one end or the other.
+Two thirds of the 3.04 million people in the area live within 400 m of a served stop; 91.5% within 1 km. A door-to-door travel model, built from the same public data with a gravity model for where people go, gives an average trip of 51.9 minutes, with 29% of trips possible within 45 minutes and 35% of trips having no stop within 500 m at one end or the other.
 
 How much can such a model be trusted? I checked its ranking of routes against the observed boardings of the 56 BakuBus routes that have counts. The Spearman correlation is 0.58: it ranks routes moderately well, no better. The paper says so rather than hiding it, and the redesign uses real counts wherever they exist for exactly that reason.
 
@@ -32,7 +32,7 @@ How much can such a model be trusted? I checked its ranking of routes against th
 
 I then ran a cautious search that applies the changes other cities' redesigns have used, merging near-duplicate routes, dropping lightly used ones, straightening detours, thinning closely spaced stops and moving buses to where they save riders the most waiting, while keeping today's fleet and never leaving more than a few hundred people without a stop. It keeps 27 changes. On trips it was not tuned to, the average trip shortens by about a minute; or, taken the other way, today's travel times can be delivered with about 12% fewer buses, bus-hours and fuel.
 
-A minute is small, so I tested how far it depends on luck and assumptions. On 10 independent trip samples the gain is 0.68 to 0.81 minutes, and under 14 alternative assumptions, from different transfer penalties to different headways for the routes without counts, it stays between 0.46 and 0.88. The smallest gain is the run without the least certain kind of change, the bus moves: the structural changes alone keep three fifths of the gain. And a stricter rule under which nobody at all loses a stop gains as much as the default run, so the 976 people the default run strands buy nothing.
+A minute is small, so I tested how far it depends on luck and assumptions. On 10 independent trip samples the gain is 0.68 to 0.81 minutes, and under 14 alternative assumptions, from different transfer penalties to different headways for the routes without counts, it stays between 0.46 and 0.89. The smallest gain is the run without the least certain kind of change, the bus moves: the structural changes alone keep three fifths of the gain. And a stricter rule under which nobody at all loses a stop gains as much as the default run, so the 976 people the default run strands buy nothing.
 
 ![Gain of the redesign on ten trip samples and under fourteen alternative assumptions](figure-4.png)
 

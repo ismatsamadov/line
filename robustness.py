@@ -37,6 +37,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
+from busnet.config import settings_file                                        # noqa: E402
 from busnet.destinations import zone_attraction                                # noqa: E402
 from busnet.graph import StopIndex                                             # noqa: E402
 from busnet.inputs import load_inputs                                          # noqa: E402
@@ -44,6 +45,7 @@ from busnet.metrics import compare_ridership, coverage_by_route, evaluate_od   #
 from busnet.optimize import Context, Evaluator, Plan, search                   # noqa: E402
 from busnet.population import load_population, stops_bbox                     # noqa: E402
 from busnet.service import operations, route_headways                         # noqa: E402
+from busnet.tables import write_csv                                            # noqa: E402
 from busnet.walking import load_walk_network                                   # noqa: E402
 
 RADII = (300, 400, 500, 800, 1000)
@@ -73,16 +75,6 @@ VARIANTS = [
      ['headway_by_zone={"Şəhərdaxili" = 12.5, "Şəhərdaxili (ekspres)" = 18.75, "Şəhərətrafı" = 18.75, '
       '"Şəhərətrafı (ekspres)" = 25, "Qəsəbədaxili" = 25, "Qəsəbələrarası" = 25, "Şəhərlərarası" = 37.5}']),
 ]
-
-
-def write_csv(path, rows):
-    if not rows:
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
 
 
 def capped(acc, a):
@@ -224,9 +216,7 @@ def redesign_seeds(inp, fine, fine_pull, seeds, say):
 def run_variant(name, overrides, config, tmp):
     """Run redesign.py with overrides into a temporary folder; return its summary and changes."""
     out = Path(tmp) / name
-    cmd = [sys.executable, str(ROOT / "redesign.py"), "--out", str(out)]
-    if config:
-        cmd += ["--config", str(config)]
+    cmd = [sys.executable, str(ROOT / "redesign.py"), "--out", str(out), "--config", str(config) if config else "none"]
     for item in overrides:
         cmd += ["--set", item]
     done = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
@@ -276,7 +266,8 @@ def main():
     ap.add_argument("--skip-settings", action="store_true", help="do not run the redesign under other assumptions")
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else str(Path(args.config).resolve())
+    config = settings_file(args.config)
+    config = str(Path(config).resolve()) if config else None
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
@@ -309,8 +300,7 @@ def main():
         seed_rows = redesign_seeds(inp, fine, fine_pull, seeds, print)
         write_csv(out / "fit_ladder.csv", ladder)              # on disk before the slow runs are collected
         write_csv(out / "coverage_radius.csv", coverage)
-        if walk_rows:
-            write_csv(out / "coverage_walk.csv", walk_rows)
+        write_csv(out / "coverage_walk.csv", walk_rows or [])   # without a walk network, no table, and no old one
         write_csv(out / "redesign_seeds.csv", seed_rows)
 
         variants, failed = None, []
@@ -341,8 +331,7 @@ def main():
         "redesign_settings": None if failed else variants,
         "settings": asdict(a), "inputs": inp.found,
     }
-    if variants and not failed:
-        write_csv(out / "redesign_settings.csv", variants)
+    write_csv(out / "redesign_settings.csv", variants if variants and not failed else [])
     (out / "summary.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     if failed:
         sys.exit("These redesign runs failed, so redesign_settings.csv was not written:\n  " + "\n  ".join(failed))

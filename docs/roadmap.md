@@ -8,7 +8,7 @@ about what is missing, not what has been built.
 The weakest part of the work is demand. The gravity model ranks routes against the
 BakuBus counts at only 0.58, and 145 of the 201 routes have no counts at all, so the
 redesign's bus moves rest on estimates. Route 519 is the warning sign: a 3-stop shuttle
-that the model credits with 14,700 boardings a day and that the search therefore runs
+that the model credits with 14,800 boardings a day and that the search therefore runs
 every 3 minutes. Nothing I can do with public data fixes this, and the data that would
 (real headways, boardings for the other carriers' routes, BakıKart validations) cannot
 be obtained from AYNA, so the estimates are what the work has to live with and the

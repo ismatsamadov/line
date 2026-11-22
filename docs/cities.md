@@ -23,8 +23,8 @@ the file of October 2026, published on 5 November ([data/SOURCES.md](../data/SOU
 It has 80 routes: 52 bus routes, 21 trolleybus routes and 7 tram routes. The model reads
 the buses only, as it leaves out Baku's metro, so where trams and trolleybuses carry the
 centre of Riga the bus network looks thinner than the city's transit is. It reads them
-as they run on Wednesday 4 November 2026, the weekday with the most bus trips: 3,499
-departures. From 05:00 to 23:00, buses leave at least a quarter as often as in the busiest
+as they run on Wednesday 4 November 2026, the weekday with the most bus departures:
+3,499. From 05:00 to 23:00, buses leave at least a quarter as often as in the busiest
 hour, so each route's trips are spread over those 18 hours.
 
 98.2% of the departures run a route's main stop sequence or a short turn of it. Four
@@ -53,7 +53,7 @@ Latvia, because no Overpass server answered on the day.
 | Routes direct / indirect / very indirect / loop | 29 / 98 / 55 / 19 | 7 / 32 / 14 / 2 |
 | Detours found | 271 on 139 routes | 78 on 33 routes |
 | People within 400 m of a stop, straight line | 66.0% of 3.04 million | 66.7% of 0.60 million |
-| Average door-to-door trip, trips that can be made | 51.8 min | 59.9 min |
+| Average door-to-door trip, trips that can be made | 51.9 min | 60.0 min |
 | Trips that can be made within 45 minutes | 29.4% | 20.8% |
 | Bus-equivalents in service, all-day average | 2,015 | 185 |
 | Bus-km a day | 588,994 | 56,941 |
@@ -65,7 +65,7 @@ indirect, a median of 1.81 times the straight line between their ends against 1.
 the routes overlap about as much, 1.87 route-km for every kilometre of street link
 against 1.93. Riga's stops are further apart: only 7.8% of its gaps are under 300 m,
 against 23.9% in Baku. The same share of people live near a stop, about two in three,
-but trips by bus take longer, 59.9 minutes on average against 51.8. That is what leaving
+but trips by bus take longer, 60.0 minutes on average against 51.9. That is what leaving
 out the trams and trolleybuses should do. Riga's bus headways are long, a median of 41
 minutes over the day, because frequent service in the centre is on rails and wires.
 
@@ -83,14 +83,14 @@ On the independent check:
 
 | Measure | Today | Same buses | Change | 80% of the buses | Change |
 |---|---|---|---|---|---|
-| Average trip, impossible trips counted at 120 min | 80.40 min | 77.41 min | −2.99 min | 80.31 min | −0.09 min |
-| Average trip, possible trips only | 59.90 min | 56.47 min | −3.42 min | 59.95 min | +0.05 min |
-| Trips possible within 45 min | 20.8% | 22.4% | +1.6 points | 20.2% | −0.6 points |
+| Average trip, impossible trips counted at 120 min | 80.39 min | 77.42 min | −2.98 min | 80.32 min | −0.08 min |
+| Average trip, possible trips only | 60.02 min | 56.56 min | −3.47 min | 60.06 min | +0.04 min |
+| Trips possible within 45 min | 20.8% | 22.3% | +1.5 points | 20.2% | −0.7 points |
 | People within 400 m of a stop | 401,933 | 399,706 | −2,227 | 399,706 | −2,227 |
-| Bus-equivalents, rounded up per route | 185 | 177 | −8 | 150 | −35 |
+| Bus-equivalents, rounded up per route | 185 | 178 | −7 | 150 | −35 |
 | Bus-hours a day | 2,491 | 2,491 | 0 | 2,004 | −486 |
-| Bus-km a day | 56,941 | 57,725 | +784 | 46,450 | −10,491 |
-| Fuel a day | 21,679 L | 21,915 L | +236 L | 17,635 L | −4,044 L |
+| Bus-km a day | 56,941 | 57,705 | +764 | 46,435 | −10,506 |
+| Fuel a day | 21,679 L | 21,909 L | +230 L | 17,630 L | −4,049 L |
 | CO₂ a day | 57.9 t | 58.5 t | +0.6 t | 47.1 t | −10.8 t |
 
 With today's buses the average trip gets three minutes shorter, four times Baku's gain.

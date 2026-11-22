@@ -1,9 +1,11 @@
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from busnet.assumptions import Assumptions
-from busnet.config import DATA_KEYS, load_config, parse_value
+from busnet.config import DATA_KEYS, load_config, parse_value, settings_file
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,3 +50,24 @@ class Settings(unittest.TestCase):
         self.assertEqual(parse_value('"text"'), "text")
         self.assertEqual(parse_value("bare word"), "bare word")
         self.assertEqual(parse_value('["180", "519"]'), ["180", "519"])
+
+
+class SettingsFile(unittest.TestCase):
+    def test_none_means_the_built_in_defaults(self):
+        self.assertIsNone(settings_file("none"))
+        self.assertIsNone(settings_file("None"))
+        self.assertEqual(settings_file(str(ROOT / "busnet.toml")), str(ROOT / "busnet.toml"))
+
+    def test_a_mistyped_file_stops_every_script_before_it_writes_anything(self):
+        for script in ("measure.py", "redesign.py", "robustness.py", "calibrate.py", "instances.py", "bicycle.py"):
+            with self.subTest(script=script), tempfile.TemporaryDirectory() as tmp:
+                out = Path(tmp) / "fresh"
+                done = subprocess.run([sys.executable, str(ROOT / script), "--config", "cities/rigaa.toml", "--out", str(out)],
+                                      cwd=ROOT, capture_output=True, text=True)
+                self.assertNotEqual(done.returncode, 0)
+                self.assertIn("no settings file at cities/rigaa.toml", done.stderr)
+                self.assertFalse(out.exists())
+
+
+if __name__ == "__main__":
+    unittest.main()

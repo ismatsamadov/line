@@ -6,19 +6,26 @@ seconds), and the world table, gathered from the cities' results, always run. Th
 the benchmark (about three) and the robustness checks (about ten) run only with
 BUSNET_SLOW_TESTS=1 in the environment.
 
+A rerun into a folder an earlier run wrote must leave none of the earlier run's tables
+behind.
+
 Files must match byte for byte, with one allowance: Python 3.12 changed how sum() adds
-floats, so an older Python can differ in the last digits. A CSV or JSON file that is not
-byte-identical still passes when every number in it matches to within rounding."""
+floats, so an older Python can differ in the last digits. A JSON file that is not
+byte-identical still passes when every number in it matches to 1e-9, and a CSV file when
+every number matches to the rounding of the decimals written (one in the 4th decimal) and
+every whole number and text exactly."""
 
 import csv
 import io
 import json
 import math
 import os
+import re
 import subprocess
 import sys
 import tempfile
 import unittest
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,17 +55,30 @@ def _same(a, b, tol):
     return a == b
 
 
-def _cells(data):
-    rows = []
-    for row in csv.reader(io.StringIO(data.decode("utf-8-sig"))):
-        cells = []
-        for c in row:
-            try:
-                cells.append(float(c))
-            except ValueError:
-                cells.append(c)
-        rows.append(cells)
-    return rows
+def _same_cell(a, b):
+    """Two CSV cells: the same text, or two numbers no further apart than rounding to the
+    decimals written. The writers round floats to 4 decimals (fewer show when the last are
+    zeros), so two runs whose floats differ in the last bits can differ by one in the 4th
+    decimal; a cell written with more decimals is held to its own last one. Whole numbers,
+    such as counts and ids, must match exactly."""
+    if a == b:
+        return True
+    if not (_NUMBER.fullmatch(a) and _NUMBER.fullmatch(b)) or (_WHOLE.fullmatch(a) and _WHOLE.fullmatch(b)):
+        return False
+    x, y = Decimal(a), Decimal(b)
+    places = max(4, -x.as_tuple().exponent, -y.as_tuple().exponent)
+    slack = 1 + int(2 * math.ulp(max(abs(float(x)), abs(float(y)))) * 10 ** places)   # past 1e12 a float's last bit outweighs the 4th decimal
+    return abs(x - y) <= Decimal(1).scaleb(-places) * slack
+
+
+_NUMBER = re.compile(r"[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?")
+_WHOLE = re.compile(r"[+-]?\d+")
+
+
+def _same_csv(expected, actual):
+    rows = [list(csv.reader(io.StringIO(data.decode("utf-8-sig")))) for data in (expected, actual)]
+    return len(rows[0]) == len(rows[1]) and all(
+        len(r) == len(q) and all(_same_cell(a, b) for a, b in zip(r, q)) for r, q in zip(*rows))
 
 
 def same_file(expected, actual, name):
@@ -67,7 +87,7 @@ def same_file(expected, actual, name):
     if name.endswith(".json"):
         return _same(json.loads(expected), json.loads(actual), 1e-9)
     if name.endswith(".csv"):
-        return _same(_cells(expected), _cells(actual), 1.5e-4)    # values are rounded to 4 decimals
+        return _same_csv(expected, actual)
     return False
 
 
@@ -133,6 +153,47 @@ class CommittedResults(unittest.TestCase):
             self.assertEqual(differences(ROOT / "output" / "robustness", Path(tmp)), [])
 
 
+class Rerun(unittest.TestCase):
+    """A run into a folder an earlier run wrote leaves no table of the earlier run behind."""
+
+    def test_every_script_writes_its_tables_with_the_one_writer(self):
+        import importlib
+        from busnet.tables import write_csv
+        for name in ("measure", "redesign", "robustness", "bicycle", "calibrate", "world", "instances", "benchmark"):
+            self.assertIs(importlib.import_module(name).write_csv, write_csv, name)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "table.csv"
+            write_csv(path, [{"stop_id": 7970, "km": 0.12345}])
+            self.assertEqual(path.read_bytes(), "\ufeffstop_id,km\r\n7970,0.1235\r\n".encode())
+            write_csv(path, [])
+            self.assertFalse(path.exists())
+
+    def test_stop_balancing_that_removes_nothing_after_one_that_removed_stops(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            args = ("--config", str(CITY), "--od-origins", "2", "--scenario", "stop-balancing")
+            removed = Path(tmp) / "scenario_removed_stops.csv"
+            regenerate("measure.py", tmp, *args, "--min-gap", "250")
+            self.assertTrue(removed.exists())
+            regenerate("measure.py", tmp, *args, "--min-gap", "0")
+            details = json.loads((Path(tmp) / "scenario.json").read_text(encoding="utf-8"))["details"]
+            self.assertEqual((details["removed_stops"], details["removed_stop_visits"]), (0, 0))
+            self.assertFalse(removed.exists())
+
+
+# (cell, cell, the same?) for both CSV comparisons, this one and app.js's (tests/test_app.py).
+CSV_CASES = [
+    ("401932.5714", "401932.5715", True), ("0.5", "0.5001", True),       # 0.5000 is written 0.5
+    ("12.0", "11.9999", True), ("401932.5714", "401982.5714", False),    # 50 more people
+    ("401932.5714", "401932.5716", False), ("0.5", "0.6", False),
+    ("0.012345678", "0.012345679", True), ("0.012345678", "0.012345688", False),   # eight digits written
+    ("401932", "401933", False), ("0123", "123", False),                 # a count is exact, an id is text
+    ("-0.0", "0.0", True), ("1e-05", "1.1e-05", True), ("1e-05", "1.2e-05", False),
+    ("1000000000000.1234", "1000000000000.1236", True),                  # its last bit is worth 1.2e-4 there
+    ("1000000000000.1234", "1000000000000.1239", False),
+    ('"x,0.1234,y"', '"x,0.1235,y"', False),                             # a quoted cell is text, commas and all
+]
+
+
 class Comparison(unittest.TestCase):
     def test_numbers_match_to_within_rounding_but_text_must_match_exactly(self):
         self.assertTrue(same_file(b'{"a": [1.00000000001, "x"]}', b'{"a": [1.0, "x"]}', "f.json"))
@@ -141,3 +202,17 @@ class Comparison(unittest.TestCase):
         self.assertTrue(same_file("﻿r,v\n1,0.1234\n".encode(), "﻿r,v\n1,0.1235\n".encode(), "f.csv"))
         self.assertFalse(same_file("﻿r,v\n1,0.1234\n".encode(), "﻿r,v\n1,0.1244\n".encode(), "f.csv"))
         self.assertFalse(same_file(b"abc", b"abd", "f.txt"))
+
+    def test_a_csv_number_may_move_by_its_last_decimal_and_no_more(self):
+        for a, b, same in CSV_CASES:
+            csv_ = lambda v: f"﻿route,people\r\n22,{v}\r\n".encode()
+            self.assertEqual(same_file(csv_(a), csv_(b), "impact.csv"), same, (a, b))
+        self.assertFalse(same_file(b"r,v\r\n1,1.0\r\n", b"r,v\r\n1,1.0\r\n23,2.0\r\n", "f.csv"))
+
+    def test_fifty_more_people_in_rigas_impact_table_are_found(self):
+        data = (ROOT / "output" / "cities" / "riga" / "redesign" / "impact.csv").read_bytes()
+        text = data.decode("utf-8-sig")
+        people = next(r["today"] for r in csv.DictReader(io.StringIO(text)) if r["unit"] == "people")   # about 402,000
+        edited = data.replace(people.encode(), f"{Decimal(people) + 50}".encode(), 1)
+        self.assertNotEqual(data, edited)
+        self.assertFalse(same_file(data, edited, "impact.csv"))

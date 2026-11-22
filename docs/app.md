@@ -24,7 +24,9 @@ python3 -m http.server 8000        # from the repository root
 
 `python3 app/build.py` writes `app/files.json`, the list of files the page loads: the
 engine, and for each city its settings, its inputs and the results to compare with.
-`app/app.js` drives the page and `app/worker.js` runs Python.
+`app/app.js` drives the page and `app/worker.js` runs Python. If Python fails to start, for
+instance when the browser cannot reach jsDelivr, the page says so and the button works
+again; the next click starts a fresh worker rather than repeating the failure.
 
 What comes next is the app itself: the 26 cities of the world pilot to choose from, their
 inputs read from the Hugging Face dataset, the network and the proposed changes on a map,

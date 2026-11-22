@@ -8,8 +8,8 @@
   "mean_trip_km_straight_line": 8.392662011834826,
   "spearman_on_grid_sample": 0.5427887901572113,
   "spearman_over_samples": {
-   "mean": 0.5318523581681476,
-   "sd": 0.011033510523007202,
+   "mean": 0.5292822966507178,
+   "sd": 0.010779764726424706,
    "seeds": [
     1,
     2,
@@ -18,11 +18,11 @@
     5
    ],
    "values": [
-    0.5252221462747778,
-    0.5207108680792891,
-    0.5483937115516063,
-    0.5277511961722487,
-    0.5371838687628161
+    0.5266575529733425,
+    0.5175666438824333,
+    0.5449077238550922,
+    0.522488038277512,
+    0.5347915242652085
    ]
   }
  },
@@ -37,43 +37,43 @@
   "candidates": 420,
   "folds": 5,
   "repeats": 200,
-  "spearman_mean": 0.616811004784689,
-  "spearman_sd": 0.02439873834436219,
+  "spearman_mean": 0.6174565960355434,
+  "spearman_sd": 0.0236801636632704,
   "settings_chosen_most": [
    {
     "trip_decay_km": 1.5,
     "destination_share": 0.75,
     "metro_weight_per_1000_entries": 0,
     "mean_trip_km_straight_line": 2.6578736121273456,
-    "times": 214
+    "times": 212
    },
    {
     "trip_decay_km": 3,
     "destination_share": 0.6,
     "metro_weight_per_1000_entries": 8,
     "mean_trip_km_straight_line": 5.000649185583443,
-    "times": 112
+    "times": 113
    },
    {
     "trip_decay_km": 2,
     "destination_share": 0.5,
     "metro_weight_per_1000_entries": 0,
     "mean_trip_km_straight_line": 3.4006212032671006,
-    "times": 92
+    "times": 89
    },
    {
     "trip_decay_km": 1,
     "destination_share": 0.4,
     "metro_weight_per_1000_entries": 0,
     "mean_trip_km_straight_line": 1.7990249643044298,
-    "times": 63
+    "times": 61
    },
    {
     "trip_decay_km": 1,
     "destination_share": 0,
     "metro_weight_per_1000_entries": 0,
     "mean_trip_km_straight_line": 1.7793436340815771,
-    "times": 57
+    "times": 59
    }
   ]
  },
@@ -81,43 +81,43 @@
   "candidates": 194,
   "folds": 5,
   "repeats": 200,
-  "spearman_mean": 0.5217409432672591,
-  "spearman_sd": 0.007526497981100705,
+  "spearman_mean": 0.5220622009569378,
+  "spearman_sd": 0.0074564140884124455,
   "settings_chosen_most": [
    {
     "trip_decay_km": 6,
     "destination_share": 0.5,
     "metro_weight_per_1000_entries": 2,
     "mean_trip_km_straight_line": 8.392662011834826,
-    "times": 382
+    "times": 466
    },
    {
     "trip_decay_km": 6,
     "destination_share": 1.0,
     "metro_weight_per_1000_entries": 4,
     "mean_trip_km_straight_line": 8.75423853009635,
-    "times": 236
+    "times": 285
    },
    {
     "trip_decay_km": 6,
     "destination_share": 0.6,
     "metro_weight_per_1000_entries": 0,
     "mean_trip_km_straight_line": 8.40228926428784,
-    "times": 140
-   },
-   {
-    "trip_decay_km": 6,
-    "destination_share": 0.75,
-    "metro_weight_per_1000_entries": 8,
-    "mean_trip_km_straight_line": 8.589058533647805,
-    "times": 103
+    "times": 90
    },
    {
     "trip_decay_km": 6,
     "destination_share": 0.4,
     "metro_weight_per_1000_entries": 8,
     "mean_trip_km_straight_line": 8.40848460882281,
-    "times": 80
+    "times": 57
+   },
+   {
+    "trip_decay_km": 6,
+    "destination_share": 0.75,
+    "metro_weight_per_1000_entries": 8,
+    "mean_trip_km_straight_line": 8.589058533647805,
+    "times": 30
    }
   ],
   "rule": "settings whose average straight-line trip is at least today's"
@@ -137,11 +137,11 @@
  "fresh_samples": [
   {
    "seed": 101,
-   "today": 0.521120984278879,
+   "today": 0.5192754613807246,
    "today_trip_km": 8.342772535930047,
    "fitted": 0.6414900888585099,
    "fitted_trip_km": 2.648002529814221,
-   "fitted_realistic": 0.521120984278879,
+   "fitted_realistic": 0.5192754613807246,
    "fitted_realistic_trip_km": 8.342772535930047
   },
   {
@@ -155,11 +155,11 @@
   },
   {
    "seed": 103,
-   "today": 0.5250854408749146,
+   "today": 0.5172932330827068,
    "today_trip_km": 8.359150162266598,
-   "fitted": 0.6548872180451127,
+   "fitted": 0.6544087491455912,
    "fitted_trip_km": 2.649703578484776,
-   "fitted_realistic": 0.5250854408749146,
+   "fitted_realistic": 0.5172932330827068,
    "fitted_realistic_trip_km": 8.359150162266598
   }
  ],
@@ -198,7 +198,8 @@
    4,
    8
   ],
-  "grid_seed": 7
+  "grid_seed": 7,
+  "settings_scored": 420
  },
  "settings": {
   "walk_speed_mps": 1.25,

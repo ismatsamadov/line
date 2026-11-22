@@ -11,7 +11,8 @@ and for every route direction a chain of on-board nodes:
 
 Walking happens once between rides, never chained. Every boarding pays the
 transfer penalty; callers subtract one penalty because the first boarding of a
-journey is not a transfer."""
+journey is not a transfer, so a search must reach one penalty past max_trip_min
+to find every trip within it (TransitGraph.trip_cutoff_s)."""
 
 import heapq
 import math
@@ -46,13 +47,16 @@ class StopIndex:
         return out
 
     def nearest(self, lat, lon, max_m=5000.0):
-        r = self.cell
-        while r <= max_m:
+        """(distance_m, stop) of the nearest stop within max_m, or None. The search starts at one
+        cell and doubles, ending at max_m itself."""
+        r = min(self.cell, max_m)
+        while True:
             hits = self.within(lat, lon, r)
             if hits:
                 return hits[0]
-            r *= 2
-        return None
+            if r >= max_m:
+                return None
+            r = min(2 * r, max_m)
 
 
 class TransitGraph:
@@ -102,6 +106,13 @@ class TransitGraph:
                 if i > 0:
                     adj[base + i].append((si, 0.0, 0))
         self.adj = adj
+
+    @property
+    def trip_cutoff_s(self):
+        """The search cost that reaches every trip of up to max_trip_min door to door: a trip's
+        cost holds one transfer penalty more than its time, the first boarding's, which callers
+        take off afterwards."""
+        return self.a.max_trip_min * 60 + self.a.transfer_penalty_s
 
     def arrival(self, stop_id):
         return self.stop_index[stop_id]

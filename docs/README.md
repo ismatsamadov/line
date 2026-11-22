@@ -15,7 +15,7 @@ Then I built a travel model from public population, ridership, metro and OpenStr
 data to estimate door-to-door travel times and daily bus operation, with every
 assumption in one settings file, and a search that changes the network step by step
 with today's fleet, keeping a change only if trips get faster without cutting people
-off. The redesign shortens the average trip from 51.8 to 50.9 minutes with the same
+off. The redesign shortens the average trip from 51.9 to 51.0 minutes with the same
 buses, or matches today's trip times with about 12% fewer buses and 12% less fuel, and
 the gain holds on ten samples of trips and under fourteen other assumptions. I treat its
 changes as candidates for review, not a plan; [results.md](results.md#check-these-before-acting)
@@ -23,7 +23,7 @@ lists what to check first. The same measurements and search now run on any city 
 publishes a GTFS feed, where the timetable gives the headways and speeds Baku's data
 lacks, and each redesign comes with what it is worth in minutes, buses, fuel and CO₂.
 Run on 25 cities on five continents and on Baku's own feed, the search shortens trips in
-every one, by 2.8 minutes in the middle city, or keeps today's trip times with a fifth fewer
+every one, by 2.9 minutes in the middle city, or keeps today's trip times with a fifth fewer
 buses in the networks their operators publish ([world.md](world.md)).
 
 ## Where to read

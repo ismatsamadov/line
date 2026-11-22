@@ -4,8 +4,8 @@ GTFS is the format transit agencies publish their timetables in, so reading it l
 measurement and the redesign search run on any city with a feed, not only on the AYNA
 snapshot.
 
-Reading takes one service day: gtfs_date, or else the weekday with the most bus trips. Each
-route direction becomes one stop pattern, the sequence most of its departures run.
+Reading takes one service day: gtfs_date, or else the weekday with the most bus departures.
+Each route direction becomes one stop pattern, the sequence most of its departures run.
 Departures that run a part of it (short turns) count towards its frequency in proportion
 to the distance they cover. A branch, a sequence with stops the pattern does not have,
 runs as a route of its own when it carries at least a fifth of its direction's departures
@@ -27,9 +27,11 @@ is: one all-day frequency cannot stand for it, and the redesign would take it fo
 little-used day route or hand it a day route's buses.
 
 Writing turns each route direction into one trip that repeats every headway between the
-start and end of service (frequencies.txt). Times between stops follow the same model as
-the metrics: distance at the route's moving speed plus the fixed loss at each stop. A feed
-written with estimated headways describes the model, not an official timetable.
+start and end of service (frequencies.txt), and gives each route its mode: bus for AYNA's
+routes, and the basic type it was read with for a feed's. Times between stops follow the
+same model as the metrics: distance at the route's moving speed plus the fixed loss at
+each stop. A feed written with estimated headways describes the model, not an official
+timetable.
 
 Shapes are the repaired route lines with two changes the MobilityData GTFS validator asks
 for: a point that repeats the one before it is written once, and a line that ends before
@@ -138,7 +140,8 @@ def write_gtfs(path, network, a, headways, version, start_hour=6, feed=None):
                         f"{network.stops[s].lat:.6f}", f"{network.stops[s].lon:.6f}"] for s in served]),
         "routes.txt": (["route_id", "agency_id", "route_short_name", "route_long_name", "route_type"],
                        [[rid, feed["agency_id"], network.routes[rid].number,
-                         f"{network.routes[rid].first_point} - {network.routes[rid].last_point}", 3]
+                         f"{network.routes[rid].first_point} - {network.routes[rid].last_point}",
+                         network.routes[rid].route_type]
                         for rid in sorted(headways) if rid in network.routes]),
         "calendar.txt": (["service_id", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday",
                           "sunday", "start_date", "end_date"], [["daily", 1, 1, 1, 1, 1, 1, 1, *SERVICE_DATES]]),
@@ -273,15 +276,16 @@ class Calendar:
             out.update(first + datetime.timedelta(k) for k in range((last - first).days + 7))
         return sorted(out)
 
-    def busiest_weekday(self, trips_per_service):
-        """The weekday with the most trips, the first if several; a weekend day if none runs on a weekday.
+    def busiest_weekday(self, departures_per_service):
+        """The weekday with the most departures, the first if several; a weekend day if none runs
+        on a weekday.
 
-        A day with more than HOLIDAY_EXCESS times the trips of the same weekday in the weeks
+        A day with more than HOLIDAY_EXCESS times the departures of the same weekday in the weeks
         around it, on each side that runs, is passed over while another day runs: a holiday
         whose timetable some feeds add on top of the usual one. The first day of a new, busier
         timetable is not, since the weeks after it run as it does."""
-        def trips(day):
-            return sum(trips_per_service.get(s, 0) for s in self.services(day))
+        def trips(day):                          # in a fixed order, so that float sums tie the same way
+            return sum(departures_per_service.get(s, 0) for s in sorted(self.services(day)))
 
         def stands_out(day, n):
             sides = []
@@ -443,12 +447,27 @@ def _read(feed, a, repair, source):
         else:
             other[TYPE_NAMES.get(mode, str(mode))] += 1
 
-    listed, per_service = [], Counter()
+    listed = []
     for rid, sid, tid, did, shp, sign in feed.columns(
             "trips.txt", "route_id", "service_id", "trip_id", "direction_id", "shape_id", "trip_headsign"):
         if rid in kinds:
             listed.append((tid, rid, sid, did if did in ("0", "1") else None, shp, sign))
-            per_service[sid] += 1
+    ids = {tid for tid, *_ in listed}
+    windows, unreadable = defaultdict(list), {}  # trip -> [(start, end, headway)] from frequencies.txt
+    for tid, start, end, every in feed.columns("frequencies.txt", "trip_id", "start_time", "end_time", "headway_secs"):
+        if tid in ids and start and end and every:
+            try:
+                window = (_seconds(start), _seconds(end), float(every))
+            except ValueError as e:              # an error only if the trip runs on the day read
+                unreadable.setdefault(tid, f"{start}, {end}, {every} ({e})")
+                continue
+            if window[2] > 0:
+                windows[tid].append(window)
+    departures = {tid: sum(max(0.0, (e - s) / h) for s, e, h in windows[tid]) if tid in windows else 1.0
+                  for tid in ids}
+    per_service = Counter()                      # a trip repeated by frequencies.txt counts each departure
+    for tid, _, sid, *_ in listed:
+        per_service[sid] += departures[tid]
     calendar = Calendar(feed)
     day = _date(a.gtfs_date) if a.gtfs_date else calendar.busiest_weekday(per_service)
     if day is None:
@@ -457,27 +476,24 @@ def _read(feed, a, repair, source):
     trips = {tid: (rid, did, shp, sign) for tid, rid, sid, did, shp, sign in listed if sid in running}
     if not trips:
         raise ValueError(f"no trips of route types {sorted(types)} run on {day}")
+    for tid in sorted(set(trips) & set(unreadable)):
+        raise ValueError(f"frequencies.txt has a row it cannot read for trip {tid}, which runs on {day}: {unreadable[tid]}")
+    departures = {tid: departures[tid] for tid in trips}
     # A line its feed splits into two routes, one for each direction, as Christchurch's does, runs
-    # as one route: the two have the same agency and name, and each runs one way, not the same one.
+    # as one route: the two have the same agency, name and mode, and each runs one way, not the same
+    # one. Both directions must be known: a trip without a direction_id could run either way.
     ways = defaultdict(set)
     for rid, did, _, _ in trips.values():
         ways[rid].add(did)
     alike = defaultdict(list)
     for rid in sorted(ways):
-        alike[kinds[rid][:2]].append(rid)
+        alike[kinds[rid][:3]].append(rid)
     joined = {}                                  # the second direction's route -> the first's
     for rids in alike.values():
-        if len(rids) == 2 and sorted(tuple(ways[r]) for r in rids) == [("0",), ("1",)]:
+        if len(rids) == 2 and {frozenset(ways[r]) for r in rids} == {frozenset({"0"}), frozenset({"1"})}:
             first, second = sorted(rids, key=lambda r: ways[r] != {"0"})
             joined[second] = first
     trips = {tid: (joined.get(rid, rid), did, shp, sign) for tid, (rid, did, shp, sign) in trips.items()}
-
-    windows = defaultdict(list)                  # trip -> [(start, end, headway)] from frequencies.txt
-    for tid, start, end, every in feed.columns("frequencies.txt", "trip_id", "start_time", "end_time", "headway_secs"):
-        if tid in trips and start and end and every and float(every) > 0:
-            windows[tid].append((_seconds(start), _seconds(end), float(every)))
-    departures = {tid: sum(max(0.0, (e - s) / h) for s, e, h in windows[tid]) if tid in windows else 1.0
-                  for tid in trips}
 
     calls, first, last = defaultdict(list), {}, {}
     for tid, sid, seq, arr, dep, dist in feed.columns(
@@ -502,8 +518,8 @@ def _read(feed, a, repair, source):
     if not stops:
         raise ValueError("none of the stops the trips call at has a position in stops.txt")
     warnings, notes = [], []
-    for second, first in sorted(joined.items()):
-        notes.append(f"{kinds[first][1]}: the feed's routes {first} and {second}, one for each direction, "
+    for second, kept in sorted(joined.items()):
+        notes.append(f"{kinds[kept][1]}: the feed's routes {kept} and {second}, one for each direction, "
                      f"read as one route")
     if len(stops) < len(used):
         warnings.append(f"{len(used) - len(stops)} stops called at in stop_times.txt have no position in stops.txt; "
@@ -648,7 +664,7 @@ def _read(feed, a, repair, source):
             first_p = pats[min(pats)]
             routes[route_id] = Route(route_id, label, " ".join(agency[0].split()), stops[first_p.stop_ids[0]].name,
                                      stops[first_p.stop_ids[-1]].name, None, TYPE_NAMES.get(mode, str(mode)), "", None,
-                                     "", "", speed_kmh=speed, runs_one_way=len(pats) == 1)
+                                     "", "", speed_kmh=speed, runs_one_way=len(pats) == 1, route_type=mode)
             for d, p in pats.items():
                 patterns[(route_id, d)] = p
             trips_each_way[route_id] = sum(each_way) / len(each_way)

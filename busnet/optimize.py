@@ -59,8 +59,12 @@ class Plan:
 
     @classmethod
     def from_headways(cls, network, a, headways):
+        """Each route with the buses its headway needs, at no shorter a headway than min_headway_min:
+        buses a timetable runs beyond that cannot run more often in the plan (headways), so they
+        are not today's to compare with or to move (world.py names them buses_capped)."""
         blank = cls(network, {})
-        return cls(network, {rid: blank.cycle_min(rid, a) / h for rid, (h, _) in headways.items() if rid in blank.by_route})
+        return cls(network, {rid: blank.cycle_min(rid, a) / max(h, a.min_headway_min)
+                             for rid, (h, _) in headways.items() if rid in blank.by_route})
 
     def cycle_min(self, rid, a):
         """Minutes for one bus to go out and back, including layover."""
@@ -177,7 +181,7 @@ class Evaluator:
                     sources[node] = min(w, sources.get(node, math.inf))
             dist = boards = pred = settled = None
             if sources:
-                dist, boards, pred, settled = graph.search(sources, cap)
+                dist, boards, pred, settled = graph.search(sources, graph.trip_cutoff_s)
             flow = {}
             for d, w, walk_s in dests:
                 best, nb, end = walk_s, 0, None

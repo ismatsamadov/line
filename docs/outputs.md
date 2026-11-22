@@ -6,7 +6,11 @@ writes `output/robustness/`; `site/build.py` writes the page's files in `site/`
 the README ([below](#animations--the-animations-in-the-readme)). CSV files are UTF-8 with a byte-order mark, so Excel shows
 Azerbaijani letters correctly. Shares are
 fractions between 0 and 1; distances are km or m as named; times are minutes unless named
-otherwise. Blank cells mean "not defined" (for example the circuity of a loop route).
+otherwise. Blank cells mean "not defined" (for example the circuity of a loop route). A
+table with no rows is not written, and a run removes the one an earlier run left in the
+same folder, so a missing table has no rows: eight cities of the world pilot have no
+`corridors.csv`, since no kilometre of their streets carries eight routes, and Kyiv has no
+`duplicates.csv`.
 
 ## output/routes.csv — one row per route with stops (201 rows)
 
@@ -222,7 +226,10 @@ has passed. Stop and route ids are AYNA's. Stop times come from the travel model
 feeds describe the model, not an official timetable; `feed_info.txt` names the network
 (`feed_version` is `today` or `redesign`) and the repository as publisher. For a network
 read from another city's GTFS feed, the ids are that feed's, and `agency.txt` and
-`feed_info.txt` carry its agency's web address, time zone and language.
+`feed_info.txt` carry its agency's web address, time zone and language. Each route keeps
+its mode in `routes.txt`: AYNA's routes are buses (`route_type` 3), and a route read from
+a feed keeps the basic type it was read with, so the trams or trolleybuses that
+`gtfs_route_types` adds stay trams or trolleybuses.
 
 The shapes are the repaired route lines with two changes the validator below asks for: a
 point that repeats the one before it is written once (the repaired lines repeat a point
@@ -402,12 +409,12 @@ with counts, with headways that do not come from the counts. A setting is
 
 | File | Contents |
 |---|---|
-| `grid.csv` | One row per setting tried, on one sample of 2,000 origins: the three settings, `mean_trip_km_straight_line` (the average straight-line trip they give), `spearman` and `pearson_of_log_shares` on all 56 routes |
+| `grid.csv` | One row per setting tried, on one sample of 2,000 origins: the three settings, `mean_trip_km_straight_line` (the average straight-line trip they give), `spearman` and `pearson_of_log_shares` on all 56 routes. Today's settings are always among them: when they fall between the grid's points they are tried after it, as a 421st setting |
 | `grid_routes.csv` | One row per setting and counted route: `modelled_share`, the route's share of the modelled boardings of the 56, to eight significant digits |
 | `cv.csv` | One row per cross-validation repeat: `candidates` (`all` settings, or `realistic`, those whose trips are at least as long as today's), `spearman_held_out`, the fit of the routes each fold predicted with the setting chosen on the other four, and `settings_chosen`, fold by fold |
 | `tradeoff.csv` | One row per least average trip allowed (`least_trip_km`, 0 to 8 km and today's): the number of `settings` that qualify, the cross-validated fit among them (`spearman_held_out_mean`, `_sd`), and the setting `chosen_most` with its trip length and its fit on all routes |
 | `routes.csv` | One row per counted route: `observed_weekday_boardings`, `observed_share`, and the modelled share at today's settings, at the setting chosen most among all and at the one chosen most among the realistic |
-| `summary.json` | `today` (the settings, their trip length, their fit on the grid's sample and on five other samples), `best_on_all_routes`, `cross_validated` and `cross_validated_realistic` (mean and spread of the held-out fit, the settings chosen most), `fitted` and `fitted_realistic`, `fresh_samples` (today's and both fitted settings on three new samples of origins), `official_average_bus_trip_km` (the State Statistical Committee's latest), `grid`, `settings` |
+| `summary.json` | `today` (the settings, their trip length, their fit on the grid's sample and on five other samples), `best_on_all_routes`, `cross_validated` and `cross_validated_realistic` (mean and spread of the held-out fit, the settings chosen most), `fitted` and `fitted_realistic`, `fresh_samples` (today's and both fitted settings on three new samples of origins), `official_average_bus_trip_km` (the State Statistical Committee's latest), `grid` (the values tried, the seed of its sample and `settings_scored`, 420 or, with today's settings off the grid, 421), `settings` |
 
 `python3 calibrate.py --tradeoff-only` rewrites `tradeoff.csv` from the other files in
 seconds.
@@ -484,21 +491,26 @@ with the same buses, and with the fewest buses that keep today's trip times.
 | `service_day`, `hours_of_service` | The day of the feed the model read, and the hours of service it shows |
 | `routes`, `stops` | Bus routes with stops in the model, and the stops they serve |
 | `people_in_area`, `people_within_400m`, `share_within_400m` | People in the box of the served stops plus 2 km, and those within 400 m of a stop |
-| `door_to_door_min`, `share_trips_possible` | The average door-to-door trip today over the trips the network makes possible within 120 minutes, and their share |
-| `buses`, `bus_hours`, `bus_km`, `fuel_l`, `co2_t` | Today's service on that day: buses in service and their hours, km, fuel and CO₂ |
+| `door_to_door_min`, `share_trips_possible` | The average door-to-door trip today over the trips the network makes possible within 120 minutes, and their share, in the redesign's baseline (the `today` column of `impact.csv`); they differ from `network.json`'s only where routes are capped |
+| `routes_more_often_than_min_headway`, `buses_timetable`, `buses_capped` | The routes the timetable runs more often than every `min_headway_min` minutes; the buses the timetable needs at its own headways (`measure.py`'s `operations.fleet`); and how many of those the baseline leaves out by running such routes every `min_headway_min` minutes, so that `buses_timetable` is `buses` + `buses_capped`. Only the three networks mapped from OpenStreetMap have any |
+| `buses`, `bus_hours`, `bus_km`, `fuel_l`, `co2_t` | Today's service on that day in the redesign's baseline, the network every saving is taken from (the `today` column of `impact.csv`): buses in service and their hours, km, fuel and CO₂ |
 | `changes`, `routes_after` | Changes the search kept, and routes after them |
 | `minutes_saved`, `minutes_saved_possible_trips` | How much shorter the average trip gets with the same buses: counting trips the network cannot make at 120 minutes, as the search does, and over the trips it can make |
 | `riders_hours_saved_per_100k_journeys` | The first, as riders' hours for every 100,000 journeys |
 | `same_buses_fuel_l_change` | The fuel the same-buses option uses beyond today's, a day |
 | `fewer_buses`, `share_of_buses_needed` | The buses the redesign needs for today's trip times, and that share of today's fleet on the independent check |
-| `buses_saved`, `bus_hours_saved`, `bus_km_saved`, `fuel_l_saved`, `co2_t_saved` | What that saves a day |
+| `buses_saved`, `bus_hours_saved`, `bus_km_saved`, `fuel_l_saved`, `co2_t_saved` | What that saves a day against the baseline: `buses_saved` is `buses` − `fewer_buses` |
 | `feed` | The feed the city was read from |
 
 `summary.json` holds `cities`, `total` (the columns that add up, summed over the cities,
-with `share_of_buses_saved` and `share_of_fuel_saved`), `spread` (for the measures that do
+with `share_of_buses_saved` and `share_of_fuel_saved`, each a saving over the baseline's
+figure), `spread` (for the measures that do
 not add up, such as minutes per trip: the median, the lowest, the highest, and the mean
 weighted by the people in each city's box), `by_continent` (cities, buses, and buses,
-fuel and CO₂ saved) and `rows`, the rows of `cities.csv`.
+fuel and CO₂ saved) and `rows`, the rows of `cities.csv`. `world.py` writes nothing unless
+every row and the total add up: buses saved are the baseline's less the fewer buses, no
+saving is more than the baseline's figure, and the baseline leaves out of measure.py's
+count of the timetable's buses only those of routes it caps, never more.
 
 ## site/data.js and the checklist workbook
 

@@ -18,6 +18,7 @@ from busnet.geo import PROJ, haversine_m
 from busnet.gtfs import read_gtfs, shape_points, write_gtfs
 from busnet.metrics import near_duplicates
 from busnet.model import Pattern
+from busnet.optimize import Plan
 from busnet.service import operations, route_headways
 
 from .helpers import LAT, LON, STEP, two_route_network
@@ -79,6 +80,9 @@ class GtfsTest(unittest.TestCase):
     def test_full_lines_are_left_alone(self):
         p = self.net.patterns[(1, 2)]
         self.assertEqual(shape_points(p, self.net), p.path)
+
+    def test_ayna_routes_are_buses(self):
+        self.assertEqual({r["route_type"] for r in self.tables["routes.txt"]}, {"3"})
 
 
 def keep_projection(test):
@@ -188,6 +192,22 @@ class ReadTest(unittest.TestCase):
         self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["1 [R1]", "1 [R3]", "2", "L"])
         net, _ = read_gtfs(self.feed, Assumptions(gtfs_route_types=[3, 0]))
         self.assertEqual(net.routes["T1"].zone, "Tram")
+
+    def test_a_tram_read_with_the_buses_is_written_back_as_a_tram(self):
+        a = Assumptions(gtfs_route_types=[0, 3])
+        net, table = read_gtfs(self.feed, a)
+        self.assertEqual((net.routes["T1"].zone, net.routes["T1"].route_type), ("Tram", 0))
+        today = Plan.from_headways(net, a, route_headways(net, a, timetable=table.trips_each_way))
+        redesign = today.changed(drop=["R3"])                  # a plan's network keeps the routes' modes
+        for version, plan in (("today", today), ("redesign", redesign)):
+            out = Path(self.feed).parent / f"{version}.zip"
+            write_gtfs(out, plan.network, a, plan.headways(a), version, feed=table.feed)
+            types = {r["route_id"]: r["route_type"] for r in read(out)["routes.txt"]}
+            self.assertEqual((types["T1"], types["R1"], types["R2"]), ("0", "3", "3"), version)   # R2's 700 is a bus
+            buses, back = read_gtfs(out, Assumptions())
+            self.assertNotIn("T1", buses.routes)
+            self.assertEqual(back.summary["routes_of_other_types"], {"Tram": 1})
+            self.assertEqual(read_gtfs(out, a)[0].routes["T1"].zone, "Tram")
 
     def test_short_turns_count_by_distance_and_branches_are_left_out(self):
         self.assertEqual(self.net.patterns[("R1", 1)].stop_ids, OUT)
@@ -305,6 +325,7 @@ class SplitLineTest(unittest.TestCase):
             f"{r},WK,{t},{d}\n" for r, t, d, _, _ in trips)
         files["stop_times.txt"] = stop_times([(t, st, start, None) for _, t, _, st, start in trips])
         self.net, self.table = read_gtfs(zipped(tmp.name, "split.zip", files), Assumptions())
+        self.folder, self.files = tmp.name, files
 
     def test_the_two_halves_of_a_line_run_as_one_route(self):
         line = self.net.routes["O"]
@@ -317,6 +338,37 @@ class SplitLineTest(unittest.TestCase):
     def test_routes_that_share_a_number_but_run_the_same_way_stay_apart(self):
         self.assertEqual(sorted(r.number for r in self.net.routes.values()), ["100", "7 [P]", "7 [Q]"])
         self.assertTrue(self.net.routes["P"].runs_one_way)
+
+    def test_a_route_whose_direction_is_not_given_is_not_joined(self):
+        files = dict(self.files)
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_long_name,route_type\nM,A,8,,3\nN,A,8,,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\nM,WK,m_1,0\nN,WK,n_1,\n"
+        files["stop_times.txt"] = stop_times([("m_1", LOCAL, "06:00:00", None), ("n_1", LOCAL[::-1], "06:30:00", None)])
+        net, table = read_gtfs(zipped(self.folder, "mixed.zip", files), Assumptions())
+        self.assertEqual(sorted(r.number for r in net.routes.values()), ["8 [M]", "8 [N]"])
+        self.assertEqual(net.patterns[("N", 1)].stop_ids, LOCAL[::-1])         # its own direction, from its stops
+        self.assertFalse(any("read as one route" in n for n in table.notes))
+
+    def test_a_tram_and_a_bus_of_one_name_stay_apart(self):
+        files = dict(self.files)
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_long_name,route_type\nT,A,1,,0\nU,A,1,,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\nT,WK,t_1,0\nU,WK,u_1,1\n"
+        files["stop_times.txt"] = stop_times([("t_1", LOCAL, "06:00:00", None), ("u_1", LOCAL[::-1], "06:30:00", None)])
+        net, table = read_gtfs(zipped(self.folder, "modes.zip", files), Assumptions(gtfs_route_types=[0, 3]))
+        self.assertEqual({r: (net.routes[r].number, net.routes[r].route_type) for r in net.routes},
+                         {"T": ("1 [T]", 0), "U": ("1 [U]", 3)})
+        self.assertFalse(any("read as one route" in n for n in table.notes))
+
+    def test_joining_the_halves_keeps_the_timetable_of_every_route(self):
+        s = self.table.summary
+        self.assertEqual(s["departures"], 12)
+        self.assertEqual((s["first_departure"], s["last_departure"]), ("06:00", "09:30"))
+        self.assertEqual((s["service_from"], s["service_to"], s["hours_of_service"]), ("06:00", "10:00", 4))
+        self.assertEqual((s["speeds_from_timetable"], s["speeds_from_settings"]), (3, 0))
+        for rid in ("O", "P", "Q"):
+            p = self.net.patterns[(rid, 1)]
+            hop_m = p.length_m / (len(p.stop_ids) - 1)
+            self.assertAlmostEqual(self.net.routes[rid].speed_kmh, hop_m / (HOP_S - 20) * 3.6, places=6)
 
 
 class BranchesAndExpressTest(unittest.TestCase):
@@ -408,6 +460,43 @@ class ShapeDistanceTest(unittest.TestCase):
         net, table = read_gtfs(zipped(self.folder, "plain.zip", self.without), Assumptions())
         self.assertLess(net.patterns[("R", 1)].chainage_m[1], 1000)
         self.assertEqual(table.summary["directions_placed_by_shape_dist_traveled"], 0)
+
+
+class FrequencyDayTest(unittest.TestCase):
+    """Mondays run two scheduled trips and Tuesdays one trip that frequencies.txt repeats every
+    ten minutes from 06:00 to 16:00, every week of November 2026: Tuesday is the busier day."""
+
+    def setUp(self):
+        keep_projection(self)
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        files = dict(BASIC)
+        files["calendar.txt"] = ("service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\n"
+                                 "MO,1,0,0,0,0,0,0,20261102,20261130\nTU,0,1,0,0,0,0,0,20261102,20261130\n"
+                                 "SA,0,0,0,0,0,1,0,20261102,20261130\n")
+        files["stops.txt"] = "stop_id,stop_name,stop_lat,stop_lon\n" + "".join(
+            f"{k},stop {k},{lat:.6f},{lon:.6f}\n" for k, (lat, lon) in STREET.items())
+        files["routes.txt"] = "route_id,agency_id,route_short_name,route_type\nR,A,7,3\n"
+        files["trips.txt"] = "route_id,service_id,trip_id,direction_id\nR,MO,mo_1,0\nR,MO,mo_2,0\nR,TU,tu_1,0\nR,SA,sa_1,0\n"
+        files["stop_times.txt"] = stop_times([("mo_1", LOCAL, "07:00:00", None), ("mo_2", LOCAL, "08:00:00", None),
+                                              ("tu_1", LOCAL, "06:00:00", None), ("sa_1", LOCAL, "09:00:00", None)])
+        files["frequencies.txt"] = ("trip_id,start_time,end_time,headway_secs,exact_times\ntu_1,06:00:00,16:00:00,600,1\n"
+                                    "sa_1,9:00,16:00:00,600,1\n")              # a time without seconds, on Saturdays only
+        self.feed = zipped(tmp.name, "frequencies.zip", files)
+
+    def test_the_busiest_day_counts_each_departure_of_a_repeated_trip(self):
+        _, table = read_gtfs(self.feed, Assumptions())
+        self.assertEqual((table.day, table.summary["weekday"], table.summary["departures"]), ("2026-11-03", "Tuesday", 60))
+
+    def test_a_chosen_day_still_wins(self):
+        _, table = read_gtfs(self.feed, Assumptions(gtfs_date="2026-11-02"))
+        self.assertEqual((table.summary["weekday"], table.summary["departures"]), ("Monday", 2))
+
+    def test_a_row_it_cannot_read_matters_only_on_a_day_its_trip_runs(self):
+        with self.assertRaises(ValueError) as cm:
+            read_gtfs(self.feed, Assumptions(gtfs_date="2026-11-07"))          # Saturday, when sa_1 runs
+        self.assertIn("frequencies.txt", str(cm.exception))
+        self.assertIn("sa_1", str(cm.exception))
 
 
 if __name__ == "__main__":

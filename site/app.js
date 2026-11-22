@@ -522,7 +522,7 @@
   // {min: minutes to each stop's arrival (Infinity if not reached), changes: boardings - 1}.
   function travelTimes(from) {
     if (timesCache[from]) return timesCache[from];
-    var g = travelGraph(), cut = D.meta.max_trip_min * 60 + 3 * D.meta.transfer_penalty_s;
+    var g = travelGraph();     // no cut: the cost holds every change's penalty, which the minutes leave out
     var cost = new Float64Array(g.total).fill(Infinity), boards = new Uint16Array(g.total);
     var heap = [[0, from]];
     cost[from] = 0;
@@ -548,7 +548,7 @@
     }
     while (heap.length) {
       var top = pop(), c = top[0], u = top[1];
-      if (c > cost[u] || c > cut) continue;
+      if (c > cost[u]) continue;
       var e = g.adj[u];
       for (var k = 0; k < e.length; k += 3) {
         var v = e[k], nc = c + e[k + 1];

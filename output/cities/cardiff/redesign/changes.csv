@@ -1,25 +1,25 @@
 ﻿step,kind,routes,change,minutes_before,minutes_after,gain_min,people_losing_stop
-1,merge,63,"Merge 63 into 64: 87% of its stops are also on 64; its buses go to 64, 62, 63 (Radyr)",87.0307,86.6097,0.421,288.5714
-2,merge,30 [CB:30],"Merge 30 [CB:30] into 30 [NB:30]: 99% of its stops are also on 30 [NB:30]; its buses go to 30 [NB:30], 45, 50",86.6097,86.445,0.1647,0.0
-3,merge,102,"Merge 102 into 101: 87% of its stops are also on 101; its buses go to 101, 54, 32",86.445,86.3202,0.1248,0.0
-4,merge,96 (branch 1),"Merge 96 (branch 1) into 96: 96% of its stops are also on 96; its buses go to 96, 18, 17",86.3202,86.2073,0.1129,0.0
-5,drop,29,"Drop 29: among the 20 routes with the fewest modelled riders per bus; its buses go to 28, 58, 57",86.2073,86.1214,0.0858,0.0
-6,straighten,92,"Straighten 92 direction 1 between Elfed Avenue and Barons Court: 1.3 km shorter, 10 of its stops dropped",86.1214,86.0451,0.0764,0.0
-7,merge,58 (St. Edeyrns),"Merge 58 (St. Edeyrns) into 58: 95% of its stops are also on 58; its buses go to 58, 57, 52",86.0451,85.9987,0.0464,0.0
-8,straighten,28,"Straighten 28 direction 2 between Llanon Road and Wolfs Castle: 3.3 km shorter, 11 of its stops dropped",85.9987,85.9583,0.0404,0.0
-9,drop,57 (branch 1),"Drop 57 (branch 1): among the 20 routes with the fewest modelled riders per bus; its buses go to 57, 58, 54",85.9583,85.9158,0.0425,423.7143
-10,straighten,35,"Straighten 35 direction 1 between Ararat Church and Mynachdy Road: 0.6 km shorter, 5 of its stops dropped",85.9158,85.884,0.0318,0.0
-11,merge,92B,"Merge 92B into 92: 90% of its stops are also on 92; its buses go to 92, 94, 93",85.884,85.8564,0.0276,39.4286
-12,merge,52 (branch 1),"Merge 52 (branch 1) into 52: 100% of its stops are also on 52; its buses go to 52, 58, 57",85.8564,85.8383,0.0181,0.0
-13,straighten,95,"Straighten 95 direction 2 between Three Bells and Barry (King Square): 2.0 km shorter, 11 of its stops dropped",85.8383,85.8217,0.0167,0.0
-14,drop,8,"Drop 8: among the 20 routes with the fewest modelled riders per bus; its buses go to 7, 603, 1",85.8217,85.8044,0.0172,0.0
-15,drop,4,"Drop 4: among the 20 routes with the fewest modelled riders per bus; its buses go to 95, 609, 95 (Cardiff City Stadium)",85.8044,85.7917,0.0128,0.0
-16,straighten,86,"Straighten 86 direction 1 between St Gowan Ave and St Josephs Convent: 1.9 km shorter, 10 of its stops dropped",85.7917,85.7828,0.0088,0.0
-17,straighten,2,"Straighten 2 direction 2 between Heath Hotel and Mynachdy Road: 1.4 km shorter, 6 of its stops dropped",85.7828,85.772,0.0108,0.0
-18,drop,25A,"Drop 25A: among the 20 routes with the fewest modelled riders per bus; its buses go to 25, 64, 63 (Radyr)",85.772,85.7498,0.0222,0.0
-19,drop,95 (Cardiff City Stadium),"Drop 95 (Cardiff City Stadium): among the 20 routes with the fewest modelled riders per bus; its buses go to 95, 611, 609",85.7498,85.7419,0.0079,0.0
-20,stops,,"Remove 405 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",85.7419,84.7294,1.0125,0.0
-21,shift,,"Move 9 buses from the 10 routes where a bus saves riders the least waiting (18, 49, 45, H59, 50, 9, 57, 17, 11, 27) to the 10 where it saves the most (64, 6, 96, 86, 92, 95, 35, 101, 28, 62)",84.7294,83.4872,1.2422,0.0
-22,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (45, 18, 57, 50, 6, H59, 9, 61, 17, 11) to the 10 where it saves the most (86, 101, 96, 58, 64, 30 [NB:30], 95, 23, 92, 27)",83.4872,82.9506,0.5366,0.0
-23,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (18, 9, 61, 6, 23) to the 5 where it saves the most (101, 30 [NB:30], 96, 58, 86)",82.9506,82.7069,0.2437,0.0
-24,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (18, 9, 44, 27, 28) to the 5 where it saves the most (101, 30 [NB:30], 6, 96, 64)",82.7069,82.6038,0.1031,0.0
+1,merge,63,"Merge 63 into 64: 87% of its stops are also on 64; its buses go to 64, 62, 63 (Radyr)",87.0269,86.6062,0.4206,288.5714
+2,merge,30 [CB:30],"Merge 30 [CB:30] into 30 [NB:30]: 99% of its stops are also on 30 [NB:30]; its buses go to 30 [NB:30], 45, 50",86.6062,86.4416,0.1647,0.0
+3,merge,102,"Merge 102 into 101: 87% of its stops are also on 101; its buses go to 101, 54, 32",86.4416,86.3164,0.1252,0.0
+4,merge,96 (branch 1),"Merge 96 (branch 1) into 96: 96% of its stops are also on 96; its buses go to 96, 18, 17",86.3164,86.2036,0.1128,0.0
+5,drop,29,"Drop 29: among the 20 routes with the fewest modelled riders per bus; its buses go to 28, 58, 57",86.2036,86.1187,0.0849,0.0
+6,straighten,92,"Straighten 92 direction 1 between Elfed Avenue and Barons Court: 1.3 km shorter, 10 of its stops dropped",86.1187,86.0423,0.0764,0.0
+7,merge,58 (St. Edeyrns),"Merge 58 (St. Edeyrns) into 58: 95% of its stops are also on 58; its buses go to 58, 57, 52",86.0423,85.9959,0.0464,0.0
+8,straighten,28,"Straighten 28 direction 2 between Llanon Road and Wolfs Castle: 3.3 km shorter, 11 of its stops dropped",85.9959,85.9556,0.0403,0.0
+9,drop,57 (branch 1),"Drop 57 (branch 1): among the 20 routes with the fewest modelled riders per bus; its buses go to 57, 58, 54",85.9556,85.9134,0.0422,423.7143
+10,straighten,35,"Straighten 35 direction 1 between Ararat Church and Mynachdy Road: 0.6 km shorter, 5 of its stops dropped",85.9134,85.8815,0.0319,0.0
+11,merge,92B,"Merge 92B into 92: 90% of its stops are also on 92; its buses go to 92, 94, 93",85.8815,85.8539,0.0276,39.4286
+12,merge,52 (branch 1),"Merge 52 (branch 1) into 52: 100% of its stops are also on 52; its buses go to 52, 58, 57",85.8539,85.8358,0.0181,0.0
+13,straighten,95,"Straighten 95 direction 2 between Three Bells and Barry (King Square): 2.0 km shorter, 11 of its stops dropped",85.8358,85.8191,0.0167,0.0
+14,drop,8,"Drop 8: among the 20 routes with the fewest modelled riders per bus; its buses go to 7, 603, 1",85.8191,85.8019,0.0172,0.0
+15,drop,4,"Drop 4: among the 20 routes with the fewest modelled riders per bus; its buses go to 95, 609, 95 (Cardiff City Stadium)",85.8019,85.7892,0.0127,0.0
+16,straighten,86,"Straighten 86 direction 1 between St Gowan Ave and St Josephs Convent: 1.9 km shorter, 10 of its stops dropped",85.7892,85.7803,0.0089,0.0
+17,straighten,2,"Straighten 2 direction 2 between Heath Hotel and Mynachdy Road: 1.4 km shorter, 6 of its stops dropped",85.7803,85.7695,0.0108,0.0
+18,drop,25A,"Drop 25A: among the 20 routes with the fewest modelled riders per bus; its buses go to 25, 64, 63 (Radyr)",85.7695,85.7472,0.0223,0.0
+19,drop,95 (Cardiff City Stadium),"Drop 95 (Cardiff City Stadium): among the 20 routes with the fewest modelled riders per bus; its buses go to 95, 611, 609",85.7472,85.7394,0.0078,0.0
+20,stops,,"Remove 405 stops closer than 250 m to a neighbour on every route that uses them, keeping any stop that is someone's only one within reach",85.7394,84.7267,1.0127,0.0
+21,shift,,"Move 9 buses from the 10 routes where a bus saves riders the least waiting (18, 49, 45, H59, 50, 9, 57, 17, 11, 27) to the 10 where it saves the most (64, 6, 86, 96, 92, 95, 35, 101, 28, 62)",84.7267,83.4826,1.2441,0.0
+22,shift,,"Move 6 buses from the 10 routes where a bus saves riders the least waiting (45, 18, 57, 50, 6, H59, 9, 61, 17, 11) to the 10 where it saves the most (86, 101, 96, 58, 64, 30 [NB:30], 95, 23, 92, 27)",83.4826,82.9489,0.5337,0.0
+23,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (18, 9, 61, 6, 23) to the 5 where it saves the most (101, 30 [NB:30], 96, 58, 86)",82.9489,82.706,0.2429,0.0
+24,shift,,"Move 3 buses from the 5 routes where a bus saves riders the least waiting (18, 9, 44, 27, 28) to the 5 where it saves the most (101, 30 [NB:30], 6, 96, 64)",82.706,82.6035,0.1025,0.0

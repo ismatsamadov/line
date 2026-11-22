@@ -26,7 +26,6 @@ Standard library only. Usage:
 """
 
 import argparse
-import csv
 import json
 import sys
 import time
@@ -36,18 +35,10 @@ ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from busnet.bicycle import LANES_2025_FOLDER, load_lanes, load_parking, measure   # noqa: E402
+from busnet.config import settings_file                                            # noqa: E402
 from busnet.destinations import read_exits                                         # noqa: E402
 from busnet.inputs import load_inputs                                              # noqa: E402
-
-
-def write_csv(path, rows):
-    if not rows:
-        return
-    with open(path, "w", newline="", encoding="utf-8-sig") as f:   # utf-8-sig: Excel shows ə/ş/ç correctly
-        w = csv.DictWriter(f, fieldnames=list(rows[0].keys()))
-        w.writeheader()
-        for r in rows:
-            w.writerow({k: (round(v, 4) if isinstance(v, float) else v) for k, v in r.items()})
+from busnet.tables import write_csv                                                # noqa: E402
 
 
 def main():
@@ -58,7 +49,7 @@ def main():
     ap.add_argument("--out", default=str(ROOT / "output" / "bicycle"))
     args = ap.parse_args()
 
-    config = None if args.config.lower() == "none" or not Path(args.config).exists() else args.config
+    config = settings_file(args.config)
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
     t0 = time.time()
