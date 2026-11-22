@@ -491,7 +491,7 @@ with the same buses, and with the fewest buses that keep today's trip times.
 | `service_day`, `hours_of_service` | The day of the feed the model read, and the hours of service it shows |
 | `routes`, `stops` | Bus routes with stops in the model, and the stops they serve |
 | `people_in_area`, `people_within_400m`, `share_within_400m` | People in the box of the served stops plus 2 km, and those within 400 m of a stop |
-| `door_to_door_min`, `share_trips_possible` | The average door-to-door trip today over the trips the network makes possible within 120 minutes, and their share |
+| `door_to_door_min`, `share_trips_possible` | The average door-to-door trip today over the trips the network makes possible within 120 minutes, and their share, in the redesign's baseline (the `today` column of `impact.csv`); they differ from `network.json`'s only where routes are capped |
 | `routes_more_often_than_min_headway`, `buses_timetable`, `buses_capped` | The routes the timetable runs more often than every `min_headway_min` minutes; the buses the timetable needs at its own headways (`measure.py`'s `operations.fleet`); and how many of those the baseline leaves out by running such routes every `min_headway_min` minutes, so that `buses_timetable` is `buses` + `buses_capped`. Only the three networks mapped from OpenStreetMap have any |
 | `buses`, `bus_hours`, `bus_km`, `fuel_l`, `co2_t` | Today's service on that day in the redesign's baseline, the network every saving is taken from (the `today` column of `impact.csv`): buses in service and their hours, km, fuel and CO₂ |
 | `changes`, `routes_after` | Changes the search kept, and routes after them |
@@ -508,9 +508,9 @@ figure), `spread` (for the measures that do
 not add up, such as minutes per trip: the median, the lowest, the highest, and the mean
 weighted by the people in each city's box), `by_continent` (cities, buses, and buses,
 fuel and CO₂ saved) and `rows`, the rows of `cities.csv`. `world.py` writes nothing unless
-every row and the total add up: buses saved are the baseline's less the fewer buses, the
-timetable's buses are the baseline's and those capped, and no saving is more than the
-baseline's figure.
+every row and the total add up: buses saved are the baseline's less the fewer buses, no
+saving is more than the baseline's figure, and the baseline leaves out of measure.py's
+count of the timetable's buses only those of routes it caps, never more.
 
 ## site/data.js and the checklist workbook
 
