@@ -49,7 +49,6 @@ busnet/
   calibration.py      the trips' paths found once and spread again for any demand settings
 tests/                unit tests and a regression test (python3 -m unittest)
 index.html            the page for readers, served by GitHub Pages from the root of main
-app/                  the engine in the browser (Pyodide in a Web Worker): build.py writes files.json, the files index.html, app.js and worker.js load
 site/
   build.py            the page's data and checklist from output/ and the repaired network
   data.js             written by build.py: everything the page shows, as one object
@@ -187,8 +186,8 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 - **Deterministic.** Random sampling uses `random.Random(seed)`; dictionaries and sets are
   sorted before results depend on their order; zip files get a fixed timestamp. The same
   inputs give byte-identical outputs on the same Python version. Python 3.12 changed how
-  `sum()` adds floats, so Python 3.11 can differ in the last digits; the regression test
-  and the browser page allow that: JSON numbers to 1e-9, and CSV numbers to one in the last
+  `sum()` adds floats, so Python 3.11 can differ in the last digits. The regression test accepts
+  JSON numbers to 1e-9 and CSV numbers to one in the last
   decimal written (the 4th, or a later one where a cell shows more), while whole numbers,
   such as counts and ids, and text must match exactly.
 - **Output files.** CSVs are written by `tables.write_csv`, with `utf-8-sig` and floats
@@ -428,12 +427,7 @@ On one Python version a rebuild gives the same files byte for byte.
    to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
-   picture size and the number of frames its data gives. `tests/test_app.py` checks that
-   `app/files.json` is the list `app/build.py` writes and that every file on it exists and,
-   where Node is installed, runs `app/app.js` against a stand-in page and worker: its CSV
-   comparison on the same cases as the regression test's, and a second run after Python
-   failed to start, or after the worker failed to load Pyodide, which must start a fresh
-   worker and succeed. `tests/test_instances.py` checks
+   picture size and the number of frames its data gives. `tests/test_instances.py` checks
    the pieces that cut the Baku instances on made-up sequences and the made-up network,
    reads the committed `output/instances/` back as Mumford's files are read, and checks
    that today's routes keep the rules and score as `summary.json` says and that the

@@ -180,7 +180,7 @@ class Rerun(unittest.TestCase):
             self.assertFalse(removed.exists())
 
 
-# (cell, cell, the same?) for both CSV comparisons, this one and app.js's (tests/test_app.py).
+# Expected cell, regenerated cell, and whether they match under the CSV rounding rules.
 CSV_CASES = [
     ("401932.5714", "401932.5715", True), ("0.5", "0.5001", True),       # 0.5000 is written 0.5
     ("12.0", "11.9999", True), ("401932.5714", "401982.5714", False),    # 50 more people
