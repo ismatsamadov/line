@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Check how far the results depend on the sample of trips and on the assumptions.
 

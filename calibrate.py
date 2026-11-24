@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Fit the demand model's settings to the boardings BakuBus counts, and check the fit on
 routes it was not fitted to.

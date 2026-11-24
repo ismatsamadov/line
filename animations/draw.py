@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Pictures and animated GIFs with the standard library only.
 
 A Canvas is an RGB raster. Everything drawn on it is anti-aliased: polylines of any width

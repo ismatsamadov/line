@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The metro tables in data/metro/: data/build_metro.py regenerates them byte for byte from
 the committed downloads, and they hang together (27 stations, every one on a line and
 named in every source, stops in order, intervals naming real stations)."""

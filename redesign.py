@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Search for a better bus network with today's fleet, and report what changed and what it is
 worth: Baku's, or any city's read from its GTFS feed.

@@ -1,21 +1,67 @@
-MIT License
+line: noncommercial use only
 
-Copyright (c) 2026 Ismat Samadov
+Required Notice: Copyright 2026 Ismat Samadov (https://github.com/ismatsamadov/line)
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+Everything in this repository that I made may be used for research, teaching,
+study and other noncommercial purposes, with credit. Nothing I made here may be
+used for a commercial purpose without my written permission.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+The code is under the PolyForm Noncommercial License 1.0.0, in
+LICENSES/PolyForm-Noncommercial-1.0.0.md and at
+https://polyformproject.org/licenses/noncommercial/1.0.0. It covers every Python
+file and the settings files busnet.toml and cities/*.toml.
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+Everything else I made is under the Creative Commons Attribution-NonCommercial
+4.0 International licence (CC BY-NC 4.0), in LICENSES/CC-BY-NC-4.0.txt and at
+https://creativecommons.org/licenses/by-nc/4.0/. It covers the README, the
+documentation and the other text, the manuscript and the rest of paper/, the
+figures and animations, and what I added to the data and the results: the
+repairs, compilations, measurements and modelled values, the redesigned
+networks, and the GTFS feeds and maps written from them.
+
+
+WHAT NEEDS MY PERMISSION
+
+The licence texts decide what is commercial. As I read them, each of these needs
+my written permission first:
+
+- selling, licensing or renting out any of it, changed or not;
+- using it in or for a business: in a product, app, website, API or service, in
+  internal analysis or planning, or in consulting or other work for a paying
+  client;
+- using it in anything paid for by sales, subscriptions or advertising;
+- using it to train, fine-tune or evaluate an AI model that is sold or used
+  commercially.
+
+If you are not sure whether your use is commercial, ask. Write to
+ismetsemedov@gmail.com, or open an issue at
+https://github.com/ismatsamadov/line/issues.
+
+
+AI ASSISTANTS AND AGENTS
+
+The same terms apply to work done with AI assistants, coding agents and other
+automated tools, and to the people who use them. AGENTS.md asks those tools to
+check whether a task is commercial, and to stop and ask before they use anything
+here for one.
+
+
+TEXT AND DATA MINING
+
+As Article 4(3) of Directive (EU) 2019/790 allows, I expressly reserve the use
+of my works in this repository for text and data mining for commercial
+purposes, including the training, fine-tuning and evaluation of AI models. The
+noncommercial uses the licences allow are not affected.
+
+
+THIRD-PARTY DATA
+
+The data I did not make keep their publishers' licences, which mine neither
+replace nor narrow: the OpenStreetMap extracts are under the ODbL, Kontur
+Population under CC BY, the opendata.az datasets under CC BY or CC0, Wikidata
+under CC0, and other cities' GTFS feeds under their publishers' terms;
+data/SOURCES.md lists every file. Where such a licence requires what is derived
+from the data to be shared under that licence alone, as the ODbL does for
+derivative databases, it governs the derived file. AYNA's map data
+(data/ayna.db) has no published licence: I share it only as a research
+snapshot, with attribution to AYNA, and grant no rights in it.

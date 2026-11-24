@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Regenerate the committed results and compare them with the committed files.
 
 The measurement runs, Baku's (about 12 seconds) and Riga's from its GTFS feed (a few

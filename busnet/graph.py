@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Spatial index for stops, and door-to-door journey search over the bus network.
 
 The search graph has, for every served stop, an arrival node and a departure node,

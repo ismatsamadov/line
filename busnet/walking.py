@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Walking distance along streets and paths, from OpenStreetMap.
 
 Coverage in metrics.py is straight-line distance to a stop. That is a proxy: rail

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """data/bakubus_route_hours.csv, the first and last departures BakuBus publishes: every route is
 a BakuBus route of the AYNA snapshot, and the hours docs/data.md quotes come from the file."""
 

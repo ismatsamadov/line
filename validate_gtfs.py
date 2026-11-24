@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Check the two GTFS feeds with MobilityData's canonical GTFS validator.
 
     python3 validate_gtfs.py --jar gtfs-validator-8.0.1-cli.jar

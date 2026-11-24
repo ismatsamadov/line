@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """A small made-up network for the unit tests: two routes on one straight street."""
 
 from busnet.model import Network, Route, Stop, _straight_pattern

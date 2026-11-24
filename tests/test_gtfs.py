@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The GTFS writer and reader (busnet/gtfs.py). The writer runs on the two-route test network,
 with route 1's outbound line cut short after stop 3 and a repeated point, as AYNA's lines
 sometimes are; the reader reads that feed back, and a small feed made up to hold the cases

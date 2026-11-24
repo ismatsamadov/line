@@ -131,8 +131,10 @@ The instances are derived from AYNA's map data, which AYNA publishes with no lic
 which the repository redistributes as a research snapshot with attribution to AYNA; from
 Kontur's population grid (CC BY); from OpenStreetMap (© OpenStreetMap contributors,
 ODbL); and from Bakı Metropoliteni's metro entries and exits (CC BY) on opendata.az. They carry
-those terms, as the repository's other results do. The code that cuts them is under the
-MIT licence.
+those terms, as the repository's other results do, and what the repository adds to them
+is under CC BY-NC 4.0. The code that cuts them is under the PolyForm Noncommercial
+License 1.0.0. Neither allows commercial use without the author's written permission
+(ismetsemedov@gmail.com).
 
 ## References
 

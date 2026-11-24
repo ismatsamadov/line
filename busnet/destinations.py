@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Places people travel to: OpenStreetMap destinations and Baku Metro stations.
 
 They give each population zone a pull on trip ends beyond the people living there:

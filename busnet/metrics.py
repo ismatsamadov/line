@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Route and network efficiency metrics.
 
 Geometry metrics (length, stop spacing, directness, duplication, detours) come

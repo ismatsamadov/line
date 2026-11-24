@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The demand model's settings fitted to counted boardings (calibrate.py).
 
 metrics.evaluate_od samples origins, finds every trip's quickest path and spreads the trips

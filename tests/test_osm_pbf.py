@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The PBF reader in data/osm_pbf.py, on files written here with a small protobuf encoder:
 a header, a block of dense nodes and a block of ways; and a second file whose nodes and
 ways carry the tags of places."""

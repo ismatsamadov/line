@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """busnet/calibration.py and calibrate.py: the trips found once and spread again for any
 demand settings give exactly the boardings metrics.evaluate_od gives for those settings,
 and the committed output/calibration/ agrees with itself."""

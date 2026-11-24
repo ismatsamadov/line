@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Search for a better route network with today's fleet.
 
 Starting from today's routes, the search tries the kinds of change that network

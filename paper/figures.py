@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Draw the manuscript's figures as SVG from the committed data and outputs.
 
   python3 paper/figures.py              # writes paper/figures/figure-1.svg ... figure-4.svg

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """busnet/graph.py: the stop index finds the nearest stop anywhere within the distance asked
 for, and a trip counts as possible exactly when its door-to-door time is within max_trip_min,
 in every caller of the journey search: the measurement, the redesign's scoring and the

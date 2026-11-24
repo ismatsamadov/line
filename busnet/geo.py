@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Geometry helpers: great-circle distance, a local metric projection (centred on Baku
 unless a GTFS feed moves it to its own city), polylines with distance-along-line
 ("chainage"), and stop-to-shape matching."""

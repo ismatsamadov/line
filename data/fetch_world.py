@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Download the world pilot's files, as the committed results were made from them, from the
 Hugging Face dataset that holds them: each city's inputs in data/cities/<city>/ (its GTFS

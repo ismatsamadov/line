@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Download the Baku Metro's own network data from the public API behind metro.gov.az
 (app-api.metro.gov.az), the metro's counterpart of the AYNA map API that gives the

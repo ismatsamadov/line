@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Load everything busnet.toml points to, falling back to assumptions for missing files.
 
 The network comes from the AYNA snapshot ([data] db), or from a GTFS feed when [data] gtfs

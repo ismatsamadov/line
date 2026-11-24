@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Check the manuscript against the journal's form and tidy its line wrapping.
 
   python3 paper/check.py              # counts and checks only

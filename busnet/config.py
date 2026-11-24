@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Settings from a TOML file, so assumptions and data paths change without editing code.
 
 A config file has a [data] table of file paths and any number of other tables whose

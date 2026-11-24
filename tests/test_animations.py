@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The animations in animations/: the GIF writer's output decodes, with an independent
 decoder, to the frames it was given; the drawing helpers agree with each other; the buses
 keep the GTFS feed's times; and the committed GIFs are valid and as long as what they show.

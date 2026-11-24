@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The impact table (busnet/impact.py): which rows appear, and that a change is after less today."""
 
 import unittest
