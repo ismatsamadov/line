@@ -53,7 +53,7 @@ from pathlib import Path
 from .geo import PROJ, Polyline, fit_score, haversine_m
 from .model import Network, Route, Stop, _best_variant, _pattern_from, _shape_problem, _straight_pattern
 
-FEED_URL = "https://github.com/ismatsamadov/route_efficiency"
+FEED_URL = "https://github.com/ismatsamadov/line"
 FAR_FROM_LINE_M = 100.0      # the validator's limit for a stop's distance from its trip's shape
 # Nominal. The Mobility Database, which lists today's feed, wants the last day at least a week
 # ahead, a span of two years at most and no gap between versions (docs/outputs.md).

@@ -35,7 +35,7 @@ import osm_pbf                                                                  
 
 OUT = Path(__file__).resolve().parent / "external"
 GEOFABRIK = "https://download.geofabrik.de/asia/azerbaijan-latest.osm.pbf"
-HEADERS = {"User-Agent": "route_efficiency/0.1 (bus network research)", "Accept": "*/*"}
+HEADERS = {"User-Agent": "line/0.1 (bus network research)", "Accept": "*/*"}
 OPENDATA = "https://admin.opendata.az/dataset"
 AZSTAT = "https://www.azstat.gov.az/AsisOpenDataApi/csv?lang=az&table_id="
 

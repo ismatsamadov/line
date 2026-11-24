@@ -49,7 +49,7 @@ The same repaired network data also runs a small tool anyone in Baku can use tod
 ## Where to read more
 
 - The paper: preprint on engrXiv (submission 8632; the DOI will appear here once it is posted) and submitted to the journal *Public Transport*.
-- The code, data and results: https://github.com/ismatsamadov/route_efficiency, archived at https://doi.org/10.5281/zenodo.23604370.
+- The code, data and results: https://github.com/ismatsamadov/line, archived at https://doi.org/10.5281/zenodo.23604370.
 - The route planner built on the same data: https://www.birjob.com/aletler/avtobus-marsrutu (in Azerbaijani).
 
 *Text and figures are CC BY 4.0. The maps draw the agency's route geometry and the Kontur population grid.*

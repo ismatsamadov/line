@@ -176,7 +176,9 @@ python3 world.py                             # the table and its totals from out
 python3 world.py --run --force --jobs 4      # measure and redesign every city again first
 ```
 
-The results regenerate byte for byte from the downloaded files; `python3 -m unittest`
-regenerates the table, and with `BUSNET_SLOW_TESTS=1` every city's measurements too.
+The checksums in `data/world_files.csv` identify the published Hugging Face files.
+Regenerated GTFS archives carry the current GitHub publisher and contact URLs in
+`feed_info.txt`. This metadata change affects their checksums. `python3 -m unittest`
+regenerates the world table, and `BUSNET_SLOW_TESTS=1` also checks each city's measurements.
 `data/fetch_city.py <city>` downloads a city's inputs from their publishers instead, as
 they are on the day, which gives other results than these.

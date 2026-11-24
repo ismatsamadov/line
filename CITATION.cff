@@ -15,7 +15,7 @@ identifiers:
     value: 10.5281/zenodo.23602093
     description: "All versions of the repository; resolves to the latest release"
 license: MIT
-repository-code: "https://github.com/ismatsamadov/route_efficiency"
+repository-code: "https://github.com/ismatsamadov/line"
 keywords:
   - public transport
   - bus network
