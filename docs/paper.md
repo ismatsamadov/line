@@ -257,7 +257,7 @@ version: 1.1.0
 date-released: 2026-10-24
 doi: 10.5281/zenodo.23604370
 license: MIT
-repository-code: "https://github.com/ismatsamadov/route_efficiency"
+repository-code: "https://github.com/ismatsamadov/line"
 keywords: [public transport, bus network, network design, Baku, open data]
 ```
 

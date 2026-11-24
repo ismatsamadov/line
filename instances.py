@@ -164,7 +164,7 @@ They come from AYNA's map of the network as scraped on 23 October 2026: {how['se
 stops on {how['routes_with_stops']} routes. Baku0 to Baku3 are circles round the city centre, {how['centre']['name']},
 each as wide as gives the number of nodes nearest that of Mumford0 to Mumford3; {FULL} is
 the whole network. They were made by `instances.py` in
-[github.com/ismatsamadov/route_efficiency](https://github.com/ismatsamadov/route_efficiency),
+[github.com/ismatsamadov/line](https://github.com/ismatsamadov/line),
 which explains them in `docs/instances.md`.
 
 **Only the positions are measured.** The minutes along the links come from distances along

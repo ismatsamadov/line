@@ -37,7 +37,7 @@ from pathlib import Path
 BASE = "https://app-api.metro.gov.az"
 # Names come in the language asked for (English by default); Azerbaijani matches the
 # operator's files on opendata.az.
-HEADERS = {"User-Agent": "route_efficiency/0.1 (bus network research)", "Accept": "application/json",
+HEADERS = {"User-Agent": "line/0.1 (bus network research)", "Accept": "application/json",
            "Accept-Language": "az"}
 OUT = Path(__file__).resolve().parent / "external" / "metro_api"
 PAUSE_S = 1.0
