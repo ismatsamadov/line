@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: CC-BY-NC-4.0
+
+# Count only Python source in GitHub's language statistics.
+# Keep paper exports, notebooks and data available in their original formats.
+* -linguist-detectable
+*.py linguist-detectable
