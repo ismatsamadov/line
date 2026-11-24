@@ -1,5 +1,11 @@
 # Baku bus route efficiency
 
+I use public data to measure how efficiently Baku’s bus routes serve riders and to test
+whether trips could be shorter with the same fleet. The repository contains the data,
+Python model and results behind the study. [Manuscript](paper/manuscript.md) ·
+[Methodology](docs/methodology.md) · [Results](docs/results.md) ·
+[Archived release v1.1.0](https://doi.org/10.5281/zenodo.23604370)
+
 <p align="center"><img src="animations/buses.gif" width="100%" alt="A map of Baku and the Absheron peninsula with about 1,670 dots moving along the bus routes: today's 201 routes run for an hour as the model runs them, blue where a route's frequency rests on counted boardings or a published headway and orange where it is assumed"></p>
 
 An hour of Baku's buses as my model runs them. AYNA publishes no timetables and no bus
@@ -10,28 +16,20 @@ set by the type of service. The other animations sit in the sections they illust
 `python3 animations/build.py` draws them all from the committed data
 ([docs/code.md](docs/code.md#the-animations)).
 
-Release v1.1.0 is archived on Zenodo: https://doi.org/10.5281/zenodo.23604370
+## Reproduce the Baku study
 
-I built this to measure how efficiently Baku's bus routes serve riders and what they
-cost to run, using nothing but public data, and to test changes to the network before
-anyone makes them. It is Python 3.11 or newer with the standard library only. Every
-input is committed, every result regenerates from three commands, and the documentation
-in [docs/](docs/README.md) explains the data and its defects, every setting, how each
-number is computed, the redesign algorithm, every output column, the latest results,
-the research behind the approach and what I would do next. The same code reads any
-city's GTFS feed, so the measurements and the redesign search run wherever a timetable is
-published ([below](#another-city-from-its-gtfs-feed)).
-
-## Regenerate the results
+Run these commands from the repository root with Python 3.11 or newer. They use the
+standard library and the inputs committed under `data/`.
 
 ```sh
-python3 measure.py                                         # writes output/
-python3 measure.py --scenario stop-balancing --min-gap 250 # also writes output/scenario.json
-python3 -m unittest                                        # tests, including a regeneration check
+python3 measure.py --scenario stop-balancing --min-gap 250  # baseline and stop-spacing scenario
+python3 redesign.py                                        # fleet-neutral redesign
+python3 robustness.py                                      # sensitivity to samples and assumptions
+python3 -m unittest                                        # compare regenerated results with output/
 ```
 
-Nothing here needs the internet: every input is under `data/` (see
-[data/SOURCES.md](data/SOURCES.md)). To refresh the public datasets from their sources:
+The data inventory records the source of each input. To refresh the public datasets,
+run the fetch script. [Data sources](data/SOURCES.md)
 
 ```sh
 python3 data/fetch_external.py --refresh
@@ -287,14 +285,6 @@ but in the Hugging Face dataset
 [ismatsamadov/route-efficiency-cities](https://huggingface.co/datasets/ismatsamadov/route-efficiency-cities).
 `python3 data/fetch_world.py` downloads them into place and checks each against its
 SHA-256 in `data/world_files.csv`.
-
-## A planner built on the same data
-
-The repaired network also runs a free route planner for Baku, in Azerbaijani, at
-[birjob.com/aletler/avtobus-marsrutu](https://www.birjob.com/aletler/avtobus-marsrutu):
-it finds the way between two stops with the fewest changes of bus, or draws any line
-stop by stop with its length and approximate time. It is not a timetable, since none is
-published, and its data is a snapshot that is not updated automatically.
 
 ## Licensing
 

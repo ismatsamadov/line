@@ -51,7 +51,6 @@ buses in the networks their operators publish ([world.md](world.md)).
 | Know what comes next, the limitations and the open questions | [roadmap.md](roadmap.md) |
 | Turn the work into a research paper: outline, venues, format, steps for an independent researcher | [paper.md](paper.md) |
 | Read the manuscript draft and its title page | [../paper/manuscript.md](../paper/manuscript.md), [../paper/title-page.md](../paper/title-page.md) |
-| Use the route planner built on the same data | [birjob.com/aletler/avtobus-marsrutu](https://www.birjob.com/aletler/avtobus-marsrutu) (in Azerbaijani) |
 | Watch the network move: a modelled hour of buses, nine months of counted riders, the redesign one change at a time, how far the buses take you, and the bicycle lanes beside them | [../README.md](../README.md), each in the section it illustrates; how they are drawn: [code.md](code.md#the-animations), what each frame shows: [outputs.md](outputs.md#animations--the-animations-in-the-readme) |
 | Look up a term | [glossary.md](glossary.md) |
 
