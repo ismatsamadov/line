@@ -3,9 +3,10 @@
 Every file the measurements read is committed here, so `python3 measure.py` reproduces
 every result without downloading anything. `python3 data/fetch_external.py --refresh`
 downloads the external files again from the sources below. Retrieved 23 October 2026
-unless noted. The code is under the MIT licence and the documentation under CC BY 4.0
-(`LICENSE` and the Licensing section of the README); the data keep the terms listed
-here.
+unless noted. The code is under the PolyForm Noncommercial License 1.0.0 and the rest of
+my work under CC BY-NC 4.0, so neither may be used commercially without my written
+permission (`LICENSE` and the Licensing section of the README); the data I did not make
+keep the terms listed here.
 
 ## Bus network
 

@@ -39,6 +39,7 @@ buses in the networks their operators publish ([world.md](world.md)).
 | See how much the results depend on the trip sample and the assumptions | [results.md](results.md#how-robust-the-results-are) |
 | See AYNA's bicycle lanes and parking points beside the bus network | [results.md](results.md#bicycle-lanes-and-parking) |
 | Understand the data, its defects, the repairs and the licences | [data.md](data.md) |
+| Know what you may do with the code, data and results, and when you need my permission (any commercial use, including through an AI assistant or coding agent) | [Licensing](../README.md#licensing), [LICENSE](../LICENSE), [AGENTS.md](../AGENTS.md) |
 | Change an assumption or a data path | [configuration.md](configuration.md) |
 | Know exactly how a number is computed | [methodology.md](methodology.md) |
 | Understand the redesign algorithm and how to tune it | [redesign.md](redesign.md) |

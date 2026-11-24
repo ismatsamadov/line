@@ -136,8 +136,10 @@ compares them with the committed folder.
 The instances keep the terms of their sources: AYNA's map data, which AYNA publishes with
 no licence and this repository redistributes as a research snapshot with attribution;
 Kontur's population grid (CC BY); OpenStreetMap (ODbL); and Bakı Metropoliteni's metro
-entries and exits (CC BY) on opendata.az ([data.md](data.md)). The code that cuts them is
-under the MIT licence.
+entries and exits (CC BY) on opendata.az ([data.md](data.md)). What I added to them is
+under CC BY-NC 4.0 and the code that cuts them under the PolyForm Noncommercial License
+1.0.0, so neither may be used commercially without my written permission
+([Licensing](../README.md#licensing)).
 
 ## References
 

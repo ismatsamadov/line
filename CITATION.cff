@@ -14,7 +14,7 @@ identifiers:
   - type: doi
     value: 10.5281/zenodo.23602093
     description: "All versions of the repository; resolves to the latest release"
-license: MIT
+license: PolyForm-Noncommercial-1.0.0
 repository-code: "https://github.com/ismatsamadov/line"
 keywords:
   - public transport
@@ -28,4 +28,7 @@ abstract: >-
   door-to-door travel model checked against observed ridership, and searches for a
   fleet-neutral redesign whose gain is checked over other trip samples and
   assumptions. Every input is committed and every result regenerates from three
-  commands. The code is MIT-licensed; the data keep their own terms (see README).
+  commands. Noncommercial use only: the code is under the PolyForm Noncommercial
+  License 1.0.0 and the author's text, figures, data and results under CC BY-NC
+  4.0, so commercial use needs the author's written permission; third-party data
+  keep their own terms (see LICENSE and README).

@@ -73,9 +73,10 @@ software paper, with the repaired AYNA snapshot and the first GTFS feeds for Bak
 errors and the Mobility Database lists as a community feed, mdb-3629) as a dataset
 with a Zenodo DOI and `busnet` as
 research software in the Journal of Open Source Software, which is free and asks for an
-open licence, tests and documentation, all of which exist; a short Findings paper on one
-result, for example that the strict coverage guard gains as much as the default, in
-1,000 words and three figures.
+open-source licence, tests and documentation (the tests and documentation exist, but the
+code's licence is now noncommercial, which JOSS does not accept); a short Findings paper
+on one result, for example that the strict coverage guard gains as much as the default,
+in 1,000 words and three figures.
 
 ## 3. The paper, section by section
 
@@ -236,9 +237,10 @@ My ORCID already exists; I will add the Zenodo DOI and later the paper to it. A 
 Scholar profile can be created, but Scholar lists profiles in its people search only
 with a verified university e-mail; the paper itself is indexed anyway.
 
-The repository has a `LICENSE` (MIT, for the code), a `CITATION.cff`, and a Licensing
-section in the README that says which terms each data folder carries
-([data/SOURCES.md](../data/SOURCES.md)); the documentation is CC BY 4.0. Release v1.1.0
+The repository has a `LICENSE` (noncommercial use only: the PolyForm Noncommercial
+License 1.0.0 for the code, CC BY-NC 4.0 for the rest of my work), a `CITATION.cff`,
+and a Licensing section in the README that says which terms each data folder carries
+([data/SOURCES.md](../data/SOURCES.md)). Release v1.1.0
 is archived on Zenodo: the version DOI 10.5281/zenodo.23604370 is the one to cite for the
 numbers in the paper, and 10.5281/zenodo.23602093 always resolves to the latest version.
 The `CITATION.cff` as committed (the version, date and DOI move with each release):
@@ -256,7 +258,7 @@ authors:
 version: 1.1.0
 date-released: 2026-10-24
 doi: 10.5281/zenodo.23604370
-license: MIT
+license: PolyForm-Noncommercial-1.0.0
 repository-code: "https://github.com/ismatsamadov/line"
 keywords: [public transport, bus network, network design, Baku, open data]
 ```

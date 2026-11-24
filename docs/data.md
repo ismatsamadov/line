@@ -36,7 +36,7 @@ in both scrapes. The same snapshot is published on Kaggle with its tables as CSV
 
 **Licence.** None is published. The data is AYNA's; neither AYNA's website nor the API
 states terms of use. I keep the database here as a research snapshot with attribution
-to AYNA; this repository's licence does not extend to it. AYNA also publishes its route
+to AYNA; this repository's licences do not extend to it. AYNA also publishes its route
 lines (KMZ) and bus stations on opendata.az under CC0 (`data/external/opendata/`), a
 cleaner source for route geometry if a future snapshot can be built from them.
 
