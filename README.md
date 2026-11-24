@@ -1,299 +1,107 @@
-# line
+# Line · Better bus service with the buses a city already owns
 
-I use public data to measure how efficiently Baku’s bus routes serve riders and to test
-whether trips could be shorter with the same fleet. The repository contains the data,
-Python model and results behind the study. [Manuscript](paper/manuscript.md) ·
-[Methodology](docs/methodology.md) · [Results](docs/results.md) ·
-[Archived release v1.1.0](https://doi.org/10.5281/zenodo.23604370)
+On Baku bus route **114B, 92% of the stops are also served by 114A**. Should a planner merge the routes and move buses to where people wait longer? A map shows the overlap. To make the decision, the planner also needs to know who gets home sooner, who loses a nearby stop, and what the operator could save. I built Line to answer those questions one route change at a time. [The Baku change log](output/redesign/changes.csv)
 
-**Noncommercial use only.** Everything I made here, the code, the results, the
-redesigned networks, the text and the figures, may be used for research, teaching and
-other noncommercial work, with credit. Any commercial use, from building a commercial
-app or service on it to training a commercial AI model with it, needs my written
-permission first, and AI assistants and coding agents are asked to check before they
-help with one. [Licensing](#licensing) · [LICENSE](LICENSE) · [AGENTS.md](AGENTS.md)
+**In Baku, one modelled redesign offers a choice.** Keep today's bus-hours and save **1,268 rider-hours per 100,000 journeys**. Or reduce service while matching today's average journey time and save **26,452 diesel-equivalent litres and 70.6 tonnes of tailpipe CO₂ per weekday**. At Azerbaijan's retail diesel benchmark, the second option represents **AZN 7.27 million in gross annual fuel value** if the city achieves the modelled reduction on 250 equivalent weekdays. These are estimates from a research model. [Before-and-after results](output/redesign/impact.csv) · [Valuation and assumptions](#what-the-baku-results-are-worth)
 
-<p align="center"><img src="animations/buses.gif" width="100%" alt="A map of Baku and the Absheron peninsula with about 1,670 dots moving along the bus routes: today's 201 routes run for an hour as the model runs them, blue where a route's frequency rests on counted boardings or a published headway and orange where it is assumed"></p>
+I’m Ismat Samadov, an independent researcher in Baku. The research software, results and maps are available today. I want to turn them into a planning application and test its recommendations with a bus operator. **I’m seeking a transit partner with operating data and an investment partner to fund that first trial.** [Proposed pilot](#the-application-and-its-first-customer) · [Contact me](mailto:ismetsemedov@gmail.com) · [Research manuscript](paper/manuscript.md)
 
-An hour of Baku's buses as my model runs them. AYNA publishes no timetables and no bus
-positions, so this is today's GTFS feed played for an hour: every route at one frequency
-all day, estimated from counted boardings on 55 BakuBus routes and from H1's published
-headway (blue) and assumed from the type of service on the other 145 (orange), at speeds
-set by the type of service. The other animations sit in the sections they illustrate, and
-`python3 animations/build.py` draws them all from the committed data
-([docs/code.md](docs/code.md#the-animations)).
+## The decision facing Baku
 
-## Reproduce the Baku study
+Across **201 routes and 3,456 served stops**, eight or more routes share every link on 21 stretches totalling 71 km. Overlap can be useful on a busy corridor. The question is whether the next bus is worth more there or on a route where a long wait dominates the trip. Line tests mergers, detour removal, stop spacing and bus reallocation against the time a rider spends walking, waiting, transferring and riding. [Corridor measurements](output/corridors.csv) · [Search method](docs/redesign.md)
 
-Run these commands from the repository root with Python 3.11 or newer. They use the
-standard library and the inputs committed under `data/`.
+![Baku map replaying the 27 proposed route changes and the average trip time after each change on the search sample.](animations/redesign.gif)
 
-```sh
-python3 measure.py --scenario stop-balancing --min-gap 250  # baseline and stop-spacing scenario
-python3 redesign.py                                        # fleet-neutral redesign
-python3 robustness.py                                      # sensitivity to samples and assumptions
-python3 -m unittest                                        # compare regenerated results with output/
-```
+The map replays the **27 changes** selected on the trips used to design the network. The figures below come from a separate set of trips reserved for evaluation. The second option runs the redesigned routes less often until the average trip approximately matches the baseline. Both columns describe the same Baku network under different operating decisions. [Evaluation method](docs/methodology.md) · [Route-by-route results](output/redesign/routes.csv)
 
-The data inventory records the source of each input. To refresh the public datasets,
-run the fetch script. [Data sources](data/SOURCES.md)
+| On a modelled Baku weekday | Baseline | Keep today's bus-hours | Match today's mean trip |
+|---|---:|---:|---:|
+| Average door-to-door minutes, counting unreachable trips at 120 min | 74.82 | **74.06** | **74.77** |
+| Average minutes for trips possible within 120 min | 51.93 | 50.96 | 51.77 |
+| Bus-hours | 28,327 | 28,327 | **25,007** |
+| Buses in service, rounded up separately for each route | 2,015 | 2,017 | **1,796** |
+| Diesel-equivalent litres | 226,592 | 226,708 | **200,140** |
+| Tailpipe CO₂, tonnes | 605.0 | 605.3 | **534.4** |
+| Residents within 400 m of a served stop, straight line | 2,007,349 | 2,002,313 | 2,002,313 |
 
-```sh
-python3 data/fetch_external.py --refresh
-```
+At the same bus-hours, reallocating service saves riders time while slightly **increasing** modelled fuel use. With fewer bus-hours, the operator frees the equivalent of **219 buses** after rounding by route. Both plans leave about **5,036 fewer residents within 400 m** of a stop. An average trip time can hide a much longer walk for one neighbourhood. [Impact table](output/redesign/impact.csv) · [Coverage and route checks](docs/results.md#check-these-before-acting)
 
-## What the counts show
+## What the Baku results are worth
 
-<p align="center"><img src="animations/riders.gif" width="100%" alt="BakuBus routes drawn as wide as their boardings and metro stations as circles as large as their entries, for every day from 1 January to 30 September 2026, with a chart of the daily totals"></p>
+![Cumulative fuel value and avoided tailpipe emissions as the smaller-fleet scenario repeats from one to 250 equivalent weekdays, reaching AZN 7.27 million and 17,657 tonnes.](animations/fuel-value.gif)
 
-The counts are the only measured numbers in these animations: the daily boardings on
-each BakuBus route and entries at each metro station that Bakı Metropoliteni publishes
-on opendata.az, from 1 January to 30 September 2026. In the two weeks after 15 August,
-when the metro works closed the line between 28 May and Nizami, weekday metro entries
-were a quarter lower than in the two weeks before and BakuBus boardings a fifth higher,
-almost half of the rise on the express buses M2 to M6 that AYNA runs for the works
-([docs/data.md](docs/data.md#when-the-data-is-from)). The model uses the counts to set
-the frequency of the 55 BakuBus routes and to check its estimated riders.
+| Who receives the benefit? | Calculation using the modelled weekday | Annual illustration at 250 equivalent weekdays |
+|---|---|---:|
+| **Operator · fuel budget** under the smaller-fleet option | 26,451.72 diesel-equivalent L saved × AZN 1.10/L ≈ AZN 29,097/day | **AZN 7.27m** gross fuel value |
+| **Public · climate impact** under the same option | 70.6261 t tailpipe CO₂ avoided/day × 250 ≈ 17,657 t. At an illustrative AZN 50/t, a project appraisal would value that reduction at about AZN 3,531/day. | **AZN 0.88m** illustrative climate value |
+| **Riders · time** under the full-service-hours option | 0.7606 min saved × 100,000 journeys ÷ 60 ≈ 1,268 hours/day. At an illustrative AZN 4/hour, that time is worth about AZN 5,071/day. | **AZN 1.27m** time value per 100,000 daily journeys |
 
-## Modelled travel time from a stop
+The smaller-fleet case implies **6.61 million diesel-equivalent litres** over those 250 days. The priced run publishes each baseline, redesigned value and difference, in both daily and annual units. [Download the priced results (CSV)](output/baku-priced/impact.csv)
 
-<p align="center"><img src="animations/travel-time.gif" width="100%" alt="Stops lighting up minute by minute, from 0 to 120, as the travel model reaches them by bus from Q.Qarayev pr. 102, the stop with the most routes"></p>
+**Where the prices come from.** AZN is the Azerbaijani manat. The Azerbaijan Tariff Council set retail diesel at AZN 1.10/L effective January 2026. This gives a public benchmark for valuing diesel-equivalent litres. The operator would substitute its invoices and actual mix of diesel, CNG and electric buses. The 250 days, AZN 4 per rider-hour and AZN 50 per tonne are explicit appraisal assumptions. The 100,000 journeys are a unit for scaling the result. A passenger who transfers can produce two boardings on one journey. [Tariff Council announcement](https://tariff.gov.az/post/bir-sira-mehsul-ve-xidmetler-uzre-guzestler-tetbiq-olunub-qiymetler-mueyyenlesdirilib) · [Model inputs](busnet.toml) · [Valuation code](busnet/impact.py)
 
-Q.Qarayev pr. 102 is served by 27 routes, the most of any stop in the snapshot. The
-animation shows when each stop can be reached from there over two hours. The model uses
-headways to estimate waits and allows walks between stops for transfers. It accounts for
-transfer penalties when choosing a path, then reports elapsed minutes. [Travel model](docs/methodology.md#7-door-to-door-trips)
+**What could reach a budget?** If fuel records support half the modelled reduction at that price, the annual gross fuel value falls to **AZN 3.64m**. Each AZN 0.10/L change in unit price moves the full scenario by about **AZN 661,000/year**. An operator would deduct implementation and ongoing costs to estimate net savings. Redeploying the released buses elsewhere would buy additional service and consume fuel there. The time and climate rows measure public benefits. Adding all three rows would combine incompatible operating plans, and none of the figures establishes software revenue or an investor return.
 
-## Search for a better network
+## How the estimates were made
 
-```sh
-python3 redesign.py          # writes output/redesign/, about two minutes
-```
-
-<p align="center"><img src="animations/redesign.gif" width="100%" alt="The redesign search replayed on the map: each of its 27 changes in colour, then the network after it, with the average door-to-door time on the search's sample falling from 79.66 to 78.31 minutes"></p>
-
-The animation replays the 27 changes `redesign.py` keeps, one at a time, with the average
-door-to-door time on the search's sample of trips.
-
-The search keeps today's fleet and tries the changes other cities' redesigns used:
-merging near-duplicate routes, dropping little-used ones, straightening detours, stop
-balancing, and moving buses to where they save riders the most waiting. It uses counted
-boardings wherever they exist, leaves the routes listed in `busnet.toml` alone, and
-keeps a change only if the average door-to-door trip gets shorter without leaving people
-with no stop within walking distance. I then check the result on a different sample of
-trips than the search used. Its settings are in the `[redesign]` table of `busnet.toml`.
-
-| File in `output/redesign/` | Contents |
+| What goes into the calculation | What comes out and what needs checking |
 |---|---|
-| `changes.csv` | Every change kept, in order, and what it did to average door-to-door time |
-| `routes.csv` | Each route before and after: kept, straightened, merged or dropped; buses, headway, length |
-| `summary.json` | Riders, operator and network measures before and after, and the fleet that would match today's travel times |
-| `impact.csv` | What the redesign is worth, with today's buses and with fewer: minutes per trip, people near a stop, buses, bus-hours, bus-km, fuel and CO₂ a day, and money once prices are set |
-| `network.geojson` | The redesigned and dropped routes; GitHub draws this file as a map |
-| `gtfs_today.zip`, `gtfs_redesign.zip` | Both networks as GTFS, for other transit tools |
+| **Routes and people.** AYNA supplies the mapped routes and stops. Kontur supplies population on a grid. OpenStreetMap destinations and metro stations help estimate where people travel. | Route overlap is measured from the repaired map. A gravity model assigns more trips to nearby destinations. A passenger origin–destination survey would replace that estimate. [Data inventory](data/SOURCES.md) · [Travel model](docs/methodology.md) |
+| **Service and demand.** Daily BakuBus boardings are available by route for January–September 2026. One route has a published frequency, 55 use frequencies inferred from boardings and 145 use assumptions by service type. | The model estimates each wait and ride. It uses 17 hours of service and, for the boarding-based frequencies, 60 boardings per trip. Operator timetables, GPS and loads would test the results by time of day. [Service settings](busnet.toml) · [Ridership calibration](docs/calibration.md) |
+| **Fuel and climate.** Daily route kilometres × 0.30 L/km, plus stop events × 0.05 L/stop. Multiply the resulting diesel-equivalent litres by 2.67 kg CO₂/L. | The resulting estimate covers tailpipe emissions. The model has no fleet-wide fuel split or electricity consumption. Fuel invoices, vehicle type and depot energy records would support a fleet-specific estimate. [Fuel evidence and factors](docs/research.md) · [Configuration](docs/configuration.md) |
 
-MobilityData's canonical GTFS validator, a Java program that is not part of the
-repository, finds no errors in either feed: `python3 validate_gtfs.py --jar
-gtfs-validator-8.0.1-cli.jar` writes its findings to `output/gtfs_validation/`, with the
-stops it finds more than 100 m from their route's line
-([docs/getting-started.md](docs/getting-started.md#checking-the-gtfs-feeds)).
+**Does the time saving survive a different sample?** The search chose changes using 100 trip origins. On ten evaluation samples of 300 origins each, the average saving ranged from **0.68 to 0.81 minutes**. Across 14 alternative settings it ranged from **0.46 to 0.89 minutes**. The independent demand check is more modest. Without using boardings to infer frequencies, predicted and counted route rankings have an average correlation of about **0.53**. Vehicle capacity and crowding still need field data. [Trip samples](output/robustness/redesign_seeds.csv) · [Alternative assumptions](output/robustness/redesign_settings.csv) · [Calibration results](docs/calibration.md)
 
-Today's feed is in the Mobility Database as a community feed,
-[mdb-3629](https://mobilitydatabase.org/feeds/gtfs/mdb-3629), the first there for
-Azerbaijan. The database downloads it from this repository every day, so
-`output/redesign/gtfs_today.zip` keeps its path on `main`
-([docs/outputs.md](docs/outputs.md#outputredesigngtfs_todayzip-and-gtfs_redesignzip)).
+**Who might lose access?** Of the 3.04 million residents in the study area, 66% live within 400 m of a stop as the crow flies, but only 45% are within a 400 m walk on mapped streets and paths. In a separate redesign run, protecting everyone who already had a stop within the model's 500 m access threshold still saved **0.77 minutes** on average. That is the version I would take to a neighbourhood review first. [Walking-distance results](output/robustness/coverage_walk.csv) · [Coverage safeguard experiment](output/robustness/redesign_settings.csv)
 
-## Another city, from its GTFS feed
+![Two bars compare residents reached by radius and by walking distance at five thresholds. At 400 m, roughly 650,410 residents counted inside the circle have a longer walk on the mapped streets.](animations/walking-access.gif)
 
-```sh
-python3 data/fetch_city.py my_city --feed https://example.org/gtfs.zip --country XX
-python3 measure.py --config cities/my_city.toml --out output/cities/my_city
-python3 redesign.py --config cities/my_city.toml --out output/cities/my_city/redesign
-```
+## Evidence beyond Baku
 
-Nothing in the measurements or the search is Baku's. `data/fetch_city.py` downloads a
-city's GTFS feed, Kontur's population grid for its country and OpenStreetMap's
-destinations in the box of its stops, and writes a settings file whose `[data]` table
-names them; `measure.py` and `redesign.py` then run on that city. The feed's timetable
-gives every route the frequency and speed Baku's data lacks. The reader takes the
-weekday with the most bus departures and makes one stop pattern per route direction. Short
-turns count towards its frequency, large branches run as routes of their own and small
-ones are left out and listed, express routes are told apart by their names and their
-stops, and night routes are named so the redesign leaves them alone. It then moves the
-map projection to the city. Read back, the feed this repository writes for Baku
-reproduces the snapshot's results to within 0.1%.
+The same search ran on **26 networks across five continents**, using each city's published or mapped transit feed. The model found shorter average trips at the same service budget in all 26. The median gain was **2.91 minutes**. The three networks compiled by mappers have especially uncertain service frequencies. Excluding those three, the smaller-fleet scenario across the remaining 23 networks saves **1,470 of 7,375 buses, 140,079 diesel-equivalent litres and 374 tonnes of tailpipe CO₂ per weekday**. Local passenger demand outside the Baku case is modelled. Field trials would establish which gains operators can deliver. [City selection, feed quality and limitations](docs/world.md)
 
-Riga is in the repository as the worked example, from Rīgas satiksme's timetable on
-Latvia's open data portal (CC0): `cities/riga.toml`, its inputs in `data/cities/riga/`
-and its results in `output/cities/riga/`. [docs/cities.md](docs/cities.md) sets it beside
-Baku, and [docs/getting-started.md](docs/getting-started.md#another-city-from-its-gtfs-feed)
-explains the settings file.
+| Example network | Minutes saved per journey at today's service budget | Alternative fuel saving at today's mean trip time |
+|---|---:|---:|
+| Austin | 0.88 | 5,066 L/weekday |
+| Riga | 2.98 | 4,049 L/weekday |
+| Dublin | 3.32 | 18,011 L/weekday |
 
-## The world pilot: 25 cities and Baku
+These are separate simulations with a common method. The world comparison reads Baku from its exported timetable feed. The Baku investment case above uses the original network and local counts. [All 26 city results as CSV](output/world/cities.csv) · [Reproduce the Riga example](docs/cities.md)
 
-The same measurements and search ran on 25 more cities on five continents, each read from
-the GTFS feed its operator, city or a mapping project publishes, with the same settings for
-all, and on Baku read from its own feed. With the same buses, the average trip gets shorter
-in every city, by 2.91 minutes in the middle one (0.76 to 8.32). Kept to today's trip times
-instead, the 23 networks their operators or cities publish need 1,470 fewer of their 7,375
-buses, 20%, which saves 140,079 litres of fuel and 374 tonnes of CO₂ a weekday; with the
-three networks mapped from OpenStreetMap it comes to 3,910 fewer of 12,920 buses and
-383,172 litres.
-All of it rests on modelled demand, since no city but Baku publishes counts the model can
-use. [docs/world.md](docs/world.md) has the table, how the cities were chosen and how far to
-trust it; `output/world/` has the numbers, and `python3 world.py` regenerates them.
+## The application and its first customer
 
-## Check how much the results depend on the sample and the assumptions
+A city planning team or bus operator would use Line when deciding next season's routes and service hours. A planner could load a timetable, add passenger counts and operating costs, protect a hospital stop or set a maximum walk, and compare proposals. The useful output for a service meeting is a map of affected streets, a list of routes gaining or losing buses, and a cost calculation the finance team can check. The research engine already writes those route changes, comparison tables, maps and standard GTFS feeds. The proposed application would put that workflow in planners’ hands. [Redesigned network map](output/redesign/network.geojson) · [Baseline feed](output/redesign/gtfs_today.zip) · [Redesign feed](output/redesign/gtfs_redesign.zip)
+
+**The first investment would fund one operator pilot.** The proposed commercial offer is a paid corridor study followed by an annual planning licence if the operator finds repeated use worthwhile. Pricing and willingness to pay would be tested in that pilot. The decision to expand would depend on three deliverables.
+
+1. **A baseline the operator signs off on.** Reconcile schedules, GPS, passenger counts and vehicle energy bills on one corridor. Agree on protected stops, peak loads and minimum service with planners and rider representatives.
+2. **One change that can be tested.** Review a candidate with dispatchers and drivers, inspect turns and walking paths, and agree on a comparable corridor, measurement dates and thresholds before changing service.
+3. **A measured business case.** Compare before-and-after waits, total journey times, crowding, access, kilometres and actual energy spend against the comparison corridor. Deduct implementation and software costs. Use that record to decide whether the operator should renew or expand.
+
+For a pilot, investment discussion or commercial licence, contact **Ismat Samadov** at [ismetsemedov@gmail.com](mailto:ismetsemedov@gmail.com). The research is available for noncommercial use with credit. Commercial use requires written permission, and a pilot needs rights to its operating data. AYNA's public map is shared here as a research snapshot with no published licence. [Licence and source terms](#licensing)
+
+## Reproduce the numbers
+
+Python 3.11 or newer and the standard library are enough for Baku. From the repository root, the first command rebuilds the measurements. The second writes a priced scenario to its own directory. In its `impact.csv`, a negative change means less fuel, time or cost. The climate appraisal above multiplies the annual tonnes in that CSV by the stated AZN 50/t.
 
 ```sh
-python3 robustness.py        # writes output/robustness/, about 15 minutes
+python3 measure.py --scenario stop-balancing --min-gap 250
+python3 redesign.py --out output/baku-priced --set currency=AZN \
+  --set fuel_price=1.10 --set daily_journeys=100000 --set value_of_time=4 --set days_per_year=250
+python3 robustness.py
+python3 animations/impact_charts.py
 ```
 
-This scores today's network and the redesign on ten samples of trips, runs the search
-again under other assumptions (transfer penalty, trip lengths, destinations, headway
-estimates, walking distance, search sample, coverage guard), checks the demand model
-against observed boardings as each input is added, and measures coverage at several
-walking distances. [docs/results.md](docs/results.md#how-robust-the-results-are) reads
-the tables.
+The default run, `python3 redesign.py`, reproduces the published physical quantities. Its monetary inputs are unset so researchers can supply local values. [Getting started](docs/getting-started.md) · [Output dictionary](docs/outputs.md) · [Settings](docs/configuration.md) · [Archived research release](https://doi.org/10.5281/zenodo.23604370)
 
-## Fit the demand model to the counts
+<details>
+<summary>Explore the rest of the research</summary>
 
-```sh
-python3 calibrate.py         # writes output/calibration/, about 25 minutes
-```
+- Watch the network in motion. [A simulated hour of Baku buses](animations/buses.gif) · [Observed BakuBus boardings and metro entries](animations/riders.gif) · [Travel time from a single stop](animations/travel-time.gif) · [Bicycle access to buses](animations/bicycle.gif)
+- Inspect the research record. [Manuscript](paper/manuscript.md) · [Full results](docs/results.md) · [Published benchmark comparisons](docs/benchmark.md) · [Baku benchmark instances](docs/instances.md) · [Documentation index](docs/README.md)
+- Obtain the data. [Dataset sources and licences](data/SOURCES.md) · [AYNA snapshot on Kaggle](https://doi.org/10.34740/KAGGLE/DSV/21173689) · [World pilot feeds and maps on Hugging Face](https://huggingface.co/datasets/ismatsamadov/route-efficiency-cities) · [Baku community feed in the Mobility Database](https://mobilitydatabase.org/feeds/gtfs/mdb-3629)
 
-The demand model ranks the 56 counted BakuBus routes at 0.53 with headways that do not
-come from the counts, not the 0.58 I quoted before, which was a lucky sample of trip
-origins. Fitting its three settings to the counts and judging the fit on routes held out
-raises it to 0.62, but only with trips a third as long as today's, 2.7 km in a
-straight line against 8.4 km; among the settings that keep trips as long as today's,
-today's are the best. So the settings stay as they are, and what would move the model is
-data: how far Baku's bus passengers actually ride ([docs/calibration.md](docs/calibration.md)).
-
-## Test the search where the answers are known
-
-```sh
-python3 benchmark.py         # writes output/benchmark/, about three minutes
-```
-
-The transit routing literature compares methods on small benchmark networks, Mandl's
-and Mumford's four, with published route sets and scores. My scoring reproduces the
-published scores of Mumford (2013), Hüsselmann et al. (2024) and Jiao (2026) to the last
-decimal, apart from four Mandl sets Hüsselmann scored on a slightly different demand
-matrix, and the redesign's straightening, the one kind of change the benchmarks' rules allow,
-improves Mumford's route sets best for passengers on both scores: on Mumford3 the
-average trip falls from 31.44 to 30.87 minutes and the route time from 6,665 to 6,047.
-In the 25 later sets, which reach far lower times, it finds four changes worth a few
-hundredths of a minute and nothing in the newest, so the search improves a network
-rather than designing one ([docs/benchmark.md](docs/benchmark.md)).
-
-## Run your own method on Baku
-
-```sh
-python3 instances.py         # writes output/instances/, about twelve minutes
-```
-
-The test also runs the other way. `instances.py` cuts the Baku network into five
-instances in the format of Mumford's files, so that methods written for her networks can
-run on a real city's: four circles round the 28 May metro station with 30, 70, 111 and
-125 nodes, as near as the circles come to her 30, 70, 110 and 127, and the whole network
-with 680. Each comes with today's routes, which keep its rules, and their scores; on Baku3
-they give an average trip of 19.79 minutes, which straightening lowers to 17.88. Only the
-positions are measured: the link times come from the travel model's speeds and the trips
-from its gravity model. Christine Mumford suggested the instances
-([docs/instances.md](docs/instances.md)).
-
-## Put the bicycle lanes beside the buses
-
-```sh
-python3 bicycle.py           # writes output/bicycle/, about 4 s
-```
-
-<p align="center"><img src="animations/bicycle.gif" width="100%" alt="A map of central Baku with the bus routes in grey: AYNA's bicycle lanes of January 2025 in dark green, then those of September 2026 with the 13.2 km of new lanes in light green, then the 170 bus stops within 100 m of a lane in blue and the 185 parking points in orange"></p>
-
-The animation steps through AYNA's lanes as drawn in January 2025 and in its file of
-September 2026, the new ones marked, then the bus stops within 100 m of a lane and the
-parking points.
-
-AYNA publishes its bicycle lanes and bicycle parking points on opendata.az. The lanes
-run for 57.1 km on 54 streets of central Baku (44.2 km in January 2025), 47.5 km of them
-beside a bus route; 45 routes run at least 0.5 km along a lane, but only 170 of the
-3,456 served stops are within 100 m of one, and 106 of the 185 parking points are within
-100 m of a bus stop ([docs/results.md](docs/results.md#bicycle-lanes-and-parking)).
-
-## Change an assumption
-
-The AYNA data has no timetables, speeds or ridership by stop, so some values are
-assumptions. They all live in [busnet.toml](busnet.toml) with their sources. Edit the
-file, or change one value for a single run with
-`python3 measure.py --set default_headway_min=10`. Real data always wins over an
-assumption: add real headways to [data/headways.csv](data/headways.csv) and they replace
-the estimates. `python3 measure.py --config none` runs with the built-in defaults only.
-
-## What is where
-
-| Path | Contents |
-|---|---|
-| `data/ayna.db`, `data/ayna_scraper.py` | Bus network snapshot from the AYNA map API, and the script that builds it |
-| `data/external/` | Public datasets: population, ridership, metro, statistics, OpenStreetMap, Wikidata, the answers of the metro's own API, AYNA's bicycle lanes and parking points, the benchmark networks of Mumford (2013) and the route sets later studies published on them |
-| `data/bakubus_route_hours.csv` | The first and last departures BakuBus publishes for 52 of its routes, copied from the image on its website; a check on the hours of service, not read by the tools |
-| `data/headways.csv` | Real headways where known |
-| `data/fetch_external.py`, `data/osm_pbf.py` | Downloads the public datasets again; the reader of OpenStreetMap PBF extracts that cuts the walking network out of Geofabrik's, and another city's destinations |
-| `data/cities/`, `data/fetch_city.py` | Another city's inputs (Riga's: its GTFS feed, Kontur's grid for Latvia, OpenStreetMap destinations), and the script that downloads them for any city and writes its settings file |
-| `data/world_files.csv`, `data/fetch_world.py` | The world pilot's inputs and the feeds and maps its redesigns write, kept in a Hugging Face dataset rather than in git: each file with its size and SHA-256, and the script that downloads and checks them |
-| `data/metro/`, `data/metro_scraper.py`, `data/build_metro.py` | The metro network (stations, train services, running times, departures), not yet used by the model; the scripts that read the metro's API and build the tables |
-| `data/metro_headways.csv` | Metro train intervals the operator has published, with sources |
-| `busnet.toml` | Settings: data paths and every assumption |
-| `cities/` | Settings files for other cities, read from their GTFS feeds: `cities/riga.toml`, the world pilot's 24 more, and `cities/baku.toml`, Baku read from its own feed |
-| `busnet/` | The package: load and repair the network or read it from a GTFS feed, headways and daily service, demand, metrics, scenarios, the redesign search and what it is worth, GTFS export |
-| `measure.py` | Measures the network and writes `output/` |
-| `redesign.py` | Searches for a better network and writes `output/redesign/` |
-| `robustness.py` | Repeats the results under other trip samples and assumptions and writes `output/robustness/` |
-| `validate_gtfs.py` | Runs MobilityData's GTFS validator on the two feeds and writes its findings to `output/gtfs_validation/` |
-| `benchmark.py` | Scores the route sets published for the Mandl and Mumford benchmark networks, by Mumford (2013), Hüsselmann et al. (2024) and Jiao (2026), and runs the redesign's straightening on them; writes `output/benchmark/` |
-| `instances.py` | Cuts the Baku network into five instances in the format of Mumford's benchmark networks, Baku0 to Baku3 and BakuFull, with today's routes scored; writes `output/instances/` |
-| `calibrate.py` | Fits the demand model's settings to the counted BakuBus boardings and cross-validates the fit; writes `output/calibration/` |
-| `bicycle.py` | Puts AYNA's bicycle lanes and parking points beside the bus network; writes `output/bicycle/` |
-| `world.py` | Puts the world pilot's cities in one table with their totals; writes `output/world/` |
-| `tests/` | Unit tests and a regression test: `python3 -m unittest` |
-| `animations/` | The animations on this page: `build.py` draws them as GIFs from the data, `output/` and a rerun of the redesign search, with `draw.py`, a small drawing library and GIF writer |
-| `paper/` | The manuscript and its title page; `figures.py` draws the manuscript's figures from `output/` as SVG and PDF, `check.py` checks its length, highlights and citations, and `build.py` writes the submission files (Word and a preprint PDF) to `paper/submission/` |
-| `output/` | Results, regenerated by the three scripts (`output/gtfs_validation/` by `validate_gtfs.py`, `output/benchmark/` by `benchmark.py`, `output/instances/` by `instances.py`, `output/calibration/` by `calibrate.py`, `output/bicycle/` by `bicycle.py`, `output/cities/<city>/` by `measure.py` and `redesign.py` with `cities/<city>.toml`, `output/world/` by `world.py`) |
-| `LICENSE`, `LICENSES/` | The terms, noncommercial use only, and the full texts of the two licences: the PolyForm Noncommercial License 1.0.0 for the code and CC BY-NC 4.0 for the rest of my work |
-| `AGENTS.md`, `llms.txt` | What AI assistants and coding agents must check before they use anything here, and the same notice for tools that read `llms.txt` |
-| `CITATION.cff` | How to cite the repository |
-
-## Outputs
-
-| File | Contents |
-|---|---|
-| `routes.csv` | One row per route: length, stop spacing, directness, duplication, detours, headway and where it came from, daily trips, fleet, bus-hours and fuel, people served, observed boardings |
-| `corridors.csv` | Stretches where 8 or more routes share every link |
-| `duplicates.csv` | Routes whose stops are mostly served by one other route |
-| `detours.csv` | Detours, their extra minutes per trip and the people only they serve |
-| `ridership_check.csv` | Observed against modelled boardings per BakuBus route |
-| `network.json` | Network-wide results, the inputs found and the settings used |
-| `scenario.json` | The same results before and after a scenario |
-| `repairs.txt` | Data defects fixed automatically before measuring |
-| `timetable.txt` | From a GTFS feed only: branches run as routes or left out, express routes, and speeds that fell back to the settings |
-| `robustness/` | The redesign on other trip samples and under other assumptions, the model's fit as inputs are added, coverage by radius |
-| `benchmark/` | The published benchmark route sets scored here beside their published scores, and what straightening does to them |
-| `instances/` | Baku in the benchmark's format: the nodes, link minutes, demand and today's routes of five instances, with their rules and scores |
-| `calibration/` | The demand model's settings tried against the counted boardings, the cross-validated fit, and the fit on other samples of trips |
-| `gtfs_validation/` | What MobilityData's GTFS validator says about the two feeds |
-| `bicycle/` | AYNA's bicycle lanes and parking points beside the bus network: lanes by street with the routes along them, routes along lanes, stops and parking points near lanes, people within reach |
-
-## The data on Kaggle and Hugging Face
-
-The AYNA snapshot `data/ayna.db` is also published on Kaggle, with its five tables as
-CSV and the known defects described: https://doi.org/10.34740/KAGGLE/DSV/21173689.
-
-The world pilot's inputs, and the feeds and maps its redesigns write, 351 MB, are not in git
-but in the Hugging Face dataset
-[ismatsamadov/route-efficiency-cities](https://huggingface.co/datasets/ismatsamadov/route-efficiency-cities).
-`python3 data/fetch_world.py` downloads them into place and checks each against its
-SHA-256 in `data/world_files.csv`.
+</details>
 
 ## Licensing
 
@@ -323,6 +131,9 @@ for commercial text and data mining, including the training of AI models.
 on Zenodo as [10.5281/zenodo.23604370](https://doi.org/10.5281/zenodo.23604370), and
 [10.5281/zenodo.23602093](https://doi.org/10.5281/zenodo.23602093) always resolves to the
 latest release.
+
+<details>
+<summary>Third-party data licences and attribution</summary>
 
 The data I did not make keep their own terms, which my licences neither replace nor
 narrow; [data/SOURCES.md](data/SOURCES.md) lists them file by file:
@@ -361,3 +172,5 @@ maps and tables that draw on OpenStreetMap carry its attribution. The GIFs in
 `animations/` use AYNA's routes and stops, the Kontur population grid, Bakı
 Metropoliteni's counts (CC BY) and AYNA's bicycle lanes and parking points (CC0) under
 the terms above.
+
+</details>
