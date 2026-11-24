@@ -45,7 +45,8 @@ busnet/
   calibration.py      the trips' paths found once and spread again for any demand settings
 tests/                unit tests and a regression test (python3 -m unittest)
 animations/
-  build.py            the README's five animations, from the data, output/ and a rerun of the search
+  build.py            the five Baku map animations, from the data, output/ and a rerun of the search
+  impact_charts.py    the README fuel valuation and walking-access charts, from the published Baku tables
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
   buses.gif, riders.gif, redesign.gif, travel-time.gif, bicycle.gif   written by build.py
 data/                 every input, committed (see data.md), except the world pilot's, which are in a Hugging Face dataset
@@ -247,8 +248,10 @@ people covered), add it to `score()` and change the comparisons in `search()`.
 
 ## The animations
 
-`animations/build.py` draws the five GIFs in the README, and `draw.py` beside it
-holds all the drawing they need, in the standard library. A `Canvas` is three byte arrays,
+`animations/build.py` draws the five Baku map animations. Run
+`python3 animations/impact_charts.py` to draw the fuel valuation and walking-access
+charts from `output/redesign/impact.csv` and `output/robustness/coverage_walk.csv`.
+Both scripts use the standard-library renderer in `animations/draw.py`. A `Canvas` is three byte arrays,
 red, green and blue. A shape becomes a mask first, pixel to coverage: a segment covers a
 pixel by its half-width plus half a pixel minus the distance from the pixel's centre,
 kept between 0 and 1, and each row is searched only across the segment's two round ends
@@ -374,7 +377,8 @@ On one Python version a rebuild gives the same files byte for byte.
    `python3 validate_gtfs.py --jar ...` runs MobilityData's validator, which must report no
    errors ([getting-started.md](getting-started.md#checking-the-gtfs-feeds)).
 8. **The animations.** After a change to the data, the settings or the search, run
-   `redesign.py` and then `python3 animations/build.py`, and look at the five GIFs.
+   `redesign.py` and then `python3 animations/build.py`, and inspect the five maps. After regenerating
+   the redesign and robustness tables, run `python3 animations/impact_charts.py` for the two charts.
 
 A new test goes in `tests/test_<module>.py` as a `unittest.TestCase`; `tests/helpers.py`
 builds the two-route network the tests share.
