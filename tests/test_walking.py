@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Walking distances along streets (busnet/walking.py), on a made-up pair of streets
 joined only at one end, so that the walk is far longer than the straight line."""
 

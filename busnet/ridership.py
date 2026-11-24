@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Observed boardings per route, from the BakuBus daily counts published on opendata.az.
 
 The CSV has three columns: date (e.g. "2026-01-01 00:00:00,000"), route number and

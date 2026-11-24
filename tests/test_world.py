@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """world.py: each city's saving and its share of today are taken from one baseline, the
 redesign's, every published row and the total add up, and nothing is written when they do
 not."""

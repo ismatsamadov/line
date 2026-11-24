@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """What a redesign is worth, in the units riders and operators count: minutes per trip,
 people near a stop, buses, bus-hours, bus-km, fuel and CO2 a day, and money where the
 settings give prices. redesign.py writes the rows to impact.csv and summary.json.

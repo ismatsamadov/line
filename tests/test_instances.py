@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The Baku instances in Mumford's format (busnet/instances.py and instances.py).
 
 The pieces that cut them are checked on made-up sequences and on the two-route test

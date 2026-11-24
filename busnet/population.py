@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Load gridded population as (lat, lon, people) zones, using only the standard library.
 
 Supported inputs:

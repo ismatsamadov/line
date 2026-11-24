@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Every number the metrics assume because the data does not contain it.
 
 These are the defaults. Override any of them in busnet.toml (or another file passed

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The bicycle readers and measures: a small KMZ in the shape of AYNA's files reads back
 (lanes by folder, parking points by name, Google Earth's sample places dropped), the line
 index agrees with brute force, the measures come out right on the test network, and

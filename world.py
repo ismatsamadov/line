@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Put every city of the world pilot in one table: each measured and redesigned from its own GTFS
 feed with the same settings, so that the cities compare like for like.

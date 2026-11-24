@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Changes to the network that can be measured against the current one.
 
 Each function takes a Network and returns (new_network, details) without touching

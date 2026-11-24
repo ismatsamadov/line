@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Instances of the urban transit routing problem cut from the Baku network, in the format
 of Mumford's (2013) benchmark networks (busnet/utrp.py reads and scores them).
 

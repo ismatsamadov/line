@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Measure the efficiency of a bus network: Baku's from the AYNA snapshot, or any city's from
 its GTFS feed.

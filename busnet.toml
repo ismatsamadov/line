@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 # Settings for measure.py. Every value here can be changed without touching code;
 # delete a line to fall back to the default in busnet/assumptions.py, or override a
 # single value for one run:  python3 measure.py --set default_headway_min=10

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Load the AYNA SQLite snapshot into plain objects, repairing the defects found in the audit.
 
 Repairs are detected from the data rather than hard-coded, so they still apply after a re-scrape:

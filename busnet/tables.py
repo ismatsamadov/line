@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """CSV tables as every script writes them: UTF-8 with a byte-order mark, so that Excel shows
 ə, ş and ç correctly, floats rounded to 4 decimals, and no file for a table without rows (a
 run removes the one an earlier run left in the folder, so no file means no rows)."""

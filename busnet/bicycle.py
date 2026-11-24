@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Bicycle lanes and parking points, and how they sit against the bus network.
 
 AYNA publishes two files on opendata.az, both KMZ (zipped KML) saved from Google Earth:

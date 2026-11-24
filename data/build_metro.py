@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Build the Baku Metro tables in data/metro/ from the operator's API, OpenStreetMap,
 Wikidata and the operator's files on opendata.az.

@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Read OpenStreetMap PBF files with the standard library.
 
 Enough of the format (github.com/openstreetmap/OSM-binary) to cut the ways of one kind

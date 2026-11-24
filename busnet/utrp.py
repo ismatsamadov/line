@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The benchmark networks of the urban transit routing problem: Mandl's and Mumford's four.
 
 Mumford (2013) published four made-up networks, Mumford0 to Mumford3, beside Mandl's

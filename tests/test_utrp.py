@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """The benchmark scoring and rules (busnet/utrp.py): the published route sets must score as
 their authors published them, Mumford (2013), Hüsselmann et al. (2024) and Jiao (2026),
 and the straightening search must keep every rule, shown on a made-up five-node network

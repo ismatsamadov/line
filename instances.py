@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Cut instances of the urban transit routing problem from the Baku network, in the format
 of Mumford's (2013) benchmark networks, so that methods written for her networks can run

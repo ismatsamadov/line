@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """How often each route runs, and what that service costs to operate.
 
 The AYNA data has no timetables, so each route's headway comes from the first of:

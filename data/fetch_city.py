@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """
 Download what another city needs into data/cities/<city>/, and write its settings file,
 cities/<city>.toml, so that measure.py and redesign.py run on it:

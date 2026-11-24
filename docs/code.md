@@ -185,6 +185,9 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
   letters (`ensure_ascii=False`).
 - **Style.** Short docstrings that say what a function returns and why; comments only
   where the code cannot say it.
+- **Licence lines.** Every Python file starts, after a script's `#!` line, with two SPDX
+  lines: the copyright and the PolyForm Noncommercial licence. A new file needs them
+  too; `tests/test_licence.py` checks.
 
 ## Extending the code
 

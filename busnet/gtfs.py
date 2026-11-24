@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2026 Ismat Samadov
+# SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+
 """Read a GTFS feed into a network, and write a network back out as GTFS.
 
 GTFS is the format transit agencies publish their timetables in, so reading it lets every
