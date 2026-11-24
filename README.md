@@ -1,31 +1,39 @@
-# Line | What Baku’s bus network can teach us about better service
+# Line | Planning Baku’s next quarter of bus service
 
-*By Ismat Samadov*
+A bus moved to one route comes off another. A merger can shorten a wait and cost someone their direct ride. These tradeoffs recur in public consultations: Houston riders asked for shorter waits, while Dublin riders flagged longer walks and extra transfers. Baku’s public route map, passenger counts and walking network let us test several of those decisions before changing a timetable. [Houston rider survey](https://linkhouston.org/equity-in-transit-2024/) · [Dublin consultation](https://busconnects.ie/wp-content/uploads/2022/02/Report-on-BusConnects-Consultation-2019.html)
 
-In Baku, eight or more bus routes share the same road on 21 stretches totalling 71 km. Meanwhile, roughly 650,000 residents live within 400 metres of a stop in a straight line but face a longer walk along mapped streets. Merging two routes could free buses for a neighbourhood with long waits. Removing the wrong stop could make a clinic harder to reach. [Corridor measurements](output/corridors.csv) · [Walking-distance analysis](output/robustness/coverage_walk.csv)
+## With the same buses, which routes should run more often?
 
-## Where routes overlap and riders wait
+**Start with 595 and 140E for a timetable review.** Both have counted demand and long estimated gaps between buses. In the redesign, 595 between Avtovağzal and Sumqayıt goes from **30 to 24 minutes** between departures, and 140E between Koroğlu and Mərdəkan goes from **30 to 25**. They carried about 2,399 and 3,133 boardings respectively on an average September weekday. The plan also cuts service on 50 and 54 from every 10 minutes to about every 24. The service intervals are model estimates. Routes 50 and 54 also lack boarding counts. Check their peak loads and actual departure intervals before taking a bus away. [All 201 routes, counts and proposed frequencies](output/redesign/routes.csv)
 
-Some busy corridors need several routes. To find places where moving buses could shorten a journey, Line compares the time people spend walking, waiting, riding and transferring across Baku’s 201 routes. The study uses AYNA’s routes and stops, Kontur’s population grid and BakuBus boarding counts. Only one route has a published interval between buses. For 55 others, the model infers frequency from boardings. For the remaining 145, it estimates frequency by service type. [Data sources](data/SOURCES.md) · [Method](docs/methodology.md)
+Across the full redesign, the same daily bus-hours save an estimated **1,268 rider-hours per 100,000 journeys**. This is a service budget: rounding the buses needed on each route gives 2,017 against 2,015 today. A dispatchable schedule still needs to fit the available vehicles and drivers. [Network comparison](output/redesign/impact.csv)
 
-The model selected 27 changes, including merging overlapping routes and shortening detours. **With the same total bus-hours, the average journey on a separate test sample fell from 74.82 to 74.06 minutes.** That is about 46 seconds per trip, or **1,268 hours per 100,000 journeys**. Trips that could not be completed within two hours counted as 120 minutes. Across ten samples, the saving ranged from 0.68 to 0.81 minutes. [Sample results](output/robustness/redesign_seeds.csv)
+## Where does a nearby stop still mean a long walk?
 
-![The model tests route changes across Baku. The map replays the 27 changes it selected.](animations/redesign.gif)
+**Check the areas around Gənclik, Avtovağzal and Qara Qarayev first.** They have the largest gaps between map coverage and walking coverage among the 27 metro-station areas tested. The table counts residents within one kilometre of each named station and measures their distance to the nearest **bus stop** by two methods. These circles can overlap and represent only the area around each station. [All station areas](output/station_access.csv) · [Reproduce the calculation](station_access.py)
 
-## The fuel bill and the carbon footprint
+| Station area | Within 400 m in a straight line | Within a 400 m walk on mapped streets |
+|---|---:|---:|
+| Gənclik | 100% | 62% |
+| Avtovağzal | 87% | 50% |
+| Qara Qarayev | 100% | 65% |
 
-The operator could also run the redesigned network less often and keep the average journey near its original length. Using 0.30 litres per kilometre plus 0.05 per stop, the model estimates a saving of **26,452 diesel-equivalent litres per weekday**. At Azerbaijan’s retail diesel price of AZN 1.10 per litre, repeated over 250 equivalent weekdays, that comes to **AZN 7.27 million in gross fuel value** and **17,657 tonnes of avoided tailpipe CO₂**, using 2.67 kg CO₂ per litre. Actual savings depend on the buses’ fuel mix, what the operator pays and how much service it runs. [Fuel and emissions calculation](output/baku-priced/impact.csv) · [Diesel tariff](https://tariff.gov.az/post/bir-sira-mehsul-ve-xidmetler-uzre-guzestler-tetbiq-olunub-qiymetler-mueyyenlesdirilib) · [Animated estimate](animations/fuel-value.gif)
+Around Gənclik alone, the gap represents about **12,700 residents** in the population model. An on-foot audit can trace the route to the nearest crossing and check for missing paths before planners choose between moving a stop and improving the approach. [Population and street data](data/SOURCES.md)
 
-## Who keeps access to a stop
+![Citywide comparison of bus-stop access by straight-line and walking distance.](animations/walking-access.gif)
 
-A circle drawn 400 metres around each stop covers 66% of residents in the study area. Measured along mapped streets and footpaths, coverage falls to 45%. Under the initial redesign, about 976 people lost access to a stop within the model’s 500-metre threshold. Requiring the model to protect those residents still produced a **0.77-minute average saving**. That version gives planners a shorter list of changes to check on foot and with peak-hour passenger counts. [Coverage experiment](output/robustness/redesign_settings.csv) · [Routes to check on the ground](docs/results.md#check-these-before-acting)
+## When two routes share most stops, do riders still need both?
 
-![How the share of residents near a bus stop changes when distance is measured along streets instead of in a straight line.](animations/walking-access.gif)
+**114B and 114A are worth testing together.** Some 92% of 114B’s stops are also on 114A. In the model, merging them and reallocating the buses leaves everyone previously within the 500 m access threshold inside it. **210 and 215 make the case for keeping service on a branch.** Their overlap is even higher at 93% of 210’s stops, yet the proposed merger leaves about 495 residents beyond that threshold. Before combining either pair, count boardings at the unique stops and check which direct journeys would gain a transfer. In the full redesign, the share of feasible trips requiring at least two transfers rises from 16.6% to 17.5%. [Merger results](output/redesign/changes.csv) · [Rider impacts](docs/results.md#check-these-before-acting)
 
-The same method found shorter modelled trips across 26 networks on five continents, with a median gain of 2.91 minutes. Outside Baku, passenger demand was modelled without local boarding counts. The practical use for cities is to identify which changes deserve fieldwork and what to measure there, from peak passenger loads and actual waits to fuel use and the walk to the next stop. [City comparisons and limitations](docs/world.md)
+![Baku route map replaying the 27 changes tested by the redesign.](animations/redesign.gif)
 
-[Research paper](paper/manuscript.md) · [Reproduce the study](docs/getting-started.md) · [Model assumptions](busnet.toml)
+## What could the operator save?
+
+Keeping today’s bus-hours directs the gain to riders and uses slightly more fuel. A separate scenario runs the redesigned network less often while preserving today’s **average** journey time. It saves an estimated **26,452 diesel-equivalent litres per weekday**. At AZN 1.10 per litre over 250 equivalent weekdays, that is **AZN 7.27 million in gross fuel value** and, at 2.67 kg CO₂ per litre, **17,657 tonnes of avoided tailpipe emissions**. The diesel price is a retail benchmark. The operator’s actual fuel mix, invoices and service days determine the budget effect. [Priced results](output/baku-priced/impact.csv) · [Diesel tariff](https://tariff.gov.az/post/bir-sira-mehsul-ve-xidmetler-uzre-guzestler-tetbiq-olunub-qiymetler-mueyyenlesdirilib) · [Animated calculation](animations/fuel-value.gif)
+
+[Research paper](paper/manuscript.md) · [Data and assumptions](docs/methodology.md) · [Reproduce the study](docs/getting-started.md) · [Comparison across 26 cities](docs/world.md)
 
 ## Licensing
 
-Research by Ismat Samadov. Noncommercial use requires credit. Commercial use requires the author's written permission. The code and settings use the PolyForm Noncommercial licence. The article, figures and the author’s contributions to the data and results use CC BY-NC 4.0. Third-party data retain their source terms, including © OpenStreetMap contributors (ODbL) and Kontur Population (CC BY). AYNA’s map is a research snapshot with no published licence. [Full terms and notices](LICENSE) · [Source credits](data/SOURCES.md) · [Citation](CITATION.cff)
+Noncommercial use requires credit. Commercial use requires the author's written permission. The code and settings use the PolyForm Noncommercial licence. The article, figures and the author’s contributions to the data and results use CC BY-NC 4.0. Third-party data retain their source terms, including © OpenStreetMap contributors (ODbL) and Kontur Population (CC BY). AYNA’s map is a research snapshot with no published licence. [Full terms and notices](LICENSE) · [Source credits](data/SOURCES.md) · [Citation](CITATION.cff)
