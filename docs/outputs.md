@@ -240,14 +240,12 @@ first, is carried on to them in straight lines, as the model measures those hops
 Today's feed is listed in the Mobility Database as a community feed,
 [mdb-3629](https://mobilitydatabase.org/feeds/gtfs/mdb-3629), under the provider name
 "Baku Community GTFS". It was added on 10 November 2026, the first feed there for
-Azerbaijan. Once a day the database downloads the file from
-`https://github.com/ismatsamadov/route_efficiency/raw/main/output/redesign/gtfs_today.zip`,
-keeps it as a new version if it has changed, and runs the validator on it; its first
-version is identical to the file here, and that version's report (validator 8.0.1) has
-the same notices as today's rows of `output/gtfs_validation/notices.csv`. The link holds
-only while the file keeps its path on `main` and the repository stays public under its
-present name, and any commit that changes the file, a rerun on a new scrape of the map
-for example, becomes the feed's next version there.
+Azerbaijan. The registered download address redirects to the current
+[GTFS feed on GitHub](https://github.com/ismatsamadov/line/raw/main/output/redesign/gtfs_today.zip).
+The database checks the feed daily, archives new versions and validates them. The
+first version's validator report (8.0.1) has the notices in
+`output/gtfs_validation/notices.csv`. Preserve the feed's path on `main` so the
+listing can pick up future revisions.
 
 The listing also scores the feed on the six criteria of the database's Seal of
 Reliability. The feed passes four: available (the daily download works), compliant (no
