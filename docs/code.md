@@ -46,6 +46,7 @@ busnet/
 tests/                unit tests and a regression test (python3 -m unittest)
 animations/
   build.py            the five Baku map animations, from the data, output/ and a rerun of the search
+  service_decisions.py    the two-hour departure comparison and Gənclik walking maps
   impact_charts.py    the README fuel valuation and walking-access charts, from the published Baku tables
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
   buses.gif, riders.gif, redesign.gif, travel-time.gif, bicycle.gif   written by build.py
@@ -251,7 +252,14 @@ people covered), add it to `score()` and change the comparisons in `search()`.
 `animations/build.py` draws the five Baku map animations. Run
 `python3 animations/impact_charts.py` to draw the fuel valuation and walking-access
 charts from `output/redesign/impact.csv` and `output/robustness/coverage_walk.csv`.
-Both scripts use the standard-library renderer in `animations/draw.py`. A `Canvas` is three byte arrays,
+Run `python3 animations/service_decisions.py` for two further figures.
+The departure clock uses the unrounded intervals in `output/redesign/routes.csv`
+and starts both alternatives at minute zero to illustrate even spacing.
+The Gənclik maps colour the same Kontur population sample points at each distance,
+using AYNA's served stops and the walkable streets and paths from © OpenStreetMap
+contributors (ODbL). Percentages are population-weighted as in `station_access.py`.
+
+All three scripts use the standard-library renderer in `animations/draw.py`. A `Canvas` is three byte arrays,
 red, green and blue. A shape becomes a mask first, pixel to coverage: a segment covers a
 pixel by its half-width plus half a pixel minus the distance from the pixel's centre,
 kept between 0 and 1, and each row is searched only across the segment's two round ends
