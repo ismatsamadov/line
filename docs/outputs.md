@@ -1,10 +1,10 @@
 # Outputs
 
-`measure.py` writes `output/`; `redesign.py` writes `output/redesign/`; `robustness.py`
-writes `output/robustness/`; `site/build.py` writes the page's files in `site/`
-([below](#sitedatajs-and-the-checklist-workbook)); `animations/build.py` writes the GIFs in
-the README ([below](#animations--the-animations-in-the-readme)). CSV files are UTF-8 with a byte-order mark, so Excel shows
-Azerbaijani letters correctly. Shares are
+`measure.py`, `redesign.py` and `robustness.py` write their results to `output/`,
+`output/redesign/` and `output/robustness/`, respectively. `animations/build.py` draws
+the GIFs in the README ([below](#animations--the-animations-in-the-readme)).
+
+CSV files are UTF-8 with a byte-order mark, so Excel shows Azerbaijani letters correctly. Shares are
 fractions between 0 and 1; distances are km or m as named; times are minutes unless named
 otherwise. Blank cells mean "not defined" (for example the circuity of a loop route). A
 table with no rows is not written, and a run removes the one an earlier run left in the
@@ -512,79 +512,11 @@ every row and the total add up: buses saved are the baseline's less the fewer bu
 saving is more than the baseline's figure, and the baseline leaves out of measure.py's
 count of the timetable's buses only those of routes it caps, never more.
 
-## site/data.js and the checklist workbook
-
-`site/build.py` writes `data.js` and `checklist.xlsx` for the page in `index.html`, and
-with `--og` the link-preview picture `og.png`; none of them is read by the other scripts.
-
-`site/data.js` assigns one object to `window.SITE_DATA`. `meta` holds the dates of the
-map data (`scraped`, `same_as`), the month of the BakuBus counts, the coverage radius, the
-transfer walk and the time lost per stop (from the settings) and the links, and the travel model's settings (walking speed and detour, change penalty,
-longest trip, and how many headways come from each source). `summary` holds the figures the page quotes, taken from `network.json` and the
-CSV files: routes, directions and stops, routes per shape class, detours and their extra
-km, the detours where nobody depends on the route alone and those with a shorter path,
-near-duplicate pairs and those with two carriers, corridors, routes per link, closely
-spaced stops, population and covered population.
-`coverage_sensitivity` holds five recorded results from
-`output/robustness/coverage_radius.csv`: `radius_m`, `population_within` and `share`,
-and from `coverage_walk.csv` the same two figures walked along streets and paths,
-`population_within_walk` and `share_walk`; `meta.walk_check` holds the date of the
-OpenStreetMap data, the walkable ways, and the median ratio of walk to line and the
-share over `walk_detour` from `summary.json`. The coverage lab displays these values
-without interpolating or changing the map's default-radius layer. Population is
-estimated from the 2023 grid; the straight-line radii are the study's measure, and the
-walked figures show their error, not verified walking access.
-`issues` holds `repairs` (each line of `repairs.txt` as route, direction, kind and text)
-and the defects the repairs do not cover: `no_stops` and `no_shape` (route numbers),
-`straight_directions`, `length_round_trip_median`, `duration_formula` (routes whose
-`duration_min` equals `floor(route_length_km / 0.6)`, of `routes_in_table`),
-`missing_from_map` (counted routes that are not in the map data), `cyrillic_names`,
-`shared_names`, `shared_names_far_apart` and `unnamed_unused_stops`. Then the data the
-map draws: `stops` (served stops as latitude, longitude, name and AYNA stop id, referred
-to by position), `routes` (one object per route with the figures of `routes.csv`, its
-estimated headway and its source, its cruise speed and, for each direction, its line, its
-stops and the length of every hop), `detours` (the rows of `detours.csv` with their
-line and end stops, and `alt`: the shorter path's line, km, km and minutes saved and the
-stops it skips, or null), `duplicates`, `corridors` (with their line and routes),
-`spacing` (the stops stop balancing removes, each with its shortest distance along a route
-to a neighbour, and the scenario's stop visits, hours saved and residents left without a
-stop within the coverage radius, from `scenario.json`) and `hexes` (each population
-hexagon with people farther than the coverage radius from a stop: its outline, those
-people and everyone in it), and `carriers` (one row per carrier, spelling variants
-combined: its routes, one-way km, direct routes, median path / straight line, detours and
-their km, routes mostly inside another route, closely spaced stops it serves, residents
-only one of its routes reaches, and counted boardings), and `bicycle` (the lanes, each
-with its street, km, encoded line and the routes along it; `streets`, the rows of
-`output/bicycle/lanes.csv`; every parking point as latitude, longitude, name, kind, the
-position of its nearest served stop and the metres to it, its nearest lane and the
-metres, its nearest metro exit and the metres; and a `summary` of the figures the
-Bicycles view and the tour quote). Lines are encoded polylines with
-5 decimals; stop coordinates have 6.
-
-`site/checklist.xlsx` holds the lists, one sheet each, with frozen headers and filters:
-
-| Sheet | Rows | Columns |
-|---|---|---|
-| About | the source, the dates and the definitions | one |
-| Data issues | 40: the 23 repairs, the 2 routes without a line, the 7 without stops and the 8 counted routes missing from the map | route, direction, issue, what would fix it |
-| Detours | 271, longest modelled excess time first | route, direction, end stops, inner stops, km along the route and in a straight line, excess km and modelled minutes, estimated uniquely covered population, whether the grid model finds no uniquely covered population; for the 134 graph candidates, their km, the distance and modelled time differences, and skipped stops. These are unverified alternatives, not established savings |
-| Near-duplicate routes | 72 | route and carrier, the route that serves most of its stops and its carrier, share of stops shared, stops of each, same carrier |
-| Corridors | 21 | from, to, turning point, km, stops, routes per link (mean and busiest link), routes |
-| Close stops | 351, closest first | stop name, AYNA stop id, shortest distance along a route to a neighbouring stop, routes |
-| Carriers | 39, most routes first | carrier, other spellings, routes and their numbers, one-way km, direct routes, median path / straight line, detours and their km, routes mostly inside another route and those inside another carrier's, close stops served, residents only one of its routes reaches, weekday boardings |
-| Routes | 201 | the measured columns of `routes.csv`, without the modelled headways, fleet and fuel |
-| Bicycle lanes | 54 streets, longest first | street, lane km, segments, km beside a bus route, bus routes along it and their numbers, stops within 100 m, MPV and MPS points within 100 m |
-| Bicycle parking | 834 | point, kind, coordinates, nearest bus stop and metres to it, routes at that stop, nearest lane and metres, nearest metro exit and metres |
-
 ## animations/ — the animations in the README
 
-`animations/build.py` writes five GIFs, 960 × 566 pixels, that loop for ever; no script
-reads them. `buses.gif` heads the README, and each of the others sits in the section it
-illustrates: `riders.gif` in the one on the counts, `redesign.gif` in the search's,
-`bicycle.gif` in the bicycle lanes', and `travel-time.gif` in the page's, beside the view it
-mirrors. The first four show the crop of the manuscript's figures over the population
-hexagons, `bicycle.gif` a closer one of central Baku; each says on the picture what it rests on; [code.md](code.md#the-animations)
-explains how they are drawn.
+`animations/build.py` writes five looping GIFs at 960 × 566 pixels for the README.
+Four show the same area as the manuscript figures, with population hexagons behind the
+network. The bicycle animation zooms in on central Baku. [How the animations are drawn](code.md#the-animations)
 
 | File | Frames | What it shows |
 |---|---|---|
@@ -592,5 +524,5 @@ explains how they are drawn.
 | `riders.gif` | 273, one per day from 1 January to 30 September 2026, 60 ms each | The 57 counted BakuBus routes that AYNA's map carries, as wide as their boardings that day (1 px per 4,000, in whole pixels), and the 27 metro stations, as circles as large as their entries (1 px² per 230). The chart: daily boardings on all 65 counted routes and entries at all 27 stations, with 15 August, when the metro works began, marked. Counts only, nothing modelled |
 | `redesign.gif` | 56: today, two per change, the result | The 27 changes of `output/redesign/changes.csv` in their order: first what each touches, in colour, then the network after it; the average door-to-door time on the search's sample (from 79.66 to 78.31 minutes, a trip impossible within two hours counted at 120); and at the end the routes, stops and average trip before and after from `summary.json` |
 | `bicycle.gif` | 5, held 1.6, 2.2, 2.6, 2.6 and 4 s | Today's bus routes; the 44 lanes (44.2 km) AYNA drew in January 2025; the 60 lanes (57.1 km on 54 streets) of its file of 24 September 2026, the 13.2 km that run more than 30 m from every January 2025 lane in light green; the 170 of the 3,456 served stops within 100 m of a lane; and the 185 MPV parking points, 106 of them within 100 m of a bus stop. The same measures as `output/bicycle/`; the 649 MPS points are left out, since the file does not say what they are |
-| `travel-time.gif` | 121, one per minute from 0 to 120, the last held for 3 s | The stops reached by bus from Q.Qarayev pr. 102, the stop with the most routes (27), as the page's Travel time view counts minutes: the travel model's journey of least cost, the change penalties left out. Colours are the page's 15-minute bins; grey stops are not reached within two hours |
+| `travel-time.gif` | 121, one per minute from 0 to 120, the last held for 3 s | The stops reached by bus from Q.Qarayev pr. 102, the stop with the most routes (27). The model chooses the least-cost journey and subtracts the transfer penalties to give elapsed minutes. Colours show 15-minute intervals up to an hour, then all later arrivals. Grey stops are beyond two hours or unreachable |
 

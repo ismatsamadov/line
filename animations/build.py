@@ -8,8 +8,8 @@ Draw the README's animations as GIFs, from the committed data and outputs.
                    each BakuBus route and entries at each metro station (opendata.az)
   redesign.gif     the redesign search replayed: the 27 changes redesign.py keeps, one at
                    a time, with the average door-to-door time on its sample of trips
-  travel-time.gif  how far the buses take you, minute by minute, from the stop where the
-                   page's travel-time view starts, by the same travel model
+  travel-time.gif  how far the buses take you, minute by minute, from the stop served by
+                   the most routes in the model
   bicycle.gif      AYNA's bicycle lanes over the bus routes, on a crop of central Baku: the
                    lanes of January 2025, those of September 2026 with the new ones marked,
                    then the bus stops within 100 m of a lane and the parking points
@@ -58,7 +58,6 @@ from busnet.optimize import Context, Evaluator, Plan, search                    
 from busnet.population import _mercator_to_latlon, load_population, stops_bbox  # noqa: E402
 from busnet.ridership import load_daily_boardings                              # noqa: E402
 
-# The page's colours (site/app.js and site/style.css).
 PAGE, INK, INK2, MUTED = "#f7f8f5", "#192d3b", "#56646a", "#65726c"
 BLUE, ORANGE, GREEN, RED = "#2a78d6", "#eb6834", "#1baf7a", "#d03b3b"
 ROUTE_GREY, FAINT = "#a9a89e", "#a9b1bf"
@@ -99,7 +98,7 @@ class Map:
 
 
 def _ring(blob):
-    """Outer ring of a GeoPackage polygon, in the layer's own coordinates (as site/build.py)."""
+    """Outer ring of a GeoPackage polygon in the layer's own coordinates."""
     flags = blob[3]
     env_len = {0: 0, 1: 32, 2: 48, 3: 48, 4: 64}[(flags >> 1) & 7]
     wkb = blob[8 + env_len:]
@@ -133,7 +132,7 @@ def hexagons(path, bbox=CROP):
 
 
 def base_map(m, hexes):
-    """The page colour with the population hexagons in four light steps."""
+    """Draw population hexagons in four shades on the map background."""
     c = draw.Canvas(m.w, m.h, PAGE)
     for ring, people in hexes:
         colour = next((col for least, col in PEOPLE_STEPS if people >= least), None)
@@ -553,10 +552,8 @@ def redesign(inp, m, base, out):
 # ---------------------------------------------------------------- 4. travel time
 
 def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
-    """Minutes by bus from the stop with the most routes, where the page's travel-time view
-    starts, to every stop, by the page's rebuild of the paper's travel model: the journey of
-    least cost, with each change of bus costing transfer_penalty_min more, and the minutes
-    shown leaving those penalties out."""
+    """Minutes from the stop with the most routes to each reachable stop. The model
+    includes transfer penalties when choosing a path and removes them from elapsed time."""
     net, a = inp.network, inp.a
     at = net.routes_at_stop()
     origin = min(at, key=lambda s: (-len(at[s]), s))
@@ -585,7 +582,7 @@ def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
     end = legend(still, TX, TY + 40, [(TIME_RAMP[0], "up to 15 min"), (TIME_RAMP[1], "15–30"), (TIME_RAMP[2], "30–45"),
                                       (TIME_RAMP[3], "45–60"), (TIME_RAMP[4], "over 60")])
     legend(still, end, TY + 40, [(FAINT, f"not reached in {a.max_trip_min // 60:.0f} hours")])
-    note(still, f"The paper's travel model, as on the page: a wait of half the headway at each boarding, speeds by "
+    note(still, f"The model assumes a wait of half the headway at each boarding, speeds by "
                 f"type of service, {a.stop_loss_s:.0f} s lost per stop, walks of up to {a.max_transfer_walk_m:.0f} m to "
                 f"change, and each change avoided as if it cost {a.transfer_penalty_min:.0f} min, which the minutes "
                 f"leave out.", TY + 60, most=3)
@@ -601,7 +598,7 @@ def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
             new.append(order[done])
             done += 1
         for s in new:
-            settled.disc(*where[s], 2.1, TIME_RAMP[min(4, int(reach[s] // 15))])          # the page's bins
+            settled.disc(*where[s], 2.1, TIME_RAMP[min(4, int(reach[s] // 15))])
         c = settled.copy()
         front = c.mask()
         for s in new:
@@ -619,7 +616,7 @@ def travel_time(inp, m, base, out, last_min=120, delay_cs=8):
 
 # ---------------------------------------------------------------- 5. bicycle lanes
 
-LANE_GREEN = "#23634e"           # the page's colour for bicycle lanes
+LANE_GREEN = "#23634e"
 NEW_LANE_M = 30.0                # a lane of September 2026 is new where it runs farther than this from January 2025's
 
 

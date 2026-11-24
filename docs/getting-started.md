@@ -28,7 +28,6 @@ python3 robustness.py
 | `python3 bicycle.py` | `output/bicycle/`: AYNA's bicycle lanes and parking points beside the bus network | about 4 s |
 | `python3 instances.py` | `output/instances/`: Baku cut into five instances in the format of Mumford's benchmark networks ([instances.md](instances.md)) | about 12 minutes |
 | `python3 calibrate.py` | `output/calibration/`: the demand model's settings fitted to the counted boardings and cross-validated ([calibration.md](calibration.md)) | about 25 minutes |
-| `python3 site/build.py` | `site/data.js` and `site/checklist.xlsx`, the page's data, from `output/`; with `--og` also `site/og.png` (needs Chrome) | about 3 s |
 | `python3 animations/build.py` | `animations/*.gif`, the five animations in the README ([below](#redraw-the-animations)) | about 4 minutes |
 
 The committed `output/` folder was produced by exactly these three commands. Running
@@ -48,20 +47,7 @@ The tests check the geometry, the headway and daily-service rules, the settings 
 and the redesign's plan arithmetic on a small made-up network, read a small bicycle
 file in the shape of AYNA's, regenerate `output/` and `output/bicycle/` to compare them
 with the committed files, read the Baku instances back as Mumford's files are read and
-check their rules, scores and demand, and rebuild the page's data and checklists to
-compare them with the committed ones ([code.md](code.md#checking-a-change)).
-
-## See the page
-
-```sh
-python3 site/build.py --og     # after any change to output/
-python3 -m http.server         # then open http://localhost:8000/ (or /#tour for the tour)
-```
-
-`index.html` is the page for readers of the results ([code.md](code.md#the-page)). It
-needs an internet connection for the map library and the base map tiles; everything
-else is in the repository. GitHub Pages publishes it when Settings → Pages is set to
-deploy from the branch `main`, folder `/ (root)`.
+check their rules, scores and demand. [Test coverage](code.md#checking-a-change)
 
 ## Redraw the animations
 

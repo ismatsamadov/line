@@ -1,11 +1,7 @@
 # Code
 
-Python 3.11 or newer, standard library only. The `busnet` package has about 4,100 lines,
-the six scripts about 1,100 more, and the tests about 1,700. The page in `index.html` and
-`site/` adds about 3,000 lines of Python, JavaScript, CSS and HTML ([The page](#the-page)),
-and the animations in the README about 1,300 lines of Python
-([The animations](#the-animations)).
-`python3 -m unittest` runs the tests; see [Checking a change](#checking-a-change).
+The research scripts and the `busnet` package use Python 3.11 or newer and its standard
+library. The tests run with `python3 -m unittest`. [Checking a change](#checking-a-change)
 
 ## Layout
 
@@ -48,19 +44,10 @@ busnet/
   instances.py        Baku's stops merged into nodes, the links between them, today's routes as paths, the gravity demand
   calibration.py      the trips' paths found once and spread again for any demand settings
 tests/                unit tests and a regression test (python3 -m unittest)
-index.html            the page for readers, served by GitHub Pages from the root of main
-site/
-  build.py            the page's data and checklist from output/ and the repaired network
-  data.js             written by build.py: everything the page shows, as one object
-  checklist.xlsx      written by build.py: the checklists as a workbook
-  og.html, og.png     the link-preview picture, and the page build.py --og draws it from
-  app.js              the page's logic: tour, map views, route cards, reach, issues, tables
-  style.css           the page's styles and its print layout
 animations/
   build.py            the README's five animations, from the data, output/ and a rerun of the search
   draw.py             anti-aliased lines, discs and polygons, a stroke font, and an animated-GIF writer
   buses.gif, riders.gif, redesign.gif, travel-time.gif, bicycle.gif   written by build.py
-.nojekyll             tells GitHub Pages to serve the files as they are
 data/                 every input, committed (see data.md), except the world pilot's, which are in a Hugging Face dataset
   ayna_scraper.py     the bus network from AYNA's map API -> ayna.db (run in a folder outside the repository)
   fetch_external.py   the public datasets -> data/external/
@@ -157,7 +144,7 @@ what the output files show; a feed whose routes share a number gets `"1 [route_i
 | `population` | `load_population(path, bbox, split=True)`, `stops_bbox(network, margin_km=2)`, `cut_gpkg(src, dst, bbox)` | Reads GeoPackage (no GIS library) or CSV. `cut_gpkg` copies a GeoPackage keeping only the cells whose centre is in a box, for `data/fetch_city.py` |
 | `ridership` | `load_daily_boardings`, `latest_month`, `weekday_mean` | |
 | `destinations` | `osm_points(paths, weights)`, `read_exits(path)`, `metro_points(passengers_csv, exits_csv, per_1000)`, `zone_attraction(zones, points, share)` | Metro station names are matched across files by `_match` |
-| `bicycle` | `placemarks(path)`, `load_lanes(path, folder)`, `load_parking(path)`, `LineIndex(lines)` (`nearest`, `nearest_any`), `along(path, index, within_m)`, `stops_near`, `measure(network, a, zones, observed, lanes, lanes_2025, parking, exits)`, `geojson` | Reads KMZ with the standard library; `measure` returns the summary and every table `bicycle.py` writes ([methodology.md](methodology.md#13-bicycle-lanes-and-parking)). Used by `bicycle.py` and `site/build.py` |
+| `bicycle` | `placemarks(path)`, `load_lanes(path, folder)`, `load_parking(path)`, `LineIndex(lines)` (`nearest`, `nearest_any`), `along(path, index, within_m)`, `stops_near`, `measure(network, a, zones, observed, lanes, lanes_2025, parking, exits)`, `geojson` | Reads KMZ with the standard library; `measure` returns the summary and every table `bicycle.py` writes ([methodology.md](methodology.md#13-bicycle-lanes-and-parking)). |
 | `graph` | `StopIndex(stops)` (`within`, `nearest`), `TransitGraph(network, a, headways)` (`search`, `trip_cutoff_s`, `arrival`, `departure`, `is_departure`, `node_route`) | Dijkstra over arrival, departure and on-board nodes; `trip_cutoff_s`, `max_trip_min` plus one transfer penalty, is how far a search must reach to find every trip within `max_trip_min` |
 | `metrics` | `route_table`, `detour_table`, `trunk_corridors`, `near_duplicates`, `find_detours`, `StreetGraph`, `coverage_by_route`, `evaluate_od`, `compare_ridership`, `network_summary` | `network_summary` gives every network-wide figure in `network.json` |
 | `scenarios` | `balance_stops(network, min_gap_m, max_gap_after_m, protect)` | Returns (new network, details); never edits its input |
@@ -252,78 +239,6 @@ The coverage guard, the scoring and the log apply automatically.
 `search()` compares `minutes`. To weigh something else (for example operating cost or
 people covered), add it to `score()` and change the comparisons in `search()`.
 
-## The page
-
-`index.html` is a static page with no server behind it. `site/build.py` writes what it
-shows: it reads `output/routes.csv`, `detours.csv`, `duplicates.csv`, `corridors.csv`,
-`network.json` and `repairs.txt`, loads the network with `model.load_network` for the
-geometry, and recomputes what the outputs do not hold. Detours are found again with
-`metrics.find_detours` so that each can be drawn along its route, and each gets the
-shorter path the redesign search would straighten it to: `optimize.Streets.path`
-between its two ends along the links buses drive today, kept when it saves at least
-500 m, with the minutes saved counted as `optimize.candidates` counts them. Corridors
-are drawn along the first route direction that drives each of their links. The stops
-that stop balancing removes (`output/scenario_removed_stops.csv`) get the shortest
-distance along a route to a neighbouring stop. Each population hexagon is split into
-seven points exactly as `population.load_gpkg` splits it, to count the residents
-farther than `coverage_radius_m` from a served stop. The lanes and parking points of the
-Bicycles view are read again from the two opendata.az files by `busnet.bicycle`, each
-parking point with its nearest stop, lane and metro exit from
-`output/bicycle/parking.csv`. It stops with a message if the recomputed detours,
-routes, closely spaced stops, population, covered population or bicycle lanes and
-points disagree with `output/`, and it counts the defects of the map data that the repairs do
-not cover (routes without stops or shapes, the `route_length_km` and `duration_min`
-fields, stop names, counted routes missing from the map) from `data/ayna.db` and the
-BakuBus file. Lines are simplified with Douglas–Peucker at 6 m and stored as encoded
-polylines (Google's format, 5 decimals); the workbook is written by a small Office Open
-XML writer with fixed dates, so the same input gives the same file. With `--og` it also
-runs headless Chrome on `site/og.html`, which draws the network and three figures from
-`data.js`, to write `site/og.png` at 1200 × 630 pixels.
-
-The coverage lab reads the five recorded radii from
-`output/robustness/coverage_radius.csv`. The build checks each coverage share against
-the study-area population and checks the default-radius result against the recomputed
-coverage. Selecting a radius only changes this sensitivity panel; the map's coverage
-layer retains its configured radius. The page labels straight-line coverage as an
-estimate and distinguishes snapshot measurements from model estimates and questions
-requiring field validation. On narrow screens the route finder moves before the map;
-the nine layer tabs and wide tables also support keyboard navigation.
-
-`site/app.js` reads `window.SITE_DATA`. It draws the map with Leaflet 1.9.4 from cdnjs
-(pinned with an integrity hash) on OpenStreetMap's tiles, which `style.css` greys so that
-only the routes carry colour. The colours come from a validated palette: an ordinal blue
-ramp for directness, population and routes per stop; orange and blue for the two kinds
-of detour and of overlap; aqua, dashed, for shorter paths (it is below 3:1 against the
-page, so the dashes, a white edge and the numbers in the card carry it too); bicycle
-lanes take the page's dark green, bicycle parking points orange dots and the MPS points
-small blue ones. Every layer
-is drawn on canvas and none listens for the pointer; the page finds what is under the
-pointer itself, within 10 pixels, so that a click on several overlapping routes lists
-them all. Reach is counted in the browser: the stops of every route at a stop, and with
-one change the stops of every route at any stop within `max_transfer_walk_m` (300 m)
-of those. Travel time is the paper's travel model rebuilt in the browser: the same
-graph as `graph.TransitGraph` (arrival, departure and on-board nodes; boarding at half
-the route's headway plus `transfer_penalty_min`; each hop at the route's cruise speed
-plus `stop_loss_s`; walks of up to `max_transfer_walk_m` at `walk_speed_mps` times
-`walk_detour`), searched with Dijkstra from the chosen stop. Paths are chosen by the
-model's cost, and the minutes shown leave the change penalties out. For that, `data.js`
-carries each route's headway and speed and every hop's length, and stop coordinates to
-six decimals so that walks end at 300 m exactly where the model's do. Checked against
-`TransitGraph` from 15 stops, the stops reached within 30 and 60 minutes and in every
-15-minute band were identical. The tables of all routes and carriers sort on any column
-(empty values last) and filter on their text; a carrier's row draws all its routes on
-the map. Carriers are grouped by `site/build.py`: names that differ only in case, spaces,
-hyphens or the dot of İ are one carrier, which turns the 42 names in the data into the
-paper's 39. The guided tour picks its examples from the data when it starts (the longest
-detour where nobody depends on the route alone, the first near-duplicate pair, the
-first corridor, the densest square kilometre of close stops, the hexagon with most
-residents beyond 400 m, the bicycle lanes, the stop with most routes), so it follows the data after a
-rebuild. Text from the data goes in with `textContent` only; the page's own text is in
-the `T` table at the top of `app.js`. Stop search ignores Azerbaijani accents and the
-Cyrillic look-alikes some names use. The address bar keeps the state
-(`#view=detours&route=177`, `#route=190&compare=160`, `#view=reach&stop=60`, `#view=time&stop=60`, `#view=bicycle`), and
-`#tour` starts the tour.
-
 ## The animations
 
 `animations/build.py` draws the five GIFs in the README, and `draw.py` beside it
@@ -348,9 +263,8 @@ identical to the one before only lengthens it, and the file loops for ever.
 
 The first four use the crop of the manuscript's figures (`paper/figures.py`), and
 `bicycle.gif` a closer crop of central Baku of the same size, around AYNA's bicycle lanes
-with a margin; all five use the measurements' flat projection, the repaired network, the
-population hexagons of the Kontur grid in four light steps from 100 people, and the
-page's colours.
+with a margin; all five use the measurements' flat projection, the repaired network and the
+population hexagons of the Kontur grid in four light steps from 100 people.
 
 - `buses.gif`: `bus_runs` gives every route direction the times of the GTFS feed
   (`gtfs.write_gtfs`), each hop at the zone's cruise speed plus `stop_loss_s`, and its
@@ -379,14 +293,13 @@ page's colours.
   saved. Dropped routes and removed stops stay faintly red and straightened stretches
   green. The chart is the average door-to-door time on the search's sample after each
   step; the last frame takes its figures from `summary.json`.
-- `travel-time.gif`: from the stop with the most routes (the lowest id on a tie), where the
-  page's Travel time view starts, `graph.TransitGraph` is searched from the stop's arrival
-  node as the page searches it, to every stop with no cut on the cost (which holds a
-  penalty for every boarding, so any cut would lose stops reached within `max_trip_min`
-  with enough changes), and each stop's minutes are the cost less one penalty per
-  boarding. One frame per minute
-  from 0 to 120, 80 ms each and the last held for 3 s; each stop takes the colour of the
-  page's 15-minute bins when it is reached, with a white halo in that minute.
+- `travel-time.gif` starts at the stop with the most routes (lowest id on a tie).
+  `graph.TransitGraph` searches from its arrival node without a cutoff. The cost includes
+  a penalty for each boarding, so cutting off the search at two hours of cost could omit
+  trips that arrive within two hours. The animation subtracts those penalties to get
+  elapsed minutes. It draws one frame per minute from 0 to 120, holding each for 80 ms
+  and the last for 3 s. Stops take the colour of their 15-minute band and have a white
+  halo in the minute they are reached.
 - `bicycle.gif`: the lanes of September 2026 and of January 2025 come from
   `busnet.bicycle.load_lanes`, the stops within 100 m of a lane from
   `busnet.bicycle.stops_near` and the parking points within 100 m of a stop from
@@ -421,10 +334,7 @@ On one Python version a rebuild gives the same files byte for byte.
    the GTFS writer. `tests/test_bicycle.py` reads a small KMZ in the shape of AYNA's
    files, checks the line index against brute force and the measures on the made-up
    network, and regenerates `output/bicycle/` (about four seconds).
-   `tests/test_site.py` rebuilds the page's data and workbooks and compares them with
-   the committed ones, checks the polyline encoder, the line simplifier, the sorting of
-   repairs and the workbook writer, and checks that every local file `index.html` links
-   to exists. `tests/test_animations.py` decodes the GIF writer's output with a decoder of
+   `tests/test_animations.py` decodes the GIF writer's output with a decoder of
    its own, checks the font and that the drawing helpers agree, checks the buses' times
    against the feed's on the made-up network, and checks that each committed GIF has the
    picture size and the number of frames its data gives. `tests/test_instances.py` checks
@@ -457,11 +367,7 @@ On one Python version a rebuild gives the same files byte for byte.
    times increase and shapes reach their end stops; after `redesign.py` changes the feeds,
    `python3 validate_gtfs.py --jar ...` runs MobilityData's validator, which must report no
    errors ([getting-started.md](getting-started.md#checking-the-gtfs-feeds)).
-8. **The page.** After regenerating `output/`, run `python3 site/build.py`, serve the
-   repository with `python3 -m http.server` and look at the page at desktop and phone
-   width, run the tour (`#tour`) to its end, and open a route, a comparison and a stop's
-   reach; the browser console must stay empty.
-9. **The animations.** After a change to the data, the settings or the search, run
+8. **The animations.** After a change to the data, the settings or the search, run
    `redesign.py` and then `python3 animations/build.py`, and look at the five GIFs.
 
 A new test goes in `tests/test_<module>.py` as a `unittest.TestCase`; `tests/helpers.py`

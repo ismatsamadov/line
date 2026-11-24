@@ -247,8 +247,8 @@ a bus stop (median distance 82 m), 36 are within 300 m of a metro exit, and an e
 sit closer to bus stops still (427 within 100 m, median 59 m) and mostly away from the
 lanes (median 862 m).
 
-`output/bicycle/` has the tables ([outputs.md](outputs.md#outputbicycle--the-bicycle-lanes-and-parking-beside-the-bus-network)),
-the page draws them as its Bicycles view, and the thresholds are explained in
+`output/bicycle/` has the tables ([outputs.md](outputs.md#outputbicycle--the-bicycle-lanes-and-parking-beside-the-bus-network)).
+The thresholds are explained in
 [methodology.md](methodology.md#13-bicycle-lanes-and-parking). What the numbers do not
 say: the files give no dates of construction, no separation from traffic and no
 capacities, and nothing here measures whether anyone cycles to a bus.
