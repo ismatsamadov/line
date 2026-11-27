@@ -85,7 +85,7 @@ flowchart TD
   cfg --> inp[inputs.load_inputs]
   db[(data/ayna.db)] --> model[model.load_network]
   model --> inp
-  feed[(a GTFS feed)] -. instead of ayna.db .-> rg[gtfs.read_gtfs]
+  feed[(a GTFS feed)] -.->|"instead of ayna.db"| rg[gtfs.read_gtfs]
   rg --> inp
   ext[(data/external, data/headways.csv)] --> inp
   inp --> m[measure.py]
@@ -103,7 +103,7 @@ flowchart TD
   rb --> search
   rb --> od
   rb --> walk[walking.WalkNetwork]
-  rb -. runs redesign.py<br/>with other settings .-> r
+  rb -.->|"runs redesign.py<br/>with other settings"| r
 ```
 
 `load_inputs` returns an `Inputs` object with everything all three scripts need:
