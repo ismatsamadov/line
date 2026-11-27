@@ -64,7 +64,9 @@ At 2.67 kg CO₂ per litre, it also avoids **17,657 tonnes of tailpipe CO₂**. 
 
 ![Fuel value and avoided tailpipe emissions accumulating from one modelled weekday to 250 at the stated diesel price.](animations/fuel-value.gif)
 
-[Research paper](paper/manuscript.md) · [Data and assumptions](docs/methodology.md) · [Reproduce the study](docs/getting-started.md) · [Results across 26 cities](docs/world.md) · [How the animations are made](docs/code.md#the-animations)
+[Research paper](paper/manuscript.md) · [Preprint](https://doi.org/10.31224/8632) · [Data and assumptions](docs/methodology.md) · [Reproduce the study](docs/getting-started.md) · [Results across 26 cities](docs/world.md) · [How the animations are made](docs/code.md#the-animations)
+
+Articles: [What Baku’s own open data says about its bus routes](https://ismatsamadov.medium.com/what-bakus-own-open-data-says-about-its-bus-routes-5484f90fa205) ([BirJob](https://www.birjob.com/blog/baku-bus-routes-efficiency-open-data)) · [The bus networks of 26 cities from their open timetables](https://ismatsamadov.medium.com/i-measured-the-bus-networks-of-26-cities-from-their-open-timetables-aae0aabf710a) ([BirJob](https://www.birjob.com/blog/bus-networks-26-cities-open-timetables))
 
 ## Licensing
 
