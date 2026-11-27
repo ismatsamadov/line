@@ -8,7 +8,8 @@ from the GTFS feed its transit agency, its city or a mapping project publishes, 
 settings for all, and added Baku read from its own feed so that it compares like for like.
 This page says how I chose the cities, what I ran, what came out and how far to trust it.
 Every saving on it is a model estimate: apart from Baku, no city's demand rests on
-passenger counts.
+passenger counts. The article [I measured the bus networks of 26 cities from their open
+timetables](https://ismatsamadov.medium.com/i-measured-the-bus-networks-of-26-cities-from-their-open-timetables-aae0aabf710a) (also on [BirJob](https://www.birjob.com/blog/bus-networks-26-cities-open-timetables)) tells the same story for a general reader.
 
 ## What came out
 

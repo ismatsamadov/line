@@ -332,12 +332,14 @@ point.
    Transport and the submission suggests none ([`paper/reviewers.md`](../paper/reviewers.md)
    says why). In the journal's Editorial Manager, with my own account, I uploaded the
    files, answered the submission questionnaire, and viewed and approved the PDF the
-   system builds; until that approval the journal receives nothing. The preprint DOI
-   goes on the title page once engrXiv assigns it.
-7. While the journal reviews: a plain-language post for Medium is drafted in
+   system builds; until that approval the journal receives nothing. engrXiv posted the
+   preprint on 27 October 2026 as [doi:10.31224/8632](https://doi.org/10.31224/8632), which
+   the title page and the README now give.
+7. While the journal reviews: a plain-language post, drafted in
    [`paper/post/medium-post.md`](../paper/post/medium-post.md) with the two figures it
    uses as PNG beside it and a paragraph on the route planner that runs on the same
-   data (birjob.com/aletler/avtobus-marsrutu); the Zenodo record and the preprint go
+   data (birjob.com/aletler/avtobus-marsrutu), ran on [Medium](https://ismatsamadov.medium.com/what-bakus-own-open-data-says-about-its-bus-routes-5484f90fa205)
+   and [BirJob](https://www.birjob.com/blog/baku-bus-routes-efficiency-open-data) on 24 October 2026; the Zenodo record and the preprint go
    into my ORCID works, the preprint PDF onto ResearchGate and Academia.edu, and a
    Google Scholar profile is created. Material for the revision goes into
    `paper/manuscript.md` as it arises, while `paper/submission/` stays as submitted
